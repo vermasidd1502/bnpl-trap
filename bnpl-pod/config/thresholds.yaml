@@ -1,0 +1,79 @@
+# -----------------------------------------------------------------------------
+# Four-gate thresholds + Squeeze Defense thresholds + JT lambda guardrails.
+#
+# These are the deterministic parameters consumed by:
+#   - agents/compliance_engine.py   (hard-coded veto rules)
+#   - quant/squeeze_defense.py      (equity veto)
+#   - quant/jarrow_turnbull.py      (lambda clipping / smoothing)
+#
+# Keep this file under version control. Every change is an ablation worth
+# documenting in paper/ablations.md.
+# -----------------------------------------------------------------------------
+
+# ---- Four-Gate Trade Logic ----------------------------------------------------
+gates:
+  bsi:
+    # BSI z-score (computed over rolling 180-day window) must exceed this to fire.
+    z_threshold: 1.5
+  scp:
+    # Structural Complexity Premium (ES_Heston - EL_GBM), in dollars per $100 notional.
+    # Wide gap => equity is underpricing tail risk. Per-asset threshold.
+    min_scp_equity_layer: 2.50
+  move:
+    # ICE BofA MOVE Index 30-day moving average.
+    ma30_threshold: 120.0
+  ccd_ii:
+    # EU Consumer Credit Directive II deadline proximity, in days.
+    max_days_to_deadline: 180
+
+# ---- Squeeze Defense Layer (equity-only veto) ---------------------------------
+squeeze_defense:
+  # Short utilization: SI / free float. >= this value vetoes equity exposure.
+  utilization_veto: 0.85
+  # Days-to-cover: SI / 10-day ADV.
+  days_to_cover_veto: 5.0
+  # 25-delta IV skew: IV(put 25d) - IV(call 25d). Veto if > historical 90th pct.
+  skew_veto_percentile: 0.90
+  # These metrics are computed in quant/squeeze_defense.py.
+  # TRS expression bypasses squeeze defense (structured-credit channel).
+  bypass_for_trs: true
+
+# ---- Jarrow-Turnbull lambda(t) guardrails -------------------------------------
+# Addresses the "parameter instability" critique: social-media-driven lambda
+# cannot be allowed to spike arbitrarily. Clipping + EWMA smoothing + sensitivity
+# bounds keep the pricer institutionally defensible.
+jarrow_turnbull:
+  # Absolute bounds on the hazard intensity. Outside these, the model is not
+  # trustworthy and the pod flags a "lambda-out-of-range" warning.
+  lambda_floor: 0.002     # 0.2% annualized minimum hazard
+  lambda_cap:   0.250     # 25% annualized maximum hazard (junior-tranche extreme stress)
+  # EWMA smoothing half-life applied to the SENTIMENT component of the regressor.
+  # Macro and excess-spread regressors are NOT smoothed (they are already slow-moving).
+  sentiment_ewma_halflife_days: 5
+  # Maximum allowed one-day move in the calibrated lambda. Exceeding this triggers
+  # re-calibration with prior-day lambda as a regularizer.
+  max_daily_abs_change: 0.02
+  # Sensitivity sanity-check: if a +1 z-score shock to BSI moves lambda by more
+  # than this ratio, the beta_BSI coefficient is regularized toward prior.
+  max_sensitivity_to_bsi_shock: 0.10
+
+# ---- Portfolio risk budget ----------------------------------------------------
+portfolio:
+  # Total notional leverage cap on the simulated TRS book.
+  max_gross_leverage: 3.0
+  # Max notional per single BNPL trust.
+  max_single_trust_weight: 0.25
+  # CVaR confidence level used by the Mean-CVaR optimizer.
+  cvar_alpha: 0.95
+
+# ---- Agent advisory vs deterministic compliance ------------------------------
+# LLM risk_manager.py produces advisory reasoning only.
+# compliance_engine.py is a pure-python rules engine with NO LLM calls and is
+# the sole source of trade approvals. Every trade signal must carry:
+#   compliance_engine_approved: bool
+#   compliance_engine_reasons:  list[str]
+# See agents/compliance_engine.py for the canonical ruleset.
+compliance:
+  require_all_four_gates: true
+  require_human_approval: true     # human-in-the-loop is NOT optional
+  require_advisory_signature: true # LLM reasoning must be logged alongside rules decision

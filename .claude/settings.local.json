@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:github.com)",
+      "Bash(where pandoc *)",
+      "Bash(where wkhtmltopdf *)",
+      "Bash(where xelatex *)",
+      "Bash(where pdflatex *)",
+      "Bash(python -c \"import weasyprint; print\\('weasyprint ok'\\)\")",
+      "Bash(python -c \"import markdown; print\\('markdown ok'\\)\")",
+      "Bash(python -c \"import fpdf; print\\(fpdf.__version__\\)\")",
+      "Bash(python -c \"import reportlab; print\\(reportlab.Version\\)\")",
+      "Bash(pip install *)",
+      "Bash(python -c \"import pypandoc; print\\(pypandoc.get_pandoc_version\\(\\)\\)\")",
+      "Bash(python -c ' *)",
+      "Bash(tasklist)",
+      "Bash(taskkill //F //IM xelatex.exe //IM pandoc.exe //IM miktex-xetex.exe)",
+      "Bash(taskkill //F //PID 41244 //PID 37228 //PID 12988)",
+      "Bash(python -c \"from fpdf.fonts import FontFace; import fpdf, os; p=os.path.dirname\\(fpdf.__file__\\); print\\(p\\); import glob; print\\([f for f in glob.glob\\(p+'/**/*.ttf', recursive=True\\)]\\)\")",
+      "Bash(python -c \"import xhtml2pdf; print\\('ok'\\)\")",
+      "Bash(python build_pdf.py)",
+      "Bash(xelatex -interaction=nonstopmode -halt-on-error MASTERPLAN.tex)",
+      "Bash(cp \"C:/Users/siddh/Desktop/fin 515 midterm/fonts/dejavu-fonts-ttf-2.37/ttf/\"DejaVuSerif*.ttf fonts/)",
+      "Bash(cp \"C:/Users/siddh/Desktop/fin 515 midterm/fonts/dejavu-fonts-ttf-2.37/ttf/\"DejaVuSansMono-Oblique.ttf fonts/)",
+      "Bash(cp \"C:/Users/siddh/Desktop/fin 515 midterm/fonts/dejavu-fonts-ttf-2.37/ttf/\"DejaVuSansMono-BoldOblique.ttf fonts/)",
+      "Bash(cp \"C:/Users/siddh/Desktop/fin 515 midterm/fonts/dejavu-fonts-ttf-2.37/ttf/\"DejaVuSans-Oblique.ttf fonts/)",
+      "Bash(cp \"C:/Users/siddh/Desktop/fin 515 midterm/fonts/dejavu-fonts-ttf-2.37/ttf/\"DejaVuSans-BoldOblique.ttf fonts/)",
+      "Bash(xelatex -interaction=nonstopmode MASTERPLAN.tex)",
+      "Bash(python -m pytest tests/test_compliance_engine.py -v)",
+      "Bash(python -c \"from agents.llm_client import LLMClient, LLMResponse, LLMProviderUnavailable; c = LLMClient\\(\\); print\\('llm_client imports OK; providers configured:', \\('nim' if c._nim else ''\\), \\('gemini' if c._gemini else ''\\)\\)\")",
+      "Bash(python -m pytest tests/test_compliance_engine.py -q)",
+      "Bash(python -c \"from agents.llm_client import LLMClient; c = LLMClient\\(\\); print\\('llm_client OK · providers:', 'nim' if c._nim else '-', 'gemini' if c._gemini else '-'\\)\")",
+      "Bash(gh auth *)"
+    ]
+  }
+}

@@ -1,0 +1,33 @@
+# -----------------------------------------------------------------------------
+# BNPL Stress Index (BSI) — component weights.
+#
+# Default weights are PRIORS, not final. They are the starting point for the
+# constrained QP refinement in signals/weights_qp.py, which solves:
+#
+#     minimize   || BSI(w) - AFRMMT_stress ||^2
+#     subject to w >= 0, sum(w) = 1, per-component caps.
+#
+# Weights are ONLY refreshed on pre-test data. During rolling-OOS windows the
+# weights are frozen (see signals/rolling_oos.py) to prevent look-ahead bias.
+# -----------------------------------------------------------------------------
+
+default_weights:
+  cfpb_complaint_momentum: 0.25
+  google_trends_distress:  0.20
+  reddit_finbert_neg:      0.20
+  appstore_keyword_freq:   0.15      # substitute with CFPB keyword freq until AppStore feed clean
+  move_index_overlay:      0.20
+
+# Per-component hard caps enforced by the QP. Prevents any single noisy stream
+# from dominating. Caps must be >= default weight to be feasible.
+caps:
+  cfpb_complaint_momentum: 0.40
+  google_trends_distress:  0.30
+  reddit_finbert_neg:      0.30     # capped lower: sentiment is the noisiest input
+  appstore_keyword_freq:   0.25
+  move_index_overlay:      0.35
+
+# QP refresh schedule.
+refresh:
+  frequency_days: 30
+  min_training_window_days: 540     # ~18 months pre-test data before first fit

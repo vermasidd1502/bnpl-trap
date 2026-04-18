@@ -1,0 +1,385 @@
+% !TEX program = xelatex
+% BNPL Agentic Pod — Master Implementation Plan
+% Compile with: xelatex MASTERPLAN.tex  (twice for TOC)
+% Overleaf: set compiler to XeLaTeX in Menu → Compiler.
+
+\documentclass[11pt]{article}
+
+\usepackage[letterpaper,margin=0.95in]{geometry}
+\usepackage{fontspec}
+\usepackage{amsmath,amssymb}
+\usepackage{microtype}
+\usepackage{parskip}
+\usepackage{enumitem}
+\usepackage{longtable,booktabs,array}
+\usepackage{xcolor}
+\usepackage[hidelinks,colorlinks=true,linkcolor=black,urlcolor=blue!55!black]{hyperref}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{listings}
+
+% Fonts — DejaVu has excellent Unicode/symbol coverage (Greek, math ops, arrows, etc.).
+% Upload the ./fonts/ directory alongside this .tex file on Overleaf (or keep it beside
+% the .tex file locally). The TTFs are loaded by filename so no system install is needed.
+\setmainfont{DejaVuSerif.ttf}[
+  Path          = ./fonts/ ,
+  BoldFont      = DejaVuSerif-Bold.ttf ,
+  ItalicFont    = DejaVuSerif-Italic.ttf ,
+  BoldItalicFont= DejaVuSerif-BoldItalic.ttf ,
+  Scale         = 0.95 ]
+\setsansfont{DejaVuSans.ttf}[
+  Path          = ./fonts/ ,
+  BoldFont      = DejaVuSans-Bold.ttf ,
+  ItalicFont    = DejaVuSans-Oblique.ttf ,
+  BoldItalicFont= DejaVuSans-BoldOblique.ttf ,
+  Scale         = 0.92 ]
+\setmonofont{DejaVuSansMono.ttf}[
+  Path          = ./fonts/ ,
+  BoldFont      = DejaVuSansMono-Bold.ttf ,
+  ItalicFont    = DejaVuSansMono-Oblique.ttf ,
+  BoldItalicFont= DejaVuSansMono-BoldOblique.ttf ,
+  Scale         = 0.85 ]
+% Math: default Computer Modern math (works everywhere, including bare MiKTeX).
+
+\setlength{\parskip}{4pt plus 1pt}
+\setlength{\parindent}{0pt}
+\setlist{topsep=2pt,itemsep=1pt,parsep=0pt}
+
+% Heading styles
+\titleformat{\section}{\sffamily\Large\bfseries}{\thesection.}{0.6em}{}[\vspace{-6pt}\rule{\textwidth}{0.4pt}]
+\titleformat{\subsection}{\sffamily\large\bfseries}{\thesubsection}{0.6em}{}
+\titleformat{\subsubsection}{\sffamily\normalsize\bfseries}{\thesubsubsection}{0.6em}{}
+
+% Footer
+\pagestyle{fancy}\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{\sffamily\footnotesize BNPL Agentic Pod — Master Implementation Plan \quad\textbullet\quad \thepage\ / \pageref{LastPage}}
+\usepackage{lastpage}
+
+% Code listings
+\definecolor{codebg}{HTML}{F5F5F5}
+\definecolor{codeborder}{HTML}{CCCCCC}
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  backgroundcolor=\color{codebg},
+  frame=single,
+  framesep=4pt,
+  rulecolor=\color{codeborder},
+  breaklines=true,
+  breakatwhitespace=false,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  xleftmargin=4pt,
+  xrightmargin=4pt,
+}
+
+\newcommand{\inlinecode}[1]{{\ttfamily\small #1}}
+
+\title{\sffamily\bfseries\Huge BNPL Agentic Pod\\[2pt]\Large Master Implementation Plan}
+\author{\sffamily Class 580, Spring 2026 \quad\textbullet\quad Depth-first, no timeline}
+\date{\sffamily April 17, 2026}
+
+\begin{document}
+
+\maketitle
+
+\noindent\textbf{Purpose of this document.} This is a complete, self-contained handoff brief. Paste it into a fresh Claude Opus session (or any frontier model) and the model will have everything required to continue the project without access to the prior Sonnet conversation: the thesis, the decided architecture, the locked technology stack, the repo layout, the sprint-by-sprint implementation sequence, the rigor requirements, the known traps, and the verification criteria.
+
+\noindent\textbf{Author context.} Student, class 580, Spring 2026, solo, local machine + NVIDIA NIM credits + Claude API. Active F\&O trader. Broad technical background, not deep in any one area --- wants opinionated library-level guidance, not concept-level hand-waving. Dropped the original 17-day timeline on 2026-04-17; now depth-first, targeting institutional rigor (``Nobel Prize level'' in the user's words) equivalent to or exceeding \href{https://github.com/shreejitverma/Adaptive-Volatility-Regime-Based-Execution-and-Risk-Framework}{\texttt{github.com/shreejitverma/Adaptive-Volatility-Regime-Based-Execution-and-Risk-Framework}}.
+
+\noindent\textbf{Two artifacts, equal weight.}
+\begin{enumerate}
+  \item A running multi-agent AI pod that continuously ingests data, runs analyses, executes backtests, and emits trading strategy / reports autonomously.
+  \item An institutional-grade research paper kept in-sync with the pod's empirical output. Current state: \inlinecode{PRELIMINARY\_PAPER.md} (\textasciitilde10{,}000 words, version 0.1, methodology-complete, empirical-pending).
+\end{enumerate}
+
+\tableofcontents
+\vspace{1em}\hrule\vspace{1em}
+
+\section{The Thesis in One Paragraph}
+
+Buy-Now-Pay-Later lending is a structurally hidden consumer-credit stack. Micro-loans under \textasciitilde\$500 are not reported to Experian/Equifax/TransUnion, so loan-stacking (\textasciitilde63\% of BNPL borrowers per CFPB 2023) is invisible to FICO and by extension to the underwriting of every lender above BNPL in the consumer's capital stack. This produces a \emph{leading-vs-reported} asymmetry: alternative-data streams (CFPB complaints, Reddit distress sentiment, Google Trends on keywords like ``can't afford Affirm,'' MOVE index for fixed-income funding stress) move \emph{before} the AFRMMT trustee reports show roll-rate acceleration and excess-spread compression. The thesis is that a composite of these alternative streams (the \textbf{BSI}) Granger-causes AFRMMT stress at 4--8 week lags, and that the correct trade is a \textbf{Total Return Swap (TRS) Payer position on junior tranches of Affirm Master Trust securitizations} --- not an equity short on AFRM/SQ/PYPL, because those are squeeze-vulnerable. The trade fires only when four orthogonal gates agree ($\mathrm{BSI} \wedge \mathrm{SCP} \wedge \mathrm{MOVE}>120 \wedge \mathrm{CCD\text{-}II\text{-}proximity}$).
+
+\section{Locked Architectural Decisions}
+
+These were debated and resolved during the planning session. Do not relitigate without cause.
+
+{\small
+\begin{longtable}{@{}p{3.2cm} p{4.8cm} p{7.5cm}@{}}
+\toprule
+\textbf{Decision} & \textbf{Choice} & \textbf{Reason} \\
+\midrule
+\endhead
+ABS pricing model & \textbf{Jarrow-Turnbull reduced-form}, dynamic $\lambda(t) = \lambda_0 \cdot \exp(\beta_{\mathrm{BSI}} \mathrm{BSI} + \beta_{\mathrm{MOVE}} \mathrm{MOVE} + \beta_{\mathrm{ES}} \mathrm{compression})$ & Original spec conflated Heston with ABS pricing. Heston is for equity options. Correct credit-derivatives model for tranche pricing is reduced-form intensity (Jarrow-Turnbull 1995, Duffie-Singleton 1999). \\
+Heston usage & \textbf{Equity signal layer only} (AFRM/SQ options $\to$ SCP metric) & Never on ABS. Heston $\ne$ credit model. \\
+Portfolio optimization & \textbf{CVXPY Mean-CVaR (primary)}; cuOpt only for routing/cardinality/turnover/integer & cuOpt is combinatorial --- not a natural solver for continuous Mean-CVaR. $160\times$ speed claim is irrelevant at $<100$ assets. Using cuOpt for CVaR is a known trap. \\
+LLM hosting & \textbf{NVIDIA NIM hosted Nemotron} (\inlinecode{integrate.api.nvidia.com/v1}, OpenAI-compatible) with \textbf{Claude API fallback} via unified \inlinecode{llm\_client.py} & No GPU infra. User has NIM credits. TensorRT-LLM self-hosting out of scope. \\
+Model tiering & \textbf{Nemotron-small} for Data/Macro (structured parsing); \textbf{Nemotron-4-340B} for Quant/Risk Manager (complex reasoning) & Latency/cost vs.\ reasoning depth. \\
+Agent framework & \textbf{LangGraph} + \textbf{NVIDIA NeMo Agent Toolkit} (observability, tool persistence, audit trail) & NeMo Agent Toolkit replaces what the original spec called ``AI-Q.'' Audit trail is required for the paper's reproducibility appendix and the Human-in-the-Loop approve-trade UX. \\
+Vector store & \textbf{Milvus} with \textbf{NV-EmbedQA} embeddings & Local, keeps data in repo, replaces OpenAI embeddings for SEC/CFPB/AFRMMT document RAG. \\
+Data warehouse & \textbf{DuckDB} single-file & Zero-config, analytics-fast, no Postgres daemon. \\
+Data sources & Tier A free only: FRED, SEC EDGAR (\inlinecode{efts.sec.gov} public API, 10 req/s, \textbf{no proxies}), CFPB Complaint DB, Reddit PRAW, Google Trends via \inlinecode{pytrends}, FINRA short-interest, yfinance/CBOE options & Tier B/C framed as ``plug your Tier C data in for $3\times$ amplification.'' No residential proxies. No App Store scraping. \\
+Earnings-call ASR & \textbf{NVIDIA Parakeet-CTC} for real-time transcription $\to$ Macro Agent tone/keyword extraction & Genuine alpha signal on earnings days. \\
+Dashboard & \textbf{Streamlit first}, port to \textbf{Next.js + WebSockets} once core works & Streamlit = fast first-pass; Next.js = institutional-polish final. \\
+Paper format & \textbf{LaTeX}, hedge-fund-white-paper style (Tufte-like), Chicago author-date citations & Class format not specified; LaTeX is default institutional. \\
+NLP sentiment & \textbf{FinBERT} (Araci 2019) primary, \textbf{FinBERT-tone} (Yang et al.\ 2020) robustness & Both HuggingFace, commodity. \\
+Execution & \textbf{Simulated TRS P\&L only}. No brokerage integration. & Thesis does not depend on live execution. \\
+\bottomrule
+\end{longtable}
+}
+
+\section{The Four-Gate Trade Logic (Non-Negotiable)}
+
+A trade fires \textbf{only} when all four gates agree:
+
+\begin{enumerate}
+  \item \textbf{Gate 1 (BSI, weekly, leading):} BSI z-score $>$ threshold. Default composite: $0.25 \cdot \mathrm{CFPB} + 0.20 \cdot \mathrm{GoogleTrends} + 0.20 \cdot \mathrm{Reddit}_{\mathrm{FinBERT}} + 0.15 \cdot \mathrm{AppStore} + 0.20 \cdot \mathrm{MOVE}$. Weights refined by constrained QP regression against AFRMMT ground truth (simplex constraint, $\sum w = 1$, $w \ge 0$).
+  \item \textbf{Gate 2 (SCP, per-asset):} Heston Expected Shortfall minus GBM Expected Loss --- wide gap $=$ equity mispricing tail risk. Equity signal layer only.
+  \item \textbf{Gate 3 (MOVE, macro):} ICE BofA MOVE Index 30-day MA $>$ 120 (funding stress regime).
+  \item \textbf{Gate 4 (CCD II calendar):} EU Consumer Credit Directive II compliance deadline Nov 2026 within trade horizon.
+\end{enumerate}
+
+The \textbf{Risk Manager agent} vetoes any trade where fewer than four gates fire. The \textbf{Squeeze Defense Layer} is an additional veto on equity expressions (utilization $>$ 85\%, days-to-cover $>$ 5, 25-$\delta$ IV skew elevated). Structured-credit TRS expression bypasses squeeze defense.
+
+\section{Repository Layout}
+
+\begin{lstlisting}
+bnpl-pod/
+├── README.md
+├── Makefile                        # make ingest | bsi | validate | backtest | paper | pod | dashboard
+├── pyproject.toml                  # uv/poetry managed
+├── .env.example
+├── docker-compose.yml              # Milvus service
+├── config/
+│   ├── weights.yaml                # BSI weights, refined by QP after calibration
+│   └── thresholds.yaml             # gate thresholds, squeeze-defense thresholds
+├── data/
+│   ├── ingest/
+│   │   ├── fred.py                 # FRED API (MOVE, 10Y-3M, CC delinq, SOFR)
+│   │   ├── sec_edgar.py            # efts.sec.gov search API, not scraper
+│   │   ├── abs_parser.py           # AFRMMT 10-D / ABS-15G -> roll rate, excess spread, CNL
+│   │   ├── cfpb.py                 # CFPB public Complaint Database API
+│   │   ├── reddit_praw.py          # r/povertyfinance, r/Debt, r/personalfinance, r/Affirm
+│   │   ├── google_trends.py        # pytrends, keyword set K
+│   │   ├── options_chain.py        # yfinance or CBOE free feed
+│   │   ├── short_interest.py       # FINRA public short-interest
+│   │   └── earnings_audio.py       # fetch earnings-call audio, Parakeet transcription
+│   └── warehouse.duckdb
+├── nlp/
+│   ├── finbert_sentiment.py        # HF pipeline, rolling 30-day negative ratio
+│   ├── finbert_tone.py             # robustness classifier
+│   ├── embed_nvemb.py              # NV-EmbedQA via NIM
+│   └── rag/
+│       ├── milvus_store.py
+│       └── ingest_docs.py          # index AFRMMT PDFs, 10-Qs, CFPB rules
+├── signals/
+│   ├── bsi.py                      # weighted z-score composite
+│   ├── weights_qp.py               # constrained QP for weight refinement
+│   ├── granger.py                  # statsmodels + block bootstrap
+│   └── rolling_oos.py              # rolling-window OOS backtest of the signal
+├── quant/
+│   ├── jarrow_turnbull.py          # dynamic lambda(t), Monte Carlo survival, tranche pricing
+│   ├── heston_scp.py               # QuantLib Heston calibration -> ES vs GBM EL
+│   ├── squeeze_defense.py          # utilization, DTC, IV skew veto
+│   └── trs_pricer.py               # TRS Payer on junior tranche, SOFR funding
+├── portfolio/
+│   ├── mean_cvar.py                # CVXPY
+│   └── routing_cuopt.py            # cuOpt for counterparty routing / cardinality
+├── agents/
+│   ├── llm_client.py               # unified NIM + Claude wrapper
+│   ├── graph.py                    # LangGraph state machine
+│   ├── state.py                    # PodState TypedDict
+│   ├── data_agent.py               # Nemotron-small
+│   ├── macro_agent.py              # Nemotron-small, reads BSI + FRED + earnings ASR
+│   ├── quant_agent.py              # Nemotron-340B, runs JT + Heston + pricing
+│   ├── risk_manager.py             # Nemotron-340B, four-gate + squeeze veto
+│   ├── report_agent.py             # generates paper-section updates
+│   └── nemo_toolkit_wiring.py      # NeMo Agent Toolkit observability
+├── backtest/
+│   ├── event_study.py              # Klarna Jul 2022, Affirm Nov 2022, CFPB May 2024, CCD II
+│   ├── pnl_sim.py                  # simulated TRS vs equity short
+│   └── metrics.py                  # Sharpe, Sortino, max DD, tail metrics
+├── dashboard/
+│   ├── streamlit_app.py
+│   └── next/                       # Next.js + WebSockets (v2)
+├── paper/
+│   ├── PRELIMINARY_PAPER.md
+│   ├── paper.tex
+│   ├── figures/
+│   └── references.bib
+├── notebooks/
+├── tests/
+└── logs/
+    ├── agent_decisions/            # JSONL per run
+    └── pod_runs/
+\end{lstlisting}
+
+\section{Sprint Sequence (Depth-First, No Time Cap)}
+
+Order is enforced because later sprints depend on earlier outputs. Within each sprint the requirement is \textbf{full rigor, full tests, documented math in docstrings} --- not a minimum viable version.
+
+\subsection{Sprint 0 --- Scaffolding}
+\begin{itemize}
+  \item \inlinecode{uv init} or \inlinecode{poetry init}, pin Python 3.11.
+  \item Install: \inlinecode{duckdb}, \inlinecode{polars}, \inlinecode{pandas}, \inlinecode{numpy}, \inlinecode{scipy}, \inlinecode{statsmodels}, \inlinecode{cvxpy}, \inlinecode{QuantLib}, \inlinecode{langgraph}, \inlinecode{langchain}, \inlinecode{anthropic}, \inlinecode{openai} (for NIM OpenAI-compatible endpoint), \inlinecode{praw}, \inlinecode{pytrends}, \inlinecode{yfinance}, \inlinecode{transformers}, \inlinecode{torch}, \inlinecode{pymilvus}, \inlinecode{streamlit}, \inlinecode{matplotlib}, \inlinecode{pytest}, \inlinecode{python-dotenv}.
+  \item \inlinecode{.env.example}: \inlinecode{NVIDIA\_NIM\_API\_KEY}, \inlinecode{ANTHROPIC\_API\_KEY}, \inlinecode{REDDIT\_CLIENT\_ID}, \inlinecode{REDDIT\_CLIENT\_SECRET}, \inlinecode{FRED\_API\_KEY}, \inlinecode{SEC\_EDGAR\_UA} (required by SEC --- real name + email).
+  \item Docker-compose for Milvus standalone. Makefile targets. DuckDB schema (\inlinecode{fred\_series}, \inlinecode{sec\_abs\_filings}, \inlinecode{cfpb\_complaints}, \inlinecode{reddit\_posts}, \inlinecode{google\_trends}, \inlinecode{options\_chain}, \inlinecode{short\_interest}, \inlinecode{bsi\_daily}, \inlinecode{pod\_decisions}).
+\end{itemize}
+
+\subsection{Sprint A --- Data Layer}
+\begin{itemize}
+  \item \inlinecode{fred.py}: MOVE, T10Y3M, DRCCLACBS, SOFR as daily series.
+  \item \inlinecode{sec\_edgar.py}: \inlinecode{https://efts.sec.gov/LATEST/search-index} JSON API. Rate-limit 10 req/s.
+  \item \inlinecode{abs\_parser.py}: extract roll rate to 60+ DPD, excess spread, CNL from each AFRMMT 10-D. Unit-test against three known historical filings.
+  \item \inlinecode{cfpb.py}: filter on \inlinecode{product=consumer\_loan}, sub-product $\supseteq$ \{BNPL, Affirm, Klarna, Afterpay, Sezzle, PayPal\}. Daily complaint counts + keyword flags.
+  \item \inlinecode{reddit\_praw.py}: subreddits $R = \{$povertyfinance, Debt, personalfinance, Affirm, Klarna$\}$, rate-limit handling, dedup by ID.
+  \item \inlinecode{google\_trends.py}: keyword set $K$ (see Paper Appendix C), weekly.
+  \item \inlinecode{options\_chain.py}: AFRM, SQ, PYPL daily option-chain snapshots (strike, expiry, IV, volume, OI).
+  \item \inlinecode{short\_interest.py}: FINRA bi-monthly + regulatory SHO daily.
+  \item \textbf{Test:} \inlinecode{make ingest} end-to-end, DuckDB row counts sanity-check.
+\end{itemize}
+
+\subsection{Sprint B --- NLP Layer}
+\begin{itemize}
+  \item \inlinecode{finbert\_sentiment.py}: HF \inlinecode{ProsusAI/finbert}, batched. Rolling 30-day negative ratio.
+  \item \inlinecode{finbert\_tone.py}: \inlinecode{yiyanghkust/finbert-tone} as robustness.
+  \item \inlinecode{nlp/rag/ingest\_docs.py}: AFRMMT 10-Ds (3y), Affirm 10-Qs, CFPB May 2024 rule, CCD II. Chunk, embed via NV-EmbedQA, index in Milvus.
+  \item Earnings-call ASR: \inlinecode{earnings\_audio.py} $\to$ Parakeet-CTC $\to$ timestamped chunks.
+  \item \textbf{Test:} FinBERT output distribution on 100-post sample; RAG recall on known-answer query (``AFRMMT excess spread March 2025?'').
+\end{itemize}
+
+\subsection{Sprint C --- Signal Layer (Load-Bearing)}
+\textit{The paper rests on this sprint.}
+\begin{itemize}
+  \item \inlinecode{bsi.py}: z-score each component over rolling 180-day window; weighted composite per \inlinecode{config/weights.yaml}; emit \inlinecode{bsi\_daily}.
+  \item \inlinecode{weights\_qp.py}: constrained QP $\min \| \mathrm{BSI} \cdot w - \mathrm{AFRMMT}_{\mathrm{stress}} \|^2$ subject to $w \ge 0$, $\sum w = 1$, per-component caps. Refresh monthly; freeze in OOS windows.
+  \item \inlinecode{granger.py}: \inlinecode{statsmodels.tsa.stattools.grangercausalitytests(maxlag=10)} at monthly frequency on AFRMMT 60+ DPD roll rate, excess spread, CNL. Block bootstrap (Politis-Romano 1994) for small-sample-robust $p$-values. Report $F$, $p$, bootstrap CI.
+  \item \inlinecode{rolling\_oos.py}: expanding-window refit of BSI weights + Granger on held-out months. Primary defense against small-sample critique ($n \approx 40$).
+  \item \textbf{Pre-registration:} commit \inlinecode{hypotheses.md} before running Granger. Lag range 4--8 weeks primary, 1--10 secondary. Reference \S13 of paper.
+  \item \textbf{Test:} null-data BSI (white noise) vs real AFRMMT --- Granger should reject at \textasciitilde5\%. Power analysis: document minimum detectable effect given $n = 40$.
+\end{itemize}
+
+\subsection{Sprint D --- Quant Layer}
+\begin{itemize}
+  \item \inlinecode{jarrow\_turnbull.py}: discrete-time reduced-form. $\lambda(t) = \lambda_0 \cdot \exp(\beta_{\mathrm{BSI}} \mathrm{BSI}_t + \beta_{\mathrm{MOVE}} \mathrm{MOVE}_t + \beta_{\mathrm{ES}} \mathrm{ES}_t)$. Recovery $R$ from AFRMMT historical. Monte Carlo 25k paths, antithetic variates. Price junior/mezz/senior at observed attachment/detachment from the most recent AFRMMT supplement. Calibrate $\beta$'s weekly by matching model PV to observed spread.
+  \item \inlinecode{heston\_scp.py}: QuantLib \inlinecode{HestonModel} + \inlinecode{HestonModelHelper} calibration to AFRM surface. $\mathrm{SCP} = \mathrm{ES}_{99}^{\mathrm{Heston}} - \mathrm{EL}_{99}^{\mathrm{GBM}}$.
+  \item \inlinecode{squeeze\_defense.py}: utilization $= \mathrm{SI} / \mathrm{float}$; DTC $= \mathrm{SI} / \mathrm{ADV}$; 25-$\delta$ IV skew $= \mathrm{IV}(\text{put}, 25\delta) - \mathrm{IV}(\text{call}, 25\delta)$. Veto if utilization $> 0.85$ OR DTC $> 5$ OR skew $>$ historical 90th percentile.
+  \item \inlinecode{trs\_pricer.py}: TRS Payer on junior tranche, SOFR + spread funding, Treasury hedge overlay to isolate credit from duration. Mark-to-model weekly.
+  \item \textbf{Test:} JT collapses to closed-form constant-$\lambda$ when $\beta$'s $= 0$. Heston calibration RMSE $<$ 3 vol points.
+\end{itemize}
+
+\subsection{Sprint E --- Agent Pod}
+\begin{itemize}
+  \item \inlinecode{llm\_client.py}: \inlinecode{LLMClient(model\_tier: Literal['small','heavy'])}. NIM Nemotron default, Claude fallback on 5xx/timeout. Logs every call.
+  \item \inlinecode{state.py}: \inlinecode{PodState} TypedDict with fields \inlinecode{as\_of}, \inlinecode{bsi}, \inlinecode{bsi\_components}, \inlinecode{move}, \inlinecode{scp\_by\_ticker}, \inlinecode{jt\_tranche\_prices}, \inlinecode{squeeze\_metrics}, \inlinecode{ccd\_ii\_days\_remaining}, \inlinecode{gate\_results}, \inlinecode{veto\_reasons}, \inlinecode{trade\_signal}, \inlinecode{agent\_log}.
+  \item \inlinecode{graph.py}: LangGraph nodes Data $\to$ Macro $\to$ Quant $\to$ RiskManager $\to$ Report. Risk Manager can loop back to Quant. NeMo Agent Toolkit wiring for audit trail.
+  \item Agent responsibilities: Data refreshes DuckDB; Macro reads BSI + FRED + ASR; Quant runs JT + Heston + SCP; Risk Manager enforces four-gate + squeeze; Report generates markdown diffs against \S14 and \S9 of the paper.
+  \item \textbf{Test:} dry-run on 2022-07-08 (Klarna down-round week) with cached data; pod emits positive signal; reasoning trace shows BSI spike + MOVE elevation + squeeze check.
+\end{itemize}
+
+\subsection{Sprint F --- Portfolio Layer}
+\begin{itemize}
+  \item \inlinecode{mean\_cvar.py}: CVXPY. Minimize $\mathrm{CVaR}_{\alpha}(-r^\top w)$ subject to leverage cap, per-name cap, cardinality via SOS1 or cuOpt handoff.
+  \item \inlinecode{routing\_cuopt.py}: cuOpt handles integer assignment of notional across counterparties with TRS-capacity constraints. Correct use of cuOpt.
+\end{itemize}
+
+\subsection{Sprint G --- Backtest}
+\begin{itemize}
+  \item \inlinecode{event\_study.py}: windows $=$ \{Klarna Jul 2022 down round, Affirm Nov 2022 guidance cut, CFPB May 2024 interpretive rule, each AFRMMT monthly 2023--2025, CCD II deadline Nov 2026 (prospective)\}. CAR on AFRM equity, AFRMMT junior spread move, simulated TRS P\&L. BSI-triggered cohort vs random-trigger control.
+  \item \inlinecode{pnl\_sim.py}: deterministic seed. Emits \inlinecode{pnl.csv} + PNGs directly into \inlinecode{paper/figures/}.
+  \item \inlinecode{metrics.py}: Sharpe, Sortino, max DD, Calmar, tail ratio, Cornish-Fisher VaR.
+\end{itemize}
+
+\subsection{Sprint H --- Reporting}
+\begin{itemize}
+  \item \inlinecode{make paper}: runs notebooks, refreshes figures, pandoc/LaTeX compile to \inlinecode{paper.pdf}.
+  \item Streamlit: Macro Radar (BSI vs AFRMMT excess spread), Squeeze Gauges, Agent Debate Log panel, Execution Hub with ``Approve Trade'' stub.
+  \item Next.js port: once Streamlit stable, WebSockets streaming from pod process.
+\end{itemize}
+
+\section{Rigor Requirements (The ``Nobel Prize Level'' Bar)}
+
+Six places where taking a shortcut collapses the paper's credibility.
+
+\begin{enumerate}
+  \item \textbf{Small-sample Granger.} $n \approx 40$ is insufficient for asymptotic $F$-tests to be trusted. Required: (a) block bootstrap with block length $\sim \sqrt{n}$, 10k replications; (b) rolling OOS; (c) explicit power analysis reporting minimum detectable effect size; (d) pre-registration.
+  \item \textbf{BSI weights overfitting.} Weights must be refit only on pre-test data; OOS window is weight-frozen.
+  \item \textbf{Jarrow-Turnbull calibration drift.} Refit $\beta$'s weekly but publish the full $\beta$-history in the appendix. Cherry-picking is a known reviewer trap.
+  \item \textbf{Heston use-case discipline.} Heston \emph{only} on equity. Do not use Heston $\sigma$ to price ABS. Mistake in original spec; do not revert.
+  \item \textbf{Squeeze defense is a hard gate}, not a soft preference. Trades ignoring squeeze defense during high-utilization regime invalidate the framework.
+  \item \textbf{TRS P\&L honesty.} Simulated TRS returns must include SOFR funding leg, bid-ask haircut (25--50 bps for junior BNPL tranches), CVA, mark-to-model for illiquid observations. Gross-spread compression $\ne$ P\&L.
+\end{enumerate}
+
+\section{Known Traps (Learned During Planning)}
+
+\begin{itemize}
+  \item \textbf{cuOpt $\ne$ CVaR solver.} Do not attempt Mean-CVaR on cuOpt.
+  \item \textbf{NVIDIA AI-Q is actually the NeMo Agent Toolkit.} Original spec mis-named it.
+  \item \textbf{SEC EDGAR has a free documented API} at \inlinecode{efts.sec.gov}. No residential proxies.
+  \item \textbf{App Store scraping is blocked.} Apple/Google actively defeat it. Substitute with CFPB keyword frequency until a clean feed appears.
+  \item \textbf{Heston-on-ABS is the original spec's biggest error.} Paper explicitly corrects in \S1, \S7, \S8.
+  \item \textbf{Nemotron on NIM is hosted, OpenAI-compatible, free with credits.} No TensorRT-LLM self-hosting.
+\end{itemize}
+
+\section{Verification Criteria}
+
+The build is ``done'' when all of the following pass:
+
+\begin{enumerate}
+  \item \inlinecode{make ingest}: $\ge$3y daily FRED, $\ge$100 AFRMMT filings parsed, $>$10k Reddit posts, weekly Google Trends.
+  \item \inlinecode{make bsi}: emits \inlinecode{bsi\_daily} series; figure matches paper \S5.
+  \item \inlinecode{make validate}: Granger $F$, $p$, bootstrap CI, rolling OOS. Primary test (BSI $\to$ AFRMMT 60+ DPD, lags 4--8w) reports $p < 0.05$ on at least one roll-rate series --- OR the paper honestly reports the null (acceptable; thesis becomes weaker-form).
+  \item \inlinecode{make backtest}: \inlinecode{pnl.csv} + figures. TRS strategy outperforms naive AFRM short in at least one of three event windows.
+  \item \inlinecode{make pod}: LangGraph state machine runs end-to-end on most recent tick; emits trade/no-trade with audit trail.
+  \item \inlinecode{streamlit run dashboard/streamlit\_app.py}: renders; all panels populate.
+  \item \inlinecode{make paper}: rebuilds \inlinecode{paper.pdf}; figures resolve; citations compile.
+  \item Fresh \inlinecode{git clone} $\to$ \inlinecode{make setup \&\& make all} runs to completion on a clean machine.
+\end{enumerate}
+
+\section{What Already Exists}
+
+\begin{itemize}
+  \item \inlinecode{PRELIMINARY\_PAPER.md} (version 0.1, \textasciitilde10{,}000 words). Sections 1--17 + Appendices A/B/C. Methodology-complete. Empirical sections scaffolded awaiting pod output. Khalil (2025) integrated in \S2.4 and \S13.3 (H6).
+  \item Memory files at \inlinecode{.claude/projects/.../memory/} documenting scope, architecture, stack, NVIDIA mapping, thesis anchors. Durable across sessions.
+\end{itemize}
+
+\section{What to Do First in the Fresh Opus Session}
+
+\begin{enumerate}
+  \item Read \inlinecode{PRELIMINARY\_PAPER.md} end-to-end.
+  \item Execute \textbf{Sprint 0} (scaffolding) and commit.
+  \item Execute \textbf{Sprint A} (data layer) with full tests; longest sprint, foundation for everything.
+  \item Execute \textbf{Sprint B} $\to$ \textbf{C} in order. Do not skip to D before C passes --- JT consumes BSI.
+  \item After Sprint C passes Granger validation (or honestly reports null), update \S13--\S14 of the paper with actual results.
+  \item Proceed D $\to$ E $\to$ F $\to$ G $\to$ H.
+  \item Keep paper in-sync with pod at every sprint boundary. \inlinecode{report\_agent.py} emits markdown diffs --- apply them.
+\end{enumerate}
+
+\section{Non-Goals (Explicit)}
+
+\begin{itemize}
+  \item No real brokerage integration. No ISDA paperwork. No live orders.
+  \item No self-hosted LLMs. No TensorRT-LLM. No GPU procurement.
+  \item No residential proxies. No App Store scraping.
+  \item No claim strategy is deployable as-is. Paper frames it as an institutional research prototype with a ``plug your Tier C data in for $3\times$ amplification'' commercialization pitch.
+  \item No Postgres. No Kubernetes. No cloud deployment (local-first).
+\end{itemize}
+
+\section{Reference Links}
+
+\begin{itemize}
+  \item User benchmark repo: \href{https://github.com/shreejitverma/Adaptive-Volatility-Regime-Based-Execution-and-Risk-Framework}{github.com/shreejitverma/Adaptive-Volatility-Regime-Based-Execution-and-Risk-Framework}
+  \item Khalil (2025), \emph{J.\ Modelling in Management}, DOI \href{https://doi.org/10.1108/JM2-08-2025-0415}{10.1108/JM2-08-2025-0415} --- direct methodological precedent.
+  \item SEC EDGAR API: \href{https://efts.sec.gov/LATEST/search-index}{efts.sec.gov/LATEST/search-index}
+  \item FRED API: \href{https://fred.stlouisfed.org/docs/api/fred/}{fred.stlouisfed.org/docs/api/fred/}
+  \item CFPB Complaint DB: \href{https://cfpb.github.io/api/ccdb/}{cfpb.github.io/api/ccdb/}
+  \item NVIDIA NIM: \href{https://build.nvidia.com}{build.nvidia.com}
+  \item NVIDIA NeMo Agent Toolkit: \href{https://github.com/NVIDIA/NeMo-Agent-Toolkit}{github.com/NVIDIA/NeMo-Agent-Toolkit}
+  \item Milvus: \href{https://milvus.io}{milvus.io}
+\end{itemize}
+
+\vspace{1em}\hrule\vspace{0.5em}
+\noindent\textit{End of masterplan. Paste into Opus, give it filesystem access to the project directory, and instruct it to begin at Sprint 0. Memory files and \inlinecode{PRELIMINARY\_PAPER.md} contain additional detail where needed.}
+
+\end{document}
