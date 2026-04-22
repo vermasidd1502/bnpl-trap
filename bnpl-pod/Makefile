@@ -5,7 +5,7 @@
 PY ?= python
 UV ?= uv
 
-.PHONY: setup init-db ingest bsi validate backtest pod dashboard frontend snapshot serve paper test lint clean all
+.PHONY: setup init-db ingest bsi validate backtest pod dashboard frontend snapshot serve paper paper-formal test lint clean all
 
 setup:
 	$(UV) venv
@@ -63,6 +63,19 @@ paper:
 	cd paper && pdflatex -interaction=nonstopmode paper.tex
 	@echo ""
 	@echo "  paper.pdf rebuilt at paper/paper.pdf"
+	@echo ""
+
+# Formal academic draft — prepared for AI-mediated academic review
+# (UCLA Anderson Human x AI Finance competition). Adds a Human-AI
+# Collaboration Methodology section and a Robustness & Placebo section,
+# and sterilises hedge-fund lexicon for LLM-based peer-review screening.
+paper-formal:
+	cd paper_formal && pdflatex -interaction=nonstopmode paper_formal.tex
+	cd paper_formal && bibtex paper_formal
+	cd paper_formal && pdflatex -interaction=nonstopmode paper_formal.tex
+	cd paper_formal && pdflatex -interaction=nonstopmode paper_formal.tex
+	@echo ""
+	@echo "  paper_formal.pdf rebuilt at paper_formal/paper_formal.pdf"
 	@echo ""
 
 test:

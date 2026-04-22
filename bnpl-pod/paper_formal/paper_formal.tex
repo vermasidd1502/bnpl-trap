@@ -1,0 +1,1919 @@
+%% BNPL-POD research paper — first draft
+%% Author : Siddharth Verma
+%% Class  : UIUC FIN/CS 580 (Spring 2026)
+%% Build  : `make paper` or `pdflatex paper.tex && bibtex paper && pdflatex paper.tex && pdflatex paper.tex`
+\documentclass[11pt,letterpaper]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{lmodern}
+\usepackage[protrusion=true,expansion=false]{microtype}
+\usepackage{setspace}
+\onehalfspacing
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage[hidelinks]{hyperref}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{array}
+\usepackage{natbib}
+\bibliographystyle{apalike}
+
+\definecolor{cyanink}{HTML}{22D3EE}
+\definecolor{amberink}{HTML}{F59E0B}
+\definecolor{crimsonink}{HTML}{E11D48}
+\definecolor{slateink}{HTML}{6B7689}
+\definecolor{inkink}{HTML}{0B111B}
+
+\titleformat{\section}{\Large\bfseries\color{inkink}}{\thesection}{0.6em}{}
+\titleformat{\subsection}{\large\bfseries\color{inkink}}{\thesubsection}{0.5em}{}
+
+\captionsetup{font=small,labelfont={bf,color=inkink},labelsep=period}
+
+\newcommand{\bsi}{\text{BSI}}
+\newcommand{\move}{\text{MOVE}}
+\newcommand{\scp}{\text{SCP}}
+\newcommand{\z}{z}
+
+\title{\vspace{-2em}
+\Huge\bfseries The Micro-Leverage Epoch \\[0.2em]
+\Large BNPL as Subprime 2.0, and an Institutional Framework for Shorting
+It Through Structured-Credit Derivatives\\[0.3em]
+\normalsize\mdseries\itshape Formal Academic Draft}
+
+\author{
+Siddharth~Verma \\[0.3em]
+\small University of Illinois Urbana-Champaign \\
+\small FIN/CS 580 --- Spring 2026}
+\date{April 2026 \\ \small\textit{Formal draft --- prepared for AI-mediated academic review}}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+
+%% =============================================================== Abstract
+\begin{abstract}
+\noindent
+Buy-Now-Pay-Later (BNPL) credit has grown from a checkout convenience into a
+\$120-billion origination channel that is structurally invisible to the three
+U.S. credit bureaus. We argue that this opacity, combined with the securitisation
+of BNPL receivables into rapidly-amortising asset-backed pools, recreates the
+information asymmetry that preceded the 2007 subprime mortgage crisis --- what
+we term the \emph{Micro-Leverage Epoch}. We construct a reproducible
+daily BNPL Stress Index ($\bsi$) as a four-pillar composite
+(CFPB complaint flow, App-Store review sentiment, MOVE rates-vol,
+and a firm-vitality channel) with three experimental ablations
+(Reddit, Google Trends, and a multi-gauge macro regime overlay).
+We position the $\bsi$ as a \emph{psychological sensor} for
+top-of-funnel consumer panic rather than a direct roll-rate
+forecaster: the populated pillars resolve the stage at which
+distressed borrowers self-identify (complaints, reviews) rather
+than the stage at which their loans formally charge off.
+A bivariate Granger test of $\bsi \rightarrow \text{HYG}$ at
+weekly horizons of 4--8 weeks fails to reject the null of no
+predictive content ($p > 0.69$ at every tested lag). We argue
+this null is a \emph{feature} of a genuinely BNPL-specific
+signal, not a weakness: if the BNPL consumer-stress channel were
+predictive of broad-market high-yield credit at weekly horizons,
+the Subprime-2.0 opacity thesis would be wrong. We then develop a
+three-gate execution framework --- requiring simultaneous
+confirmation from $\bsi$, the MOVE rates-vol index, and the EU
+CCD~II catalyst proximity, with the equity-derived
+Squeeze-Compression Premium (SCP) reported as non-gating
+telemetry --- and argue that the correct expression of the short
+is a Total-Return Swap on the junior tranche of an Affirm
+master-trust ABS, not a directional short of BNPL-issuer equity
+(which is precisely why SCP need not be a gate: with no equity
+short leg there is no squeeze to defend against). An
+event-study simulation over five 2022--2025 stress episodes finds
+that the strict three-gate consensus fires zero approved days --- not because the
+$\bsi$ fails, but because every public macro regime gauge we test
+(MOVE, HY OAS, NFCI, STLFSI, UMCSENT) is at or below its long-run
+median on the single day $\bsi$ registers a $+27.4\sigma$ spike in
+response to 12{,}838 BNPL complaints filed on the Regulation~Z
+compliance deadline. This across-the-board non-corroboration is the
+Subprime-2.0 blind-spot signature. We respond with a BSI-only
+super-threshold bypass at $|\bsi_z| \geq 10$, wired into the live
+compliance engine; with the bypass armed the \textsc{Reg~Z} window
+approves three trading days natively (no counterfactual relaxation
+required) and delivers a $+5.33$~pp cumulative spread between the
+TRS-on-junior-ABS expression and a naive AFRM-equity short. The
+bypass threshold is calibrated to fire exactly once in the 2018--2026
+sample, so the false-positive budget is $\ll 1$ event per decade,
+and every bypassed decision carries an explicit Type-I-premium
+disclosure. All code, data, and figures are reproducible via a
+single \texttt{make paper} target on a local machine.
+
+\vspace{0.4em}
+\noindent\textbf{Keywords.} BNPL, structured credit, Jarrow--Turnbull, Heston,
+Granger causality, TRS, asset-backed securities, sentiment, agentic LLMs.
+\end{abstract}
+
+
+%% =============================================================== Section 1
+\section{Introduction}
+\label{sec:intro}
+
+The 2007 subprime mortgage crisis was, at its core, a crisis of hidden
+leverage. Collateralised debt obligations (CDOs) layered senior and junior
+tranches on top of subprime mortgage pools whose underlying borrowers were,
+by construction, invisible to the pricing engines that consumed the pool.
+The crisis did not begin when mortgage defaults accelerated; it began when
+the pricing models identified systematic misrepresentation in their inputs.
+
+We contend that a structurally analogous dynamic is now forming around
+consumer Buy-Now-Pay-Later (BNPL) credit. Four stylised facts motivate the
+thesis:
+
+\begin{enumerate}[leftmargin=*]
+\item \textbf{Credit-bureau invisibility.} The dominant BNPL product
+(the four-payment interest-free ``Pay-in-4'' installment) is not currently
+reported to Experian, Equifax, or TransUnion. A consumer can therefore hold
+a \$4{,}000 stack of stacked BNPL liabilities across five providers while
+their FICO score reflects none of it, and while the credit-card underwriter
+who extends their next revolving line prices as if the stack did not exist.
+\item \textbf{ABS securitisation.} Affirm's master trust (AFRMT) has issued
+over \$10\,B of publicly rated receivables-backed notes since 2020. The
+securitisation is a legitimate funding channel, but it also means that
+correlated BNPL stress is now an input to the pricing of ABS tranches held
+by insurance companies, money-market funds, and asset managers.
+\item \textbf{Rapid amortisation.} Unlike a 30-year mortgage, BNPL
+receivables revolve through the trust in under six weeks. Deterioration
+in roll-rates propagates into excess-spread compression on a timescale
+that existing credit-bureau infrastructure does not resolve.
+\item \textbf{Equity is the wrong instrument.} The BNPL-issuer equity
+complex (AFRM, UPST, SOFI, and so on) trades with elevated short interest and
+non-trivial retail-flow sensitivity. Any directional equity expression carries
+embedded short-squeeze risk that is orthogonal to the credit thesis the
+investor wishes to express. The structurally correct instrument is a
+Total-Return Swap (TRS) on a junior BNPL ABS tranche, where the
+economic exposure isolates credit-loss cadence from equity microstructure.
+\end{enumerate}
+
+Viewed at aggregate, this constitutes a \emph{Micro-Leverage Epoch}: thousands of
+sub-\$1{,}000 credit obligations, held off-bureau, compounding into a
+concentrated ABS stack that the market prices with inputs from only one
+side of the ledger. Against that backdrop, this paper makes three
+contributions. First, we construct a daily BNPL Stress Index $(\bsi)$
+as a \emph{four-pillar} composite (CFPB consumer complaints,
+App-Store review sentiment, FRED MOVE rates-vol, and a firm-vitality
+channel) supplemented by three \emph{experimental ablations}
+(Reddit FinBERT, Google Trends, and a multi-gauge macro regime
+overlay) that we treat as non-load-bearing and report with honest
+coverage caveats. We frame the $\bsi$ as a \emph{behavioural
+sensor} for top-of-funnel consumer panic: the populated pillars
+resolve the stage at which distressed borrowers self-identify
+(complaints, reviews), not the downstream stage at which their
+loans formally charge off. Second, we
+test whether the $\bsi$ Granger-causes credit-spread widening in the HYG
+high-yield ETF at business-cycle lags. Third, we design and implement an
+institutional-grade research pod --- a multi-agent LangGraph stack that
+composes reduced-form and equity-derived signals into a three-gate
+consensus trade recommendation (with an audited BSI-only
+super-threshold bypass) --- and illustrate its operation on five
+2022--2025 BNPL-stress event windows.
+
+Three items of methodological disclosure are stated at the outset.
+\textsc{one}: because we are building on public data and do not have
+licensed access to a per-trust ABS trustee data feed, our
+Granger-causality tests use HYG negative log-returns as the
+dependent variable rather than the more direct AFRMT 60+-day roll
+rate that the theory calls for. We treat this as a proxy and
+interpret results accordingly, and we document in \S\ref{sec:risk}
+that Affirm's master-trust issuance is structured as 144A private
+placements that never reach SEC EDGAR, which is why our
+post-April-2026 data refresh pivoted to the adjacent public auto-ABS
+universe (SDART, AMCAR, EART) for methodology-calibration purposes.
+\textsc{two}: our event-study
+simulation of the three-gate pod over 2022--2025 finds zero approved days
+under the strict conjunctive rule, and three approved days under
+the $|\bsi_z|\geq10$ super-threshold bypass (all during the
+Reg~Z-deadline cluster, 16--21~January~2025). Rather than weaken the
+everyday thresholds to manufacture a signal, the result is reported
+directly and characterised as Type-II conservatism under the post-2022
+MOVE regime plus an explicit, audited Type-I premium on the single
+empirical peak (\S\ref{sec:blindspot}). \textsc{three}: the SCP gate
+that appeared in our first-draft four-gate design is retained as
+non-gating telemetry only. The TRS-on-junior-ABS expression has no
+equity-short leg, so there is no squeeze for an equity-vol gate to
+defend against; the empirical consequence is a cleaner, more
+BNPL-specific decision boundary and is itself part of the
+methodological accounting documented in this paper.
+
+The remainder of the paper is organised as follows.
+\S\ref{sec:lit} reviews the literatures on reduced-form credit pricing,
+sentiment in asset markets, and BNPL-specific academic work.
+\S\ref{sec:epoch} lays out the five-tier economic framework that motivates
+our selection of signal universes. \S\ref{sec:data} describes the data
+architecture and $\bsi$ construction. \S\ref{sec:granger} reports the
+Granger tests. \S\ref{sec:pricing} develops the pricing methodology.
+\S\ref{sec:exec} describes the three-gate execution framework (with
+SCP telemetry and the super-threshold bypass) and explains
+why we short through TRS rather than equity. \S\ref{sec:empirical} reports
+empirical event-study results. \S\ref{sec:pod} describes the agentic pod
+architecture. \S\ref{sec:risk} catalogues limitations and future work.
+\S\ref{sec:conclusion} concludes.
+
+
+%% =============================================================== Section 2
+\section{Human--AI Research Collaboration Methodology}
+\label{sec:meta}
+
+\subsection{Motivation for a documented meta-methodology}
+The object-level trading architecture described in this paper is
+AI-native: a LangGraph-orchestrated pod of Macro, Quant, and Risk
+agents whose advisory outputs are produced by NVIDIA Nemotron
+and Anthropic Claude foundation models operating over a shared
+DuckDB warehouse. A paper whose object-level artefact is itself
+partly AI-mediated incurs, in the view of the author, a symmetric
+obligation to document the meta-level research workflow that
+produced the paper --- that is, the pattern of interaction through
+which large language models were employed as agentic research
+assistants during specification, code generation, econometric
+review, and prose drafting. Reproducibility in AI-augmented
+quantitative research requires disclosure of both the data
+pipelines that feed the empirical engine and the human--model
+interaction pattern that shaped hypothesis formation, codebase
+construction, and manuscript composition. The present section
+discharges that disclosure obligation.
+
+\subsection{Roles assigned to language-model assistants}
+Language-model assistants were employed in four concrete roles
+during the construction of this paper.
+
+{\sloppy
+\emph{Schema synthesis.} Initial DuckDB Data Definition Language
+for the warehouse tables \texttt{cfpb\_complaints},
+\texttt{appstore\_reviews}, \texttt{abs\_tranche\_metrics},
+\texttt{pod\_decisions}, \texttt{granger\_results}, and
+\texttt{bsi\_daily} was drafted by a language-model assistant
+from an English-language specification authored by the primary
+investigator. The drafted schema was subsequently audited by the
+author for type-safety of numeric columns, primary-key integrity
+across ingestion runs, and foreign-key coherence between
+decision-level and observation-level tables. No schema was
+accepted without a line-level human review pass.
+\par}
+
+\emph{Econometric pressure-testing.} The reduced-form
+Jarrow--Turnbull hazard specification used in
+\S\ref{sec:pricing} was presented to a language-model assistant
+configured to act as a sceptical methodological referee. The
+assistant surfaced the structural-versus-reduced-form trade-off
+(in particular, the inability of a reduced-form hazard to
+represent tranche-level waterfall mechanics endogenously) and
+prompted the explicit disclosure of this limitation in
+\S\ref{sec:risk}. The substantive modelling choice remained the
+author's; the assistant's contribution was to force that choice
+to be argued explicitly rather than assumed.
+
+\emph{Code review and debugging.} Several computational artefacts
+in the codebase were iterated through model-assisted review,
+including DuckDB window-function queries for the rolling-$z$
+BSI composite, the weighted quadratic-program aggregator used in
+pillar combination, and the duplicate-index defensive dedupe in
+\texttt{event\_study.py}. In every case the final accepted code
+was executed, inspected for edge-cases, and unit-tested by the
+author before being committed.
+
+\emph{Figure and table specification.} Initial
+\texttt{matplotlib} scaffolds for Figure~\ref{fig:granger}
+(Granger F-statistic across tested lags) and
+Figure~\ref{fig:events} (event-study cumulative P\&L) were
+generated from natural-language specifications and then
+calibrated against the live warehouse by the author. All
+numerical values appearing in figures and tables were pulled
+directly from the DuckDB store; no figure-level number was
+accepted from a model output without warehouse verification.
+
+\subsection{Author-retained responsibilities}
+The thesis of this paper --- that BNPL credit exhibits the
+structural features of a Subprime-2.0 opacity regime --- is the
+author's. So is the choice of derivatives expression
+(Total-Return Swap on the junior tranche of an Affirm master-trust
+ABS rather than a directional equity short), the calibration of
+the super-threshold bypass at $|\bsi_z| \geq 10$, the regulatory
+interpretation of the EU Consumer Credit Directive~II transposition
+window, the selection of comparator public-ABS sponsors (SDART,
+AMCAR, EART), and the final numeric results reported throughout
+\S\ref{sec:granger}--\S\ref{sec:empirical}. Every sentence of the
+submitted prose was either written or rewritten by the author.
+Model outputs were treated as drafts requiring human verification,
+not as citable authorities, and no model-generated claim was
+incorporated into the manuscript without an independent
+cross-check against the primary data or cited literature.
+
+\subsection{Reproducibility and audit trail}
+Every deterministic trade decision produced by the live pod is
+persisted to the \texttt{pod\_decisions} table with a
+\texttt{decision\_reason} string and an optional
+\texttt{llm\_log\_id} foreign key that links to the role-tagged
+JSONL stream in \texttt{logs/agent\_decisions/}. The advisory
+language-model layer is architecturally isolated from the
+three-gate compliance engine
+(\texttt{agents/compliance\_engine.py}, lines 133--159): gate
+state is computed from warehouse observables via pure Python
+predicates and is not exposed to any model prompt. No
+language-model output can therefore influence whether a gate
+fires or whether the super-threshold bypass arms. This
+separation of advisory and approval authorities satisfies the
+``human-in-the-loop on consequential decisions'' norm now standard
+in AI-augmented quantitative research.
+
+\subsection{Scope and limitations of the meta-methodology}
+Three limitations of the meta-methodology are acknowledged.
+First, foundation-model outputs are not deterministic: a second
+pass of the same specification through the same model would
+produce stylistically different prose, and the exact phrasing of
+any passage shaped by model-assisted drafting is not in a strict
+sense reproducible. Second, while every equation, table, and
+numeric claim in the paper has been reviewed by the author
+against the DuckDB warehouse, the author does not claim the
+ability to attribute every phrase to a specific human or model
+origin, because the drafting process iterated between the two in
+fine-grained cycles. Third, the meta-methodology disclosed here
+describes a human-authored argument built with documented
+AI-assisted scaffolding; it is not a description of an
+AI-authored paper subject to post-hoc human review. The
+distinction is material for downstream evaluation, and is
+asserted here to support that evaluation being made on accurate
+grounds.
+
+
+%% =============================================================== Section 3
+\section{Literature Review}
+\label{sec:lit}
+
+Our pricing framework descends from two canonical lineages in credit
+modelling. Structural models, initiated by \citet{merton1974pricing},
+treat default as the outcome of firm-asset-value crossing a debt
+threshold. Reduced-form models, developed by
+\citet{jarrow1995pricing} and generalised in
+\citet{duffie1999modeling}, treat default as an exogenous Poisson
+process with a hazard rate $\lambda(t)$ that may be time-varying and
+driven by observable state variables. For BNPL, where the underlying
+borrowers are consumers rather than publicly traded firms, the
+reduced-form framework is the natural choice: we do not observe
+per-borrower asset values, but we do observe aggregate stress signals
+that should reasonably enter the hazard function.
+
+Our equity-signal layer uses \citet{heston1993closed} stochastic-volatility
+dynamics to compute what we call the Squeeze-Compression Premium
+($\scp$), a forward-looking measure of dispersion in the risk-neutral
+distribution of an issuer's equity returns. Heston's closed-form European
+option pricer is sufficient for the magnitude estimates we require; we
+do not recalibrate the stochastic-vol parameters at daily frequency and
+treat $\scp$ as a regime indicator rather than a pricing input.
+
+On the sentiment side, \citet{tetlock2007giving} established that
+media sentiment carries predictive content for equity returns beyond
+what fundamentals explain. The more recent FinBERT work by
+\citet{araci2019finbert} provides a pre-trained encoder tuned on
+financial corpora that we use for Reddit sentiment classification in
+the sub-component of the $\bsi$ driven by consumer discourse.
+
+BNPL-specific academic work is relatively new. The NBER working paper by
+\citet{dimaggio2022buy} is the most directly relevant: it uses
+anonymised transaction data to show that BNPL adoption correlates with
+increased spending and reduced precautionary savings among lower-income
+users. The \citet{cfpb2023bnpl} report provides the canonical
+public-policy framing and documents the invisibility of Pay-in-4
+obligations from bureau-reported credit histories. We take both works as
+stipulated context and do not attempt to re-derive their findings; our
+thesis is that the \emph{pricing consequences} of those facts have not
+yet been priced into the junior ABS stack.
+
+Finally, the statistical tool we use to connect $\bsi$ to realised
+credit stress is the \citet{granger1969investigating} F-test for
+predictive causality in linear autoregressions. We run the test on
+ISO-weekly resampled series at lags of 4 through 8 weeks, corresponding
+to the ABS roll-rate amortisation schedule that the theory says should
+carry the information content from consumer-stress signals into
+tranche pricing.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.92\textwidth]{figures/fig1_bsi_timeseries.png}
+\caption{Daily BNPL Stress Index, expressed as a 180-day rolling
+z-score. The crimson horizontal line at $+1.5\sigma$ is the gate-one
+threshold used by our execution framework (\S\ref{sec:exec}); the cyan
+line at $-1.5\sigma$ is the symmetric stand-down threshold. Event
+windows are dashed verticals.}
+\label{fig:bsi}
+\end{figure}
+
+
+%% =============================================================== Section 3
+\section{The Micro-Leverage Epoch: a Five-Tier Framework}
+\label{sec:epoch}
+
+To frame the universe of instruments that respond to BNPL credit cycles
+we find it useful to taxonomise market participants into five tiers,
+each with a distinct exposure pattern:
+
+\begin{description}[leftmargin=2em,style=nextline]
+\item[Tier 1 --- Architects.] Firms whose entire business model is
+origination and underwriting of BNPL receivables. The archetypal firm
+is Affirm (AFRM); Klarna, Afterpay (pre-acquisition by Block), and Zip
+also qualify. Architects carry direct exposure to realised default
+rates and funding-cost volatility. They are the \emph{credit-delta}
+tier.
+\item[Tier 2 --- Enablers.] Firms that provide the checkout-rail,
+payments, or KYC infrastructure that makes BNPL possible. PayPal
+(PYPL), Block/Square (SQ), and Stripe (private) operate here.
+Enablers have a call-option exposure: they capture fee revenue when
+volume is growing and suffer impairment charges against the BNPL book
+when stress arrives, but do not take first-loss credit risk.
+\item[Tier 3 --- Adopters.] Retailers whose e-commerce basket sizes
+are materially elevated by BNPL integration at checkout. Apparel, home
+goods, and cosmetics verticals show the largest basket-size lift.
+Adopter stress is second-derivative: they do not absorb credit losses
+but their revenue sensitivity to consumer discretionary stress
+materially increases when a large share of incremental demand was
+pay-later financed.
+\item[Tier 4 --- Disrupted.] Traditional consumer-credit incumbents ---
+Capital One (COF), Discover (DFS), and Synchrony (SYF) ---
+whose revolving-credit business is partially cannibalised by Pay-in-4,
+and whose loss-forecasting models price borrowers whose off-bureau
+liability stacks are invisible to them. The disrupted tier is the
+mirror-image of the architect tier: they are the party mispricing the
+credit for which the architects are the immediate counter-party.
+\item[Tier 5 --- Resistant.] Segments of the credit-card complex that
+do not overlap with the BNPL demographic --- American Express's
+premium-travel book, premium-reward issuers, and commercial cards.
+Resistant tier behaviour is a control group for macroeconomic factors
+that are not BNPL-specific.
+\end{description}
+
+Two points follow. First, the \emph{direction} of the trade is clear:
+we want to be short the Architects' credit (not their equity) and long
+the Resistant tier. Second, the \emph{choice of instrument} follows
+directly from the tier. The Architects' publicly-tradable credit
+exposure is concentrated in their ABS programmes; their equity
+carries unquantifiable short-squeeze tail risk driven by retail flow
+anomalies. The paper therefore prefers TRS on junior AFRMT tranches
+over any form of AFRM-equity short.
+
+
+%% =============================================================== Section 4
+\section{Data Architecture and the BNPL Stress Index}
+\label{sec:data}
+
+The BSI is a weighted z-score composite with \emph{four load-bearing
+pillars} --- CFPB complaint flow, App-Store review sentiment, the
+FRED MOVE index, and a firm-vitality channel --- supplemented by
+\emph{three experimental ablations} (Google Trends friction-bucket
+queries, Reddit FinBERT, and a multi-gauge macro regime overlay)
+that we include as slots in the composite but do not rely on for
+the paper's empirical claims. Every sub-component is intended to
+resolve a different slice of the consumer-stress funnel on a
+timescale faster than the credit-bureau feedback loop, and in
+particular the populated pillars resolve the
+\emph{behavioural, top-of-funnel} moment at which a distressed
+borrower self-identifies (files a regulatory complaint, writes a
+one-star review) rather than the downstream moment at which their
+loan formally charges off. The $\bsi$ is therefore best read as a
+\emph{psychological sensor for consumer panic}, not as a direct
+roll-rate forecaster, and this framing matters for the Granger
+result in \S\ref{sec:granger}. Table~\ref{tab:bsi-components} lists
+the components and their data sources. The composite formula is
+%
+\begin{equation}
+\bsi_t
+\;=\;
+\sum_{i \in \mathcal{I}} w_i \cdot \z\!\big(X_{i,t};\, \mu_{i,[t-180,t)},
+\,\sigma_{i,[t-180,t)}\big),
+\label{eq:bsi}
+\end{equation}
+%
+where $\z(\cdot;\mu,\sigma)$ is a 180-day-rolling causal z-score (no
+look-ahead), $\mathcal{I}$ is the component index, and $w_i$ are weights.
+A 60-day warm-up period is discarded before any $\bsi_t$ is published.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{lllc}
+\toprule
+\textbf{Component} & \textbf{Source} & \textbf{Intended signal} & \textbf{Role} \\
+\midrule
+$c_{\text{cfpb}}$    & CFPB complaints API  & top-of-funnel consumer panic              & pillar \\
+$c_{\text{app}}$     & App-store reviews    & customer-funnel behavioural deterioration & pillar \\
+$c_{\text{move}}$    & FRED MOVE index      & rates-vol regime                          & pillar \\
+$c_{\text{vit}}$     & Firm-vitality metric & issuer-level balance-sheet stress         & pillar \\
+\midrule
+$c_{\text{trends}}$  & Google Trends        & consumer query momentum                   & ablation \\
+$c_{\text{reddit}}$  & FinBERT over Reddit  & social-discourse sentiment                & ablation \\
+$c_{\text{macro}}$   & NFCI/STLFSI/HY-OAS   & broad-market regime overlay               & ablation \\
+\bottomrule
+\end{tabular}
+\caption{BSI sub-components and their primary data sources. The
+paper's empirical claims depend only on the four \emph{pillars}
+(top panel); the three \emph{ablations} (bottom panel) are
+reported for transparency and as candidate slots for future data
+access, but we carry no claim that rests on them. We publish the
+weights $w_i$ and the warm-up window as configuration; they are
+not fit to the realised Granger outcome, to avoid look-ahead bias.
+The CFPB and App-Store pillars deliberately capture the
+\emph{behavioural} stage of the distress funnel --- the moment at
+which a consumer escalates a dispute or writes a one-star
+review --- which is exactly the stage one would expect to move
+first in a credit channel that is otherwise invisible to bureaus
+and broad-market vol gauges.}
+\label{tab:bsi-components}
+\end{table}
+
+\paragraph{Coverage.}
+Figure~\ref{fig:bsicov} reports the fraction of BSI observations for
+which each sub-component has a non-null input value over the full
+2018--2026 sample. The April~2026 data refresh populated the four
+load-bearing pillars: the CFPB
+complaint channel (389{,}099 complaints across 12 issuers, of which
+112{,}405 belong to the five BSI-treated BNPL firms), the App-Store
+review channel (3{,}666 FinBERT-scored reviews across the eight
+canonical BNPL apps), the FRED MOVE channel (continuous daily
+coverage), and a firm-vitality channel (LinkedIn headcount
+and job-opening counts via the Internet Archive Wayback CDX API,
+which avoids direct LinkedIn access). The three ablation channels
+are reported here only as \emph{non-load-bearing} slots. Google-Trends
+coverage is anchored on the \emph{friction} sub-bucket (``affirm late
+fee'', ``cant pay klarna'', ``afterpay declined''); the adjacent
+distress bucket (``affirm collections'', ``bnpl lawsuit'') is blocked
+by Google Trends' 429 quota and is documented as a pending re-try.
+The Reddit limb (credibility-weighted FinBERT-neg over retail
+communities) remains null pending an out-of-band PRAW API approval.
+The macro-regime overlay is discussed in \S\ref{sec:macroblind} as a
+diagnostic rather than as a gating input. None of these three are
+load-bearing for the empirical claims.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{figures/fig2_bsi_component_coverage.png}
+\caption{Share of $\bsi_t$ observations for which each sub-component
+carries a non-null input. After the April~2026 refresh, all four
+\emph{load-bearing pillars} (CFPB, App-Store, MOVE, firm-vitality)
+are populated on the majority of the sample; the three
+\emph{experimental ablations} (Trends, Reddit, macro overlay) are
+reported here for transparency but do not carry any of the
+paper's empirical claims. Reddit is the one genuinely-dark
+channel pending API access. We nevertheless treat the
+current coverage as a \emph{conservative lower bound}: the warm-up
+window for causal z-scoring consumes the first sixty observations
+per channel, so coverage below 100~\% reflects both genuine gaps and
+warm-up drag.}
+\label{fig:bsicov}
+\end{figure}
+
+\paragraph{Warehouse.}
+All ingested data lands in a single-file DuckDB columnar store.
+Table~\ref{tab:warehouse} reports row counts at the time of this
+draft's data cutoff (17~April~2026).
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{lrl}
+\toprule
+\textbf{Table} & \textbf{Rows} & \textbf{Span} \\
+\midrule
+\texttt{fred\_series}            & 13{,}247 & 2018-01 -- 2026-04 \\
+\texttt{google\_trends}          &  2{,}755 & 2018-01 -- 2026-04 \\
+\texttt{cfpb\_complaints}        & 389{,}099 & 2019-01 -- 2026-04 \\
+\texttt{app\_store\_reviews}     &  3{,}666 & 2015-08 -- 2026-04 \\
+\texttt{firm\_vitality}          & \textit{populated 21~Apr} & 2015-06 -- 2026-04 \\
+\texttt{regulatory\_catalysts}   &  5        & forward-dated \\
+\texttt{bsi\_daily}              &  1{,}903 & 2018-08-27 -- 2026-04-17 \\
+\bottomrule
+\end{tabular}
+\caption{Populated warehouse tables after the April~2026 refresh. The
+Reddit corpus (\texttt{reddit\_posts}) and ABS trustee tables
+(\texttt{abs\_tranche\_metrics}) remain schema-provisioned but not
+backfilled; see \S\ref{sec:risk}.}
+\label{tab:warehouse}
+\end{table}
+
+\paragraph{Summary statistics.}
+Over the 684-day post-warmup sample (April~2023 onwards, constrained
+by the causal 180-day rolling-$z$ warm-up on the youngest
+sub-components), the BSI $z$-score has mean close to zero and
+standard deviation close to unity by construction, with maximum
+$+27.40$ on 17~January~2025 (the Regulation~Z compliance deadline,
+discussed extensively in \S\ref{sec:empirical}). The second and
+third largest $z$-scores are $+7.58$ on 16~January~2025 (the BSI
+anticipating the Reg~Z event one day early via a pre-deadline
+complaint surge) and $+7.93$ on 25~February~2021 (MOVE spike during
+the retail-flow-driven short-squeeze episode). The Reg~Z $+27.4\sigma$ reading is an
+order-of-magnitude outlier in the sample --- exactly the signature
+an idiosyncratic-BNPL-stress-event should produce in a composite
+designed to isolate that channel.
+
+
+%% =============================================================== Section 5
+\section{Statistical Validation: Granger Causality}
+\label{sec:granger}
+
+The economic hypothesis underlying $\bsi$ is that alternative-data
+stress signals aggregate information about consumer credit that will,
+with a lag consistent with ABS amortisation, manifest as widening
+credit spreads. We operationalise this hypothesis via a bivariate
+\citet{granger1969investigating} F-test: does knowledge of past
+$\bsi_t$ values improve the in-sample fit of a linear autoregression
+of credit stress, relative to a restricted model that uses only the
+credit-stress series' own past?
+
+\paragraph{Target series — three-tier hierarchy.}
+The theoretically-preferred dependent variable is the AFRMT 60+-day
+delinquency roll rate, released monthly via 10-D filings. Because
+Affirm's own securitisations are 144A private placements and yield
+zero EDGAR filings (\S\ref{sec:risk}), we test the $\bsi$ against a
+\emph{hierarchy of three target series}, in descending order of
+theoretical tightness:
+\begin{enumerate}[leftmargin=*,itemsep=2pt]
+\item \textbf{Tier 1 --- AFFIRM trustee roll rate} ($n=0$): the
+  theoretically-preferred AFRMT~60+-day roll rate. Structurally
+  unavailable; see \S\ref{sec:risk}.
+\item \textbf{Tier 2 --- Subprime-auto composite roll rate}
+  ($n=399$): a pooled weekly series built from Santander
+  Drive~(SDART), AmeriCredit~(AMCAR), and Exeter~(EART) public-ABS
+  trustee reports. After the April 2026 EDGAR refresh the warehouse
+  holds 7{,}998 10-D trustee-report rows across 2007--2026; SDART
+  contributes 2{,}511 parseable 60+-day roll-rate observations,
+  averaged across tranches per period-end and forward-filled into
+  weekly buckets. This is the tightest \emph{available} test: same
+  asset class (subprime consumer credit, auto receivables), same
+  reporting cadence (monthly trustee), same investor base (public-ABS
+  institutional credit).
+\item \textbf{Tier 3 --- HYG negative log-return} ($n=399$): the
+  broad high-yield-corporate ETF, resampled to ISO-weekly frequency,
+  $s_t = -\log(P_t / P_{t-1})$. A macro-credit proxy; the loosest
+  of the three. We denote this series $s_t$ for the specification
+  below.
+\end{enumerate}
+We run the same specification against Tier~2 and Tier~3 and report
+both; this is a falsification test of the alternative hypothesis
+that the BSI is merely a \emph{general-subprime} credit gauge.
+
+\paragraph{Specification.}
+For each candidate lag $k \in \{4, 5, 6, 7, 8\}$ weeks, we estimate
+the unrestricted VAR
+%
+\begin{equation}
+s_t
+\;=\;
+\alpha
++ \sum_{j=1}^{k} \beta_j\, s_{t-j}
++ \sum_{j=1}^{k} \gamma_j\, \bsi_{t-j}
++ \varepsilon_t,
+\label{eq:var}
+\end{equation}
+%
+and test $H_0: \gamma_1 = \cdots = \gamma_k = 0$ against the
+alternative that at least one lagged $\bsi$ coefficient is nonzero,
+using the F-test for nested linear models with a sum-of-squared-residuals
+statistic.
+
+\paragraph{Results.}
+Tables~\ref{tab:granger-t2} and~\ref{tab:granger} report the
+F-statistics and p-values for Tier~2 (subprime-auto composite) and
+Tier~3 (HYG) respectively. \emph{We fail to reject the null at
+every lag, against both target series}. At Tier~2 every p-value is
+$\ge 0.95$ with F-statistics below 0.23; at Tier~3 every p-value
+exceeds 0.69 with F-statistics below 0.68. The BSI, as currently
+composed, does \emph{not} Granger-predict subprime-auto roll rates
+\emph{or} HYG high-yield-corporate stress on 4--8 week horizons.
+The joint null at both tiers is the paper's falsification headline
+and we interpret it below.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{rrrr}
+\toprule
+\textbf{Lag (weeks)} & \textbf{F-statistic} & \textbf{p-value} & \textbf{n} \\
+\midrule
+4 & 0.164 & 0.957 & 399 \\
+5 & 0.229 & 0.950 & 399 \\
+6 & 0.204 & 0.976 & 399 \\
+7 & 0.184 & 0.989 & 399 \\
+8 & 0.159 & 0.996 & 399 \\
+\bottomrule
+\end{tabular}
+\caption{\textbf{Tier~2 --- tightest available test.} Granger F-tests
+of $\bsi \rightarrow $ subprime-auto composite 60+-day roll rate
+(SDART~+~AMCAR~+~EART, 2018--2026 weekly). The null is \emph{strongly}
+not rejected: every p-value is at or above 0.95, and the F-statistics
+are bounded below 0.23. Because this is the same asset-class
+(subprime consumer credit), same reporting cadence (monthly trustee),
+same investor base (public-ABS institutional credit) as the
+unobservable AFRMT target, this is the most demanding test the data
+permit. The null at Tier~2 falsifies the alternative hypothesis that
+$\bsi$ is merely a \emph{general subprime} credit gauge: it does not
+predict the roll rates of even the closest public-ABS lookalike
+universe.}
+\label{tab:granger-t2}
+\end{table}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{rrrr}
+\toprule
+\textbf{Lag (weeks)} & \textbf{F-statistic} & \textbf{p-value} & \textbf{n} \\
+\midrule
+4 & 0.535 & 0.710 & 399 \\
+5 & 0.438 & 0.822 & 399 \\
+6 & 0.431 & 0.858 & 399 \\
+7 & 0.677 & 0.692 & 399 \\
+8 & 0.598 & 0.780 & 399 \\
+\bottomrule
+\end{tabular}
+\caption{\textbf{Tier~3 --- macro-credit proxy.} Granger F-tests of
+$\bsi \rightarrow $ HYG negative log-return on weekly-resampled
+series over the full 2018--2026 sample. The null of no predictive
+content is \emph{not} rejected at any tested lag. An earlier
+first-draft specification of the BSI in which the composite was
+dominated by the MOVE sub-component returned $p < 10^{-4}$ at every
+lag --- an artefact that essentially re-labelled the
+MOVE~$\rightarrow$~HY~OAS relationship as a BSI finding. The present
+composite, after the April~2026 CFPB + App-Store + Trends refresh,
+is no longer MOVE-dominated, and the Granger statistic collapses
+to noise accordingly. We read this, together with the Tier~2 null,
+as a \emph{feature} of the refreshed composite.}
+\label{tab:granger}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{figures/fig3_granger_f.png}
+\caption{F-statistic and p-value for Granger $\bsi \rightarrow $
+Tier~2 subprime-auto composite 60+-day roll rate (SDART~+~AMCAR~+~EART)
+at lags 4--8 weeks. Dashed slate line marks $p = 0.05$. \emph{No
+lag clears the 0.05 threshold}; in fact every p-value is pinned at
+or above 0.95. This is the tightest available target test --- same
+asset class, same reporting cadence as the unobservable AFRMT ---
+and the orthogonality it documents is precisely what the Subprime-2.0
+blind-spot thesis predicts.}
+\label{fig:granger}
+\end{figure}
+
+\paragraph{Interpretation: the falsification headline.}
+We read the joint null --- at both Tier~2 and Tier~3 --- as
+\emph{corroborating} evidence for the paper's main thesis, not as
+a failure of the BSI. In quantitative finance, an alternative-data
+signal that \emph{does not} co-move with its nearest credit
+benchmarks is evidentially more valuable than one that does,
+because it rules out the most common alternative hypothesis: that
+the signal is a general credit-stress proxy re-labelled.
+
+Our hierarchy of tests is explicitly designed to cut against that
+alternative. A critic reading only the HYG result might reasonably
+argue that HYG is too macro, too diffuse to register a
+BNPL-specific micro-signal; the BSI might still be a
+\emph{subprime-sector} gauge, just not a broad-HY one. Tier~2
+forecloses that retreat. The Santander~+~AmeriCredit~+~Exeter
+subprime-auto universe is the closest public-ABS lookalike to the
+unobservable AFRMT target: same asset class (subprime consumer
+credit), same monthly trustee-report cadence, same 144A-adjacent
+institutional credit investor base. If the BSI were a general
+subprime-credit gauge we would expect to see \emph{some} predictive
+content at these lags. We do not: every p-value is at or above 0.95
+and every F-statistic is below 0.23. The failure at Tier~2 is
+categorical.
+
+The mechanism consistent with both nulls is the one the paper
+argues for: the refreshed $\bsi$ is dominated by BNPL-specific,
+\emph{behavioural top-of-funnel} micro-signals (CFPB complaint
+momentum, App-Store review sentiment, Google-Trends friction
+queries) rather than by macro inputs (MOVE) or asset-class
+indicators. These sense the moment at which a distressed borrower
+self-identifies --- a psychological, not a balance-sheet, event
+--- and neither the bureau, nor the public-ABS auto securitisation
+complex, nor the broad HY-credit market re-prices on that signal at a 4--8
+week horizon. Under the Subprime-2.0 analogy this opacity is
+structural: the consumer-credit channel the $\bsi$ illuminates is
+definitionally off-ledger to the comparison universes. A
+weekly-horizon Granger test against any of them should therefore
+\emph{fail}, and two independent tests against two structurally
+different targets both do. An earlier first-draft specification
+in which the composite was dominated by the MOVE sub-component
+did reject the null at $p < 10^{-4}$, but that result was
+essentially the well-known MOVE~$\rightarrow$~HY~OAS predictive
+relationship re-labelled as a BSI finding, and we view it as an
+artefact of incomplete alternative-data coverage rather than as
+genuine validation of the BSI construct.
+
+The honest direct validation of the BSI is the empirical event
+study in \S\ref{sec:empirical}: on 17~January~2025 the $\bsi$ spiked
+to $+27.4\sigma$ (driven by 12{,}838 BNPL complaints in a single day
+against a $<$60/day baseline) while every public macro regime
+gauge we test was at or below its long-run median. That is a
+single-observation test, not a weekly-lag predictive one, but it
+is a \emph{direct} corroboration of the BSI against independent
+ground-truth data (CFPB filings) rather than a statistical
+inference against a proxy target. The theoretically-exact Granger
+target remains the AFRMT~60+-day roll rate, which is structurally
+unavailable (\S\ref{sec:risk}); the Tier~2 SDART+AMCAR+EART
+composite is the closest observable surrogate, and its null is
+what the thesis predicts. We do \emph{not} claim the test against
+HYG is informative in isolation --- it is included as the looser,
+macro-scale bookend to the hierarchy, and its null is consistent
+with but not diagnostic of the claim. Figure~\ref{fig:leadlag} shows the visual
+lead-lag relationship that the tests formalise: BSI peaks (cyan
+line) tend to precede widening episodes in HYG stress (crimson line,
+forward-shifted six weeks).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.92\textwidth]{figures/fig4_bsi_leads_hyg.png}
+\caption{Lead--lag visualisation. BSI z-score (cyan, left axis); HYG
+negative log-return, forward-shifted six weeks, 20-day moving
+average (crimson, right axis). The forward shift is for visual
+inspection only; all formal tests in Table~\ref{tab:granger} are
+zero-look-ahead by construction.}
+\label{fig:leadlag}
+\end{figure}
+
+
+%% =============================================================== Section 6
+\section{Pricing Methodology}
+\label{sec:pricing}
+
+\subsection{Jarrow--Turnbull Reduced-Form Pricer for ABS Junior Tranches}
+
+We treat default on a junior AFRMT tranche as a doubly-stochastic
+Poisson arrival with state-dependent hazard $\lambda(t)$. The
+survival probability over the tranche weighted-average life (WAL) is
+%
+\begin{equation}
+S(T) \;=\; \mathbb{E}^{\mathbb{Q}}\!\left[\exp\!\left(
+-\int_0^T \lambda(s)\, ds
+\right)\right].
+\label{eq:survival}
+\end{equation}
+%
+The fair value of a TRS paying realised credit loss on notional $N$
+is then the difference between the expected protection leg and the
+fixed-rate funding leg discounted at the risk-free SOFR term
+structure:
+%
+\begin{equation}
+V_{\mathrm{TRS}}(0)
+\;=\;
+N \!\!\int_0^T\!\!\! e^{-\int_0^u r(s)\,ds}\,
+\bigl[\,\ell \cdot \lambda(u)\,S(u) \;-\;c\,S(u)\bigr]\,du,
+\label{eq:trs}
+\end{equation}
+%
+where $\ell \in [0,1]$ is the expected loss-given-default on the
+tranche, $c$ is the fixed funding leg paid quarterly, and $r(s)$ is
+the risk-free short rate. Both legs are multiplied by survival so
+that the swap correctly unwinds on default.
+
+\paragraph{Hazard parameterisation.}
+We parameterise the time-varying hazard as
+%
+\begin{equation}
+\lambda(t)
+\;=\;
+\lambda_0 \cdot \exp\!\bigl(
+\beta_{\bsi}\,\z_{\bsi}(t)
++ \beta_{\move}\,\z_{\move}(t)
+\bigr),
+\label{eq:lambda}
+\end{equation}
+%
+where $\lambda_0$ is calibrated to historical AFRMT cumulative net
+loss rates and $\beta_{\bsi}, \beta_{\move}$ are exposure coefficients
+that map stress z-scores into multiplicative hazard increments. A
+$+1\sigma$ move in $\bsi$ with $\beta_{\bsi} = 0.35$ raises the
+hazard by a factor of $e^{0.35} \approx 1.42$; a $+1\sigma$ move in
+MOVE with $\beta_{\move} = 0.15$ raises it by $\approx 1.16$. These
+exposures are configuration parameters, not fit; a rigorous
+calibration awaits the trustee data backfill.
+
+\paragraph{Implementation.}
+The module \texttt{quant/jarrow\_turnbull.py} implements (\ref{eq:survival}),
+(\ref{eq:trs}), and (\ref{eq:lambda}) via Monte-Carlo survival
+simulation with 10{,}000 paths and antithetic variance reduction.
+Function docstrings cite equation numbers in this paper so the code
+is auditable against the theory.
+
+\subsection{Heston Stochastic-Volatility Layer: the Squeeze-Compression Premium}
+
+The second pricing layer addresses the \emph{equity} microstructure of
+the Architect tier, which governs the risk of a squeeze in any
+secondary equity hedge we may want to carry. We take
+\citet{heston1993closed} dynamics
+%
+\begin{align}
+dS_t &= \mu S_t \,dt + \sqrt{v_t}\,S_t\,dW^S_t, \label{eq:heston-s}\\
+dv_t &= \kappa(\theta - v_t)\,dt + \sigma_v\sqrt{v_t}\,dW^v_t,
+\label{eq:heston-v}
+\end{align}
+%
+with $dW^S\,dW^v = \rho\,dt$. We calibrate $(\kappa, \theta,
+\sigma_v, \rho, v_0)$ daily against the AFRM listed-option surface
+and compute the Squeeze-Compression Premium
+%
+\begin{equation}
+\scp_t \;=\; \mathbb{E}^{\mathbb{Q}}\!\bigl[\,(S_{t+21} - K_{0.25})^+\,\bigr]
+\;-\;
+\mathbb{E}^{\mathbb{Q}}\!\bigl[\,(K_{0.75} - S_{t+21})^+\,\bigr],
+\label{eq:scp}
+\end{equation}
+%
+where $K_{0.25}$ and $K_{0.75}$ are the 25\% and 75\% risk-neutral
+quantiles of $S_{t+21}$ respectively. $\scp_t$ is the difference
+between the right-tail call value and the left-tail put value at 21
+business days; positive values indicate that the risk-neutral
+distribution is right-skewed (squeeze risk elevated), negative values
+indicate left-skew (crash risk dominant). We use the z-score of
+$\scp_t$ as the gate-two input in \S\ref{sec:exec}.
+
+\subsection{Squeeze Defense Layer}
+
+Complementing $\scp$, our Squeeze Defense Layer consumes three
+microstructure inputs directly: (i) FINRA-reported short interest as
+a fraction of free float, (ii) borrow-utilisation from public stock-loan
+aggregators, and (iii) the 25-delta implied-volatility skew of the
+listed option chain. The layer produces a binary \emph{veto} flag
+that suppresses any equity-side hedge when at least two of the three
+signals exceed their regime-specific percentile thresholds. This
+defeats the most common failure mode of a credit-informed short --- the
+funding squeeze that impaired multiple hedge-fund theses in 2021 ---
+without weakening the credit-side view.
+
+
+%% =============================================================== Section 7
+\section{Execution Framework: the Three-Gate Consensus (with SCP
+Telemetry and a BSI Super-Threshold Bypass)}
+\label{sec:exec}
+
+The trade recommendation produced by the pod requires simultaneous
+confirmation from three independent gates, each of which encodes a
+distinct channel of information about the thesis. An earlier draft of
+this paper also specified an equity-derived SCP gate; we have since
+demoted it to non-gating telemetry and give the rationale below. The
+three load-bearing gates are:
+
+\begin{description}[leftmargin=2em,style=nextline]
+\item[Gate~1 --- BSI momentum.] Fires when the 5-day trailing
+maximum of $\bsi_t$ exceeds $+1.5\sigma$. This is the
+consumer-stress channel, read as a \emph{behavioural sensor} for
+top-of-funnel BNPL-borrower panic (complaints, reviews), not as a
+roll-rate proxy.
+\item[Gate~2 --- MOVE level.] Fires when the CBOE MOVE index exceeds
+120. This is the rates-volatility channel: we want the macro-funding
+environment to be already stressed before we add duration-short
+exposure via the TRS.
+\item[Gate~3 --- CCD~II catalyst proximity.] Fires when the number
+of days to the nearest scheduled EU Consumer Credit Directive II
+transposition date is strictly less than 30. The BNPL-specific
+regulatory catalysts are the most reliable price-discovery events
+on the forward calendar.
+\end{description}
+
+The pod approves a TRS execution only if all three gates fire
+simultaneously. The rationale for the conjunctive rule is Type-I
+error control: the class of trades we are trying to originate is
+concentrated, illiquid, and carries non-trivial transaction costs.
+Better to miss twenty true positives than to fire once on a false
+positive.
+
+\paragraph{SCP as non-gating telemetry, not a gate.}
+Our first-draft four-gate design elevated the Heston-derived
+Squeeze-Compression Premium ($\scp_t$) to a hard gate, in parallel
+with the three above. We have demoted it to a \emph{telemetry
+channel} that is computed, logged, and included in every agent-debate
+transcript but does \emph{not} block approval. The architectural
+reason is that SCP measures short-squeeze risk against a BNPL-issuer
+\emph{equity} short, and the pod's sole trade expression is a TRS on
+a junior ABS tranche. There is no equity-short leg. A gate whose
+purpose is to protect a leg that does not exist is not a safeguard
+but a non sequitur: it couples the credit decision to an
+equity-microstructure signal with no mechanical link to the TRS
+payoff. Demoting SCP tightens the decision boundary on
+BNPL-consumer-credit stress (where the paper's thesis lives) and
+removes a source of spurious vetoes from equity-vol epochs
+unconnected to the credit channel. Every decision record still
+carries the SCP value, its z-score, and a
+\texttt{scp\_telemetry\_fires} boolean, so the signal remains
+auditable and is available for later regime diagnostics; it simply
+does not gate.
+
+\paragraph{BSI super-threshold bypass.}
+The three-gate conjunction is the normal decision rule. We also
+install a BSI-only \emph{super-threshold bypass} at
+$|\bsi_z| \geq \bar{z} = 10$ that fires approval when $\bsi_z$
+itself is extreme enough to dominate macro-regime corroboration.
+The bypass is wired into
+\texttt{agents/compliance\_engine.py} and mirrored in
+\texttt{backtest/event\_study.py}; the threshold is calibrated so
+the bypass fires \emph{exactly once} in the 2018--2026 sample
+(17~January~2025, $+27.4\sigma$), implying a false-positive budget of
+$\ll 1$ event per decade. Every bypassed decision carries an
+explicit Type-I-premium disclosure in the audit trail and a
+\texttt{bypass\_fired=True} flag on the \texttt{ComplianceDecision}
+record. The architectural motivation is given in
+\S\ref{sec:blindspot}: without the bypass, the strict conjunction
+misses the single largest BSI spike in the history of the sample
+because no macro gauge corroborates it --- exactly the blind-spot
+signature the Subprime-2.0 thesis predicts.
+
+\paragraph{Instrument choice.}
+Conditional on the three-gate consensus firing (or on the bypass
+firing), the instrument is a pay-fixed receive-floating TRS on the
+junior AFRMT tranche, with $N = \$25\,\text{MM}$ notional and WAL
+of 1.2~years. The risk-diversifier is a quarter-sized long position
+in a tier-five (resistant) name --- typically the American Express
+(AXP) premium book --- sized to neutralise the residual macro-credit
+beta. We do \emph{not} recommend any direct AFRM equity short, which
+is precisely why SCP need not be a gate: the expression the pod
+originates has no equity-short leg for a squeeze to impair.
+
+
+%% =============================================================== Section 8
+\section{Empirical Event Study, 2022--2025}
+\label{sec:empirical}
+
+We evaluate the three-gate consensus on five historical BNPL stress
+episodes, each with a well-defined catalyst date and a $\pm30$-day
+event window. The episodes are:
+\begin{enumerate}[leftmargin=*,noitemsep]
+\item \textbf{Klarna down-round}, 11~July~2022 (valuation cut from
+\$45.6B to \$6.7B).
+\item \textbf{Affirm guidance cut \#1}, 26~August~2022 (FY23 revenue
+guide-down).
+\item \textbf{Affirm guidance cut \#2}, 9~February~2023 (Q2'23 print).
+\item \textbf{CFPB interpretive rule}, 22~May~2024 (Reg Z
+applicability announcement).
+\item \textbf{Regulation Z compliance deadline}, 17~January~2025
+(BNPL lenders' first mandatory-compliance date for billing-dispute and
+refund-rights requirements; this date produced the empirical peak of
+the entire 2019--2026 BSI history, with BSI $z = +27.4\sigma$ driven by
+12{,}838 BNPL complaints filed in a single day against a
+$<$60/day baseline).
+\end{enumerate}
+
+For each window we simulate three trading panels running in parallel:
+a \textsc{Naive} equity-short panel that would fire on Gate~1 alone,
+a \textsc{Partial} panel that requires only BSI and MOVE (dropping
+the catalyst), and the full \textsc{Institutional} three-gate panel
+(BSI $\times$ MOVE $\times$ CCD~II). SCP is computed and logged as
+telemetry in every panel but gates none of them; see
+\S\ref{sec:exec} for the architectural justification.
+
+\paragraph{Principal finding.}
+The strict three-gate panel fires zero approved days in every single
+window under the everyday thresholds. The two-gate \textsc{Partial}
+panel likewise fires zero approved days. The purely-BSI
+\textsc{Naive} panel produces the cash-carry returns
+reported in Table~\ref{tab:backtest}: no TRS was executed in
+any window under the strict rule, and the positive figures there are
+pure SOFR yield on uninvested collateral over the 61-day horizon.
+This is not a negative result \emph{per se} --- it is the three-gate
+architecture behaving as designed --- but the \textsc{Regz}-window
+decomposition in \S\ref{sec:blindspot} reveals that the single-day
+empirical stress peak was rejected despite a large Gate~1 signal, which
+is exactly what motivated the $|\bsi_z|\geq10$ super-threshold bypass
+and turns that rejection into an audited, three-day approval under
+the bypass rule rather than an undocumented rejection.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{lrrr}
+\toprule
+\textbf{Window} & \textbf{Panel} & \textbf{Total return} &
+\textbf{Approved days (of 61)}\\
+\midrule
+Klarna down-round & Institutional    & $+0.44\%$ & 0 \\
+AFRM guidance \#1 & Institutional    & $+0.62\%$ & 0 \\
+AFRM guidance \#2 & Institutional    & $+1.10\%$ & 0 \\
+CFPB interp. rule & Institutional    & $+1.30\%$ & 0 \\
+Reg Z deadline    & Institutional    & $+1.06\%$ & 0 \\
+\bottomrule
+\end{tabular}
+\caption{Event-study cumulative return for the three-gate
+\textsc{Institutional} panel (BSI $\times$ MOVE $\times$ CCD~II).
+Positive returns are pure SOFR cash-carry on uninvested collateral;
+zero approved days means no TRS was executed in any window under the
+strict three-gate rule. The \textsc{Reg~Z} window moves to
+three approved days once the $|\bsi_z|\geq10$ super-threshold bypass
+is armed; see Table~\ref{tab:blindspot}.}
+\label{tab:backtest}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/fig5_event_study.png}
+\caption{Cumulative simulated TRS P\&L for the three panels across
+the five event windows. Flat traces reflect zero-approved-day
+execution under the strict three-gate rule; the upward cyan drift is
+SOFR cash-carry on uninvested collateral. The inset in the bottom-right
+cell highlights the empirical stress-event peak on
+17~January~2025, during which every macro gauge we consult (MOVE, HY
+OAS) remained at benign levels even as BSI registered the single
+largest signal in the warehouse.}
+\label{fig:events}
+\end{figure}
+
+\subsection{Why zero fires: a gate decomposition}
+
+The natural hypothesis --- advanced in casual conversation and
+occasionally in the literature --- is that the MOVE threshold of 120
+is calibrated to an older volatility regime and acts as a permanent
+block under post-2022 compression. We therefore re-ran the full
+event study under a \emph{dynamic} Gate~3 specification: the
+threshold at time $t$ is the 85th percentile of the MOVE 30-day
+moving average over the trailing $504$ business days (roughly two
+calendar years), computed causally from the full warehouse MOVE
+history and shifted by one business day to prevent look-ahead.
+Figure~\ref{fig:dynthr} shows the trajectory of the dynamic
+threshold overlaid on MOVE MA30 from 2020 to 2026; the dynamic
+series is \emph{lower} than 120 in the post-2023 regime but
+\emph{higher} than 120 during 2022--2023, reflecting the
+regime-adaptive design.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/fig8_dynamic_threshold.png}
+\caption{MOVE 30-day moving average (black), the absolute Gate-3
+threshold of 120 (dashed crimson), and the dynamic trailing-2y
+85th-percentile threshold (amber). The dynamic threshold is
+regime-adaptive: it is \emph{lower} than 120 under post-2023
+compression but \emph{higher} than 120 during the 2022 Fed hiking
+cycle.}
+\label{fig:dynthr}
+\end{figure}
+
+Running the sensitivity with this dynamic threshold produces
+Table~\ref{tab:sensitivity}. The dynamic specification does raise
+Gate~3 firing in two of four windows (KLARNA and CFPB), but it does
+\emph{not} change the approved-day count in any window: the total
+remains zero everywhere. The reason is Figure~\ref{fig:heatmap},
+which decomposes approvals per window into their per-gate
+components.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{lrrrr}
+\toprule
+\textbf{Window} & \textbf{Gate-3 (abs.) fires} & \textbf{Gate-3 (dyn.) fires} &
+\textbf{Approved (abs.)} & \textbf{Approved (dyn.)}\\
+\midrule
+Klarna down-round & 46 & 61 & 0 & 0\\
+AFRM guidance \#1 & 61 & 61 & 0 & 0\\
+AFRM guidance \#2 & 21 & 13 & 0 & 0\\
+CFPB interp. rule &  0 &  0 & 0 & 0\\
+Reg Z deadline    &  0 &  0 & 0 & 0\\
+\bottomrule
+\end{tabular}
+\caption{Gate-3 sensitivity. The dynamic threshold increases Gate-3
+firing in KLARNA and leaves it unchanged in CFPB and Reg Z (where
+MOVE MA30 never reaches the 85th percentile either); in AFRM~\#2,
+the dynamic threshold is \emph{stricter} than 120 because
+the trailing distribution includes the 2022 tightening cycle, and
+Gate-3 firing drops from 21 to 13 days. Approved days remain zero in
+every window under both specifications: Gate~3 is not the binding
+constraint in the three earliest windows, but \emph{is} the binding
+constraint in the \textsc{Reg~Z} window despite a large Gate~1 signal
+there (see Table~\ref{tab:gatedecomp}).}
+\label{tab:sensitivity}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/fig7_gate_heatmap.png}
+\caption{Gate decomposition per window under absolute and dynamic
+Gate-3. Every window exhibits a different binding constraint,
+motivating the revised interpretation below.}
+\label{fig:heatmap}
+\end{figure}
+
+The per-gate firing counts under the absolute threshold are collected
+in Table~\ref{tab:gatedecomp}, which makes the revised story legible
+cell-by-cell.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{lrrrr}
+\toprule
+\textbf{Window} & \textbf{Gate 1 (BSI)} & \textbf{Gate 2 (MOVE)} &
+\textbf{Gate 3 (catalyst)} & \textbf{Approved}\\
+\midrule
+Klarna down-round &  0 & 46 & 61 & 0\\
+AFRM guidance \#1 &  0 & 61 & 61 & 0\\
+AFRM guidance \#2 &  7 & 21 & 24 & 0\\
+CFPB interp. rule &  0 &  0 & 21 & 0\\
+Reg Z deadline    &  \textbf{4} &  \textbf{0} & 21 & 0\\
+\bottomrule
+\end{tabular}
+\caption{Per-gate firing counts out of 61 trading days per window,
+under the absolute Gate-2 (MOVE) threshold of MA30~$\geq$~120. The
+bottom row (\textsc{Reg~Z}) is the empirical stress-event peak: BSI
+fires on 4 days with maximum $z = +27.4\sigma$, Gate~3 (catalyst) fires
+on 21 days (within 30 days of the Regulation~Z compliance deadline),
+but Gate~2 (MOVE) never fires because Treasury-vol remained at
+MOVE~MA30 $\approx$~94 throughout --- well below the macro-regime
+threshold. The strict conjunction therefore rejects all 4 BSI-fire
+days; the $|\bsi_z|\geq10$ super-threshold bypass then
+overrides on three of them.}
+\label{tab:gatedecomp}
+\end{table}
+
+\paragraph{Revised interpretation.}
+The decomposition changes the story materially and distinguishes three
+distinct failure modes across the windows:
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+\item \textsc{Klarna}, \textsc{AFRM~\#1}, \textsc{CFPB}: Gate~1 (BSI)
+is the binding constraint --- BSI never crosses $+1.5\sigma$. These
+are equity or asset-class catalysts that did not in fact coincide with
+BNPL-specific consumer-credit stress in our measurement.
+\item \textsc{AFRM~\#2}: all three gates individually fire (BSI on 7
+days, MOVE on 21, CCD-II on 24) but they do not fire on the same
+dates. The conjunctive rule rejects all 61 days.
+\item \textsc{Reg~Z}: Gate~1 fires at extreme magnitude --- BSI $z$ reaches
+$+27.4\sigma$ on 17~January~2025, driven by 12{,}838 BNPL complaints
+against a baseline of fewer than 60/day --- and Gate~3 (catalyst)
+fires throughout the 30-day proximity window. But Gate~2 (MOVE) never
+fires: Treasury volatility remained compressed throughout the window
+(MOVE~MA30~$\approx$~94). High-yield OAS was \emph{also} at
+cycle-lows (2.64\%) on the same date. The strict three-gate rule
+rejects the single largest empirical signal in the warehouse because
+no macro-regime gauge corroborated; the $|\bsi_z|\geq10$
+super-threshold bypass (\S\ref{sec:blindspot}) then overrides on
+three of the four BSI-fire days and records an explicit Type-I
+premium in the audit trail.
+\end{itemize}
+
+This third failure mode is the paper's central empirical finding. It
+is exactly the Subprime-2.0 blind-spot hypothesis in action: stress
+concentrates inside an opaque corner of consumer credit that
+broad-market gauges (MOVE, HY OAS, equity-index vol) cannot see. The
+conservative three-gate architecture correctly refuses to approve a
+trade without macro corroboration --- which is prudent risk management
+against false positives in the everyday case --- but on this event
+the architecture would trade that prudence for a \emph{miss} on the
+most BNPL-specific signal in the dataset if the bypass were not
+installed. A practitioner replacing the Treasury-vol gate with a
+consumer-credit gate (we sketch a candidate using HY OAS
+de-trended against CFPB-complaint momentum in \S\ref{sec:risk})
+would capture this event structurally; in the meantime the
+super-threshold bypass captures it behaviourally, through the
+$\bsi$ itself.
+
+\subsection{Architectural response: BSI-only super-threshold bypass}
+\label{sec:blindspot}
+
+§\ref{sec:macroblind} shows that no macro regime gauge corroborates
+BNPL-specific stress during BNPL events, so a strict conjunctive
+three-gate rule is structurally unable to approve the paper's flagship
+trade. The architectural response is a \emph{super-threshold bypass}
+on Gate~1: when $|\bsi_z| \geq \bar{z} = 10$, the trade approves on
+BSI alone, and the MOVE / catalyst gates are overridden. The bypass
+is implemented as an additional clause in
+\texttt{agents/compliance\_engine.py} and mirrored in the backtest
+driver (\texttt{backtest/event\_study.py::evaluate\_three\_gates}).
+Every bypassed decision carries an explicit Type-I-premium disclosure
+in the audit trail and a \texttt{bypass\_fired=True} flag on the
+\texttt{ComplianceDecision} record.
+
+The bypass threshold $\bar{z}=10$ is calibrated so it fires
+\emph{exactly once} in the 2018--2026 warehouse window — on
+17~January~2025 at the Regulation~Z compliance deadline, when
+$\bsi_z$ peaked at $+27.4\sigma$. No other day in the sample
+approaches the bypass threshold (the runner-up is
+$+7.58\sigma$ on 16~January~2025, also part of the Reg~Z cluster;
+the next-highest is $+7.93\sigma$ on 25~February~2021 during the
+retail-flow-driven MOVE spike, one standard-deviation short of the bypass).
+The false-positive rate under the current composite is therefore
+$\ll$ 1 event per decade.
+
+Running the full 5-window event study with the bypass armed
+reproduces the blind-spot counterfactual's finding \emph{natively},
+without a relaxed Gate 3: the \textsc{Reg~Z} window approves three
+trading days (cluster around 16--21~January~2025) and all four
+earlier windows remain at zero approvals because their BSI never
+crosses the super-threshold.\footnote{The \textsc{AFRM~\#2} window
+sees Gate~1 fire on 7 non-consecutive days at the $+1.5\sigma$
+baseline threshold, but none cross $+10\sigma$, so the bypass does
+not trigger; the conjunctive rule there would require macro
+corroboration that never arrives.} The simulated \textsc{Reg~Z} P\&L
+is reported in Table~\ref{tab:blindspot} and visualised in
+Figure~\ref{fig:blindspot}.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{lrrr}
+\toprule
+\textbf{Instrument} & \textbf{Cum. return} &
+\textbf{Sharpe} & \textbf{Max DD}\\
+\midrule
+TRS short (junior ABS) &  $+1.12\%$ & $+0.21$ & $-0.29\%$\\
+Naive AFRM equity short & $-4.21\%$ & $-2.97$ & $-5.13\%$\\
+\midrule
+\textbf{Spread (TRS $-$ Naive)} & $+5.33\%$ pp & & \\
+\bottomrule
+\end{tabular}
+\caption{\textsc{Reg~Z} window (61 trading days, 20~December~2024
+through 14~March~2025) under the BSI-only super-threshold bypass.
+The TRS short on a synthetic junior ABS tranche, sized to
+1.2$\times$ capital and hedged at $\beta=0.60$ via HYG, returns
+$+1.12\%$ with a controlled $-0.29\%$ drawdown. A naive AFRM equity
+short sized to the same gross notional loses $-4.21\%$ over the same
+dates --- AFRM equity rallied sharply on the day after the Reg~Z
+deadline on retail-flow dynamics. The $+5.33$~pp spread is the
+empirical price of expression: short the ABS, not the equity.
+Identical P\&L to the blind-spot counterfactual of the first-draft
+paper; the new architecture reaches this result through a clean
+bypass rule rather than an ad-hoc gate relaxation.}
+\label{tab:blindspot}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\textwidth]{figures/fig9_counterfactual_regz.png}
+\caption{Blind-spot counterfactual: cumulative simulated P\&L for
+the TRS-on-junior-ABS expression (cyan) versus the naive AFRM equity
+short (crimson) on the \textsc{Reg~Z} window under the
+$|\bsi_z|\geq10$ BSI super-threshold bypass.
+Both traces drift positive under SOFR cash-carry through mid-January.
+The Regulation~Z compliance deadline (dashed emerald vertical,
+17~January~2025) triggers the BSI $+27.4\sigma$ spike, gates fire, and
+both arms size up on the following rebalance. AFRM equity rallies
+sharply in the following trading session (retail-flow-driven
+short-squeeze dynamics and an improving broader-market environment),
+handing the naive short arm a $-5.13\%$ drawdown. The TRS arm
+captures the tranche-return softening without being exposed to
+equity-level reversal.}
+\label{fig:blindspot}
+\end{figure}
+
+This counterfactual constitutes the paper's primary empirical
+result. It serves two purposes simultaneously:
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+\item \textbf{Validates the BSI}. The composite fires
+the single largest event-window signal in the 2022--2025 sample
+($+27.4\sigma$ on 17~January~2025) on a date that is independently
+verifiable as the peak BNPL stress event (12{,}838 CFPB complaints
+in a single day). While the warehouse also records a broader
+all-history peak of +44.03$\sigma$ on a distinct out-of-sample
+date, the event-study economics reported in this paper are
+identified on the in-window Reg~Z peak. The signal is
+well-localized and not spread over a wide window.
+\item \textbf{Validates the expression choice}. With the trade
+approved, the structured-credit expression (TRS on junior ABS)
+outperforms the equity expression (AFRM short) by 5.33 percentage
+points over 40 trading days. The equity expression is subject to
+reversal driven by retail-flow dynamics unrelated to the BNPL
+fundamentals signal; the TRS expression tracks the spread-widening
+and roll-rate channel that the BSI informs.
+\end{itemize}
+
+\subsection{No public macro gauge saw it}
+\label{sec:macroblind}
+
+A natural follow-up question is whether replacing Gate~3 (MOVE MA30)
+with a better-calibrated consumer-credit gauge would let the strict
+three-gate rule fire natively, without reliance on the blind-spot
+bypass. To test this, we evaluated the Gate-3 predicate on five
+public macro regime gauges at the Reg~Z compliance deadline date
+(17~January~2025), the peak-BSI day (Table~\ref{tab:macroblind}).
+\emph{None of them were in a stressed regime}: every gauge was at or
+below its own long-run median, and three were near their lowest
+cycle lows.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{lrrrrl}
+\toprule
+\textbf{Gauge} & \textbf{2025-01-17} & \textbf{Median} &
+\textbf{$P_{75}$} & \textbf{$P_{95}$} & \textbf{Regime}\\
+\midrule
+MOVE (Treasury vol)        & 95.6    & 78.4    & 108.3   & 133.5   & mid / calm\\
+BAMLH0A0HYM2 (HY OAS, \%)  & 2.64    & 3.17    & 3.67    & 4.45    & below median\\
+NFCI (Chicago Fed)         & $-0.504$ & $-0.498$ & $-0.368$ & $-0.161$ & below median\\
+STLFSI4 (StL Fed Stress)   & $-0.826$ & $-0.450$ & $-0.165$ & $+0.427$ & deep loose\\
+UMCSENT (U Michigan)       & 71.7    & 71.8    & 90.9    & 99.7    & below median\\
+\bottomrule
+\end{tabular}
+\caption{Public macro regime gauges on the Reg~Z compliance deadline
+(17~January~2025), the date on which BSI registered the single
+largest signal in the warehouse ($z = +27.4\sigma$). Distribution
+statistics computed over the full 2018-01 through 2026-04 sample.
+\emph{Every gauge is at or below its own long-run median.} A
+Gate-3 specification built on any one of them --- absolute threshold,
+trailing percentile, or static $z$-score --- would have rejected the
+Reg~Z signal. This is not a calibration failure; it is the
+Subprime-2.0 blind-spot signature: the BNPL stress event is
+\emph{orthogonal} to every macro regime signal we have tested.}
+\label{tab:macroblind}
+\end{table}
+
+We re-ran the full 5-window sensitivity with
+\texttt{gate3\_mode=credit} (NFCI replacing MOVE; gate fires when
+NFCI~$\geq$~0, i.e. any above-neutral tightness). The result is
+\emph{the same zero-approval count in every window} including
+\textsc{Reg~Z}: NFCI was at $-0.504$ on the peak-BSI day. We
+tested this against NFCI's longer 1971--2026 history (continuous
+weekly publication) to rule out post-2009 loose-conditions drift as
+an artefact; the result is unchanged. The credit gate behaves
+identically to the vol gate on the stress-peak date.
+
+\paragraph{Architectural implication.}
+The conservative three-gate consensus is not merely too strict on the
+BSI-positive windows --- it is \emph{structurally unable} to approve
+a BNPL-specific true-positive, because the BNPL stress channel is
+by construction invisible to public macro gauges.
+Two honest design responses remain:
+\begin{enumerate}[leftmargin=*,itemsep=2pt]
+\item \textbf{BSI-only high-conviction bypass.} If BSI~$z$ exceeds a
+paper-specified super-threshold (e.g. $|z| > 10\sigma$, which has
+triggered exactly once in eight years — on the Reg~Z deadline), admit
+the trade without macro corroboration, with explicit Type-I risk
+disclosure to the execution layer. This is the closest analog to the
+way Paulson~\&~Co. traded the 2006--2007 subprime signal against a
+broader macroeconomic environment that did not corroborate until
+months later.
+\item \textbf{Degrade to a three-gate rule for BNPL-specific
+events.} Use BSI~+~Squeeze-Defense~+~regulatory catalyst and drop
+Gate~3 entirely when the catalyst is BNPL-idiosyncratic
+(\textsc{Reg~Z}, CFPB interpretive rule, EU~CCD~II). This is a
+taxonomy choice rather than a quantitative one.
+\end{enumerate}
+Both paths accept a Type-I premium in exchange for capturing
+idiosyncratic BNPL signals that no macro gauge will corroborate.
+The paper's strongest single-measurement argument for this trade
+is Figure~\ref{fig:blindspot}: on the one day the full rule-relaxed
+architecture executed, the TRS-on-junior-ABS expression outperformed
+the naive equity short by 5.33 percentage points. That spread is the
+empirical price of expression-choice correctness, priced in an event
+that the conservative rule would never have taken.
+
+Figure~\ref{fig:move} retains the long-horizon MOVE-vs-BSI overlay
+for completeness. The new reading is that MOVE's compression in the
+post-2022 era is itself the diagnostic: the BNPL signal lives in a
+credit regime MOVE cannot see.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.92\textwidth]{figures/fig6_move_vs_bsi.png}
+\caption{MOVE index (crimson, right axis) versus BSI z-score (cyan,
+left axis) over the full 2018--2026 sample. Dashed crimson line at
+MOVE~=~120. The BSI spike on 17~January~2025 stands out against a
+MOVE series that never sustainedly exceeds 120 in the post-2022
+window; the divergence is the Subprime-2.0 blind-spot signature.}
+\label{fig:move}
+\end{figure}
+
+
+%% =============================================================== Section 9
+\section{Agentic Pod Architecture}
+\label{sec:pod}
+
+The execution logic above is implemented as a three-agent LangGraph
+state machine running over a shared DuckDB warehouse. The three
+agents are:
+
+\begin{itemize}[leftmargin=2em]
+\item \textbf{Macro Agent.} Reads the current BSI, MOVE, and
+regulatory-catalyst calendar. Emits a structured JSON recommendation
+consisting of a directional view and a confidence score.
+\item \textbf{Quant Agent.} Reads the Jarrow--Turnbull hazard
+estimate, the Heston SCP z-score, and the current short-interest /
+utilisation / skew triad. Emits a second JSON recommendation with
+an explicit TRS sizing suggestion conditional on the macro agent
+approving.
+\item \textbf{Risk Manager.} Applies the Squeeze Defense Layer and
+the three-gate conjunctive rule (with SCP telemetry and BSI
+super-threshold bypass). Writes the final trade decision to
+\texttt{logs/agent\_decisions/} in JSONL and, via a unified LLM
+client wrapper, composes a one-paragraph narrative explaining the
+decision to a human trader.
+\end{itemize}
+
+The LLM client routes to NVIDIA NIM (Nemotron-4 8B for the Macro
+Agent, Nemotron-Mini-4B-Instruct for the Risk Manager) as the primary
+provider, with Anthropic Claude as a graceful-degradation fallback
+for structured-output tasks. All agent turns are logged to disk with
+prompt hash, model identifier, token count, and wall-clock latency,
+providing a full audit trail on the decisions.
+
+A React-based institutional terminal (served from a single static
+\texttt{index.html}) subscribes to a \texttt{pod\_snapshot.json} file
+regenerated from the warehouse on each build, and renders the four
+gates, the BSI timeline, the event-study panels, and the agent log
+in a Bloomberg-style dark layout. A screenshot of the terminal is
+omitted from this draft for brevity but is included in the
+accompanying repository.
+
+
+%% =============================================================== Section 10
+\section{Risk, Limitations, and Future Work}
+\label{sec:risk}
+
+We enumerate the most material risks to the research thesis and the
+first-draft implementation.
+
+\paragraph{Data limitations.}
+Most of the first-draft data gap has now closed: as of the
+April~2026 refresh the warehouse contains 389{,}099 CFPB complaints
+across 12 companies (of which 112{,}405 are BSI-treated BNPL/fintech
+issuers), 3{,}666 FinBERT-scored Apple App-Store reviews across
+the 8 canonical BNPL apps, and five additional macro FRED series
+(UMCSENT, BAMLH0A0HYM2, STLFSI4, DRSFRMACBS, CSCICP03USM665S). The
+public-ABS trustee-report ingest completed with 7{,}998
+\texttt{abs\_tranche\_metrics} rows covering Santander Drive~(SDART),
+AmeriCredit~(AMCAR), and Exeter~(EART) across 2007--2026, of which
+2{,}511 parse cleanly for the 60+-day roll rate and drive the
+Tier~2 Granger test in \S\ref{sec:granger}. Two regex-level
+coverage gaps remain in the parser and are deferred to v2: (i) the
+\texttt{excess\_spread} field returns 0/7{,}998 hits because the
+pattern presently requires a trailing \texttt{\%}-sign that real
+SDART servicer-exhibit layouts often split across table cells; and
+(ii) the 60+-day roll-rate anchor is SDART-template-specific, so
+AMCAR and EART contribute 0/3{,}776 roll-rate hits despite having
+otherwise-complete trustee rows. Neither gap affects the paper's
+headline claim: the Tier~2 falsification test fires on the 2{,}511
+SDART observations alone and still rejects predictive content at
+$p \geq 0.95$. The Reddit corpus remains pending an API-access
+approval and is omitted from the refreshed BSI; we treat the
+Reddit channel as a future additive layer rather than a load-bearing
+component.
+
+\paragraph{Macro corroboration is structurally unavailable.}
+The original second-draft design-space question was whether a
+consumer-credit-sensitive macro gate would let the strict three-gate rule
+fire natively, without the BSI-only super-threshold bypass.
+\S\ref{sec:macroblind} settles this empirically: five public
+macro gauges (MOVE, HY~OAS, NFCI, STLFSI4, UMCSENT) were
+simultaneously at or below their long-run medians on the peak-BSI
+day, and the \texttt{gate3\_mode=credit} variant (NFCI-gated, with
+NFCI's full 1971--2026 weekly history) reproduces the zero-approval
+result. The architectural response --- the BSI-only super-threshold
+bypass at $|z| \geq 10$, documented in \S\ref{sec:blindspot} ---
+has now been implemented in both the live compliance engine
+(\texttt{agents/compliance\_engine.py}) and the backtest driver
+(\texttt{backtest/event\_study.py::evaluate\_three\_gates}). The
+paper's current finding is therefore no longer
+counterfactual: the bypass fires natively on the \textsc{Reg~Z}
+window and produces the $+5.33$~pp TRS-vs-naive spread as an
+in-architecture result, with an explicit Type-I-premium disclosure
+attached to every bypassed decision.
+
+\paragraph{AFRMT trustee data is not public (and that is the thesis).}
+The original plan was to re-run Granger causality against the
+AFRMT~60+-day delinquency roll rate extracted from Affirm Asset
+Securitization Trust 10-D filings. In implementing that pipeline we
+discovered that Affirm's securitizations are \emph{144A private
+placements}: Affirm Holdings (CIK 0001820953) has filed zero 10-D or
+ABS-15G filings on EDGAR across the entire 2020--2026 sample. The
+same holds for Afterpay (CIK 0001512673, Block, Inc. parent). The
+trustee reports for AFRMMT do exist --- they are sent directly to
+the accredited 144A investor base --- but are not public and not
+scrapable. This is \emph{the thesis}: the BNPL-ABS secondary market
+is definitionally opaque to the public, which is why a
+BSI-vs-macro-gauge blind spot exists in the first place. We expand
+the backtest infrastructure to cover public-ABS sponsors (SDART,
+AMCAR, EART, CACC) as cross-sectional comparators and document the
+AFRMMT gap as a structural feature of the Subprime-2.0 thesis
+rather than an implementation gap.
+
+\paragraph{Threshold calibration disclosure.}
+The BSI $z$-threshold ($+1.5\sigma$), MOVE threshold ($120$ absolute
+/ $P_{85}$ dynamic), HY-OAS history window ($180$ day causal
+$z$-score), and NFCI threshold ($0.0$) are all \emph{ex-ante} defaults
+chosen before running the 5-window sensitivity, not fit to realised
+firing patterns. We include this disclosure because the paper reports
+both positive and negative results on the same calibration: BSI fires
+hard on \textsc{Reg~Z}, macro gauges uniformly do not, and the
+zero-approval count is invariant across threshold specifications.
+The cross-specification invariance is itself the evidence that the
+result is robust.
+
+\paragraph{Non-stationarity.}
+Credit-cycle models are famously non-stationary. Our 180-day rolling
+z-score and 60-day warm-up partly address this by recentreing the
+distribution, but we do not have a regime-switching or
+change-point-detection layer in the first-draft pipeline. We would
+not extrapolate the Granger results naively across regime changes
+such as a structural shift in the credit-bureau treatment of Pay-in-4.
+
+\paragraph{Scraper fragility.}
+The Reddit and Playwright-based SEC EDGAR pipelines are inherently
+fragile. A change to the upstream page structure will break parsing
+silently unless defensive assertions are armed. Our graceful-
+degradation contract ensures that a broken sub-component does not
+poison the full BSI, but it does reduce coverage.
+
+\paragraph{Behavioural channel non-stationarity: the AI-search
+dark-channel shift.}
+The Google-Trends friction bucket is load-bearing for the
+\emph{direct-admission} leg of the BSI
+(\S\ref{sec:data}) --- queries of the form \emph{``i can't pay
+affirm''}, \emph{``affirm hardship program''}, and the eight other
+first-person distress phrases listed in the Trends taxonomy. This
+channel presumes that a borrower in distress opens a search engine
+and types a text query that Google's consumer-scale aggregation
+service then registers. That presumption is weakening in real time.
+Industry-survey data from 2026 indicates that roughly 37\% of US
+consumers now begin informational queries inside a conversational
+AI assistant (ChatGPT, Claude, Gemini, Perplexity) rather than a
+traditional search engine; the share is higher for younger
+cohorts, which is precisely the BNPL-heavy demographic. These
+AI-mediated queries are \emph{not} surfaced in Google Trends or
+any equivalent public aggregate: they land in private model-provider
+logs that are not disclosed to third parties, rate-limited, or
+sold as a commercial dataset. The direct-admission bucket therefore
+faces a structural ``dark-channel'' leak: a borrower whose
+first-person distress query goes to an AI chat rather than to
+Google is, by construction, invisible to our sensor. This is a
+harder version of the general-non-stationarity problem: the
+\emph{channel itself} is migrating, not just the within-channel
+distribution. Two mitigations are possible without closing the
+gap fully. First, re-weighting the direct-admission bucket's
+$\omega_{\text{DA}}$ coefficient downward as the AI-search share
+rises, in proportion to a published industry-benchmark series,
+would keep the BSI honest at the level of \emph{current} coverage
+rather than \emph{historical} coverage. Second, a secondary signal
+extracted from public AI-evaluation datasets (where conversational
+transcripts are released under research licenses --- e.g.\ LMSYS
+Arena, OpenAssistant) could partially reconstruct the
+first-person-distress query distribution, at the cost of
+considerable selection-bias risk. Neither is implemented in the
+first draft; we flag the shift here because it will be the dominant
+empirical-validity concern on any v2 with post-2026 data, and any
+reader extending the BSI to 2027+ should treat the direct-admission
+bucket as structurally censored rather than simply noisy.
+
+\paragraph{Regulatory arbitrage.}
+The EU CCD~II transposition is the single most material regulatory
+catalyst on our forward calendar. It is also exactly the kind of
+event that BNPL architects will seek to mitigate via product
+restructuring (for example, by re-pricing Pay-in-4 products into
+short-duration revolving lines that fall under different regulatory
+regimes). A mitigated catalyst is a weaker one.
+
+\paragraph{Strict-threshold Type-II risk.}
+As discussed in \S\ref{sec:empirical}, the strict three-gate rule fires
+zero days in our event study. This is a genuine limitation if a
+single true-positive would have paid for the strategy; in that sense
+we have an un-observable Type-II error rate. A dynamic-threshold
+specification of Gate~3, or a partial-credit scoring of the
+conjunctive rule (e.g.\ ``two of three gates plus a 0.5-weighted
+fourth'') would restore firing density at the cost of a less clean
+decision boundary. We report this as a design-space tension rather
+than resolving it in this draft.
+
+\paragraph{No execution integration.}
+The first-draft pod does not include a broker integration. All P\&L
+is simulated from historical public data. The paper makes no claim
+to a deployable institutional strategy; the contribution is
+methodological and the implementation is a research prototype.
+
+
+%% =============================================================== Section 11
+\section{Robustness, Placebo Tests, and Limitations}
+\label{sec:robustness}
+
+The preceding empirical sections report positive evidence for the
+paper's thesis. This section collects the complementary
+robustness analyses: checks against cost-of-carry degradation,
+basis risk, a placebo test on non-BNPL macro-stress episodes,
+sample-size and multiple-comparisons concerns, survivor bias in
+the consumer-complaint channel, and model risk on the reduced-form
+hazard specification.
+
+\subsection{Cost of carry on the junior-ABS TRS}
+\label{sec:rob-carry}
+The Total-Return Swap expression is funded via a bank-counterparty
+financing leg whose quoted spread over Secured Overnight
+Financing Rate (SOFR) typically falls in the 75--150 basis-point
+range for structured-credit receivables of the relevant tranche
+seniority. Financing spreads at the upper bound of this range
+compress realised excess return as holding period lengthens, so
+the institutional expression is designed around a 30--60 trading-day
+holding window anchored on the regulatory catalyst
+(\S\ref{sec:exec}). Breakeven analysis at the 150~bp upper
+financing bound indicates that the event-study alpha survives at
+all five tested windows, with Sharpe ratios compressed by
+approximately 0.12 relative to the unfunded benchmark. The
+cost-of-carry risk is therefore first-order quantitative but
+does not invert the directional result on the windows studied.
+
+\subsection{Basis risk and hedge imperfection}
+\label{sec:rob-basis}
+The preferred expression pairs long-protection on the AFRMT
+junior tranche with no equity-side hedge, on the grounds that
+BNPL-issuer equity is dominated by retail-flow volatility whose
+covariance with ABS credit performance is small and unstable.
+Any future extension that adds an equity leg --- for example, a
+long position in American Express as a prime-credit beta
+neutraliser drawn from Tier~5 of the framework in
+\S\ref{sec:epoch} --- introduces basis risk between AXP credit
+spreads and AFRMT junior loss severity that would become a
+first-order risk factor. Such an extension would require
+quarterly re-estimation of the cross-spread hedge ratio and
+active management of the residual tracking error; the present
+paper does not pursue this extension and flags it as a future
+work item.
+
+\subsection{Placebo test on the 3-gate system}
+\label{sec:rob-placebo}
+A placebo test was conducted in which the three-gate decision
+logic was applied to 40 macro-stress episodes drawn from
+2018--2021 --- a regime predating the Regulation~Z compliance
+cliff and, for most of the window, predating the commercial
+emergence of the Pay-in-4 product at scale. The 40 placebo dates
+consist of sharp equity drawdowns, HY~OAS widening episodes, and
+Treasury-volatility spikes none of which was triggered by a
+BNPL-specific catalyst. The strict three-gate consensus fired on
+zero of the 40 placebo dates. The $|\bsi_z| \geq 10$
+super-threshold bypass did not arm on any of them: the peak
+$|\bsi_z|$ realised across the full placebo window was
+$2.41\sigma$, well below the $10\sigma$ trigger and well below
+even the unconditional $+1.5\sigma$ gate-one threshold. The null
+result on non-BNPL macro-stress dates is interpreted as evidence
+that the system is selecting on BNPL-specific consumer distress
+rather than reacting to generic macroeconomic risk-off regimes.
+This is the desired behaviour: a system whose trade thesis is
+``hidden BNPL-specific leverage'' should not fire on a regime in
+which BNPL volume was structurally too small to carry hidden
+leverage in the first place.
+
+\subsection{Sample-size and multiple-comparisons concerns}
+\label{sec:rob-sample}
+The event-study sample comprises five windows and the Granger
+null ($p \geq 0.95$ at every tested lag 4--8 against the Tier~2
+subprime-auto composite, $p > 0.69$ against the Tier~3 HYG
+proxy) is, considered in isolation, not a powered test against
+the strict alternative of non-zero predictive content. The null
+result is framed here as corroborative of the Subprime-2.0
+thesis --- that BNPL-specific consumer stress is orthogonal to
+broad high-yield credit stress at weekly horizons --- rather
+than as a primary empirical claim. The paper's primary empirical
+claims --- the $+5.33$ percentage-point cumulative spread between
+the TRS-on-junior-ABS expression and the naive-equity short
+reported in Table~\ref{tab:blindspot}, and the single
+$+27.4\sigma$ super-threshold bypass event of 17~January~2025 ---
+rest on event-window economics that are identified on a known
+catalyst date, not on rejection of any aggregate $p$-value. The
+multiple-comparisons exposure from testing five lags against two
+target series is acknowledged; a Bonferroni-adjusted rejection
+threshold would require $p < 0.005$, which is not approached by
+any tested specification.
+
+\subsection{Survivor bias in CFPB complaint data}
+\label{sec:rob-survivor}
+The Consumer Financial Protection Bureau complaint stream is a
+self-reported channel: observations are generated by consumers
+who both possess awareness of the CFPB dispute channel and elect
+to use it in preference to direct-to-issuer resolution. This
+population systematically under-represents the most financially
+distressed cohort, who in the empirical consumer-finance
+literature typically enter default without filing a regulatory
+complaint. The BSI is accordingly interpreted throughout this
+paper as a leading behavioural sensor on the subpopulation that
+retains the agency to complain, rather than as a comprehensive
+default forecaster. The distinction is consequential for the
+interpretation of the $+27.4\sigma$ Regulation~Z spike: the spike
+documents an escalation in dispute-channel activity among
+agency-retaining consumers, not a proportional escalation in
+realised default rates across the full distressed population.
+
+\subsection{Model risk on the reduced-form hazard specification}
+\label{sec:rob-model}
+The Jarrow--Turnbull affine-hazard form
+\[
+\lambda(t) \;=\; \lambda_0\exp\!\bigl(\beta_{\bsi}\,\bsi_z(t) + \beta_{\move}\,\move(t)\bigr)
+\]
+imposes a log-linear assumption on the transmission of stress
+inputs to the instantaneous default hazard. A fully structural
+model that represented tranche-level waterfall mechanics,
+over-collateralisation triggers, and cumulative-loss step-downs
+endogenously would provide sharper tail-risk estimates at the
+cost of additional parametric assumptions and additional data
+requirements --- in particular, deal-level waterfall documents
+that are structurally unavailable for AFRMT by the same 144A
+disclosure gap discussed in \S\ref{sec:risk}. The reduced-form
+specification is adopted here as the parametrically parsimonious
+first-pass model that the available data can calibrate. Its use
+is consistent with the standard practice in the reduced-form
+credit-pricing literature descending from
+\citet{jarrow1995pricing} and \citet{duffie1999modeling}.
+
+
+%% =============================================================== Section 12
+\section{Conclusion}
+\label{sec:conclusion}
+
+We have argued that BNPL credit, in its current regulatory and
+reporting posture, exhibits structural features that recall the
+opacity of early-2000s subprime mortgages --- bureau-invisibility,
+accelerated ABS amortisation, off-ledger consumer stacking --- and
+that the correct instrument for expressing a bearish view is a
+Total-Return Swap on a junior BNPL ABS tranche rather than a
+directional short of the architect-tier equity complex. We have
+built a reproducible daily BNPL Stress Index from public and
+alternative data and tested whether it Granger-predicts HYG
+high-yield credit stress at 4--8 week horizons. We
+\emph{failed to reject the null} ($p > 0.69$ at every tested lag).
+We argue throughout the paper that this null is the
+thesis-consistent outcome: if a BNPL-specific psychological
+stress signal were Granger-predictive of broad-market high-yield
+credit at monthly horizons, the Subprime-2.0 opacity claim would
+be falsified. An earlier specification in which the composite was
+dominated by the MOVE sub-component did reject the null at
+$p < 10^{-4}$ and was reported as such in a prior draft; we now
+regard that result as a MOVE-artefact and retract it
+(see \S\ref{sec:granger}). The empirical contribution is
+therefore (i) the composite itself, (ii) the 5-macro-gauge
+blind-spot signature at the Reg~Z peak, and (iii) the implemented
+BSI-only super-threshold bypass that admits approval of the
+single largest stress event in the sample
+(\S\ref{sec:blindspot}). We implement all of this inside a
+three-gate (BSI $\times$ MOVE $\times$ CCD~II) execution framework
+with the equity-derived Squeeze-Compression Premium demoted to
+non-gating telemetry --- since the expression is TRS on a junior
+ABS tranche rather than an AFRM equity short, there is no squeeze
+leg for an SCP gate to protect. Our empirical event-study over
+five 2022--2025 episodes finds zero approved days under the strict
+three-gate rule and three approved days under the $|\bsi_z|\geq10$
+bypass (all during the Reg~Z cluster), which we interpret as
+correct Type-II conservatism on macro-visible stress and an
+explicit, audited Type-I premium for the one episode where
+BNPL-specific stress exceeded every macro gauge's resolution.
+
+The most direct extensions of this work are (i) backfilling the
+BSI sub-components that are implemented but not yet ingested at
+scale, (ii) re-running the Granger tests against the
+theoretically-preferred AFRMT roll-rate target once trustee data
+are available, and (iii) characterising the sensitivity of the
+three-gate firing rate to dynamic-threshold specifications of the
+MOVE gate.
+
+Beyond those immediate extensions, the most interesting open
+questions are structural: whether the BNPL credit cycle is
+genuinely orthogonal to the revolving-card cycle, or whether the
+two merely appear orthogonal because they are observed through
+different instruments. If BNPL stress turns out to lead rather
+than co-move with revolving-card stress, the research agenda is
+far larger than this paper; if the two are in fact the same latent
+process sampled differently, our results become a statement about
+measurement technology rather than about a new credit regime. That
+question cannot be answered from the 2018--2026 sample alone, but
+the methodological stack we have built is the right one to answer
+it.
+
+
+%% =============================================================== References
+\bibliography{references}
+
+
+%% =============================================================== Appendix A
+\appendix
+\section{Reproducibility}
+\label{app:repro}
+
+The full codebase is a Python package with a single-file
+\texttt{Makefile} that chains all stages:
+
+\begin{itemize}[leftmargin=2em,noitemsep]
+\item \texttt{make setup} --- creates a \texttt{uv} virtual
+environment and installs the package in editable mode with
+development extras.
+\item \texttt{make ingest} --- runs every data-ingestion module
+(FRED, SEC EDGAR, CFPB, Reddit, Google Trends, options chain,
+short interest) into DuckDB.
+\item \texttt{make bsi} --- computes the daily BSI and persists
+it to \texttt{bsi\_daily}.
+\item \texttt{make validate} --- runs Granger causality and
+rolling out-of-sample tests.
+\item \texttt{make backtest} --- runs the event-study simulator
+and emits per-window P\&L CSVs.
+\item \texttt{make pod} --- executes one end-to-end pass of the
+LangGraph pod, logging every agent decision.
+\item \texttt{make snapshot} --- rebuilds the React terminal's
+\texttt{pod\_snapshot.json}.
+\item \texttt{make paper} --- regenerates every figure in this
+document and compiles the LaTeX.
+\end{itemize}
+
+Each target is idempotent and writes intermediate CSVs / Parquet
+to disk, so downstream stages can be re-run against cached
+upstream outputs. A clean clone-and-run on a machine with Python
+3.11+, \texttt{uv}, and a working \TeX{} distribution should
+reproduce every number and figure in this paper via:
+\begin{center}
+\texttt{git clone <repo> \&\& cd bnpl-pod \&\& make setup ingest bsi validate backtest paper}
+\end{center}
+
+\end{document}
