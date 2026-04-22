@@ -440,8 +440,8 @@ function ExecBento() {
         </div>
       </Card>
 
-      {/* C: Gate ladder — 3-gate (BSI × MOVE × CCD II) + |z|≥10 bypass + SCP telemetry */}
-      <Card label="Gate Ladder · 3-Gate + Bypass" icon={<L.ListChecks size={12}/>} timestamp={`state ${s.gates.state}`}
+      {/* C: Gate ladder — clean 3-gate AND (bypass + SCP moved to dedicated OverridesStrip row) */}
+      <Card label="Gate Ladder · 3-Gate AND" icon={<L.ListChecks size={12}/>} timestamp={`state ${s.gates.state}`}
         help={{
           what: "Deterministic 3-gate AND — the sole trade-approval authority (zero LLM).",
           how:  "G1: BSI z ≥ +1.50σ · G2: MOVE MA30 ≥ 120 · G3: CCD-II T-minus ≤ 30d. All three must fire to approve.",
@@ -449,9 +449,9 @@ function ExecBento() {
           section: "§4.4 compliance · §8.5 bypass",
         }}>
         <div className="px-3 pb-3">
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             {s.gates.ladder.map(g => {
-              const pct = Math.min(1, Math.max(0, g.current / g.threshold));
+              const pct = Math.min(1, Math.max(0, Math.abs(g.current) / g.threshold));
               return (
                 <div key={g.id} className="flex items-center gap-2 text-[10.5px]">
                   <span className="font-mono text-[var(--muted)] w-5">{g.id}</span>
@@ -468,73 +468,7 @@ function ExecBento() {
             })}
           </div>
 
-          {/* Super-threshold bypass row — Sprint Q, paper §8.5 */}
-          {s.gates.bypass && (() => {
-            const bp = s.gates.bypass;
-            const absZ = Math.abs(bp.z);
-            const pct = Math.min(1, absZ / bp.threshold);
-            return (
-              <div className="mt-2 rounded border border-[var(--border)] bg-[var(--panel)] px-2 py-1.5">
-                <div className="flex items-center gap-2 text-[10px] tracking-widest uppercase text-[var(--dim)]">
-                  <L.Zap size={11} className="text-[var(--amber)]"/>
-                  <span>BSI super-threshold bypass</span>
-                  <span className={`ml-auto font-mono text-[9.5px] tracking-widest ${bp.fired ? "text-[var(--amber)] drop-shadow-[0_0_6px_rgba(245,158,11,0.6)]" : "text-[var(--muted)]"}`}>
-                    {bp.fired ? "BYPASS FIRED" : "ARMED"}
-                  </span>
-                  <HelpPopover spec={{
-                    what: "Behavioural-panic override — approves the trade when BSI alone hits the extreme tail, even if MOVE and CCD-II disagree.",
-                    how:  "Fires when |BSI z| ≥ 10σ (agents/compliance_engine.py:185). Bypass-fired decisions are stamped in pod_decisions for post-hoc audit.",
-                    values: "ARMED = idle · BYPASS FIRED = trade approved on behavioural signal alone. Calibrated to fire ≤1× per 8 years (Type-I premium accepted).",
-                    section: "§8.5 — Type-I premium",
-                  }}/>
-                </div>
-                <div className="mt-1 flex items-center gap-2 text-[10.5px]">
-                  <span className="text-[var(--dim)] w-24 truncate">|BSI z|</span>
-                  <div className="flex-1 h-1 bg-[var(--border)] rounded relative">
-                    <div className="absolute inset-y-0 left-0 rounded" style={{ width: `${pct*100}%`, background: bp.fired ? C.amber : C.cyan, opacity: 0.75 }}/>
-                  </div>
-                  <span className="font-mono text-right w-20 text-[var(--text)]">{absZ.toFixed(2)}σ/{bp.threshold.toFixed(1)}σ</span>
-                </div>
-                <div className="mt-1 text-[9.5px] text-[var(--dim)] leading-snug">
-                  {bp.rationale} · Type-I premium on fire (calibrated 1× in 2018–2026)
-                </div>
-              </div>
-            );
-          })()}
-
-          {/* SCP telemetry row — non-gating post-Fix #2 */}
-          {s.gates.telemetry && s.gates.telemetry.scp && (() => {
-            const t = s.gates.telemetry.scp;
-            const pct = Math.min(1, t.current / t.threshold);
-            return (
-              <div className="mt-2 text-[10.5px]">
-                <div className="flex items-center gap-2 text-[9px] tracking-widest uppercase text-[var(--dim)]">
-                  <L.Gauge size={10}/>
-                  <span>Telemetry (non-gating)</span>
-                  <span className="ml-auto"><HelpPopover spec={{
-                    what: "Squeeze-Compression Premium — observed equity-options skew beyond Heston baseline.",
-                    how:  "Heston model fit, per-ticker residual skew z-score (quant/heston_scp.py). Demoted to telemetry post-Fix #2.",
-                    values: "bp · displayed vs. threshold for context only. Does NOT contribute to the 3-gate AND.",
-                    section: "§4.5 — SCP demotion",
-                  }}/></span>
-                </div>
-                <div className="mt-1 flex items-center gap-2">
-                  <span className="font-mono text-[var(--muted)] w-5">T1</span>
-                  <span className="text-[var(--dim)] w-24 truncate">SCP (equity-vol)</span>
-                  <div className="flex-1 h-1 bg-[var(--border)] rounded relative">
-                    <div className="absolute inset-y-0 left-0 rounded" style={{ width: `${pct*100}%`, background: C.muted, opacity: 0.55 }}/>
-                  </div>
-                  <span className="font-mono text-right w-20 text-[var(--muted)]">{t.current}{t.unit}/{t.threshold}{t.unit}</span>
-                  <span className="font-mono text-[9.5px] tracking-widest text-[var(--muted)]">OBS</span>
-                </div>
-                <div className="mt-0.5 text-[9.5px] text-[var(--dim)] leading-snug pl-7">
-                  {t.note}
-                </div>
-              </div>
-            );
-          })()}
-
-          <div className="mt-2 border-t border-[var(--border)] pt-2 flex items-center justify-between">
+          <div className="mt-3 border-t border-[var(--border)] pt-2 flex items-center justify-between">
             <span className="text-[10px] tracking-widest text-[var(--dim)] uppercase">Trade State</span>
             <span className={`font-mono text-[13px] tracking-[0.2em] ${
               s.gates.state === "STAND-DOWN"
@@ -616,7 +550,125 @@ function GateProgress({ current, floor, gate, ceiling, ma }: any) {
 }
 
 // ─────────────────────────────────────────────────────────────
-// ROW 2 — BACKTEST CANVAS
+// ROW 2 — OVERRIDES & TELEMETRY STRIP
+// Bypass alert (amber · Override) + SCP telemetry (muted · non-gating)
+// Sits between the 4-card bento and the backtest canvas so the
+// Gate Ladder card stays clean and the override semantics get
+// visual weight of their own.
+// ─────────────────────────────────────────────────────────────
+function OverridesStrip() {
+  const s = POD_SNAPSHOT;
+  const bp = s.gates && (s.gates as any).bypass;
+  const scp = s.gates && (s.gates as any).telemetry && (s.gates as any).telemetry.scp;
+  if (!bp && !scp) return null;
+  return (
+    <div className="grid grid-cols-2 gap-2 px-2 mt-2">
+      {/* Bypass · Override */}
+      {bp && (() => {
+        const absZ = Math.abs(bp.z);
+        const pct = Math.min(1, absZ / bp.threshold);
+        const fired = !!bp.fired;
+        return (
+          <div className={`relative border rounded-lg shadow-inner-card bg-[var(--card)] ${
+            fired ? "border-[var(--amber)]/50 shadow-[0_0_18px_rgba(245,158,11,0.08)]" : "border-[var(--border)]"
+          }`}>
+            <div className={`absolute left-0 top-2 bottom-2 w-[2px] rounded-r ${fired ? "bg-[var(--amber)]" : "bg-[var(--border)]"}`}/>
+            <div className="flex items-center justify-between px-3 pt-2 pb-1.5">
+              <div className="flex items-center gap-1.5 text-[10px] tracking-[0.22em] uppercase text-[var(--muted)]">
+                <L.Zap size={12} className={fired ? "text-[var(--amber)]" : "text-[var(--muted)]"}/>
+                <span>Super-Threshold Bypass · Override</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`font-mono text-[9.5px] tracking-widest ${
+                  fired
+                    ? "text-[var(--amber)] drop-shadow-[0_0_6px_rgba(245,158,11,0.6)]"
+                    : "text-[var(--muted)]"
+                }`}>
+                  {fired ? "BYPASS FIRED" : "ARMED"}
+                </span>
+                <HelpPopover spec={{
+                  what: "Behavioural-panic override — approves the trade when BSI alone hits the extreme tail, even if MOVE and CCD-II disagree.",
+                  how:  "Fires when |BSI z| ≥ 10σ (agents/compliance_engine.py:185). Bypass-fired decisions are stamped in pod_decisions for post-hoc audit.",
+                  values: "ARMED = idle · BYPASS FIRED = trade approved on behavioural signal alone. Calibrated to fire ≤1× per 8 years (Type-I premium accepted).",
+                  section: "§8.5 — Type-I premium",
+                }}/>
+              </div>
+            </div>
+            <div className="px-3 pb-3">
+              <div className="flex items-end justify-between">
+                <div>
+                  <div className={`font-mono text-[28px] leading-none ${fired ? "text-[var(--amber)]" : "text-[var(--text)]"}`}>
+                    {absZ.toFixed(2)}<span className="text-[var(--dim)] text-[14px] ml-1">σ</span>
+                  </div>
+                  <div className="text-[9px] tracking-widest text-[var(--dim)] uppercase mt-0.5">|BSI z| · current</div>
+                </div>
+                <div className="text-right text-[10.5px]">
+                  <div className="text-[var(--dim)]">trigger @ <span className="font-mono text-[var(--amber)]">{bp.threshold.toFixed(1)}σ</span></div>
+                  <div className="font-mono text-[var(--muted)]">Δ {(bp.threshold - absZ).toFixed(2)}σ under</div>
+                </div>
+              </div>
+              <div className="mt-2 h-1 bg-[var(--border)] rounded relative">
+                <div className="absolute inset-y-0 left-0 rounded" style={{ width: `${pct*100}%`, background: fired ? C.amber : C.cyan, opacity: 0.75 }}/>
+                <div className="absolute top-[-3px] bottom-[-3px] w-[1px] bg-[var(--amber)]" style={{ left: "100%" }}/>
+              </div>
+              <div className="mt-1.5 text-[10px] text-[var(--dim)] leading-snug">
+                {bp.rationale} · Type-I premium on fire (calibrated 1× in 2018–2026).
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* SCP · Telemetry (non-gating) */}
+      {scp && (() => {
+        const pct = Math.min(1, scp.current / scp.threshold);
+        return (
+          <div className="relative border border-[var(--border)] rounded-lg shadow-inner-card bg-[var(--card)]">
+            <div className="absolute left-0 top-2 bottom-2 w-[2px] rounded-r bg-[var(--border)]"/>
+            <div className="flex items-center justify-between px-3 pt-2 pb-1.5">
+              <div className="flex items-center gap-1.5 text-[10px] tracking-[0.22em] uppercase text-[var(--muted)]">
+                <L.Gauge size={12}/>
+                <span>SCP · Telemetry</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-[9.5px] tracking-widest text-[var(--muted)]">NON-GATING</span>
+                <HelpPopover spec={{
+                  what: "Squeeze-Compression Premium — observed equity-options skew beyond Heston baseline.",
+                  how:  "Heston model fit, per-ticker residual skew z-score (quant/heston_scp.py). Demoted to telemetry post-Fix #2.",
+                  values: "bp · displayed vs. threshold for context only. Does NOT contribute to the 3-gate AND.",
+                  section: "§4.5 — SCP demotion",
+                }}/>
+              </div>
+            </div>
+            <div className="px-3 pb-3">
+              <div className="flex items-end justify-between">
+                <div>
+                  <div className="font-mono text-[28px] leading-none text-[var(--text)]">
+                    {scp.current}<span className="text-[var(--dim)] text-[14px] ml-1">{scp.unit}</span>
+                  </div>
+                  <div className="text-[9px] tracking-widest text-[var(--dim)] uppercase mt-0.5">excess spread · observed</div>
+                </div>
+                <div className="text-right text-[10.5px]">
+                  <div className="text-[var(--dim)]">ref @ <span className="font-mono text-[var(--muted)]">{scp.threshold}{scp.unit}</span></div>
+                  <div className="font-mono text-[var(--muted)]">{((scp.current/scp.threshold)*100).toFixed(0)}% of ref</div>
+                </div>
+              </div>
+              <div className="mt-2 h-1 bg-[var(--border)] rounded relative">
+                <div className="absolute inset-y-0 left-0 rounded" style={{ width: `${pct*100}%`, background: C.muted, opacity: 0.55 }}/>
+              </div>
+              <div className="mt-1.5 text-[10px] text-[var(--dim)] leading-snug">
+                {scp.note}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// ROW 3 — BACKTEST CANVAS
 // ─────────────────────────────────────────────────────────────
 function BacktestCanvas() {
   const bt = POD_SNAPSHOT.backtest;
@@ -755,7 +807,7 @@ function LegendItem({ color, label, dashed, right }: any) {
 }
 
 // ─────────────────────────────────────────────────────────────
-// ROW 3 — RISK & ATTRIBUTION
+// ROW 4 — RISK & ATTRIBUTION
 // ─────────────────────────────────────────────────────────────
 function GateRadar() {
   const axes = POD_SNAPSHOT.radar.axes;
@@ -875,7 +927,7 @@ function ShCell({ v }: { v:number }) {
 }
 
 // ─────────────────────────────────────────────────────────────
-// ROW 4 — AGENT DEBATE LOG
+// ROW 5 — AGENT DEBATE LOG
 // ─────────────────────────────────────────────────────────────
 function AgentLog() {
   const base = POD_SNAPSHOT.agentLog;
@@ -990,7 +1042,8 @@ function PodTerminal() {
       <TopBar/>
       <Ticker/>
       <ExecBento/>
-      <BacktestCanvas/>
+      <OverridesStrip/>
+      <div className="mt-2"><BacktestCanvas/></div>
       <div className="grid grid-cols-2 gap-2 px-2 mt-2">
         <GateRadar/>
         <EventStudyTable/>
