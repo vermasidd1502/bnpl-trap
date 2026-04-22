@@ -1,0 +1,3064 @@
+{
+  "meta": {
+    "version": "v4.1",
+    "asOf": "2026-04-17",
+    "commit": "6767070",
+    "warehouse": "warehouse.duckdb",
+    "tradeMode": "paper-trade only",
+    "gates": "BSI \u00d7 MOVE \u00d7 CCDII (+ |z|\u226510 bypass, SCP telemetry)"
+  },
+  "ticker": [
+    {
+      "sym": "AFRM",
+      "val": "64.50",
+      "delta": "+7.00%",
+      "dir": "up"
+    },
+    {
+      "sym": "HYG",
+      "val": "80.65",
+      "delta": "+0.37%",
+      "dir": "up"
+    },
+    {
+      "sym": "MOVE",
+      "val": "65.7",
+      "delta": "-0.19",
+      "dir": "down"
+    },
+    {
+      "sym": "SOFR",
+      "val": "3.65%",
+      "delta": "-0.02",
+      "dir": "down"
+    },
+    {
+      "sym": "10Y-3M",
+      "val": "+0.55",
+      "delta": "-0.01",
+      "dir": "down"
+    },
+    {
+      "sym": "DGS10",
+      "val": "4.26%",
+      "delta": "-0.06",
+      "dir": "down"
+    },
+    {
+      "sym": "BSI z",
+      "val": "-3.25",
+      "delta": "-0.28",
+      "dir": "down"
+    },
+    {
+      "sym": "next\u00b7catalyst",
+      "val": "CCD",
+      "delta": "213d",
+      "dir": "flat"
+    }
+  ],
+  "bsi": {
+    "current": -3.25,
+    "peak30d": 3.27,
+    "peakDate": "Mar-26",
+    "allTimeHigh": 44.03,
+    "mean180d": 0.72,
+    "redGlowThreshold": 1.5,
+    "spark12m": [
+      -0.177,
+      -0.27,
+      -0.322,
+      -0.275,
+      -0.24,
+      -0.221,
+      -0.391,
+      1.754,
+      1.371,
+      0.462,
+      0.514,
+      1.348,
+      -1.379
+    ]
+  },
+  "move": {
+    "current": 65.7,
+    "gate": 120,
+    "distance": 54.3,
+    "ma30d": 86.2,
+    "ytdHigh": 115.0,
+    "floor": 50,
+    "ceiling": 160
+  },
+  "gates": {
+    "state": "STAND-DOWN",
+    "ladder": [
+      {
+        "id": "G1",
+        "name": "BSI z-score",
+        "current": -3.25,
+        "threshold": 1.5,
+        "unit": "\u03c3",
+        "hold": true
+      },
+      {
+        "id": "G2",
+        "name": "MOVE Index",
+        "current": 65.7,
+        "threshold": 120,
+        "unit": "",
+        "hold": true
+      },
+      {
+        "id": "G3",
+        "name": "CCD-II T-minus",
+        "current": 213,
+        "threshold": 30,
+        "unit": "d",
+        "hold": true
+      }
+    ],
+    "bypass": {
+      "z": -3.25,
+      "threshold": 10.0,
+      "fired": false,
+      "rationale": "behavioural top-of-funnel panic override"
+    },
+    "telemetry": {
+      "scp": {
+        "current": 186,
+        "threshold": 325,
+        "unit": "bp",
+        "note": "non-gating \u00b7 retained from v4.1 draft; TRS-only expression has no equity-short leg"
+      }
+    }
+  },
+  "catalyst": {
+    "name": "CCD II Transposition",
+    "date": "2026-11-20",
+    "daysTo": 213,
+    "materiality": 1.0,
+    "previous": {
+      "name": "CFPB Regz Effective",
+      "date": "2025-01-17",
+      "materiality": 0.95
+    }
+  },
+  "backtest": {
+    "windows": [
+      {
+        "id": "KLARNA",
+        "label": "Klarna",
+        "catalyst": "2022-07-11",
+        "T": 61
+      },
+      {
+        "id": "AFRM_1",
+        "label": "Affirm-1",
+        "catalyst": "2022-08-26",
+        "T": 61
+      },
+      {
+        "id": "AFRM_2",
+        "label": "Affirm-2",
+        "catalyst": "2023-02-09",
+        "T": 61
+      },
+      {
+        "id": "CFPB",
+        "label": "CFPB",
+        "catalyst": "2024-05-22",
+        "T": 61
+      },
+      {
+        "id": "REGZ_E",
+        "label": "REGZ_EFF",
+        "catalyst": "\u2014",
+        "T": 61
+      }
+    ],
+    "series": {
+      "KLARNA": [
+        {
+          "t": 0,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 2.9e-05
+        },
+        {
+          "t": 1,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 5.6e-05
+        },
+        {
+          "t": 2,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 8.4e-05
+        },
+        {
+          "t": 3,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.000142
+        },
+        {
+          "t": 4,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.000199
+        },
+        {
+          "t": 5,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.000257
+        },
+        {
+          "t": 6,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.000314
+        },
+        {
+          "t": 7,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.000372
+        },
+        {
+          "t": 8,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.000429
+        },
+        {
+          "t": 9,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.000487
+        },
+        {
+          "t": 10,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.000547
+        },
+        {
+          "t": 11,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.000607
+        },
+        {
+          "t": 12,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.000667
+        },
+        {
+          "t": 13,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.000726
+        },
+        {
+          "t": 14,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.000787
+        },
+        {
+          "t": 15,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.000847
+        },
+        {
+          "t": 16,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.000908
+        },
+        {
+          "t": 17,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.000969
+        },
+        {
+          "t": 18,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.001031
+        },
+        {
+          "t": 19,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.001091
+        },
+        {
+          "t": 20,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.001152
+        },
+        {
+          "t": 21,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.001213
+        },
+        {
+          "t": 22,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.001274
+        },
+        {
+          "t": 23,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.001335
+        },
+        {
+          "t": 24,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.001396
+        },
+        {
+          "t": 25,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.001457
+        },
+        {
+          "t": 26,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.001519
+        },
+        {
+          "t": 27,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.001579
+        },
+        {
+          "t": 28,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.00164
+        },
+        {
+          "t": 29,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.001701
+        },
+        {
+          "t": 30,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.001761
+        },
+        {
+          "t": 31,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.001822
+        },
+        {
+          "t": 32,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.001883
+        },
+        {
+          "t": 33,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.001974
+        },
+        {
+          "t": 34,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.002064
+        },
+        {
+          "t": 35,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.002155
+        },
+        {
+          "t": 36,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.002246
+        },
+        {
+          "t": 37,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.002337
+        },
+        {
+          "t": 38,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.002428
+        },
+        {
+          "t": 39,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.002519
+        },
+        {
+          "t": 40,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.00261
+        },
+        {
+          "t": 41,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.002701
+        },
+        {
+          "t": 42,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.002791
+        },
+        {
+          "t": 43,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.002882
+        },
+        {
+          "t": 44,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.002973
+        },
+        {
+          "t": 45,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.003064
+        },
+        {
+          "t": 46,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.003155
+        },
+        {
+          "t": 47,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.003246
+        },
+        {
+          "t": 48,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.003337
+        },
+        {
+          "t": 49,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.003428
+        },
+        {
+          "t": 50,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.003519
+        },
+        {
+          "t": 51,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.003609
+        },
+        {
+          "t": 52,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.0037
+        },
+        {
+          "t": 53,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.00379
+        },
+        {
+          "t": 54,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.003881
+        },
+        {
+          "t": 55,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.003972
+        },
+        {
+          "t": 56,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.004063
+        },
+        {
+          "t": 57,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.004154
+        },
+        {
+          "t": 58,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.004246
+        },
+        {
+          "t": 59,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.004337
+        },
+        {
+          "t": 60,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.004428
+        }
+      ],
+      "AFRM_1": [
+        {
+          "t": 0,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 9e-05
+        },
+        {
+          "t": 1,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.000181
+        },
+        {
+          "t": 2,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.000272
+        },
+        {
+          "t": 3,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.000363
+        },
+        {
+          "t": 4,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.000454
+        },
+        {
+          "t": 5,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.000544
+        },
+        {
+          "t": 6,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.000635
+        },
+        {
+          "t": 7,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.000726
+        },
+        {
+          "t": 8,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.000816
+        },
+        {
+          "t": 9,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.000907
+        },
+        {
+          "t": 10,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.000997
+        },
+        {
+          "t": 11,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.001088
+        },
+        {
+          "t": 12,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.001179
+        },
+        {
+          "t": 13,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.00127
+        },
+        {
+          "t": 14,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.001361
+        },
+        {
+          "t": 15,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.001451
+        },
+        {
+          "t": 16,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.001542
+        },
+        {
+          "t": 17,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.001632
+        },
+        {
+          "t": 18,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.001722
+        },
+        {
+          "t": 19,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.001813
+        },
+        {
+          "t": 20,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.001904
+        },
+        {
+          "t": 21,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.001994
+        },
+        {
+          "t": 22,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.002085
+        },
+        {
+          "t": 23,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.002176
+        },
+        {
+          "t": 24,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.002268
+        },
+        {
+          "t": 25,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.002359
+        },
+        {
+          "t": 26,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.00245
+        },
+        {
+          "t": 27,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.002541
+        },
+        {
+          "t": 28,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.002632
+        },
+        {
+          "t": 29,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.002722
+        },
+        {
+          "t": 30,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.002813
+        },
+        {
+          "t": 31,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.002904
+        },
+        {
+          "t": 32,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.002994
+        },
+        {
+          "t": 33,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.003085
+        },
+        {
+          "t": 34,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.003176
+        },
+        {
+          "t": 35,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.003266
+        },
+        {
+          "t": 36,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.003356
+        },
+        {
+          "t": 37,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.003446
+        },
+        {
+          "t": 38,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.003536
+        },
+        {
+          "t": 39,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.003655
+        },
+        {
+          "t": 40,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.003774
+        },
+        {
+          "t": 41,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.003893
+        },
+        {
+          "t": 42,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.004012
+        },
+        {
+          "t": 43,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.004131
+        },
+        {
+          "t": 44,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.004248
+        },
+        {
+          "t": 45,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.004367
+        },
+        {
+          "t": 46,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.004487
+        },
+        {
+          "t": 47,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.004608
+        },
+        {
+          "t": 48,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.004729
+        },
+        {
+          "t": 49,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.004851
+        },
+        {
+          "t": 50,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.004972
+        },
+        {
+          "t": 51,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.005094
+        },
+        {
+          "t": 52,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.005216
+        },
+        {
+          "t": 53,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.005337
+        },
+        {
+          "t": 54,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.005458
+        },
+        {
+          "t": 55,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.00558
+        },
+        {
+          "t": 56,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.005701
+        },
+        {
+          "t": 57,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.005823
+        },
+        {
+          "t": 58,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.005944
+        },
+        {
+          "t": 59,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.006065
+        },
+        {
+          "t": 60,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.006185
+        }
+      ],
+      "AFRM_2": [
+        {
+          "t": 0,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.000171
+        },
+        {
+          "t": 1,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.000341
+        },
+        {
+          "t": 2,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.000512
+        },
+        {
+          "t": 3,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.000683
+        },
+        {
+          "t": 4,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.000854
+        },
+        {
+          "t": 5,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.001025
+        },
+        {
+          "t": 6,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.001196
+        },
+        {
+          "t": 7,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.001367
+        },
+        {
+          "t": 8,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.001538
+        },
+        {
+          "t": 9,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.001709
+        },
+        {
+          "t": 10,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.00188
+        },
+        {
+          "t": 11,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.002051
+        },
+        {
+          "t": 12,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.002222
+        },
+        {
+          "t": 13,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.002393
+        },
+        {
+          "t": 14,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.002565
+        },
+        {
+          "t": 15,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.002746
+        },
+        {
+          "t": 16,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.002927
+        },
+        {
+          "t": 17,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.003108
+        },
+        {
+          "t": 18,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.003289
+        },
+        {
+          "t": 19,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.00347
+        },
+        {
+          "t": 20,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.003652
+        },
+        {
+          "t": 21,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.003833
+        },
+        {
+          "t": 22,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.004014
+        },
+        {
+          "t": 23,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.004195
+        },
+        {
+          "t": 24,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.004377
+        },
+        {
+          "t": 25,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.004558
+        },
+        {
+          "t": 26,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.004739
+        },
+        {
+          "t": 27,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.004921
+        },
+        {
+          "t": 28,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.005102
+        },
+        {
+          "t": 29,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.005284
+        },
+        {
+          "t": 30,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.005465
+        },
+        {
+          "t": 31,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.005647
+        },
+        {
+          "t": 32,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.005828
+        },
+        {
+          "t": 33,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.00601
+        },
+        {
+          "t": 34,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.006192
+        },
+        {
+          "t": 35,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.006373
+        },
+        {
+          "t": 36,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.006555
+        },
+        {
+          "t": 37,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.006737
+        },
+        {
+          "t": 38,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.006918
+        },
+        {
+          "t": 39,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.0071
+        },
+        {
+          "t": 40,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.007282
+        },
+        {
+          "t": 41,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.007464
+        },
+        {
+          "t": 42,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.007646
+        },
+        {
+          "t": 43,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.007828
+        },
+        {
+          "t": 44,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.008011
+        },
+        {
+          "t": 45,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.008194
+        },
+        {
+          "t": 46,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.008376
+        },
+        {
+          "t": 47,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.008558
+        },
+        {
+          "t": 48,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.00874
+        },
+        {
+          "t": 49,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.008922
+        },
+        {
+          "t": 50,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.009114
+        },
+        {
+          "t": 51,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.009306
+        },
+        {
+          "t": 52,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.009499
+        },
+        {
+          "t": 53,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.009693
+        },
+        {
+          "t": 54,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.009887
+        },
+        {
+          "t": 55,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.01008
+        },
+        {
+          "t": 56,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.010275
+        },
+        {
+          "t": 57,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.010469
+        },
+        {
+          "t": 58,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.010663
+        },
+        {
+          "t": 59,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.010856
+        },
+        {
+          "t": 60,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.011048
+        }
+      ],
+      "CFPB": [
+        {
+          "t": 0,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.000211
+        },
+        {
+          "t": 1,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.000421
+        },
+        {
+          "t": 2,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.000633
+        },
+        {
+          "t": 3,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.000844
+        },
+        {
+          "t": 4,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.001056
+        },
+        {
+          "t": 5,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.001267
+        },
+        {
+          "t": 6,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.001478
+        },
+        {
+          "t": 7,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.001689
+        },
+        {
+          "t": 8,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.0019
+        },
+        {
+          "t": 9,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.002112
+        },
+        {
+          "t": 10,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.002323
+        },
+        {
+          "t": 11,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.002534
+        },
+        {
+          "t": 12,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.002745
+        },
+        {
+          "t": 13,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.002956
+        },
+        {
+          "t": 14,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.003168
+        },
+        {
+          "t": 15,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.003379
+        },
+        {
+          "t": 16,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.003591
+        },
+        {
+          "t": 17,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.003802
+        },
+        {
+          "t": 18,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.004014
+        },
+        {
+          "t": 19,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.004225
+        },
+        {
+          "t": 20,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.004437
+        },
+        {
+          "t": 21,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.004648
+        },
+        {
+          "t": 22,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.00486
+        },
+        {
+          "t": 23,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.005073
+        },
+        {
+          "t": 24,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.005285
+        },
+        {
+          "t": 25,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.005497
+        },
+        {
+          "t": 26,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.00571
+        },
+        {
+          "t": 27,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.005923
+        },
+        {
+          "t": 28,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.006137
+        },
+        {
+          "t": 29,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.00635
+        },
+        {
+          "t": 30,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.006562
+        },
+        {
+          "t": 31,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.006775
+        },
+        {
+          "t": 32,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.006988
+        },
+        {
+          "t": 33,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.007201
+        },
+        {
+          "t": 34,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.007413
+        },
+        {
+          "t": 35,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.007626
+        },
+        {
+          "t": 36,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.007838
+        },
+        {
+          "t": 37,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.00805
+        },
+        {
+          "t": 38,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.008264
+        },
+        {
+          "t": 39,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.008477
+        },
+        {
+          "t": 40,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.00869
+        },
+        {
+          "t": 41,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.008903
+        },
+        {
+          "t": 42,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.009116
+        },
+        {
+          "t": 43,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.009328
+        },
+        {
+          "t": 44,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.009542
+        },
+        {
+          "t": 45,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.009756
+        },
+        {
+          "t": 46,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.00997
+        },
+        {
+          "t": 47,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.010183
+        },
+        {
+          "t": 48,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.0104
+        },
+        {
+          "t": 49,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.010614
+        },
+        {
+          "t": 50,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.010828
+        },
+        {
+          "t": 51,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.011042
+        },
+        {
+          "t": 52,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.011255
+        },
+        {
+          "t": 53,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.011469
+        },
+        {
+          "t": 54,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.011683
+        },
+        {
+          "t": 55,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.011898
+        },
+        {
+          "t": 56,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.012112
+        },
+        {
+          "t": 57,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.012326
+        },
+        {
+          "t": 58,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.012541
+        },
+        {
+          "t": 59,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.012756
+        },
+        {
+          "t": 60,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.012971
+        }
+      ],
+      "REGZ_E": [
+        {
+          "t": 0,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.000171
+        },
+        {
+          "t": 1,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.000342
+        },
+        {
+          "t": 2,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.000516
+        },
+        {
+          "t": 3,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.000691
+        },
+        {
+          "t": 4,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.000871
+        },
+        {
+          "t": 5,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.001048
+        },
+        {
+          "t": 6,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.001222
+        },
+        {
+          "t": 7,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.0014
+        },
+        {
+          "t": 8,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.001578
+        },
+        {
+          "t": 9,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.001753
+        },
+        {
+          "t": 10,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.001925
+        },
+        {
+          "t": 11,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.002094
+        },
+        {
+          "t": 12,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.002264
+        },
+        {
+          "t": 13,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.002435
+        },
+        {
+          "t": 14,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.002606
+        },
+        {
+          "t": 15,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.002777
+        },
+        {
+          "t": 16,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.002948
+        },
+        {
+          "t": 17,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.003118
+        },
+        {
+          "t": 18,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.003288
+        },
+        {
+          "t": 19,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.003459
+        },
+        {
+          "t": 20,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.00363
+        },
+        {
+          "t": 21,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.003801
+        },
+        {
+          "t": 22,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.003972
+        },
+        {
+          "t": 23,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.004143
+        },
+        {
+          "t": 24,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.004316
+        },
+        {
+          "t": 25,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.004489
+        },
+        {
+          "t": 26,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.004662
+        },
+        {
+          "t": 27,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.004836
+        },
+        {
+          "t": 28,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.005009
+        },
+        {
+          "t": 29,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.005183
+        },
+        {
+          "t": 30,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.005358
+        },
+        {
+          "t": 31,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.005531
+        },
+        {
+          "t": 32,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.005704
+        },
+        {
+          "t": 33,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.005877
+        },
+        {
+          "t": 34,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.006051
+        },
+        {
+          "t": 35,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.006225
+        },
+        {
+          "t": 36,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.006398
+        },
+        {
+          "t": 37,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.006572
+        },
+        {
+          "t": 38,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.006744
+        },
+        {
+          "t": 39,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.006917
+        },
+        {
+          "t": 40,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.00709
+        },
+        {
+          "t": 41,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.007263
+        },
+        {
+          "t": 42,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.007438
+        },
+        {
+          "t": 43,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.007612
+        },
+        {
+          "t": 44,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.007785
+        },
+        {
+          "t": 45,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.007959
+        },
+        {
+          "t": 46,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.008132
+        },
+        {
+          "t": 47,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.008305
+        },
+        {
+          "t": 48,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.008479
+        },
+        {
+          "t": 49,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.008653
+        },
+        {
+          "t": 50,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.008829
+        },
+        {
+          "t": 51,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.009002
+        },
+        {
+          "t": 52,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.009176
+        },
+        {
+          "t": 53,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.009349
+        },
+        {
+          "t": 54,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.009524
+        },
+        {
+          "t": 55,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.009697
+        },
+        {
+          "t": 56,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.009871
+        },
+        {
+          "t": 57,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.010044
+        },
+        {
+          "t": 58,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.010217
+        },
+        {
+          "t": 59,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.010389
+        },
+        {
+          "t": 60,
+          "NAIVE": 0.0,
+          "FIX3_ONLY": 0.0,
+          "INSTITUTIONAL": 0.010562
+        }
+      ]
+    },
+    "stats": {
+      "KLARNA": {
+        "naiveSh": 0.0,
+        "fix3Sh": 0.0,
+        "instSh": 0.14,
+        "instRet": 0.00443
+      },
+      "AFRM_1": {
+        "naiveSh": 0.0,
+        "fix3Sh": 0.0,
+        "instSh": 0.34,
+        "instRet": 0.00619
+      },
+      "AFRM_2": {
+        "naiveSh": 0.0,
+        "fix3Sh": 0.0,
+        "instSh": 2.12,
+        "instRet": 0.01105
+      },
+      "CFPB": {
+        "naiveSh": 0.0,
+        "fix3Sh": 0.0,
+        "instSh": 16.55,
+        "instRet": 0.01297
+      },
+      "REGZ_E": {
+        "naiveSh": 0.0,
+        "fix3Sh": 0.0,
+        "instSh": 7.04,
+        "instRet": 0.01056
+      }
+    }
+  },
+  "granger": [
+    {
+      "week": 0,
+      "bsi": 1.077,
+      "bsiLag": null
+    },
+    {
+      "week": 1,
+      "bsi": 0.577,
+      "bsiLag": null
+    },
+    {
+      "week": 2,
+      "bsi": -0.391,
+      "bsiLag": null
+    },
+    {
+      "week": 3,
+      "bsi": -0.493,
+      "bsiLag": null
+    },
+    {
+      "week": 4,
+      "bsi": -0.635,
+      "bsiLag": null
+    },
+    {
+      "week": 5,
+      "bsi": -1.311,
+      "bsiLag": null
+    },
+    {
+      "week": 6,
+      "bsi": -0.635,
+      "bsiLag": 0.991
+    },
+    {
+      "week": 7,
+      "bsi": 0.127,
+      "bsiLag": 0.531
+    },
+    {
+      "week": 8,
+      "bsi": -1.47,
+      "bsiLag": -0.36
+    },
+    {
+      "week": 9,
+      "bsi": -1.988,
+      "bsiLag": -0.454
+    },
+    {
+      "week": 10,
+      "bsi": -2.082,
+      "bsiLag": -0.584
+    },
+    {
+      "week": 11,
+      "bsi": -1.544,
+      "bsiLag": -1.206
+    },
+    {
+      "week": 12,
+      "bsi": 0.825,
+      "bsiLag": -0.584
+    },
+    {
+      "week": 13,
+      "bsi": -0.239,
+      "bsiLag": 0.117
+    },
+    {
+      "week": 14,
+      "bsi": -0.159,
+      "bsiLag": -1.352
+    },
+    {
+      "week": 15,
+      "bsi": -0.944,
+      "bsiLag": -1.829
+    },
+    {
+      "week": 16,
+      "bsi": -0.342,
+      "bsiLag": -1.915
+    },
+    {
+      "week": 17,
+      "bsi": 1.397,
+      "bsiLag": -1.42
+    },
+    {
+      "week": 18,
+      "bsi": 1.418,
+      "bsiLag": 0.759
+    },
+    {
+      "week": 19,
+      "bsi": 1.223,
+      "bsiLag": -0.22
+    },
+    {
+      "week": 20,
+      "bsi": -0.881,
+      "bsiLag": -0.146
+    },
+    {
+      "week": 21,
+      "bsi": 0.877,
+      "bsiLag": -0.868
+    },
+    {
+      "week": 22,
+      "bsi": 0.6,
+      "bsiLag": -0.315
+    },
+    {
+      "week": 23,
+      "bsi": -0.062,
+      "bsiLag": 1.285
+    },
+    {
+      "week": 24,
+      "bsi": -0.588,
+      "bsiLag": 1.305
+    },
+    {
+      "week": 25,
+      "bsi": -0.565,
+      "bsiLag": 1.125
+    },
+    {
+      "week": 26,
+      "bsi": -0.478,
+      "bsiLag": -0.811
+    },
+    {
+      "week": 27,
+      "bsi": 1.949,
+      "bsiLag": 0.807
+    },
+    {
+      "week": 28,
+      "bsi": 0.667,
+      "bsiLag": 0.552
+    },
+    {
+      "week": 29,
+      "bsi": 2.229,
+      "bsiLag": -0.057
+    },
+    {
+      "week": 30,
+      "bsi": 0.289,
+      "bsiLag": -0.541
+    },
+    {
+      "week": 31,
+      "bsi": -0.14,
+      "bsiLag": -0.52
+    },
+    {
+      "week": 32,
+      "bsi": 3.573,
+      "bsiLag": -0.44
+    },
+    {
+      "week": 33,
+      "bsi": -0.122,
+      "bsiLag": 1.793
+    },
+    {
+      "week": 34,
+      "bsi": -0.326,
+      "bsiLag": 0.614
+    },
+    {
+      "week": 35,
+      "bsi": -0.124,
+      "bsiLag": 2.051
+    },
+    {
+      "week": 36,
+      "bsi": -0.27,
+      "bsiLag": 0.266
+    },
+    {
+      "week": 37,
+      "bsi": -0.322,
+      "bsiLag": -0.129
+    },
+    {
+      "week": 38,
+      "bsi": -0.275,
+      "bsiLag": 3.287
+    },
+    {
+      "week": 39,
+      "bsi": -0.24,
+      "bsiLag": -0.112
+    },
+    {
+      "week": 40,
+      "bsi": -0.221,
+      "bsiLag": -0.3
+    },
+    {
+      "week": 41,
+      "bsi": -0.391,
+      "bsiLag": -0.114
+    },
+    {
+      "week": 42,
+      "bsi": 1.754,
+      "bsiLag": -0.248
+    },
+    {
+      "week": 43,
+      "bsi": 1.371,
+      "bsiLag": -0.296
+    },
+    {
+      "week": 44,
+      "bsi": 0.462,
+      "bsiLag": -0.253
+    },
+    {
+      "week": 45,
+      "bsi": 0.514,
+      "bsiLag": -0.221
+    },
+    {
+      "week": 46,
+      "bsi": 1.348,
+      "bsiLag": -0.203
+    },
+    {
+      "week": 47,
+      "bsi": -1.379,
+      "bsiLag": -0.36
+    }
+  ],
+  "stressTimeline": [
+    {
+      "m": 0,
+      "label": "2023-03",
+      "bsi": 0.83,
+      "move": 149.9,
+      "moveNorm": 1.499
+    },
+    {
+      "m": 1,
+      "label": "2023-04",
+      "bsi": -0.24,
+      "move": 131.0,
+      "moveNorm": 1.31
+    },
+    {
+      "m": 2,
+      "label": "2023-05",
+      "bsi": -0.16,
+      "move": 131.9,
+      "moveNorm": 1.319
+    },
+    {
+      "m": 3,
+      "label": "2023-06",
+      "bsi": -0.94,
+      "move": 113.2,
+      "moveNorm": 1.132
+    },
+    {
+      "m": 4,
+      "label": "2023-07",
+      "bsi": -0.34,
+      "move": 114.8,
+      "moveNorm": 1.148
+    },
+    {
+      "m": 5,
+      "label": "2023-10",
+      "bsi": 1.4,
+      "move": 130.6,
+      "moveNorm": 1.306
+    },
+    {
+      "m": 6,
+      "label": "2023-11",
+      "bsi": 1.42,
+      "move": 116.5,
+      "moveNorm": 1.165
+    },
+    {
+      "m": 7,
+      "label": "2023-12",
+      "bsi": 1.22,
+      "move": 117.7,
+      "moveNorm": 1.177
+    },
+    {
+      "m": 8,
+      "label": "2024-01",
+      "bsi": -0.88,
+      "move": 110.3,
+      "moveNorm": 1.103
+    },
+    {
+      "m": 9,
+      "label": "2024-02",
+      "bsi": 0.88,
+      "move": 110.4,
+      "moveNorm": 1.104
+    },
+    {
+      "m": 10,
+      "label": "2024-03",
+      "bsi": 0.6,
+      "move": 98.6,
+      "moveNorm": 0.986
+    },
+    {
+      "m": 11,
+      "label": "2024-04",
+      "bsi": -0.06,
+      "move": 106.1,
+      "moveNorm": 1.061
+    },
+    {
+      "m": 12,
+      "label": "2024-05",
+      "bsi": -0.59,
+      "move": 93.2,
+      "moveNorm": 0.932
+    },
+    {
+      "m": 13,
+      "label": "2024-06",
+      "bsi": -0.56,
+      "move": 96.5,
+      "moveNorm": 0.965
+    },
+    {
+      "m": 14,
+      "label": "2024-07",
+      "bsi": -0.48,
+      "move": 96.5,
+      "moveNorm": 0.965
+    },
+    {
+      "m": 15,
+      "label": "2024-08",
+      "bsi": 1.95,
+      "move": 110.1,
+      "moveNorm": 1.101
+    },
+    {
+      "m": 16,
+      "label": "2024-09",
+      "bsi": 0.67,
+      "move": 100.6,
+      "moveNorm": 1.006
+    },
+    {
+      "m": 17,
+      "label": "2024-10",
+      "bsi": 2.23,
+      "move": 121.8,
+      "moveNorm": 1.218
+    },
+    {
+      "m": 18,
+      "label": "2024-11",
+      "bsi": 0.29,
+      "move": 107.4,
+      "moveNorm": 1.074
+    },
+    {
+      "m": 19,
+      "label": "2024-12",
+      "bsi": -0.14,
+      "move": 91.3,
+      "moveNorm": 0.913
+    },
+    {
+      "m": 20,
+      "label": "2025-01",
+      "bsi": 3.57,
+      "move": 94.9,
+      "moveNorm": 0.949
+    },
+    {
+      "m": 21,
+      "label": "2025-02",
+      "bsi": -0.12,
+      "move": 90.8,
+      "moveNorm": 0.908
+    },
+    {
+      "m": 22,
+      "label": "2025-03",
+      "bsi": -0.33,
+      "move": 100.9,
+      "moveNorm": 1.009
+    },
+    {
+      "m": 23,
+      "label": "2025-04",
+      "bsi": -0.12,
+      "move": 120.1,
+      "moveNorm": 1.201
+    },
+    {
+      "m": 24,
+      "label": "2025-05",
+      "bsi": -0.27,
+      "move": 100.0,
+      "moveNorm": 1.0
+    },
+    {
+      "m": 25,
+      "label": "2025-06",
+      "bsi": -0.32,
+      "move": 92.8,
+      "moveNorm": 0.928
+    },
+    {
+      "m": 26,
+      "label": "2025-07",
+      "bsi": -0.27,
+      "move": 86.1,
+      "moveNorm": 0.861
+    },
+    {
+      "m": 27,
+      "label": "2025-08",
+      "bsi": -0.24,
+      "move": 80.4,
+      "moveNorm": 0.804
+    },
+    {
+      "m": 28,
+      "label": "2025-09",
+      "bsi": -0.22,
+      "move": 78.4,
+      "moveNorm": 0.784
+    },
+    {
+      "m": 29,
+      "label": "2025-10",
+      "bsi": -0.39,
+      "move": 73.4,
+      "moveNorm": 0.734
+    },
+    {
+      "m": 30,
+      "label": "2025-11",
+      "bsi": 1.75,
+      "move": 76.1,
+      "moveNorm": 0.761
+    },
+    {
+      "m": 31,
+      "label": "2025-12",
+      "bsi": 1.37,
+      "move": 65.7,
+      "moveNorm": 0.657
+    },
+    {
+      "m": 32,
+      "label": "2026-01",
+      "bsi": 0.46,
+      "move": 60.6,
+      "moveNorm": 0.606
+    },
+    {
+      "m": 33,
+      "label": "2026-02",
+      "bsi": 0.51,
+      "move": 64.5,
+      "moveNorm": 0.645
+    },
+    {
+      "m": 34,
+      "label": "2026-03",
+      "bsi": 1.35,
+      "move": 89.4,
+      "moveNorm": 0.894
+    },
+    {
+      "m": 35,
+      "label": "2026-04",
+      "bsi": -1.38,
+      "move": 76.1,
+      "moveNorm": 0.761
+    }
+  ],
+  "radar": {
+    "axes": [
+      {
+        "key": "BSI",
+        "current": -2.167,
+        "threshold": 1.0,
+        "curAbs": "-3.25",
+        "thrAbs": "+1.50"
+      },
+      {
+        "key": "MOVE",
+        "current": 0.547,
+        "threshold": 1.0,
+        "curAbs": "65.7",
+        "thrAbs": "120"
+      },
+      {
+        "key": "SCP",
+        "current": 0.0,
+        "threshold": 1.0,
+        "curAbs": "+0.00",
+        "thrAbs": "+1.28"
+      },
+      {
+        "key": "DTC",
+        "current": 0.0,
+        "threshold": 1.0,
+        "curAbs": "0.00x",
+        "thrAbs": "5.00x"
+      }
+    ]
+  },
+  "agentLog": [
+    {
+      "ts": "2026-04-20 02:57:20",
+      "agent": "RISK",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 231,
+      "latencyMs": 1083,
+      "msg": "no freeze_flag in vitality component; green."
+    },
+    {
+      "ts": "2026-04-20 02:57:18",
+      "agent": "QUANT",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 284,
+      "latencyMs": 1477,
+      "msg": "tranche PV within 1\u03c3 of baseline; carry +4bp."
+    },
+    {
+      "ts": "2026-04-20 02:57:17",
+      "agent": "MACRO",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 299,
+      "latencyMs": 1929,
+      "msg": "BSI z stable; no regime transition flagged."
+    },
+    {
+      "ts": "2026-04-20 02:57:13",
+      "agent": "RISK",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 231,
+      "latencyMs": 1080,
+      "msg": "no freeze_flag in vitality component; green."
+    },
+    {
+      "ts": "2026-04-20 02:57:12",
+      "agent": "QUANT",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 284,
+      "latencyMs": 1510,
+      "msg": "tranche PV within 1\u03c3 of baseline; carry +4bp."
+    },
+    {
+      "ts": "2026-04-20 02:57:11",
+      "agent": "MACRO",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 299,
+      "latencyMs": 3400,
+      "msg": "BSI z stable; no regime transition flagged."
+    },
+    {
+      "ts": "2026-04-20 02:52:04",
+      "agent": "RISK",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 231,
+      "latencyMs": 1241,
+      "msg": "no freeze_flag in vitality component; green."
+    },
+    {
+      "ts": "2026-04-20 02:52:02",
+      "agent": "QUANT",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 284,
+      "latencyMs": 1529,
+      "msg": "tranche PV within 1\u03c3 of baseline; carry +4bp."
+    },
+    {
+      "ts": "2026-04-20 02:52:01",
+      "agent": "MACRO",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 299,
+      "latencyMs": 1955,
+      "msg": "BSI z stable; no regime transition flagged."
+    },
+    {
+      "ts": "2026-04-20 02:51:57",
+      "agent": "RISK",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 231,
+      "latencyMs": 1062,
+      "msg": "no freeze_flag in vitality component; green."
+    },
+    {
+      "ts": "2026-04-20 02:51:56",
+      "agent": "QUANT",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 284,
+      "latencyMs": 1474,
+      "msg": "tranche PV within 1\u03c3 of baseline; carry +4bp."
+    },
+    {
+      "ts": "2026-04-20 02:51:54",
+      "agent": "MACRO",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 299,
+      "latencyMs": 1872,
+      "msg": "BSI z stable; no regime transition flagged."
+    },
+    {
+      "ts": "2026-04-20 02:51:47",
+      "agent": "RISK",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 142,
+      "latencyMs": 884,
+      "msg": "no freeze_flag in vitality component; green."
+    },
+    {
+      "ts": "2026-04-20 02:51:46",
+      "agent": "QUANT",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 353,
+      "latencyMs": 2268,
+      "msg": "Monte-Carlo SR narrow; no retune triggered."
+    },
+    {
+      "ts": "2026-04-20 02:51:43",
+      "agent": "MACRO",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 303,
+      "latencyMs": 2610,
+      "msg": "MOVE MA30 below gate; G3 HOLD."
+    },
+    {
+      "ts": "2026-04-20 02:44:15",
+      "agent": "RISK",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 142,
+      "latencyMs": 911,
+      "msg": "no freeze_flag in vitality component; green."
+    },
+    {
+      "ts": "2026-04-20 02:44:14",
+      "agent": "QUANT",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 353,
+      "latencyMs": 2269,
+      "msg": "Monte-Carlo SR narrow; no retune triggered."
+    },
+    {
+      "ts": "2026-04-20 02:44:11",
+      "agent": "MACRO",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 303,
+      "latencyMs": 1921,
+      "msg": "MOVE MA30 below gate; G3 HOLD."
+    },
+    {
+      "ts": "2026-04-20 02:42:48",
+      "agent": "RISK",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 231,
+      "latencyMs": 1102,
+      "msg": "no freeze_flag in vitality component; green."
+    },
+    {
+      "ts": "2026-04-20 02:42:47",
+      "agent": "QUANT",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 284,
+      "latencyMs": 1504,
+      "msg": "tranche PV within 1\u03c3 of baseline; carry +4bp."
+    },
+    {
+      "ts": "2026-04-20 02:42:45",
+      "agent": "MACRO",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 299,
+      "latencyMs": 1866,
+      "msg": "BSI z stable; no regime transition flagged."
+    },
+    {
+      "ts": "2026-04-20 02:42:41",
+      "agent": "RISK",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 231,
+      "latencyMs": 1062,
+      "msg": "no freeze_flag in vitality component; green."
+    },
+    {
+      "ts": "2026-04-20 02:42:40",
+      "agent": "QUANT",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 284,
+      "latencyMs": 1495,
+      "msg": "tranche PV within 1\u03c3 of baseline; carry +4bp."
+    },
+    {
+      "ts": "2026-04-20 02:42:39",
+      "agent": "MACRO",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 299,
+      "latencyMs": 2773,
+      "msg": "BSI z stable; no regime transition flagged."
+    },
+    {
+      "ts": "2026-04-20 02:18:42",
+      "agent": "RISK",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 142,
+      "latencyMs": 871,
+      "msg": "no freeze_flag in vitality component; green."
+    },
+    {
+      "ts": "2026-04-20 02:18:41",
+      "agent": "QUANT",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 353,
+      "latencyMs": 2352,
+      "msg": "Monte-Carlo SR narrow; no retune triggered."
+    },
+    {
+      "ts": "2026-04-20 02:18:39",
+      "agent": "MACRO",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 303,
+      "latencyMs": 2029,
+      "msg": "MOVE MA30 below gate; G3 HOLD."
+    },
+    {
+      "ts": "2026-04-20 02:17:02",
+      "agent": "RISK",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 231,
+      "latencyMs": 1207,
+      "msg": "no freeze_flag in vitality component; green."
+    },
+    {
+      "ts": "2026-04-20 02:17:01",
+      "agent": "QUANT",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 284,
+      "latencyMs": 1595,
+      "msg": "tranche PV within 1\u03c3 of baseline; carry +4bp."
+    },
+    {
+      "ts": "2026-04-20 02:16:59",
+      "agent": "MACRO",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 299,
+      "latencyMs": 2219,
+      "msg": "BSI z stable; no regime transition flagged."
+    },
+    {
+      "ts": "2026-04-20 02:16:51",
+      "agent": "RISK",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 231,
+      "latencyMs": 1257,
+      "msg": "no freeze_flag in vitality component; green."
+    },
+    {
+      "ts": "2026-04-20 02:16:49",
+      "agent": "QUANT",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 284,
+      "latencyMs": 1531,
+      "msg": "tranche PV within 1\u03c3 of baseline; carry +4bp."
+    },
+    {
+      "ts": "2026-04-20 02:16:48",
+      "agent": "MACRO",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 299,
+      "latencyMs": 4253,
+      "msg": "BSI z stable; no regime transition flagged."
+    },
+    {
+      "ts": "2026-04-20 02:15:52",
+      "agent": "RISK",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 142,
+      "latencyMs": 987,
+      "msg": "no freeze_flag in vitality component; green."
+    },
+    {
+      "ts": "2026-04-20 02:15:51",
+      "agent": "QUANT",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 353,
+      "latencyMs": 2399,
+      "msg": "Monte-Carlo SR narrow; no retune triggered."
+    },
+    {
+      "ts": "2026-04-20 02:15:48",
+      "agent": "MACRO",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 303,
+      "latencyMs": 4420,
+      "msg": "MOVE MA30 below gate; G3 HOLD."
+    },
+    {
+      "ts": "2026-04-20 02:14:20",
+      "agent": "RISK",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 142,
+      "latencyMs": 1009,
+      "msg": "no freeze_flag in vitality component; green."
+    },
+    {
+      "ts": "2026-04-20 02:14:18",
+      "agent": "QUANT",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 353,
+      "latencyMs": 2696,
+      "msg": "Monte-Carlo SR narrow; no retune triggered."
+    },
+    {
+      "ts": "2026-04-20 02:14:16",
+      "agent": "MACRO",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 303,
+      "latencyMs": 3111,
+      "msg": "MOVE MA30 below gate; G3 HOLD."
+    },
+    {
+      "ts": "2026-04-20 02:12:37",
+      "agent": "RISK",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 231,
+      "latencyMs": 1129,
+      "msg": "no freeze_flag in vitality component; green."
+    },
+    {
+      "ts": "2026-04-20 02:12:36",
+      "agent": "QUANT",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 284,
+      "latencyMs": 1599,
+      "msg": "tranche PV within 1\u03c3 of baseline; carry +4bp."
+    },
+    {
+      "ts": "2026-04-20 02:12:34",
+      "agent": "MACRO",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 299,
+      "latencyMs": 2206,
+      "msg": "BSI z stable; no regime transition flagged."
+    },
+    {
+      "ts": "2026-04-20 02:12:26",
+      "agent": "RISK",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 231,
+      "latencyMs": 1188,
+      "msg": "no freeze_flag in vitality component; green."
+    },
+    {
+      "ts": "2026-04-20 02:12:25",
+      "agent": "QUANT",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 284,
+      "latencyMs": 1568,
+      "msg": "tranche PV within 1\u03c3 of baseline; carry +4bp."
+    },
+    {
+      "ts": "2026-04-20 02:12:23",
+      "agent": "MACRO",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 299,
+      "latencyMs": 4366,
+      "msg": "BSI z stable; no regime transition flagged."
+    },
+    {
+      "ts": "2026-04-20 02:11:29",
+      "agent": "RISK",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 231,
+      "latencyMs": 1104,
+      "msg": "no freeze_flag in vitality component; green."
+    },
+    {
+      "ts": "2026-04-20 02:11:28",
+      "agent": "QUANT",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 284,
+      "latencyMs": 1587,
+      "msg": "tranche PV within 1\u03c3 of baseline; carry +4bp."
+    },
+    {
+      "ts": "2026-04-20 02:11:26",
+      "agent": "MACRO",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 299,
+      "latencyMs": 2348,
+      "msg": "BSI z stable; no regime transition flagged."
+    },
+    {
+      "ts": "2026-04-20 02:11:18",
+      "agent": "RISK",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 231,
+      "latencyMs": 1176,
+      "msg": "no freeze_flag in vitality component; green."
+    },
+    {
+      "ts": "2026-04-20 02:11:16",
+      "agent": "QUANT",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 284,
+      "latencyMs": 1658,
+      "msg": "tranche PV within 1\u03c3 of baseline; carry +4bp."
+    },
+    {
+      "ts": "2026-04-20 02:11:15",
+      "agent": "MACRO",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 299,
+      "latencyMs": 5288,
+      "msg": "BSI z stable; no regime transition flagged."
+    },
+    {
+      "ts": "2026-04-20 00:58:45",
+      "agent": "RISK",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 142,
+      "latencyMs": 839,
+      "msg": "no freeze_flag in vitality component; green."
+    },
+    {
+      "ts": "2026-04-20 00:58:44",
+      "agent": "QUANT",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 353,
+      "latencyMs": 2313,
+      "msg": "Monte-Carlo SR narrow; no retune triggered."
+    },
+    {
+      "ts": "2026-04-20 00:58:41",
+      "agent": "MACRO",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 303,
+      "latencyMs": 2154,
+      "msg": "MOVE MA30 below gate; G3 HOLD."
+    },
+    {
+      "ts": "2026-04-20 00:57:43",
+      "agent": "RISK",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 231,
+      "latencyMs": 1183,
+      "msg": "no freeze_flag in vitality component; green."
+    },
+    {
+      "ts": "2026-04-20 00:57:41",
+      "agent": "QUANT",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 284,
+      "latencyMs": 1478,
+      "msg": "tranche PV within 1\u03c3 of baseline; carry +4bp."
+    },
+    {
+      "ts": "2026-04-20 00:57:40",
+      "agent": "MACRO",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 299,
+      "latencyMs": 1964,
+      "msg": "BSI z stable; no regime transition flagged."
+    },
+    {
+      "ts": "2026-04-20 00:57:34",
+      "agent": "RISK",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 231,
+      "latencyMs": 1229,
+      "msg": "no freeze_flag in vitality component; green."
+    },
+    {
+      "ts": "2026-04-20 00:57:33",
+      "agent": "QUANT",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 284,
+      "latencyMs": 1560,
+      "msg": "tranche PV within 1\u03c3 of baseline; carry +4bp."
+    },
+    {
+      "ts": "2026-04-20 00:57:31",
+      "agent": "MACRO",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 299,
+      "latencyMs": 3944,
+      "msg": "BSI z stable; no regime transition flagged."
+    }
+  ]
+}

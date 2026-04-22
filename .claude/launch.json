@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "streamlit-dashboard",
+      "runtimeExecutable": "streamlit",
+      "runtimeArgs": ["run", "bnpl-pod/dashboard/sbg_dashboard.py", "--server.port", "8501"],
+      "port": 8501
+    },
+    {
+      "name": "pod-terminal-static",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["bnpl-pod/web/serve_nocache.py", "8765"],
+      "port": 8765
+    }
+  ]
+}

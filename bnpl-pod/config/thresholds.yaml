@@ -15,6 +15,22 @@ gates:
   bsi:
     # BSI z-score (computed over rolling 180-day window) must exceed this to fire.
     z_threshold: 1.5
+    # Sprint Q bypass (post-review, 2026-04-22): when bsi_z >= this
+    # super-threshold, the trade approves on BSI alone — no macro
+    # corroboration from MOVE / catalyst required. Empirical motivation is
+    # §8.5 of the paper: on 17-Jan-2025 BSI spiked to +27σ (12,838 BNPL
+    # complaints filed on the Reg Z deadline) while every public macro regime
+    # gauge (MOVE, HY OAS, NFCI, STLFSI4, UMCSENT) was at or below its
+    # long-run median. By construction of the Subprime-2.0 opacity thesis,
+    # no macro gauge corroborates BNPL-specific stress during BNPL events;
+    # a strict 4-gate conjunctive rule is therefore structurally unable to
+    # approve the paper's flagship trade. The bypass converts the
+    # blind-spot counterfactual into the recommended live-strategy variant
+    # at the cost of an explicit Type-I premium (logged on every bypassed
+    # decision). Calibration: z >= 10 has fired exactly once in the
+    # 2023–2026 warehouse window (Reg Z deadline), so the FPR is <<1
+    # event/decade under the current composite.
+    bypass_z_threshold: 10.0
   scp:
     # Structural Complexity Premium (ES_Heston - EL_GBM), in dollars per $100 notional.
     # Wide gap => equity is underpricing tail risk. Per-asset threshold.
@@ -65,6 +81,73 @@ portfolio:
   max_single_trust_weight: 0.25
   # CVaR confidence level used by the Mean-CVaR optimizer.
   cvar_alpha: 0.95
+  # Risk-aversion penalty in the Mean-CVaR objective (Sprint F).
+  # gamma=5.0 is a deliberate override above institutional default (~2.0) to
+  # force the optimizer to respect the BNPL debt-stacking tail rather than
+  # chase near-term spread. See paper §8 and v4.1 §8.2.
+  gamma_risk_aversion: 5.0
+  # Monte-Carlo scenario count for the CVaR LP. Must balance statistical
+  # stability (T>=1000) against LP solve time.
+  n_scenarios: 2000
+  # Share of scenarios drawn from the crisis-transported regime. The rest
+  # come from the current calibrated CIR — a blended, not purely stressed, set.
+  stress_blend_weight: 0.30
+  # Planning horizon used for PV convergence and carry — days.
+  horizon_days: 252
+
+  # ---- Macro-hedge sleeve (Fix #2) -----------------------------------------
+  # The Mean-CVaR LP sizes the TRS short book. A PARALLEL static sleeve
+  # hedges credit-beta (HYG short) or rates-beta (2Y UST futures) so the
+  # LP's risk budget is not contaminated by hedge-leg optimization.
+  #
+  # Sizing rules
+  # ------------
+  #   beta_credit    |hedge_notional| = beta_credit * sum_i |w_i|
+  #                  Default β=0.60 reflects junior-ABS vs HYG duration-adj
+  #                  regression on 2020-2024 weekly returns (documented in
+  #                  paper §8). Conservative: HYG is broader IG+HY, so a
+  #                  junior-ABS short is only partially hedged.
+  #
+  #   dv01_neutral   size ZT futures so ΔHedge_DV01 ≈ dv01_target * TRS_DV01.
+  #                  Placeholder — full DV01 attribution requires the ABS
+  #                  WAL and is wired in Sprint G once the event-study
+  #                  backtest plumbs cashflow durations.
+  hedge:
+    instrument: "HYG_SHORT"            # HYG_SHORT | ZT_FUT
+    sizing_rule: "beta_credit"         # beta_credit | dv01_neutral
+    beta_credit: 0.60
+    dv01_target:  1.00                 # placeholder for dv01_neutral path
+
+# ---- Sprint G: Transaction costs (Fix #1 — regime-dependent B/A) --------------
+# Dealer friction on BNPL junior-ABS TRS is NOT screen-traded and NOT symmetric.
+# Round-trip B/A realistically 50-150 bps in normal regimes, 300+ bps in stress.
+# Edge is regime-dependent in the WRONG direction: gates fire when MOVE widens,
+# which is exactly when dealer B/A also widens (inventory-risk premium). We
+# therefore scale the bps LINEARLY above a median MOVE level:
+#
+#   ba_bps_t  =  trs_ba_base_bps  +  trs_ba_stress_bps · max(0, MOVE_t/move_median − 1)
+#
+# Charged as a half-spread on absolute turnover at every rebalance in
+# backtest/pnl_sim.py. HYG (the macro-hedge sleeve) is liquid → flat thin bps.
+# The naive AFRM equity-short comparison arm gets a 15% annualized HTB fee.
+transaction_costs:
+  trs_ba_base_bps:    35.0    # ≈ 70 bps round-trip at median MOVE
+  trs_ba_stress_bps:  80.0    # +1.6% round-trip at 2× median MOVE
+  move_median_level:  95.0    # historical MOVE median 2015-2022
+  hedge_ba_bps:        2.0    # HYG ETF round-trip ≈ 4 bps, flat
+  equity_ba_bps:      10.0    # AFRM round-trip ≈ 20 bps base
+  equity_htb_annual:   0.15   # Sprint G: naive-AFRM-short HTB penalty
+
+# ---- Sprint G: Cash / margin accounting (Fix #4 — SOFR on unallocated cash) ---
+# Without this, a strategy that deploys 20% of capital shows 0% return in
+# quiet regimes while T-bills earn SOFR — a ~400 bps/yr artificial drag. The
+# daily P&L loop accrues SOFR/252 on `cash`, and debits (financing_spread/252)
+# on `trs_margin`. See backtest/pnl_sim.py::step_day for the accounting order.
+cash_carry:
+  use_sofr:             true
+  financing_spread_bps: 50.0   # broker spread above SOFR on posted margin
+  margin_ratio_trs:      0.20  # 20% of TRS notional posted as margin
+  equity_margin_ratio:   0.30  # Reg T + borrow for AFRM short
 
 # ---- Agent advisory vs deterministic compliance ------------------------------
 # LLM risk_manager.py produces advisory reasoning only.

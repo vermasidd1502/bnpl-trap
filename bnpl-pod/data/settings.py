@@ -26,7 +26,7 @@ class Settings(BaseModel):
     nim_api_key: str | None = _env("NVIDIA_NIM_API_KEY")
     nim_base_url: str = _env("NVIDIA_NIM_BASE_URL", "https://integrate.api.nvidia.com/v1")
     nim_model_small: str = _env("NVIDIA_NIM_MODEL_SMALL", "nvidia/nemotron-mini-4b-instruct")
-    nim_model_heavy: str = _env("NVIDIA_NIM_MODEL_HEAVY", "nvidia/llama-3.1-nemotron-70b-instruct")
+    nim_model_heavy: str = _env("NVIDIA_NIM_MODEL_HEAVY", "nvidia/nemotron-3-super-120b-a12b")
     gemini_api_key: str | None = _env("GEMINI_API_KEY")
     gemini_base_url: str = _env("GEMINI_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai/")
     gemini_model_small: str = _env("GEMINI_MODEL_SMALL", "gemini-2.5-flash")
@@ -34,7 +34,7 @@ class Settings(BaseModel):
 
     # --- data APIs ---
     fred_api_key: str | None = _env("FRED_API_KEY")
-    sec_edgar_ua: str = _env("SEC_EDGAR_UA", "BNPL Pod noreply@example.com")
+    sec_edgar_ua: str = _env("SEC_EDGAR_UA", "Siddharth Verma sverma24@illinois.edu")
     reddit_client_id: str | None = _env("REDDIT_CLIENT_ID")
     reddit_client_secret: str | None = _env("REDDIT_CLIENT_SECRET")
     reddit_user_agent: str = _env("REDDIT_USER_AGENT", "bnpl-pod/0.1")

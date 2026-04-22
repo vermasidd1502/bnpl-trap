@@ -1,0 +1,54 @@
+\begin{thebibliography}{}
+
+\bibitem[Araci, 2019]{araci2019finbert}
+Araci, D. (2019).
+\newblock Finbert: Financial sentiment analysis with pre-trained language
+  models.
+\newblock {\em arXiv preprint arXiv:1908.10063}.
+
+\bibitem[{Consumer Financial Protection Bureau}, 2023]{cfpb2023bnpl}
+{Consumer Financial Protection Bureau} (2023).
+\newblock Buy now, pay later: Market trends and consumer impacts.
+\newblock Report, Consumer Financial Protection Bureau.
+
+\bibitem[Di~Maggio et~al., 2022]{dimaggio2022buy}
+Di~Maggio, M., Katz, J., and Williams, E. (2022).
+\newblock Buy now, pay later credit: User characteristics and effects on
+  spending patterns.
+\newblock Working Paper 30508, National Bureau of Economic Research.
+
+\bibitem[Duffie and Singleton, 1999]{duffie1999modeling}
+Duffie, D. and Singleton, K.~J. (1999).
+\newblock Modeling term structures of defaultable bonds.
+\newblock {\em The Review of Financial Studies}, 12(4):687--720.
+
+\bibitem[Granger, 1969]{granger1969investigating}
+Granger, C. W.~J. (1969).
+\newblock Investigating causal relations by econometric models and
+  cross-spectral methods.
+\newblock {\em Econometrica}, 37(3):424--438.
+
+\bibitem[Heston, 1993]{heston1993closed}
+Heston, S.~L. (1993).
+\newblock A closed-form solution for options with stochastic volatility with
+  applications to bond and currency options.
+\newblock {\em The Review of Financial Studies}, 6(2):327--343.
+
+\bibitem[Jarrow and Turnbull, 1995]{jarrow1995pricing}
+Jarrow, R.~A. and Turnbull, S.~M. (1995).
+\newblock Pricing derivatives on financial securities subject to credit risk.
+\newblock {\em The Journal of Finance}, 50(1):53--85.
+
+\bibitem[Merton, 1974]{merton1974pricing}
+Merton, R.~C. (1974).
+\newblock On the pricing of corporate debt: The risk structure of interest
+  rates.
+\newblock {\em The Journal of Finance}, 29(2):449--470.
+
+\bibitem[Tetlock, 2007]{tetlock2007giving}
+Tetlock, P.~C. (2007).
+\newblock Giving content to investor sentiment: The role of media in the stock
+  market.
+\newblock {\em The Journal of Finance}, 62(3):1139--1168.
+
+\end{thebibliography}

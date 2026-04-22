@@ -2,10 +2,26 @@
 
 ## An Agentic AI Framework for Detecting the Buy-Now-Pay-Later Credit Collapse Through Alternative Data, with a Structured-Credit Expression of the Short Thesis
 
-**Preliminary Research Paper — Version 0.1**
-**Author:** [Author], Class 580, Spring 2026
+**Preliminary Research Paper — Version 0.4 (aligned with MASTERPLAN_V4.1)**
+**Author:** Siddharth Verma, *Quantamental Investment* (580), Spring 2026, University of Illinois Urbana-Champaign
 **Status:** Research proposal and methodology. Empirical results pending execution of the agentic pod described herein.
-**Date:** April 17, 2026
+**Date:** April 18, 2026
+
+**What changed from v0.1 → v0.4.** The core five-tier taxonomy, BSI
+composition, SCP derivation, and four-gate trade logic are all
+preserved from v0.1. Four architectural upgrades are introduced in
+the Addendum immediately below and then referenced throughout:
+(A1) the JT hazard is rewritten as a two-factor CIR decomposition
+$\lambda_i(t) = \Lambda_{\text{sys}}(t) + \lambda_{\text{unsys},i}(t)$,
+turning the thesis from a sector short into *market-neutral alpha*;
+(A2) Google Trends is promoted to a standalone signal layer with a
+three-bucket taxonomy (product-interest / friction / exit); (A3) a
+2008 subprime-auto crisis-regime calibration supplies the "bad-state"
+$\theta_{\text{sys}}^{\text{bad}}$ that BNPL's in-sample history
+lacks, with a duration scaler and a joint $3\times3$ sensitivity grid;
+(A4) execution becomes a DV01-matched TRS-short + bank-credit-long
+pair, with a Shadow-Bureau-Gap diagnostic and a dual-view dashboard
+(real-time anomaly gauge + historical heatmap).
 
 ---
 
@@ -45,6 +61,127 @@ This paper presents (a) the economic theory and five-tier taxonomy underlying th
 18. Appendix A: Mathematical Derivations
 19. Appendix B: Pod State-Machine Diagrams
 20. Appendix C: Data Dictionary
+
+---
+
+## 0. Addendum: The v4 Architectural Upgrades
+
+The four upgrades below were introduced after the v0.1 draft in response to
+two successive institutional reviews. They are presented here at the front
+of the paper so that later sections (which retain the v0.1 wording for
+continuity) can be read against this updated scaffolding. Full derivations
+appear in Appendix A and in `MASTERPLAN_V4.md`.
+
+### 0.1 Two-factor hazard decomposition (§8 addendum)
+
+Write the issuer-$i$ default intensity as the sum of an economy-wide
+systematic factor and a firm-specific residual:
+
+$$
+\lambda_i(t) \;=\; \Lambda_{\text{sys}}(t) \;+\; \lambda_{\text{unsys},i}(t).
+$$
+
+Both factors follow Cox–Ingersoll–Ross (CIR) dynamics with independent
+Brownian drivers. The systematic component has mean-reversion level
+conditioned on observable macro state (MOVE index regime and yield-curve
+inversion); the unsystematic component absorbs an additive capped-jump
+process $J_i(t)\,dN_i(t)$ driven by the alternative-data signal. The jump
+size is double-bounded: a $\tanh$-saturating soft cap feeds a hard cap at
+$J_{\max} = 0.05\,\lambda_{\text{unsys},i}(t^-)$, and the Feller condition
+$2\kappa\theta \geq \sigma^2$ is enforced during MLE. Brownian independence
+gives the clean factorization
+
+$$
+S_i(T) \;=\; S_{\text{sys}}(T) \cdot S_{\text{unsys},i}(T),
+$$
+
+which is the ingredient the tranche pricer consumes. *Economic point:*
+this decomposition turns the paper's claim from "BNPL credit is stressed"
+(a macro bet) into "BNPL credit is stressed *more than macro predicts*"
+(a cross-sectional mispricing claim), which is what makes the trade
+market-neutral rather than directional.
+
+### 0.2 Google Trends as a standalone temporal layer (§5 addendum)
+
+The v0.1 draft folded Google Trends into a single alt-data panel. v4
+promotes it to its own layer on the grounds that search queries encode
+*pre-intent* distress whereas social posts encode *post-event* distress,
+so collapsing them averages over their lead-lag structure. Queries are
+taxonomized into three buckets: **(a)** product-interest (ambiguous sign
+for credit risk — enters the dynamic factor only, as a demand proxy);
+**(b)** friction (`"affirm late fee"`, `"bnpl denied"`); **(c)** exit
+(`"affirm collections"`, `"debt consolidation bnpl"`). The BSI becomes
+
+$$
+\text{BSI}_t \;=\; \hat f_t \;+\; \sum_{b\in\{b,c\}} \omega_b\, g^{(b)}_t,
+$$
+
+and a large unsystematic jump is fired only when *both* the Reddit
+firm-specific stress residual and the bucket-(c) z-score exceed their
+80th-percentile thresholds in the same window (the **cross-platform
+co-occurrence gate**). Single-channel spikes are clipped at the historical
+median jump magnitude — an explicit defense against Reddit-only raids and
+Trends-only news artifacts.
+
+### 0.3 Crisis-regime transport from 2008 subprime auto (new §9)
+
+BNPL has no recession in its own history, so the in-sample data cannot
+inform what a "bad regime" $\theta_{\text{sys}}$ looks like. The paper
+borrows it from the 2005–2010 subprime-auto ABS experience by fitting a
+Markov-switching CIR on auto-ABS trust data and extracting the state-2
+(Lehman-regime) mean $\theta_{\text{sys}}^{\text{bad, auto}}$. Transport
+to BNPL applies two duration scalers — $\phi_\theta \in [1.3, 1.6]$
+(BNPL is unsecured, ~0 recovery vs 40–60% auto recovery, so peak hazard
+is higher) and $\phi_\kappa \in [6, 10]$ (6-week BNPL WAL vs 3–5y auto
+WAL, so hazard decays faster). Defaults $\phi_\theta = 1.5$, $\phi_\kappa = 8$.
+The transport is bracketed by a **joint $3\times 3$ sensitivity grid**
+over $\{1.2, 1.5, 1.8\} \times \{5, 8, 11\}$ — severity crossed with
+persistence — rather than independent univariate sweeps, because the
+economically interesting tail scenario is *simultaneously* high-severity
+and slow-reverting. Headline thesis results are required to survive the
+$(1.8, 5)$ "crunch-and-stay" corner to be reported as robust.
+
+### 0.4 Market-neutral execution, Shadow-Bureau Gap, and dashboard (§11 addendum)
+
+Execution is a three-leg structure. **Leg A** is the original thesis
+expression — a TRS short on the junior tranche of a live Affirm
+securitization (AFRMMT series), paying total return, receiving SOFR +
+spread. **Leg B** is a DV01-matched long bank-credit position
+(either LQD ETF or short-protection on COF/SYF), explicitly sized to
+cancel the Leg-A exposure to $\Lambda_{\text{sys}}$. **Leg C** is an
+optional Treasury-futures overlay when MOVE > 120. Under the two-factor
+intensity spec, P&L decomposes as
+
+$$
+\Delta P\&L \;\approx\; w_A\,\Delta S_{\text{unsys},\text{AFRM}} \;+\; (w_A - w_B)\,\Delta S_{\text{sys}} \;+\; \text{basis}.
+$$
+
+Sizing $w_A = w_B$ zeros the middle term by construction, so the
+realized P&L is proportional to the firm-specific residual — exactly what
+the alt-data signal is built to predict.
+
+Two defensive overlays are added. First, a **Bucket-A sizing gate**
+down-sizes Leg A when product-interest search volume is in its top
+decile, guarding against the "growth-story euphoria" failure mode in
+which credit stress and narrative euphoria coexist (2021 SPAC-era
+fintech was the documented precedent). The gate consumes a 3-day
+moving average of the raw z-score to suppress one-day marketing spikes.
+Second, a **Shadow-Bureau Gap (SBG)** diagnostic is defined as the gap
+between the alt-data-implied delinquency rate — computed with a
+MIDAS-aligned Almon lag polynomial to respect the 30/60-day accrual
+window — and the filings-reported delinquency rate. The headline test
+$\mathbb{E}[\text{SBG} \mid \mathcal T] > \mathbb{E}[\text{SBG} \mid \mathcal C_1]$
+is the paper's *direct* evidence for the debt-stacking-invisible-to-bureaus
+mechanism, and the same quantity serves as a real-time pod diagnostic.
+
+The dashboard exposes SBG through two tabs: a **Live / Anomaly Gauge**
+(primary trading trigger, with credibility-weighted Red/Yellow/Green
+tiers driven by the co-occurrence flag and the bot-filter noise score)
+and a **Diagnostics / Historical Heatmap** (the paper figure supporting
+the headline test). The stress-test tab additionally renders the
+$(\phi_\theta, \phi_\kappa)$ joint grid as a 2D heatmap with a
+**Sharpe = 0 survival contour** overlaid — the visual "safety margin"
+of the transport assumption.
 
 ---
 

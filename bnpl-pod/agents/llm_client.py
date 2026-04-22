@@ -71,8 +71,14 @@ class LLMClient:
         tier: Tier = "small",
         temperature: float = 0.0,
         max_tokens: int = 1024,
+        *,
+        role: str = "unknown",
     ) -> LLMResponse:
+        """`role` tags which agent is calling — surfaces in the audit JSONL so
+        the dashboard's Agent Debate Log can filter macro/quant/risk rows
+        without having to reverse-engineer callsites from the prompt hash."""
         prompt_hash = _hash(system + "\n---\n" + user)
+        self._last_role = role   # threaded into _log below
 
         # Resolve provider order based on force flag + availability.
         order: list[Provider]
@@ -106,6 +112,19 @@ class LLMClient:
         else:
             raise ValueError(f"unknown provider: {prov}")
 
+        # Heavy tier on NIM Nemotron-3 supports explicit thinking mode. This
+        # surfaces a `reasoning_content` field alongside `content` — the pod
+        # stores the reasoning trace in the audit log but only the final
+        # `content` is ever fed downstream (never the chain-of-thought).
+        extra: dict = {}
+        if prov == "nim" and tier == "heavy" and "nemotron-3" in model:
+            extra = {
+                "extra_body": {
+                    "chat_template_kwargs": {"enable_thinking": True},
+                    "reasoning_budget": max(max_tokens, 4096),
+                }
+            }
+
         t0 = time.perf_counter()
         resp = client.chat.completions.create(
             model=model,
@@ -113,11 +132,17 @@ class LLMClient:
                       {"role": "user",   "content": user}],
             temperature=temperature,
             max_tokens=max_tokens,
+            **extra,
         )
         latency_ms = int((time.perf_counter() - t0) * 1000)
         text = resp.choices[0].message.content or ""
+        reasoning = getattr(resp.choices[0].message, "reasoning_content", None)
         tokens = getattr(resp, "usage", None) and resp.usage.total_tokens
-        meta = {"tokens": tokens, "finish_reason": resp.choices[0].finish_reason}
+        meta = {
+            "tokens": tokens,
+            "finish_reason": resp.choices[0].finish_reason,
+            "reasoning_len": len(reasoning) if reasoning else 0,
+        }
         self._log(prompt_hash, prov, model, latency_ms, meta)
         return LLMResponse(text=text, provider=prov, model=model,
                            latency_ms=latency_ms, prompt_hash=prompt_hash, meta=meta)
@@ -135,10 +160,10 @@ class LLMClient:
         return self._gemini, model
 
     # ---- audit log ----------------------------------------------------------
-    @staticmethod
-    def _log(prompt_hash: str, provider: str, model: str, latency_ms: int, meta: dict) -> None:
+    def _log(self, prompt_hash: str, provider: str, model: str, latency_ms: int, meta: dict) -> None:
         row = {
             "ts": datetime.now(tz=timezone.utc).isoformat(),
+            "role": getattr(self, "_last_role", "unknown"),
             "prompt_hash": prompt_hash,
             "provider": provider,
             "model": model,

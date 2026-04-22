@@ -39,3 +39,12 @@ Thumbs.db
 
 # Fonts (large binaries, not needed in repo — users fetch locally)
 fonts/
+
+# Claude Code runtime artifacts (project launch config is tracked; lock files are not)
+.claude/scheduled_tasks.lock
+.claude/sessions/
+.claude/cache/
+
+# Design-brief archives (kept locally, not in version control)
+BNPL pod design.zip
+_design_unpack/

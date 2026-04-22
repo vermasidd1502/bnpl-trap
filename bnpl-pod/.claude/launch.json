@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "pod-tearsheet",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "8766", "--directory", "web"],
+      "port": 8766
+    },
+    {
+      "name": "streamlit-dashboard",
+      "runtimeExecutable": "streamlit",
+      "runtimeArgs": ["run", "dashboard/sbg_dashboard.py", "--server.port", "8503", "--server.headless", "true", "--server.runOnSave", "false"],
+      "port": 8503
+    }
+  ]
+}

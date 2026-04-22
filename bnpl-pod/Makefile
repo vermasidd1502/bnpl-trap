@@ -5,7 +5,7 @@
 PY ?= python
 UV ?= uv
 
-.PHONY: setup init-db ingest bsi validate backtest pod dashboard paper test lint clean all
+.PHONY: setup init-db ingest bsi validate backtest pod dashboard frontend snapshot serve paper test lint clean all
 
 setup:
 	$(UV) venv
@@ -42,8 +42,28 @@ pod:
 dashboard:
 	streamlit run dashboard/streamlit_app.py
 
+# React institutional terminal: warehouse -> JSON -> static-serve web/ on :8765.
+snapshot:
+	$(PY) -m dashboard.build_snapshot
+
+serve:
+	cd web && $(PY) -m http.server 8765
+
+frontend: snapshot
+	@echo ""
+	@echo "  pod_snapshot.json rebuilt from live warehouse."
+	@echo "  run 'make serve' in another terminal, then open http://localhost:8765/"
+	@echo ""
+
 paper:
-	$(PY) -m paper.build_paper
+	$(PY) -m paper.make_figures
+	cd paper && pdflatex -interaction=nonstopmode paper.tex
+	cd paper && bibtex paper
+	cd paper && pdflatex -interaction=nonstopmode paper.tex
+	cd paper && pdflatex -interaction=nonstopmode paper.tex
+	@echo ""
+	@echo "  paper.pdf rebuilt at paper/paper.pdf"
+	@echo ""
 
 test:
 	pytest -q

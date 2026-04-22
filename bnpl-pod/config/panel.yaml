@@ -1,0 +1,120 @@
+# ---------------------------------------------------------------------------
+# Firm panel — single source of truth for ingest + empirical analysis.
+# Groups align with MASTERPLAN_V2.md §1.1 / §6.1.
+# CIKs looked up against SEC EDGAR; trust CIKs use the sponsor when the
+# underlying trust is a pass-through entity.
+# ---------------------------------------------------------------------------
+
+backtest_window:
+  start: 2019-01-01
+  end:   # null -> "today" at run time
+
+# --- T: Treated (BNPL issuers) ---------------------------------------------
+treated:
+  - ticker: AFRM
+    name: Affirm Holdings
+    cik: "0001820953"
+    trust_family: AFRMMT          # Affirm Asset Securitization Trust series
+    notes: Primary target; junior tranche is the TRS short candidate.
+  - ticker: SQ                    # Block Inc. (parent of Afterpay)
+    name: Block / Afterpay
+    cik: "0001512673"
+    trust_family: AFTR
+  - ticker: PYPL
+    name: PayPal (Pay in 4 sleeve)
+    cik: "0001633917"
+    trust_family: null            # not separately securitized; 10-Q segment only
+  - ticker: SEZL
+    name: Sezzle
+    cik: "0001662991"
+    trust_family: null
+  - ticker: ZIP.AX                # ASX-listed; ADR data sparse
+    name: Zip Co
+    cik: null                     # non-US; use 20-F / AU filings
+    trust_family: null
+  - ticker: UPST
+    name: Upstart (consumer-loan sleeve)
+    cik: "0001647639"
+    trust_family: UPSTR
+
+# --- S: Sentiment-only panel (not in quant DiD; alt-data layers only) ------
+# Private / non-US issuers with no usable 10-Q / options / ABS-via-EDGAR.
+# These entities show up in Reddit sentiment, Google Trends buckets, and
+# LinkedIn/X vitality — but are EXCLUDED from Granger, JT calibration,
+# Mean-CVaR sizing, and backtest P&L.
+sentiment_only:
+  - ticker: null
+    name: Klarna
+    cik: null
+    trust_family: null
+    notes: Private (IPO pending); sentiment + Trends layers only.
+
+# --- C1: Near-prime non-BNPL consumer lenders ------------------------------
+near_prime:
+  - ticker: COF
+    name: Capital One Financial
+    cik: "0000927628"
+  - ticker: SYF
+    name: Synchrony Financial
+    cik: "0001601712"
+  - ticker: DFS
+    name: Discover Financial Services
+    cik: "0001393612"
+  - ticker: AXP
+    name: American Express
+    cik: "0000004962"
+  - ticker: OMF
+    name: OneMain Financial
+    cik: "0001584207"
+  - ticker: SOFI
+    name: SoFi Technologies
+    cik: "0001818874"
+  - ticker: LC
+    name: LendingClub
+    cik: "0001409970"
+
+# --- C2: Placebo (no consumer credit exposure) -----------------------------
+placebo:
+  - ticker: V
+    name: Visa
+    cik: "0001403161"
+  - ticker: MA
+    name: Mastercard
+    cik: "0001141391"
+  - ticker: JPM
+    name: JPMorgan Chase (diversified; card is <20% of revenue)
+    cik: "0000019617"
+  - ticker: BRK-B
+    name: Berkshire Hathaway
+    cik: "0001067983"
+
+# --- C3: Subprime-auto (historical analog) ---------------------------------
+subprime_auto:
+  - ticker: CACC
+    name: Credit Acceptance
+    cik: "0000885550"
+    trust_family: CAAT
+    notes: Deep subprime auto; full history back to 1990s.
+  - ticker: ALLY
+    name: Ally Financial (subprime auto sleeve)
+    cik: "0000040729"
+    trust_family: ALLYA
+  - ticker: SC
+    name: Santander Consumer USA (SDART trust series)
+    cik: "0001580608"
+    trust_family: SDART
+  - ticker: null
+    name: AmeriCredit Automobile Trust
+    cik: null                     # per-trust CIKs issued by GM Financial
+    trust_family: AMCAR
+  - ticker: null
+    name: Bridgecrest / DriveTime (BCRST trust series)
+    cik: null
+    trust_family: BCRST
+  - ticker: null
+    name: Exeter Finance (EART trust series)
+    cik: null
+    trust_family: EART
+
+# --- CIK lookups are validated at ingest time. A CIK that 404s against
+#     EDGAR will fail the `data.ingest.sec_edgar.validate_panel()` check.
