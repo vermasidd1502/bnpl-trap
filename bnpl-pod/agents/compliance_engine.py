@@ -79,10 +79,23 @@ class ComplianceEngine:
         th = self.thresholds
 
         # --- Gate 1: BSI z-score ------------------------------------------------
+        # Paper v2.0.1 carry-over: z_threshold was calibrated against v1
+        # 180-day rolling σ; mechanical carry-over to EWMA σ is disclosed
+        # in paper_formal.tex §6 and config/thresholds.yaml. Every audit
+        # reason emitted here carries a `(v1-calibrated carry-over)` marker
+        # so a downstream reader cannot mistake Gate 1 for a re-fit rule.
         z_req = float(th["gates"]["bsi"]["z_threshold"])
         gates["bsi"] = inputs.bsi_z >= z_req
         if not gates["bsi"]:
-            reasons.append(f"Gate 1 (BSI) FAIL: z={inputs.bsi_z:.3f} < {z_req:.3f}")
+            reasons.append(
+                f"Gate 1 (BSI) FAIL: z={inputs.bsi_z:.3f} < {z_req:.3f}"
+                " (v1-calibrated carry-over; see paper §6)"
+            )
+        else:
+            reasons.append(
+                f"Gate 1 (BSI) PASS: z={inputs.bsi_z:.3f} >= {z_req:.3f}"
+                " (v1-calibrated carry-over; see paper §6)"
+            )
 
         # --- Gate 2: SCP min across considered tickers -------------------------
         scp_req = float(th["gates"]["scp"]["min_scp_equity_layer"])
@@ -138,7 +151,12 @@ class ComplianceEngine:
         gates_pass = all(gates.values()) if require_all else any(gates.values())
         approved = gates_pass and not squeeze_veto
 
-        if approved and not reasons:
+        # The consolidated approval line is always emitted when all gates pass
+        # and no squeeze veto fires, alongside the per-gate PASS/FAIL lines.
+        # (Earlier versions suppressed it when per-gate lines existed; with
+        # paper-v2.0.1 provenance markers now appended on every Gate-1 pass,
+        # per-gate lines exist by construction.)
+        if approved:
             reasons.append("All four gates passed; no squeeze veto; deterministic rules satisfied.")
 
         return ComplianceDecision(

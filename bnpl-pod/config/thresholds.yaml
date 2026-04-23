@@ -13,7 +13,18 @@
 # ---- Four-Gate Trade Logic ----------------------------------------------------
 gates:
   bsi:
-    # BSI z-score (computed over rolling 180-day window) must exceed this to fire.
+    # BSI z-score must exceed this to fire Gate 1.
+    #
+    # Paper v2.0.1 carry-over disclosure (§6 and Gate-1 narrative):
+    # This +1.5 threshold was CALIBRATED against the v1 180-day rolling-σ
+    # estimator that §6 has now retired in favour of the EWMA-σ form of
+    # Equation (1) (halflife=250d). The threshold carries forward
+    # mechanically to EWMA σ rather than being re-thresholded post-hoc on
+    # realised data. The EWMA σ is tighter than v1 rolling σ on the
+    # 17 Jan 2025 pulse, so +1.5 is weakly conservative: it fires here iff
+    # it fired under v1. Re-calibration of Gate 1 on EWMA σ is a Phase C
+    # deliverable. Do not adjust this value without a corresponding edit to
+    # paper_formal/paper_formal.tex §6 Gate-1 paragraph.
     z_threshold: 1.5
   scp:
     # Structural Complexity Premium (ES_Heston - EL_GBM), in dollars per $100 notional.

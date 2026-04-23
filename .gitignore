@@ -39,3 +39,14 @@ Thumbs.db
 
 # Fonts (large binaries, not needed in repo — users fetch locally)
 fonts/
+
+# Local rescue backups (paranoia copies of the working tree; never committed)
+bnpl-pod-rescue-backup-*/
+
+# Per-machine Claude workspace config (not project artifacts)
+.claude/
+bnpl-pod/.claude/
+
+# Design asset drop (kept outside repo to avoid binary bloat)
+_design_unpack/
+BNPL pod design.zip
