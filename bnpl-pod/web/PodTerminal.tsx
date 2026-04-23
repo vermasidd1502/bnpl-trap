@@ -200,24 +200,48 @@ function genAgentLog(n: number) {
   return out;
 }
 
-// colors ─────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────
+// Design tokens — sourced from window.C (web/design_tokens.ts, loaded by
+// index.html BEFORE this script). Legacy key names (cyan/amber/crimson/
+// green/violet/grid) are retained as aliases over the new slate + sky palette
+// so every existing className in this file keeps resolving. Canonical values
+// live in web/design_tokens.ts + dashboard/design_tokens.py — edit both.
+// ─────────────────────────────────────────────────────────────────────────
+const __TOK: any = (typeof window !== "undefined" && (window as any).C) || {};
 const C = {
-  bg:       "#070a10",
-  card:     "#0b111b",
-  cardAlt:  "#0e1524",
-  border:   "#1c2433",
-  borderHi: "#2a3448",
-  text:     "#cfd6e4",
-  dim:      "#6b7689",
-  muted:    "#9aa3b5",
-  cyan:     "#22d3ee",
-  cyanDim:  "#0e7490",
-  crimson:  "#e11d48",
-  amber:    "#f59e0b",
-  green:    "#65a30d",
-  violet:   "#a78bfa",
-  grid:     "#1b2434",
+  // Surfaces
+  bg:          __TOK.bg           || "#0F172A",
+  card:        __TOK.card         || "#1E293B",
+  cardAlt:     __TOK.cardElevated || "#273449",
+  border:      __TOK.border       || "#334155",
+  borderHi:    "#475569",                         // slate-600 — emphasised
+  borderMuted: __TOK.borderMuted  || "#1F2937",
+
+  // Text
+  text:        __TOK.textPrimary  || "#F8FAFC",
+  dim:         __TOK.textMuted    || "#64748B",
+  muted:       __TOK.textSecondary|| "#94A3B8",
+
+  // Semantic accents (new palette)
+  accent:      __TOK.accent       || "#38BDF8",
+  warn:        __TOK.warn         || "#FBBF24",
+  critical:    __TOK.critical     || "#EF4444",
+  violet:      __TOK.violet       || "#8B5CF6",
+
+  // Legacy aliases — all resolve to the new palette so existing component
+  // code keeps working. cyan/green map to accent (sky-blue = calm/pass);
+  // amber/crimson map to warn/critical. This is intentional; there is no
+  // neon emerald in the new palette.
+  cyan:        __TOK.accent       || "#38BDF8",
+  cyanDim:     "#0284C7",  // sky-600 — darker sky for chart under-fills
+  crimson:     __TOK.critical     || "#EF4444",
+  amber:       __TOK.warn         || "#FBBF24",
+  green:       __TOK.accent       || "#38BDF8",   // PASS = calm sky, not neon
+  grid:        __TOK.chartGrid    || "#1F2937",
 };
+const FONT_TOK: any = (typeof window !== "undefined" && (window as any).FONT) || {};
+const FONT_SANS = FONT_TOK.sans || "'Inter', system-ui, sans-serif";
+const FONT_MONO = FONT_TOK.mono || "'JetBrains Mono', ui-monospace, monospace";
 
 // ─────────────────────────────────────────────────────────────
 // TICKER STRIP
@@ -233,8 +257,8 @@ function Ticker() {
             <span className="text-[var(--muted)] tracking-wider">{t.sym}</span>
             <span className="font-mono text-[var(--text)]">{t.val}</span>
             <span className={`font-mono ${
-              t.dir==="up" ? "text-[#86efac]"
-              : t.dir==="down" ? "text-[#fda4af]"
+              t.dir==="up" ? "text-[var(--accent)]"
+              : t.dir==="down" ? "text-[var(--critical)]"
               : "text-[var(--dim)]"
             }`}>{t.delta}</span>
           </span>
@@ -258,7 +282,7 @@ function TopBar() {
     <div className="h-10 flex items-center justify-between px-3 border-b border-[var(--border)] bg-[var(--card)]">
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-sm bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.7)]"></div>
+          <div className="w-2 h-2 rounded-sm bg-[var(--accent)]"></div>
           <span className="text-[13px] tracking-[0.18em] font-semibold">BNPL·POD</span>
           <span className="text-[var(--dim)] text-[11px] tracking-widest">TERMINAL {m.version}</span>
         </div>
@@ -325,7 +349,7 @@ function HelpPopover({ spec, align="right" }:{ spec:HelpSpec, align?:"right"|"le
       {open && (
         <div
           role="dialog"
-          className={`absolute top-[18px] ${align === "right" ? "right-0" : "left-0"} z-50 w-[280px] rounded-md border border-[var(--border)] bg-[var(--card)] shadow-[0_8px_24px_rgba(0,0,0,0.6)] p-2.5 text-[10.5px] leading-snug text-[var(--text)]`}
+          className={`absolute top-[18px] ${align === "right" ? "right-0" : "left-0"} z-50 w-[280px] rounded-md border border-[var(--borderHi)] bg-[var(--card)] p-2.5 text-[10.5px] leading-snug text-[var(--text)]`}
         >
           <dl className="grid grid-cols-[52px_1fr] gap-x-2 gap-y-1">
             <dt className="text-[9px] tracking-widest uppercase text-[var(--cyan)]">What</dt>
@@ -375,41 +399,126 @@ function Card({ label, icon, timestamp, children, className="", accent="", help}
 }
 
 // ─────────────────────────────────────────────────────────────
+// BSI CARD (Row 1 · A) — AreaChart + range toggles
+// Reads `bsi.spark180d` from the live snapshot when available; falls
+// back to linearly-interpolating spark12m → 180 daily values so the
+// component still renders in mock mode.
+// ─────────────────────────────────────────────────────────────
+const BSI_RANGES: { key: string; label: string; days: number }[] = [
+  { key: "1M",  label: "1M",  days: 22  },
+  { key: "60D", label: "60D", days: 60  },
+  { key: "3M",  label: "3M",  days: 66  },
+  { key: "6M",  label: "6M",  days: 132 },
+  { key: "1Y",  label: "1Y",  days: 260 },
+];
+
+function BSICard() {
+  const s = POD_SNAPSHOT;
+  const bsiRed = s.bsi.current >= s.bsi.redGlowThreshold;
+  const [range, setRange] = useState<string>("60D");
+  const live = (s.bsi as any).spark180d as number[] | undefined;
+  const source: number[] = (live && live.length > 0)
+    ? live
+    : (() => {
+        const pts = s.bsi.spark12m || [];
+        if (pts.length < 2) return pts;
+        const out: number[] = [];
+        for (let i = 0; i < pts.length - 1; i++) {
+          for (let j = 0; j < 15; j++) {
+            const f = j / 15;
+            out.push(+(pts[i] * (1 - f) + pts[i + 1] * f).toFixed(3));
+          }
+        }
+        out.push(pts[pts.length - 1]);
+        return out;
+      })();
+  const sel = BSI_RANGES.find(r => r.key === range) || BSI_RANGES[1];
+  const slice = source.slice(-Math.min(sel.days, source.length));
+  const chartData = slice.map((v, i) => ({ i, z: v }));
+  return (
+    <Card label="BSI · Consumer-Stress" icon={<L.Activity size={12}/>} timestamp={`as-of ${s.meta.asOf}`}
+      help={{
+        what: "Daily BNPL borrower-stress index — our proprietary leading signal.",
+        how:  "Six-pillar weighted aggregate (CFPB, Google Trends, Reddit, App Store, MOVE, Firm Vitality), 180-day residual z-score. Range toggles tail-slice the spark180d series.",
+        values: "σ units · threshold: +1.50σ (Gate 1 fires) · +10σ (super-threshold bypass). Typical band −3 to +5.",
+        section: "§4.2 — BSI construction",
+      }}>
+      <div className="px-3 pb-3 relative">
+        <div className="flex items-end justify-between">
+          <div>
+            <div className={`font-mono text-[34px] leading-none ${bsiRed ? "text-[var(--critical)]" : "text-[var(--text)]"}`}>
+              {s.bsi.current >= 0 ? "+" : ""}{s.bsi.current.toFixed(2)}
+            </div>
+            <div className="text-[9px] tracking-widest text-[var(--dim)] uppercase mt-0.5">z-score · daily</div>
+          </div>
+          <div className="flex items-center gap-0.5" role="tablist" aria-label="BSI time range">
+            {BSI_RANGES.map(r => {
+              const active = range === r.key;
+              return (
+                <button key={r.key}
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => setRange(r.key)}
+                  className={`px-1.5 py-0.5 rounded-sm text-[9px] font-mono tracking-widest border transition-colors ${
+                    active
+                      ? "border-[var(--accent)] text-[var(--accent)] bg-[var(--accent)]/5"
+                      : "border-[var(--border)] text-[var(--dim)] hover:text-[var(--muted)] hover:border-[var(--borderHi)]"
+                  }`}>
+                  {r.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        <div className="mt-2 h-[72px] -mx-1">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={chartData} margin={{ top: 6, right: 6, bottom: 0, left: 0 }}>
+              <defs>
+                <linearGradient id="bsiFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%"   stopColor={bsiRed ? C.critical : C.accent} stopOpacity={0.35}/>
+                  <stop offset="100%" stopColor={bsiRed ? C.critical : C.accent} stopOpacity={0.02}/>
+                </linearGradient>
+              </defs>
+              <XAxis dataKey="i" hide/>
+              <YAxis hide domain={["auto", "auto"]}/>
+              <ReferenceLine y={1.5} stroke={C.warn} strokeDasharray="4 4"
+                label={{ value: "+1.5σ", fill: C.warn, fontSize: 9, position: "insideTopRight" }}/>
+              <Tooltip
+                contentStyle={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 4, fontFamily: FONT_MONO, fontSize: 10, color: C.text }}
+                labelStyle={{ color: C.muted }}
+                formatter={(v: any) => [(v as number).toFixed(2) + "σ", "z"]}
+                labelFormatter={() => ""}
+              />
+              <Area type="monotone" dataKey="z"
+                stroke={bsiRed ? C.critical : C.accent}
+                strokeWidth={1.4}
+                fill="url(#bsiFill)"
+                isAnimationActive={false}/>
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+        <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-0.5 text-[10.5px]">
+          <dt className="text-[var(--dim)]">peak·30d</dt>
+          <dd className="font-mono text-right text-[var(--text)]">+{s.bsi.peak30d.toFixed(2)}σ <span className="text-[var(--dim)]">({s.bsi.peakDate})</span></dd>
+          <dt className="text-[var(--dim)]">all-time·hi</dt>
+          <dd className="font-mono text-right text-[var(--text)]">+{s.bsi.allTimeHigh.toFixed(2)}σ</dd>
+          <dt className="text-[var(--dim)]">180d·μ</dt>
+          <dd className="font-mono text-right text-[var(--text)]">{s.bsi.mean180d.toFixed(2)}</dd>
+        </dl>
+      </div>
+    </Card>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
 // ROW 1 — EXECUTIVE BENTO
 // ─────────────────────────────────────────────────────────────
 function ExecBento() {
   const s = POD_SNAPSHOT;
-  const bsiRed = s.bsi.current >= s.bsi.redGlowThreshold;
   return (
     <div className="grid grid-cols-4 gap-2 p-2">
-      {/* A: BSI */}
-      <Card label="BSI · Consumer-Stress" icon={<L.Activity size={12}/>} timestamp={`as-of ${s.meta.asOf}`}
-        help={{
-          what: "Weekly BNPL borrower-stress index — our proprietary leading signal.",
-          how:  "Six-pillar weighted aggregate (CFPB, Google Trends, Reddit, App Store, MOVE, Firm Vitality), 180-day residual z-score.",
-          values: "σ units · redlines: +1.50σ (Gate 1 fires) · +10σ (super-threshold bypass). Typical band −3 to +5.",
-          section: "§4.2 — BSI construction",
-        }}>
-        <div className="px-3 pb-3 relative">
-          <div className="flex items-end justify-between">
-            <div>
-              <div className={`font-mono text-[34px] leading-none ${bsiRed ? "text-[var(--crimson)] drop-shadow-[0_0_12px_rgba(225,29,72,0.55)]" : "text-[var(--text)]"}`}>
-                {s.bsi.current >= 0 ? "+" : ""}{s.bsi.current.toFixed(2)}
-              </div>
-              <div className="text-[9px] tracking-widest text-[var(--dim)] uppercase mt-0.5">z-score · daily</div>
-            </div>
-            <MiniSpark data={s.bsi.spark12m} stroke={bsiRed ? C.crimson : C.cyan} w={110} h={40}/>
-          </div>
-          <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-0.5 text-[10.5px]">
-            <dt className="text-[var(--dim)]">peak·30d</dt>
-            <dd className="font-mono text-right text-[var(--text)]">+{s.bsi.peak30d.toFixed(2)}σ <span className="text-[var(--dim)]">({s.bsi.peakDate})</span></dd>
-            <dt className="text-[var(--dim)]">all-time·hi</dt>
-            <dd className="font-mono text-right text-[var(--text)]">+{s.bsi.allTimeHigh.toFixed(2)}σ</dd>
-            <dt className="text-[var(--dim)]">180d·μ</dt>
-            <dd className="font-mono text-right text-[var(--text)]">{s.bsi.mean180d.toFixed(2)}</dd>
-          </dl>
-        </div>
-      </Card>
+      {/* A: BSI — AreaChart with range toggles */}
+      <BSICard/>
 
       {/* B: MOVE */}
       <Card label="MOVE · Bond-Market Fear" icon={<L.LineChart size={12}/>} timestamp={`as-of ${s.meta.asOf}`}
@@ -472,10 +581,10 @@ function ExecBento() {
             <span className="text-[10px] tracking-widest text-[var(--dim)] uppercase">Trade State</span>
             <span className={`font-mono text-[13px] tracking-[0.2em] ${
               s.gates.state === "STAND-DOWN"
-                ? "text-[var(--cyan)] drop-shadow-[0_0_6px_rgba(34,211,238,0.5)]"
+                ? "text-[var(--accent)]"
                 : s.gates.state === "BYPASS"
-                  ? "text-[var(--amber)] drop-shadow-[0_0_8px_rgba(245,158,11,0.6)]"
-                  : "text-[var(--crimson)] drop-shadow-[0_0_8px_rgba(225,29,72,0.6)]"
+                  ? "text-[var(--warn)]"
+                  : "text-[var(--critical)]"
             }`}>
               {s.gates.state}
             </span>
@@ -550,6 +659,78 @@ function GateProgress({ current, floor, gate, ceiling, ma }: any) {
 }
 
 // ─────────────────────────────────────────────────────────────
+// ROW 1.5 — MINI SPARKLINE STRIP (MOVE + SCP)
+// Chartless, axisless, gridless — sparkline + JetBrains Mono value.
+// Sits between the bento and the overrides strip. Provides macro /
+// pricing telemetry at a glance without burning another card slot.
+// ─────────────────────────────────────────────────────────────
+function TokenSparkline({ data, stroke }: { data: number[]; stroke: string }) {
+  const series = (data && data.length > 0) ? data : [];
+  if (series.length < 2) {
+    return <div className="h-[40px] text-[9px] font-mono text-[var(--dim)] flex items-end">—</div>;
+  }
+  const chartData = series.map((v, i) => ({ i, v }));
+  return (
+    <div className="h-[40px]">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={chartData} margin={{ top: 2, right: 2, bottom: 0, left: 0 }}>
+          <XAxis dataKey="i" hide/>
+          <YAxis hide domain={["auto", "auto"]}/>
+          <Line type="monotone" dataKey="v"
+            stroke={stroke}
+            strokeWidth={1.3}
+            dot={false}
+            isAnimationActive={false}/>
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+function SparklineRow() {
+  const s = POD_SNAPSHOT as any;
+  const moveSpark: number[] = (s.move && s.move.spark180d) || [];
+  const scpSpark:  number[] = (s.scp  && s.scp.spark180d)  || [];
+  const moveCur = s.move ? s.move.current : NaN;
+  const scpCur  = s.gates && s.gates.telemetry && s.gates.telemetry.scp
+    ? s.gates.telemetry.scp.current
+    : NaN;
+  const scpUnit = s.gates && s.gates.telemetry && s.gates.telemetry.scp
+    ? s.gates.telemetry.scp.unit
+    : "bp";
+  return (
+    <div className="grid grid-cols-2 gap-2 px-2 mt-2">
+      {/* MOVE */}
+      <div className="border border-[var(--border)] rounded-md bg-[var(--card)] shadow-inner-card px-3 py-2">
+        <div className="flex items-center justify-between">
+          <div className="text-[9.5px] tracking-[0.22em] uppercase text-[var(--muted)]">MOVE · 180d</div>
+          <div className="flex items-baseline gap-1">
+            <span className="font-mono text-[14px] text-[var(--text)]">
+              {Number.isFinite(moveCur) ? moveCur.toFixed(1) : "—"}
+            </span>
+            <span className="text-[9px] tracking-widest text-[var(--dim)]">idx</span>
+          </div>
+        </div>
+        <TokenSparkline data={moveSpark} stroke={C.accent}/>
+      </div>
+      {/* SCP */}
+      <div className="border border-[var(--border)] rounded-md bg-[var(--card)] shadow-inner-card px-3 py-2">
+        <div className="flex items-center justify-between">
+          <div className="text-[9.5px] tracking-[0.22em] uppercase text-[var(--muted)]">SCP · 180d <span className="text-[var(--dim)] normal-case tracking-normal">· non-gating</span></div>
+          <div className="flex items-baseline gap-1">
+            <span className="font-mono text-[14px] text-[var(--text)]">
+              {Number.isFinite(scpCur) ? scpCur : "—"}
+            </span>
+            <span className="text-[9px] tracking-widest text-[var(--dim)]">{scpUnit}</span>
+          </div>
+        </div>
+        <TokenSparkline data={scpSpark} stroke={C.muted}/>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
 // ROW 2 — OVERRIDES & TELEMETRY STRIP
 // Bypass alert (amber · Override) + SCP telemetry (muted · non-gating)
 // Sits between the 4-card bento and the backtest canvas so the
@@ -569,8 +750,8 @@ function OverridesStrip() {
         const pct = Math.min(1, absZ / bp.threshold);
         const fired = !!bp.fired;
         return (
-          <div className={`relative border rounded-lg shadow-inner-card bg-[var(--card)] ${
-            fired ? "border-[var(--amber)]/50 shadow-[0_0_18px_rgba(245,158,11,0.08)]" : "border-[var(--border)]"
+          <div className={`relative border rounded-md shadow-inner-card bg-[var(--card)] ${
+            fired ? "border-[var(--warn)]/50" : "border-[var(--border)]"
           }`}>
             <div className={`absolute left-0 top-2 bottom-2 w-[2px] rounded-r ${fired ? "bg-[var(--amber)]" : "bg-[var(--border)]"}`}/>
             <div className="flex items-center justify-between px-3 pt-2 pb-1.5">
@@ -581,7 +762,7 @@ function OverridesStrip() {
               <div className="flex items-center gap-2">
                 <span className={`font-mono text-[9.5px] tracking-widest ${
                   fired
-                    ? "text-[var(--amber)] drop-shadow-[0_0_6px_rgba(245,158,11,0.6)]"
+                    ? "text-[var(--warn)]"
                     : "text-[var(--muted)]"
                 }`}>
                   {fired ? "BYPASS FIRED" : "ARMED"}
@@ -809,54 +990,103 @@ function LegendItem({ color, label, dashed, right }: any) {
 // ─────────────────────────────────────────────────────────────
 // ROW 4 — RISK & ATTRIBUTION
 // ─────────────────────────────────────────────────────────────
-function GateRadar() {
-  const axes = POD_SNAPSHOT.radar.axes;
-  const data = axes.map(a => ({ axis: a.key, current: +(a.current * 100).toFixed(1), threshold: 100 }));
+//
+// MultiGateHorizonStrip — three stacked 180d trajectories per gate
+// (BSI · MOVE · CCD-II). Replaces the polar radar: in credit risk
+// you care about *approach velocity* to a threshold, not just
+// current polar distance. Each row shows:
+//   [label + state]  [spark180d vs threshold]  [current + dot]
+//
+function GateHorizonRow({ gate }: { gate: any }) {
+  // A gate 'holds' (= passes) when current is *below* threshold for
+  // the MOVE/CCD flavor, and BSI-gate-1 holds when z is *below* +1.5σ.
+  // We trust the `hold` field emitted by build_snapshot.py; if absent
+  // (mock), fall back to |current| < threshold.
+  const holds = typeof gate.hold === "boolean"
+    ? gate.hold
+    : Math.abs(gate.current) < gate.threshold;
+  const spark: number[] = Array.isArray(gate.spark180d) && gate.spark180d.length > 0
+    ? gate.spark180d
+    : [gate.current, gate.current];
+  const chartData = spark.map((v, i) => ({ i, v }));
+  const dot = holds ? C.accent : C.critical;
+  const stateLbl = holds ? "HOLD" : "FIRE";
+  // Dashed amber threshold line; sign-aware so CCD-II's ≤30d shows
+  // correctly as a lower boundary while BSI's +1.5σ shows as upper.
+  const thresh = gate.threshold;
   return (
-    <div className="border border-[var(--border)] bg-[var(--card)] rounded-lg shadow-inner-card p-0">
+    <div className="grid grid-cols-[120px_1fr_110px] items-center gap-3 px-3 py-2 border-t border-[var(--borderMuted)] first:border-t-0">
+      <div className="flex flex-col">
+        <div className="font-mono text-[11px] text-[var(--muted)] tracking-widest">{gate.id} · {gate.name}</div>
+        <div className="mt-0.5 flex items-center gap-1.5">
+          <span className={`inline-block w-1.5 h-1.5 rounded-full`} style={{ background: dot }}/>
+          <span className={`font-mono text-[9.5px] tracking-widest ${holds ? "text-[var(--accent)]" : "text-[var(--critical)]"}`}>
+            {stateLbl}
+          </span>
+        </div>
+      </div>
+      <div className="h-[54px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <ComposedChart data={chartData} margin={{ top: 4, right: 6, bottom: 0, left: 0 }}>
+            <defs>
+              <linearGradient id={`gateFill-${gate.id}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%"   stopColor={dot} stopOpacity={0.28}/>
+                <stop offset="100%" stopColor={dot} stopOpacity={0.02}/>
+              </linearGradient>
+            </defs>
+            <XAxis dataKey="i" hide/>
+            <YAxis hide domain={["auto", "auto"]}/>
+            <ReferenceLine y={thresh} stroke={C.warn} strokeDasharray="4 4"
+              label={{ value: `${thresh}${gate.unit || ""}`, fill: C.warn, fontSize: 9, position: "insideTopRight" }}/>
+            <Tooltip
+              contentStyle={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 4, fontFamily: FONT_MONO, fontSize: 10, color: C.text }}
+              labelStyle={{ color: C.muted }}
+              formatter={(v: any) => [(typeof v === "number" ? v.toFixed(2) : v) + (gate.unit || ""), gate.id]}
+              labelFormatter={() => ""}
+            />
+            <Area type="monotone" dataKey="v"
+              stroke={dot}
+              strokeWidth={1.3}
+              fill={`url(#gateFill-${gate.id})`}
+              isAnimationActive={false}/>
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
+      <div className="text-right">
+        <div className="font-mono text-[18px] leading-none text-[var(--text)]">
+          {typeof gate.current === "number" ? gate.current : "—"}<span className="text-[var(--dim)] text-[11px] ml-1">{gate.unit}</span>
+        </div>
+        <div className="text-[9px] tracking-widest text-[var(--dim)] uppercase mt-0.5">
+          thr {thresh}{gate.unit || ""}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function GateRadar() {
+  const ladder = POD_SNAPSHOT.gates && POD_SNAPSHOT.gates.ladder ? POD_SNAPSHOT.gates.ladder : [];
+  const rows = ladder.slice(0, 3); // BSI · MOVE · CCD-II
+  return (
+    <div className="border border-[var(--border)] bg-[var(--card)] rounded-md shadow-inner-card p-0">
       <div className="flex items-center justify-between px-3 pt-2 pb-1.5">
         <div className="flex items-center gap-1.5 text-[10px] tracking-[0.22em] uppercase text-[var(--muted)]">
-          <L.Radar size={12}/> Gate Radar · Current Regime
+          <L.Gauge size={12}/> Multi-Gate Horizon · 180d Trajectory
           <HelpPopover spec={{
-            what: "Four-axis normalised regime snapshot: BSI · MOVE · SCP · DTC.",
-            how:  "Each axis plots current value / threshold × 100. Dashed ring = threshold (100%). Spokes beyond the ring = gate would fire.",
-            values: "Axis scale 0–140%. Threshold=100 on every axis. DTC = Days-to-Cover (short-squeeze telemetry).",
+            what: "180-day trajectory per gate (BSI · MOVE · CCD-II), with the gate threshold as a dashed amber reference line.",
+            how:  "Each row tails the last 180 daily observations of the gate's underlying series (bsi_daily, FRED-MOVE, or CCD-II T-minus countdown). Line stays blue while the gate HOLDS; flips red on the day it would FIRE.",
+            values: "State = HOLD (|value| < threshold) or FIRE. Approach velocity matters: a line curving toward the amber ref is forward guidance for gate activation.",
             section: "§4 — Gate architecture",
           }}/>
         </div>
         <div className="text-[9px] tracking-widest font-mono text-[var(--dim)]">as-of {POD_SNAPSHOT.meta.asOf}</div>
       </div>
-      <div className="px-3 pb-3 h-[330px] flex gap-3">
-        <div className="flex-1">
-          <ResponsiveContainer width="100%" height="100%">
-            <RadarChart data={data} outerRadius="74%">
-              <PolarGrid stroke={C.border}/>
-              <PolarAngleAxis dataKey="axis" tick={{ fill: C.muted, fontSize: 10, letterSpacing: 2 }}/>
-              <PolarRadiusAxis domain={[0, 140]} tick={{ fill: C.dim, fontSize: 9 }} axisLine={false}/>
-              <Radar name="threshold" dataKey="threshold" stroke={C.borderHi} strokeDasharray="3 3" fill="transparent"/>
-              <Radar name="current"   dataKey="current"   stroke={C.cyan}     fill={C.cyan} fillOpacity={0.18} strokeWidth={1.4}/>
-            </RadarChart>
-          </ResponsiveContainer>
-        </div>
-        <div className="w-40 flex flex-col justify-center gap-2 text-[10.5px]">
-          {axes.map(a => {
-            const over = a.current > a.threshold;
-            return (
-              <div key={a.key} className={`border ${over ? "border-[var(--crimson)]/40" : "border-[var(--border)]"} rounded px-2 py-1.5`}>
-                <div className="flex items-center justify-between">
-                  <span className="tracking-widest text-[var(--muted)] uppercase text-[9.5px]">{a.key}</span>
-                  <span className={`font-mono text-[9.5px] ${over ? "text-[var(--crimson)]" : "text-[var(--cyan)]"}`}>
-                    {over ? "BREACH" : "OK"}
-                  </span>
-                </div>
-                <div className="font-mono mt-0.5 flex items-baseline justify-between">
-                  <span className="text-[var(--text)]">{a.curAbs}</span>
-                  <span className="text-[var(--dim)] text-[9.5px]">/ {a.thrAbs}</span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+      <div className="pb-1">
+        {rows.length === 0 ? (
+          <div className="px-3 py-6 text-[10.5px] text-[var(--dim)] text-center">no gate ladder data</div>
+        ) : (
+          rows.map((g: any) => <GateHorizonRow key={g.id} gate={g}/>)
+        )}
       </div>
     </div>
   );
@@ -927,56 +1157,96 @@ function ShCell({ v }: { v:number }) {
 }
 
 // ─────────────────────────────────────────────────────────────
-// ROW 5 — AGENT DEBATE LOG
+// ROW 5 — AGENT DEBATE LOG (chat-bubble UI, role-coloured avatars)
+// DOM shape mirrors dashboard/chat_renderer.py so Layer 1 and Layer 2
+// Tab 4 read identically.
 // ─────────────────────────────────────────────────────────────
+const AGENT_AVATAR: Record<string, string> = { MACRO: "MC", QUANT: "QT", RISK: "RK" };
+const agentColor = (a: string) =>
+  a === "MACRO" ? C.accent
+  : a === "QUANT" ? C.violet
+  : a === "RISK"  ? C.warn
+  : C.dim;
+
+function AgentBubble({ row }: { row: any }) {
+  const role = String(row.agent || "UNKNOWN").toUpperCase();
+  const avatarBg = agentColor(role);
+  const avatarTxt = AGENT_AVATAR[role] || "??";
+  const model = String(row.model || "").split("/").pop()?.slice(0, 28) || "—";
+  const ts = String(row.ts || "").replace("T", " ").slice(0, 19);
+  return (
+    <div
+      className={`grid grid-cols-[34px_1fr] gap-2.5 items-start px-3 py-2 mb-1.5 rounded-sm bg-[var(--card)] border-b border-[var(--borderMuted)] ${row._new ? "row-fade-in" : ""}`}
+      style={{ borderLeft: `2px solid ${avatarBg}` }}
+    >
+      <div
+        className="w-8 h-8 rounded-full flex items-center justify-center font-mono text-[11px] font-semibold tracking-wider"
+        style={{ background: avatarBg, color: C.card }}
+      >
+        {avatarTxt}
+      </div>
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-baseline gap-1.5">
+          <span className="font-sans font-semibold text-[11.5px] tracking-wider" style={{ color: avatarBg }}>
+            {role}
+          </span>
+          <span className="font-mono text-[10px] text-[var(--muted)] bg-[var(--borderMuted)] border border-[var(--border)] rounded-sm px-1.5">
+            {model}
+          </span>
+          <span className="font-mono text-[10px] text-[var(--dim)]">· {ts}</span>
+          {row.latencyMs != null && (
+            <span className="font-mono text-[10px] text-[var(--dim)]">· {row.latencyMs}ms</span>
+          )}
+          {row.tokens != null && (
+            <span className="font-mono text-[10px] text-[var(--dim)]">· {row.tokens}tok</span>
+          )}
+        </div>
+        {row.msg && (
+          <div className="mt-1 text-[12.5px] leading-snug text-[var(--text)] whitespace-pre-wrap">
+            {row.msg}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function AgentLog() {
   const base = POD_SNAPSHOT.agentLog;
-  const [rows, setRows] = useState(base.slice(0, 22));
-  const idxRef = useRef(22);
+  const [rows, setRows] = useState(base.slice(0, 10));
+  const idxRef = useRef(10);
   useEffect(() => {
     const id = setInterval(() => {
       const next = base[idxRef.current % base.length];
-      const now = new Date().toISOString().replace("T"," ").slice(0,19);
+      const now = new Date().toISOString().replace("T", " ").slice(0, 19);
       idxRef.current++;
-      setRows(r => [{ ...next, ts: now, _new: true, _k: Math.random() }, ...r].slice(0, 60));
+      setRows(r => [{ ...next, ts: now, _new: true, _k: Math.random() }, ...r].slice(0, 40));
     }, 1800);
     return () => clearInterval(id);
   }, []);
-  const agentColor = (a: string) => a === "MACRO" ? C.cyan : a === "QUANT" ? C.violet : C.amber;
   return (
-    <div className="mx-2 border border-[var(--border)] bg-[var(--card)] rounded-lg shadow-inner-card">
+    <div className="mx-2 border border-[var(--border)] bg-[var(--card)] rounded-md shadow-inner-card">
       <div className="flex items-center justify-between px-3 pt-2 pb-1.5 border-b border-[var(--border)]">
         <div className="flex items-center gap-1.5 text-[10px] tracking-[0.22em] uppercase text-[var(--muted)]">
           <L.Terminal size={12}/> Agent Debate Log
-          <span className="ml-3 w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span className="ml-3 w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-pulse"></span>
           <span className="text-[var(--dim)] normal-case tracking-wider">live · stream-attached</span>
           <HelpPopover spec={{
             what: "Live feed of LLM agents (Macro / Quant / Risk) reasoning about the current state — advisory-only, never gate.",
             how:  "Tail of `logs/agent_decisions/YYYY-MM-DD.jsonl`. Each row: ts · role · model · tokens · latency · message. Refreshes every ~1.8s in the tear-sheet.",
-            values: "MACRO (cyan) = BSI + macro vol reasoning · QUANT (violet) = pricing + hazard · RISK (amber) = squeeze + drawdown. None influence compliance.",
+            values: "MACRO (sky) = BSI + macro vol reasoning · QUANT (violet) = pricing + hazard · RISK (amber) = squeeze + drawdown. None influence compliance.",
             section: "§3 — LangGraph pod architecture",
           }}/>
         </div>
         <div className="flex items-center gap-3 text-[9px] tracking-widest uppercase text-[var(--dim)]">
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm" style={{background:C.cyan}}/>MACRO</span>
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm" style={{background:C.violet}}/>QUANT</span>
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm" style={{background:C.amber}}/>RISK</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ background: C.accent }}/>MACRO</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ background: C.violet }}/>QUANT</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ background: C.warn }}/>RISK</span>
         </div>
       </div>
-      <div className="h-[200px] overflow-y-auto font-mono text-[11px]">
-        <div className="grid grid-cols-[140px_72px_170px_60px_70px_1fr] gap-x-3 px-3 py-1.5 text-[9px] tracking-widest uppercase text-[var(--dim)] border-b border-[var(--border)] sticky top-0 bg-[var(--card)] z-10">
-          <span>timestamp</span><span>agent</span><span>model</span><span className="text-right">tokens</span><span className="text-right">lat·ms</span><span>message</span>
-        </div>
+      <div className="h-[340px] overflow-y-auto px-2 py-2 fade-both">
         {rows.map((r, i) => (
-          <div key={r._k ?? r.ts + i}
-               className={`grid grid-cols-[140px_72px_170px_60px_70px_1fr] gap-x-3 px-3 py-1 border-b border-[var(--border)]/50 hover:bg-[var(--cardAlt)] ${r._new ? "row-fade-in" : ""}`}>
-            <span className="text-[var(--dim)]">{r.ts}</span>
-            <span style={{ color: agentColor(r.agent) }}>{r.agent}</span>
-            <span className="text-[var(--muted)]">{r.model}</span>
-            <span className="text-right text-[var(--text)]">{r.tokens}</span>
-            <span className="text-right text-[var(--text)]">{r.latencyMs}</span>
-            <span className="text-[var(--text)] truncate">{r.msg}</span>
-          </div>
+          <AgentBubble key={r._k ?? r.ts + i} row={r}/>
         ))}
       </div>
     </div>
@@ -1042,6 +1312,7 @@ function PodTerminal() {
       <TopBar/>
       <Ticker/>
       <ExecBento/>
+      <SparklineRow/>
       <OverridesStrip/>
       <div className="mt-2"><BacktestCanvas/></div>
       <div className="grid grid-cols-2 gap-2 px-2 mt-2">
@@ -1060,7 +1331,7 @@ function PodTerminal() {
            style={{
              borderColor: srcLabel === "live" ? C.cyan : C.amber,
              color:       srcLabel === "live" ? C.cyan : C.amber,
-             background:  "rgba(7,10,16,0.7)",
+             background:  "rgba(15,23,42,0.7)",
            }}>
         SRC · {srcLabel.toUpperCase()}
       </div>

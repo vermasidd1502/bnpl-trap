@@ -49,6 +49,11 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
+# Design tokens + Plotly institutional template — importing registers
+# the template and sets it as the Plotly default for this process.
+from dashboard.design_tokens import C as TOK_C, FONT as TOK_FONT
+from dashboard import plotly_theme as _plotly_theme  # noqa: F401  (side-effect)
+
 from backtest.event_study import (
     PnLMode,
     WINDOWS,
@@ -130,21 +135,30 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-        /* ── design tokens (match web/index.html) ───────────────────── */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+        /* ── design tokens (lockstep with web/design_tokens.ts AND
+         * dashboard/design_tokens.py). Edit all three together. ──── */
         :root {
-            --bg:        #070a10;
-            --card:      #0b111b;
-            --cardAlt:   #0e1524;
-            --border:    #1c2433;
-            --borderHi:  #2a3448;
-            --text:      #cfd6e4;
-            --dim:       #6b7689;
-            --muted:     #9aa3b5;
-            --cyan:      #22d3ee;
-            --amber:     #f59e0b;
-            --crimson:   #e11d48;
-            --violet:    #a78bfa;
-            --green:     #86efac;
+            --bg:          #0F172A;  /* slate-900 */
+            --card:        #1E293B;  /* slate-800 */
+            --cardAlt:     #273449;  /* chip lift */
+            --border:      #334155;  /* slate-700 */
+            --borderHi:    #475569;  /* slate-600 */
+            --borderMuted: #1F2937;
+            --text:        #F8FAFC;  /* slate-50  */
+            --dim:         #64748B;  /* slate-500 */
+            --muted:       #94A3B8;  /* slate-400 */
+            --accent:      #38BDF8;  /* sky-blue  — primary / calm / pass */
+            --warn:        #FBBF24;  /* amber — thresholds */
+            --critical:    #EF4444;  /* red — breach */
+            --violet:      #8B5CF6;  /* QUANT agent */
+            /* legacy aliases — keep so existing className refs keep resolving
+             * without per-site edits. All three alias the new palette. */
+            --cyan:        #38BDF8;
+            --amber:       #FBBF24;
+            --crimson:     #EF4444;
+            --green:       #38BDF8;
         }
 
         /* hide default chrome */
@@ -164,13 +178,13 @@ st.markdown(
             max-width: 100%;
         }
 
-        /* typography — sans for UI chrome, mono for numbers */
-        html, body { font-family: Geist, "Inter", system-ui, sans-serif; }
+        /* typography — Inter for UI chrome, JetBrains Mono for numbers */
+        html, body { font-family: 'Inter', system-ui, sans-serif; }
         .stMarkdown, .stDataFrame, [class*="css"] { font-family: inherit; }
         [data-testid="stMetricValue"],
         [data-testid="stMetricDelta"],
         code, pre, .mono {
-            font-family: "Geist Mono", "JetBrains Mono", "Consolas", monospace !important;
+            font-family: 'JetBrains Mono', ui-monospace, 'Consolas', monospace !important;
             font-variant-numeric: tabular-nums;
         }
 
@@ -266,27 +280,72 @@ st.markdown(
         .status-bar .sub { color: var(--dim); font-size: 0.66rem; letter-spacing: 0.1em; font-weight: 400; }
         .status-bar .cell { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
         .status-bar .label { font-size: 0.62rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--dim); }
-        .status-bar .value { font-family: "Geist Mono", monospace; font-size: 0.95rem; font-variant-numeric: tabular-nums; color: var(--text); letter-spacing: -0.01em; }
+        /* Values are single-line tabular figures. Mid-word wrapping (e.g.
+         * "Credit Dire\nctive") looked broken in earlier passes — ellipsize
+         * instead. .dim is the default / neutral state; .ok/.warn/.fire
+         * light up only when a threshold is crossed. */
+        .status-bar .value {
+            font-family: "JetBrains Mono", monospace;
+            font-size: 0.95rem;
+            font-variant-numeric: tabular-nums;
+            color: var(--text);
+            letter-spacing: -0.01em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .status-bar .value.dim    { color: var(--muted); }
         .status-bar .value.ok     { color: var(--cyan); }
         .status-bar .value.warn   { color: var(--amber); }
         .status-bar .value.fire   { color: var(--crimson); }
         .status-bar .state-pill {
             padding: 8px 16px; border-radius: 6px;
-            font-family: "Geist Mono", monospace;
+            font-family: "JetBrains Mono", monospace;
             font-size: 0.82rem; letter-spacing: 0.18em; font-weight: 600;
-            background: rgba(34,211,238,0.08);
-            color: var(--cyan);
-            border: 1px solid rgba(34,211,238,0.3);
+            /* Default (STAND-DOWN) = calm / neutral. No sky-blue glow,
+             * otherwise STAND-DOWN looks like a clickable primary button. */
+            background: rgba(148,163,184,0.06);
+            color: var(--muted);
+            border: 1px solid var(--border);
         }
         .status-bar .state-pill.fire {
             color: var(--crimson);
-            background: rgba(225,29,72,0.08);
-            border-color: rgba(225,29,72,0.3);
+            background: rgba(239,68,68,0.08);
+            border-color: rgba(239,68,68,0.3);
         }
         .status-bar .state-pill.bypass {
             color: var(--amber);
-            background: rgba(245,158,11,0.08);
-            border-color: rgba(245,158,11,0.3);
+            background: rgba(251,191,36,0.08);
+            border-color: rgba(251,191,36,0.3);
+        }
+
+        /* Compact Streamlit st.metric cards — the default has 24+ px of
+         * internal padding which makes a 4-up row sprawl and separates the
+         * label from its value. Tighten to match the institutional density
+         * of the Layer 1 bento cards. */
+        [data-testid="stMetric"] {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px 14px;
+        }
+        [data-testid="stMetricLabel"] {
+            font-size: 0.62rem !important;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: var(--muted) !important;
+        }
+        [data-testid="stMetricLabel"] p {
+            font-size: 0.62rem !important;
+            letter-spacing: 0.22em;
+            color: var(--muted) !important;
+        }
+        [data-testid="stMetricValue"] {
+            font-family: "JetBrains Mono", monospace !important;
+            font-size: 1.35rem !important;
+            font-variant-numeric: tabular-nums;
+            color: var(--text) !important;
+            padding-top: 2px;
         }
 
         /* tab onramp — one-line inline caption, not a collapsed expander */
@@ -303,7 +362,7 @@ st.markdown(
         }
         .tab-onramp .paper-ref {
             color: var(--amber);
-            font-family: "Geist Mono", monospace;
+            font-family: "JetBrains Mono", monospace;
             font-size: 0.72rem;
         }
 
@@ -333,7 +392,7 @@ st.markdown(
         /* scrollbars */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: var(--bg); }
-        ::-webkit-scrollbar-thumb { background: #1a2232; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--borderHi); }
 
         /* selection */
@@ -489,82 +548,99 @@ def _jt_simulate(
 
 def _render_agent_debate_log(*, n_days: int = 3, height_px: int = 520,
                              role_filter: set[str] | None = None) -> None:
-    """Render the agent-decisions JSONL tail. Extracted from the Sprint H.d
-    Terminal tab so the 4-tab refactor can surface it as a standalone view."""
+    """Render the agent-decisions JSONL tail as role-coloured chat bubbles.
+
+    Uses ``dashboard.chat_renderer`` so the HTML shape is byte-identical to
+    the Layer 1 React ``AgentBubble`` — the two layers read as one product.
+    """
+    from dashboard.chat_renderer import render_agent_log
+
     rows = _agent_log_rows(n_days=n_days)
     if not rows:
         st.caption("No `logs/agent_decisions/*.jsonl` rows yet. "
                    "Run `python -m agents.tick` to populate.")
         return
-    body = []
-    for r in rows[:120]:
-        role = (r.get("role") or "unknown").lower()
-        if role_filter and role not in role_filter:
-            continue
-        role_class = role if role in ("macro", "quant", "risk") else ""
-        ts = (r.get("ts") or "")[:19].replace("T", " ")
-        prov = r.get("provider", "?")
-        model = (r.get("model") or "").split("/")[-1][:28]
-        latency = r.get("latency_ms", 0)
-        tokens = (r.get("meta") or {}).get("tokens") or 0
-        err = (r.get("meta") or {}).get("error")
-        badge = "<span class='who'>" + role.upper() + "</span>"
-        prov_s = f"<span class='prov'>{prov}</span>"
-        line = (
-            f"<div class='agent-row {role_class}'>"
-            f"<div>{ts} &nbsp;·&nbsp; {badge} &nbsp;·&nbsp; {prov_s} "
-            f"&nbsp;·&nbsp; {model}</div>"
-            f"<div style='color:#7c8ba1;font-size:0.72rem;'>"
-            f"{latency} ms &nbsp;·&nbsp; {tokens} tok"
-            + (f" &nbsp;·&nbsp; <span style='color:#f28b82'>{err[:80]}</span>" if err else "")
-            + "</div></div>"
-        )
-        body.append(line)
-    html_block = (
-        f"<div style='max-height: {height_px}px; overflow-y: auto; padding-right: 6px;'>"
-        + "".join(body)
-        + "</div>"
+
+    # The chat renderer expects upper-case role tags to match the
+    # AGENT_COLORS keys (MACRO/QUANT/RISK). Normalise the optional
+    # role_filter up-front.
+    norm_filter = (
+        {r.upper() for r in role_filter} if role_filter else None
+    )
+
+    html_block = render_agent_log(
+        rows[:200],
+        max_height_px=height_px,
+        role_filter=norm_filter,
+        truncate_chars=400,
     )
     st.markdown(html_block, unsafe_allow_html=True)
 
 
 def _what_is_this(*, what: str, how: str, values: str, section: str) -> None:
-    """Inline one-strip tab onramp. Always visible — no collapsed expander.
-    Renders four fields as a tight 2-column grid with a paper-ref chip on the right.
+    """Compact tab onramp — a one-line lede + collapsible Method/Values.
+
+    Earlier pass rendered WHAT/HOW/VALUES/PAPER as four stacked labelled
+    rows. That read as a wall of text on every tab and pushed the first
+    real chart below the fold. This version keeps the single most useful
+    sentence (WHAT) visible always, surfaces the paper reference inline
+    on the right, and hides the denser prose (HOW / VALUES) behind an
+    ``st.expander`` for readers who want it.
     """
     st.markdown(
         f"""
         <div class="tab-onramp">
-            <div style="display:grid;grid-template-columns:auto 1fr;gap:6px 14px;">
-                <div style="color:var(--cyan);font-size:0.62rem;letter-spacing:0.22em;
-                            text-transform:uppercase;">What</div>
-                <div>{what}</div>
-                <div style="color:var(--cyan);font-size:0.62rem;letter-spacing:0.22em;
-                            text-transform:uppercase;">How</div>
-                <div style="color:var(--dim);">{how}</div>
-                <div style="color:var(--cyan);font-size:0.62rem;letter-spacing:0.22em;
-                            text-transform:uppercase;">Values</div>
-                <div style="font-family:'Geist Mono',monospace;font-size:0.74rem;">{values}</div>
-            </div>
-            <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);
-                        display:flex;align-items:center;gap:8px;">
-                <span style="color:var(--dim);font-size:0.62rem;letter-spacing:0.22em;
-                             text-transform:uppercase;">Paper</span>
-                <span class="paper-ref">{section}</span>
+            <div style="display:flex;align-items:baseline;gap:14px;
+                        flex-wrap:wrap;justify-content:space-between;">
+                <div style="flex:1 1 auto;min-width:0;
+                            color:var(--text);line-height:1.45;">
+                    {what}
+                </div>
+                <div style="flex:0 0 auto;display:flex;align-items:center;
+                            gap:8px;white-space:nowrap;">
+                    <span style="color:var(--dim);font-size:0.62rem;
+                                 letter-spacing:0.22em;text-transform:uppercase;">
+                        Paper
+                    </span>
+                    <span class="paper-ref">{section}</span>
+                </div>
             </div>
         </div>
         """,
         unsafe_allow_html=True,
     )
+    with st.expander("Method · Values", expanded=False):
+        st.markdown(
+            f"""
+            <div style="display:grid;grid-template-columns:auto 1fr;
+                        gap:8px 16px;line-height:1.5;">
+                <div style="color:var(--cyan);font-size:0.62rem;
+                            letter-spacing:0.22em;text-transform:uppercase;">
+                    Method
+                </div>
+                <div style="color:var(--muted);">{how}</div>
+                <div style="color:var(--cyan);font-size:0.62rem;
+                            letter-spacing:0.22em;text-transform:uppercase;">
+                    Values
+                </div>
+                <div style="font-family:'JetBrains Mono',monospace;
+                            font-size:0.78rem;color:var(--text);">
+                    {values}
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
 
 # -------------------------------------------------------------------------
 # PLOT HELPERS
 # -------------------------------------------------------------------------
 _MODE_COLOR = {
-    PnLMode.NAIVE: "#f28b82",          # red-ish
-    PnLMode.FIX3_ONLY: "#fdd663",      # amber
-    PnLMode.INSTITUTIONAL: "#81c995",  # green
+    # Institutional token palette — red = breach, amber = partial, sky = pass.
+    PnLMode.NAIVE: TOK_C["critical"],
+    PnLMode.FIX3_ONLY: TOK_C["warn"],
+    PnLMode.INSTITUTIONAL: TOK_C["accent"],
 }
 
 
@@ -583,17 +659,15 @@ def _three_panel_chart(fx, cmp) -> go.Figure:
                           + mode.value.upper() + "</extra>",
         ))
     fig.update_layout(
-        template="plotly_dark",
-        paper_bgcolor="#0b111b",
-        plot_bgcolor="#0b111b",
+        # Institutional Plotly template (paper/plot bg, Inter/JetBrains Mono,
+        # slate gridlines) is applied as default on import of
+        # ``dashboard.plotly_theme``; we only patch per-chart knobs here.
+        template="institutional",
         margin=dict(l=40, r=20, t=30, b=30),
         height=340,
         hovermode="x unified",
         legend=dict(orientation="h", y=1.12, x=0, bgcolor="rgba(0,0,0,0)"),
-        font=dict(color="#cfd6e4", family="Geist Mono"),
-        xaxis=dict(gridcolor="#1c2433", zerolinecolor="#1c2433"),
-        yaxis=dict(gridcolor="#1c2433", zerolinecolor="#1c2433",
-                   tickformat="+.3f", title="Cumulative TRS P&L"),
+        yaxis=dict(tickformat="+.3f", title="Cumulative TRS P&L"),
     )
     return fig
 
@@ -620,8 +694,9 @@ def _macro_radar(bsi_z: float, move_level: float, excess_spread: float) -> go.Fi
     fig.add_trace(go.Scatterpolar(
         r=values_closed, theta=categories_closed,
         fill="toself", name="Current",
-        line=dict(color="#8ab4f8", width=2),
-        fillcolor="rgba(138, 180, 248, 0.25)",
+        line=dict(color=TOK_C["accent"], width=2),
+        # Sky-blue fill at 22% opacity — matches Layer 1 BSI AreaChart gradient.
+        fillcolor="rgba(56,189,248,0.22)",
         hovertemplate="%{theta}: %{r:.2f}<extra></extra>",
     ))
     # Threshold ring — BSI>=1.5 maps to norm ≈0.75, MOVE>=120 maps to ≈0.38,
@@ -636,21 +711,25 @@ def _macro_radar(bsi_z: float, move_level: float, excess_spread: float) -> go.Fi
     fig.add_trace(go.Scatterpolar(
         r=ref_closed, theta=categories_closed,
         name="Gate threshold",
-        line=dict(color="#7c8ba1", width=1, dash="dash"),
+        # Dashed amber — same semantic as the Layer 1 +1.5σ ReferenceLine.
+        line=dict(color=TOK_C["warn"], width=1, dash="dash"),
         hovertemplate="threshold %{theta}: %{r:.2f}<extra></extra>",
     ))
     fig.update_layout(
-        template="plotly_dark",
-        paper_bgcolor="#0b111b",
-        plot_bgcolor="#0b111b",
-        font=dict(color="#cfd6e4", family="Geist Mono, ui-monospace, monospace"),
+        template="institutional",
         margin=dict(l=20, r=20, t=30, b=20),
         height=320,
         polar=dict(
-            bgcolor="#0b111b",
-            radialaxis=dict(visible=True, range=[0, 1],
-                            gridcolor="#1c2433", tickfont=dict(color="#6b7689")),
-            angularaxis=dict(gridcolor="#1c2433", tickfont=dict(color="#cfd6e4")),
+            bgcolor=TOK_C["card"],
+            radialaxis=dict(
+                visible=True, range=[0, 1],
+                gridcolor=TOK_C["chartGrid"],
+                tickfont=dict(color=TOK_C["textMuted"]),
+            ),
+            angularaxis=dict(
+                gridcolor=TOK_C["chartGrid"],
+                tickfont=dict(color=TOK_C["textSecondary"]),
+            ),
         ),
         legend=dict(orientation="h", y=-0.1, x=0, bgcolor="rgba(0,0,0,0)"),
     )
@@ -675,7 +754,19 @@ def _render_status_bar() -> None:
         future_s = [c for c in catalysts_s if c.deadline_date >= date.today()]
         next_cat = min(future_s, key=lambda c: c.deadline_date) if future_s else None
         cat_days = (next_cat.deadline_date - date.today()).days if next_cat else None
-        cat_name = next_cat.title[:24] if next_cat else "—"
+        # Word-boundary ellipsis so "EU Consumer Credit Directive" doesn't
+        # chop mid-word into "Credit Direc". 18 chars is roughly one
+        # narrow-viewport cell width at the current .status-bar grid ratios.
+        if next_cat:
+            raw_title = next_cat.title.strip()
+            if len(raw_title) <= 18:
+                cat_name = raw_title
+            else:
+                # Cut at last whitespace before char 18, append ellipsis.
+                cut = raw_title[:18].rsplit(" ", 1)[0]
+                cat_name = (cut if len(cut) >= 4 else raw_title[:17]) + "…"
+        else:
+            cat_name = "—"
     except Exception:
         cat_days = None
         cat_name = "—"
@@ -691,15 +782,28 @@ def _render_status_bar() -> None:
     elif g1 and g2 and g3:
         state_cls, state_txt = "fire", "FIRING"
     else:
+        # Explicit empty class — .state-pill default is now neutral/muted,
+        # not the old sky-blue which made STAND-DOWN look like a CTA button.
         state_cls, state_txt = "", "STAND-DOWN"
 
-    # Color classes on individual cells
-    bsi_cls = "fire" if (bsi_z_s is not None and bsi_z_s >= 1.5) else ("ok" if bsi_z_s is not None else "")
-    move_cls = "fire" if (move_s is not None and move_s >= 120) else ("warn" if (move_s is not None and move_s >= 100) else ("ok" if move_s is not None else ""))
-    cat_cls = "warn" if (cat_days is not None and cat_days <= 30) else ""
-    gate_cls = "fire" if gates_pass == 3 else ("warn" if gates_pass == 2 else "")
+    # Color classes on individual cells. The default is now ``"dim"`` so a
+    # resting, non-firing value sits at secondary-text color rather than
+    # primary-white. Only threshold crossings light up the bright tokens.
+    bsi_cls = (
+        "fire" if (bsi_z_s is not None and bsi_z_s >= 1.5)
+        else "dim"
+    )
+    move_cls = (
+        "fire" if (move_s is not None and move_s >= 120)
+        else ("warn" if (move_s is not None and move_s >= 100) else "dim")
+    )
+    cat_cls = "warn" if (cat_days is not None and cat_days <= 30) else "dim"
+    gate_cls = (
+        "fire" if gates_pass == 3
+        else ("warn" if gates_pass == 2 else "dim")
+    )
 
-    bsi_txt = f"{bsi_z_s:+.2f} σ" if bsi_z_s is not None else "—"
+    bsi_txt = f"{bsi_z_s:+.2f}σ" if bsi_z_s is not None else "—"
     move_txt = f"{move_s:.1f}" if move_s is not None else "—"
     cat_txt = f"{cat_days}d" if cat_days is not None else "—"
     ts = datetime.utcnow().strftime("%Y-%m-%d %H:%M") + "z"
@@ -715,7 +819,7 @@ def _render_status_bar() -> None:
             </div>
             <div class="cell"><span class="label">BSI z-score</span>
                 <span class="value {bsi_cls}">{bsi_txt}</span></div>
-            <div class="cell"><span class="label">MOVE (bp)</span>
+            <div class="cell"><span class="label">MOVE (index)</span>
                 <span class="value {move_cls}">{move_txt}</span></div>
             <div class="cell"><span class="label">Gates pass</span>
                 <span class="value {gate_cls}">{gates_pass} / 3</span></div>
@@ -725,7 +829,7 @@ def _render_status_bar() -> None:
         </div>
         <div style="color: var(--dim); font-size: 0.68rem; letter-spacing: 0.14em;
                     text-transform: uppercase; margin: -6px 0 14px 2px;
-                    font-family: 'Geist Mono', monospace;">
+                    font-family: 'JetBrains Mono', monospace;">
             warehouse · {settings.duckdb_path.name} &nbsp;·&nbsp; as-of {ts} &nbsp;·&nbsp;
             3-gate AND + |z|≥10 bypass &nbsp;·&nbsp;
             <span style="color: var(--amber);">paper-trade only</span>
@@ -800,112 +904,281 @@ with tab_proof:
             lag_display = f"{lags_arr[0]}w"
         else:
             lag_display = f"{min(lags_arr)}w – {max(lags_arr)}w ({len(lags_arr)})"
+        # KPI strip — the onramp's Method/Values expander already explains
+        # what each figure means; the per-metric ⓘ icons added visual noise
+        # for no information gain, so they're gone.
         c1, c2, c3, c4 = st.columns(4)
-        c1.metric("n (weekly obs)", f"{int(sub['n_obs'].iloc[0])}",
-                  help="Weekly observations fed to the OLS Granger test.")
-        c2.metric("Lags tested", lag_display,
-                  help="Range of weekly lags at which BSI → target was tested.")
-        c3.metric("p-value (tightest)", f"{sub['p_value'].min():.3f}",
-                  help="Smallest p across the lags tested. ≥ 0.95 = null not rejected = falsification passes.")
-        c4.metric("Last run", latest_ts.strftime("%Y-%m-%d %H:%M"),
-                  help="`run_at` timestamp of the most recent `signals.granger --persist` execution.")
+        c1.metric("n (weekly obs)", f"{int(sub['n_obs'].iloc[0])}")
+        c2.metric("Lags tested", lag_display)
+        c3.metric("p-value (tightest)", f"{sub['p_value'].min():.3f}")
+        c4.metric("Last run", latest_ts.strftime("%Y-%m-%d %H:%M"))
 
-        # Horizontal p-axis strip: single scale [0,1], 0.95 threshold as vertical
-        # rule, one labelled dot per lag. Works whether sub has 1 or 5 rows.
-        fig = go.Figure()
-        # threshold band (0.95 → 1.0) rendered as a faint green fill so the
-        # "null-not-rejected" zone reads visually before any label is parsed
-        fig.add_vrect(
-            x0=0.95, x1=1.0,
-            fillcolor="rgba(129, 201, 149, 0.10)",
-            line_width=0, layer="below",
-        )
-        fig.add_vline(
-            x=0.95, line_dash="dash", line_color="#6b7689", line_width=1,
-        )
-        # lag-labelled points along a single horizontal axis
-        y_labels = [f"lag {l}w" for l in lags_arr]
-        fig.add_trace(go.Scatter(
-            x=sub["p_value"],
-            y=y_labels,
-            mode="markers+text",
-            marker=dict(size=14, color="#81c995",
-                        line=dict(color="#0b111b", width=2)),
-            text=[f" p = {p:.3f}" for p in sub["p_value"]],
-            textposition="middle right",
-            textfont=dict(color="#cfd6e4", family="Geist Mono, monospace", size=12),
-            hovertemplate="%{y}<br>p = %{x:.4f}<extra></extra>",
-            name="p-value",
-        ))
-        # fixed height scales with lag count; single-lag case gets a compact strip
-        n_rows = max(1, len(lags_arr))
-        fig.update_layout(
-            height=max(140, 48 * n_rows + 80),
-            paper_bgcolor="#0b111b", plot_bgcolor="#0b111b",
-            font=dict(color="#cfd6e4", family="Geist Mono, monospace"),
-            xaxis=dict(
-                range=[0, 1.02],
-                title="p-value",
-                gridcolor="#1c2433",
-                zerolinecolor="#1c2433",
-                tickvals=[0, 0.25, 0.5, 0.75, 0.95, 1.0],
-                ticktext=["0", "0.25", "0.50", "0.75", "0.95", "1"],
-            ),
-            yaxis=dict(gridcolor="#1c2433", autorange="reversed"),
-            margin=dict(l=80, r=60, t=30, b=40),
-            showlegend=False,
-            annotations=[dict(
-                x=0.95, y=1.08, xref="x", yref="paper",
-                text="null-not-rejected →",
-                showarrow=False,
-                font=dict(color="#6b7689", family="Geist Mono, monospace", size=11),
-                xanchor="left",
-            )],
-        )
-        st.plotly_chart(fig, width="stretch")
+        # ─────────────────────────────────────────────────────────────
+        # Granger Heatmap · lag (x) × tier (y) × p-value (z).
+        # Shows ALL tiers at once so the "p > 0.95 everywhere" result
+        # reads in a single glance.
+        #
+        # Color semantic (inverted from the usual "red = high"):
+        #   p < 0.05  → critical-red   — null rejected, BSI behaves like a
+        #                                generic subprime gauge → our
+        #                                falsification claim would FAIL.
+        #   p ~ 0.5   → muted-slate    — inconclusive.
+        #   p > 0.95  → accent-sky     — null not rejected, BSI is
+        #                                idiosyncratic → falsification
+        #                                PASSES (the A+ result).
+        # Rationale: in every other panel of the app, red = breach / bad.
+        # Using red for "our thesis survives" would fight that language —
+        # a reviewer would misread the block as an alarm. Sky-blue for
+        # "pass" lines up with the Layer 1 gate-PASS chip color.
+        # ─────────────────────────────────────────────────────────────
+        all_tiers = sorted(gdf["tier"].dropna().astype(int).unique().tolist())
+        all_lags = sorted(gdf["lag_weeks"].dropna().astype(int).unique().tolist())
+        n_cells = max(1, len(all_tiers)) * max(1, len(all_lags))
 
-        # Dense F-stat table with right-aligned numerics
-        st.markdown(
-            "<div style='color:#9aa3b5;font-size:0.78rem;letter-spacing:0.04em;"
-            "text-transform:uppercase;margin:0.6rem 0 0.3rem 0;'>"
-            "F-statistics · raw"
-            "</div>",
-            unsafe_allow_html=True,
-        )
-        show = sub[["lag_weeks", "p_value", "f_stat", "n_obs", "target_label"]].copy()
-        show.columns = ["lag", "p-value", "F", "n", "target"]
-        st.dataframe(
-            show,
-            hide_index=True,
-            width="stretch",
-            column_config={
-                "lag": st.column_config.NumberColumn(format="%d w", width="small"),
-                "p-value": st.column_config.NumberColumn(format="%.4f", width="small"),
-                "F": st.column_config.NumberColumn(format="%.4f", width="small"),
-                "n": st.column_config.NumberColumn(format="%d", width="small"),
-                "target": st.column_config.TextColumn(width="large"),
-            },
-        )
+        # Flag — set when the degenerate-case verdict card renders so we can
+        # skip the redundant "Falsification · pass" callout further down.
+        verdict_rendered = False
 
-        # Palette-matching headline callout (replaces st.success pastel block)
-        if sub["p_value"].min() >= 0.95:
+        if n_cells <= 2:
+            # ── Degenerate case: not enough cells for a heatmap to read ──
+            # A single p-value stretched across the full panel width reads
+            # as an alarm block, not a visualization. Instead, render a
+            # focused "verdict card" — big p-value, accent-colored chip,
+            # plain-English one-liner. Same information, far clearer.
+            t0 = all_tiers[0]
+            lw0 = all_lags[0]
+            cell = gdf[(gdf["tier"] == t0) & (gdf["lag_weeks"] == lw0)]
+            pv = float(cell["p_value"].iloc[0]) if not cell.empty else float("nan")
+            fstat = float(cell["f_stat"].iloc[0]) if not cell.empty else float("nan")
+            tier_name = tier_labels.get(int(t0), f"Tier-{t0}").split("·")[0].strip()
+            if pv >= 0.95:
+                verdict = "FALSIFICATION · PASS"
+                verdict_color = TOK_C["accent"]
+                verdict_bg = "rgba(56,189,248,0.10)"
+                verdict_detail = (
+                    "Null <em>is not rejected</em> — BSI does <strong>not</strong> "
+                    "Granger-cause this tier's subprime-credit stress target. "
+                    "The signal is idiosyncratic to BNPL, not a general-subprime gauge."
+                )
+            elif pv < 0.05:
+                verdict = "FALSIFICATION · FAIL"
+                verdict_color = TOK_C["critical"]
+                verdict_bg = "rgba(239,68,68,0.10)"
+                verdict_detail = (
+                    "Null <em>is rejected</em> at α = 0.05 — BSI Granger-causes "
+                    "this target. The thesis that BSI is idiosyncratic to BNPL "
+                    "would be weakened at this tier/lag."
+                )
+            else:
+                verdict = "FALSIFICATION · INCONCLUSIVE"
+                verdict_color = TOK_C["warn"]
+                verdict_bg = "rgba(251,191,36,0.10)"
+                verdict_detail = (
+                    "p lies between 0.05 and 0.95. Neither a confident reject nor "
+                    "a confident fail-to-reject — more lags or a wider tier sweep "
+                    "would tighten the test."
+                )
+
+            verdict_html = (
+                "<div style='"
+                f"background:{verdict_bg};"
+                f"border:1px solid {TOK_C['border']};"
+                f"border-left:3px solid {verdict_color};"
+                "border-radius:4px;padding:18px 22px;"
+                "height:100%;box-sizing:border-box;'>"
+                f"<div style='color:{verdict_color};"
+                f"font-family:{TOK_FONT['mono']};font-size:0.72rem;"
+                "letter-spacing:0.14em;text-transform:uppercase;"
+                "margin-bottom:10px;'>"
+                f"{verdict}</div>"
+                "<div style='display:flex;align-items:baseline;gap:18px;"
+                "margin-bottom:10px;flex-wrap:wrap;'>"
+                f"<div style='font-family:{TOK_FONT['mono']};"
+                f"font-size:2.2rem;font-weight:600;color:{verdict_color};"
+                "line-height:1;'>"
+                f"p = {pv:.4f}</div>"
+                f"<div style='font-family:{TOK_FONT['mono']};"
+                f"font-size:0.82rem;color:{TOK_C['textSecondary']};'>"
+                f"F = {fstat:.3f} · {tier_name} · lag {lw0}w · n = "
+                f"{int(cell['n_obs'].iloc[0]) if not cell.empty else 0}</div>"
+                "</div>"
+                f"<div style='color:{TOK_C['textPrimary']};"
+                "font-size:0.88rem;line-height:1.55;'>"
+                f"{verdict_detail}</div>"
+                "</div>"
+            )
+
+            # Two-column layout: verdict card (left) + F-stats mini-table
+            # (right). A lonely 1-row dataframe stacked under the verdict
+            # wasted vertical space; side-by-side reads faster and fills
+            # the viewport.
+            col_v, col_t = st.columns([3, 2])
+            with col_v:
+                st.markdown(verdict_html, unsafe_allow_html=True)
+            with col_t:
+                st.markdown(
+                    f"<div style='color:{TOK_C['textSecondary']};"
+                    "font-size:0.62rem;letter-spacing:0.22em;"
+                    "text-transform:uppercase;margin:2px 0 6px 2px;'>"
+                    "F-statistics · raw"
+                    "</div>",
+                    unsafe_allow_html=True,
+                )
+                tbl = sub[["lag_weeks", "p_value", "f_stat", "n_obs"]].copy()
+                tbl.columns = ["lag", "p", "F", "n"]
+                st.dataframe(
+                    tbl,
+                    hide_index=True,
+                    width="stretch",
+                    column_config={
+                        "lag": st.column_config.NumberColumn(format="%d w", width="small"),
+                        "p":   st.column_config.NumberColumn(format="%.4f", width="small"),
+                        "F":   st.column_config.NumberColumn(format="%.4f", width="small"),
+                        "n":   st.column_config.NumberColumn(format="%d",   width="small"),
+                    },
+                )
+
+            st.caption(
+                "Single-cell sample — the full lag × tier heatmap needs at least "
+                "3 lags or 2 tiers of cached Granger runs. Run "
+                "`python -m signals.granger` with a wider lag sweep to populate it."
+            )
+            verdict_rendered = True
+        else:
+            # ── Normal case: full heatmap over a lag × tier grid ──
+            z = []
+            hover = []
+            tier_row_labels = []
+            for t in all_tiers:
+                row = []
+                hrow = []
+                for lw in all_lags:
+                    cell = gdf[(gdf["tier"] == t) & (gdf["lag_weeks"] == lw)]
+                    pv = float(cell["p_value"].iloc[0]) if not cell.empty else float("nan")
+                    row.append(pv)
+                    fstat = float(cell["f_stat"].iloc[0]) if not cell.empty else float("nan")
+                    hrow.append(
+                        f"tier {t} · lag {lw}w<br>p = {pv:.4f}<br>F = {fstat:.3f}"
+                    )
+                z.append(row)
+                hover.append(hrow)
+                tier_row_labels.append(
+                    tier_labels.get(int(t), f"Tier-{t}").split("·")[0].strip()
+                )
+
+            heat = go.Figure(data=go.Heatmap(
+                z=z,
+                x=[f"lag {lw}w" for lw in all_lags],
+                y=tier_row_labels,
+                zmin=0.0, zmax=1.0,
+                # Inverted gradient: red at p<0.05 (falsification fails),
+                # accent-sky at p>0.95 (falsification passes).
+                colorscale=[
+                    [0.00, TOK_C["critical"]],       # p = 0   — reject null
+                    [0.05, TOK_C["warn"]],           # p = .05 — borderline
+                    [0.50, TOK_C["textMuted"]],      # p = .5  — inconclusive
+                    [0.90, TOK_C["borderMuted"]],    # dark muted shoulder
+                    [0.95, TOK_C["accent"]],         # threshold — pass glow
+                    [1.00, TOK_C["accent"]],         # p = 1 — strong pass
+                ],
+                colorbar=dict(
+                    title=dict(text="p-value",
+                               font=dict(color=TOK_C["textSecondary"])),
+                    tickvals=[0, 0.05, 0.5, 0.95, 1.0],
+                    ticktext=["0", "0.05", "0.5", "0.95", "1"],
+                    tickfont=dict(color=TOK_C["textSecondary"],
+                                  family=TOK_FONT["mono"]),
+                    outlinewidth=0,
+                ),
+                customdata=hover,
+                hovertemplate="%{customdata}<extra></extra>",
+                xgap=2, ygap=4,
+            ))
+            heat.update_layout(
+                template="institutional",
+                height=max(220, 78 * max(1, len(all_tiers)) + 80),
+                margin=dict(l=140, r=40, t=40, b=60),
+                xaxis=dict(
+                    title=dict(text="weekly lag (BSI → target)",
+                               font=dict(color=TOK_C["textSecondary"])),
+                    side="bottom",
+                    tickfont=dict(family=TOK_FONT["mono"],
+                                  color=TOK_C["textSecondary"]),
+                ),
+                yaxis=dict(
+                    tickfont=dict(family=TOK_FONT["sans"],
+                                  color=TOK_C["textPrimary"]),
+                    autorange="reversed",
+                ),
+                annotations=[dict(
+                    x=0.5, y=1.08, xref="paper", yref="paper",
+                    text=("<span style='color:" + TOK_C["accent"] + "'>sky</span>"
+                          " = null not rejected (pass) · "
+                          "<span style='color:" + TOK_C["critical"] + "'>red</span>"
+                          " = null rejected (fail)"),
+                    showarrow=False,
+                    font=dict(color=TOK_C["textSecondary"],
+                              family=TOK_FONT["sans"], size=11),
+                    xanchor="center",
+                )],
+            )
+            st.plotly_chart(heat, width="stretch")
+
+        # Dense F-stat table — full-width (with `target` column) only renders
+        # in the heatmap branch. In the degenerate branch the compact table
+        # already sits beside the verdict card, so we skip it here to avoid
+        # a duplicate render.
+        if not verdict_rendered:
+            st.markdown(
+                f"<div style='color:{TOK_C['textSecondary']};font-size:0.78rem;"
+                "letter-spacing:0.04em;text-transform:uppercase;"
+                "margin:0.6rem 0 0.3rem 0;'>"
+                "F-statistics · raw"
+                "</div>",
+                unsafe_allow_html=True,
+            )
+            show = sub[["lag_weeks", "p_value", "f_stat", "n_obs", "target_label"]].copy()
+            show.columns = ["lag", "p-value", "F", "n", "target"]
+            st.dataframe(
+                show,
+                hide_index=True,
+                width="stretch",
+                column_config={
+                    "lag": st.column_config.NumberColumn(format="%d w", width="small"),
+                    "p-value": st.column_config.NumberColumn(format="%.4f", width="small"),
+                    "F": st.column_config.NumberColumn(format="%.4f", width="small"),
+                    "n": st.column_config.NumberColumn(format="%d", width="small"),
+                    "target": st.column_config.TextColumn(width="large"),
+                },
+            )
+
+        # Palette-matching headline callout — only render in the heatmap
+        # branch. The degenerate branch already shipped a full verdict card;
+        # rendering this too would be double-speak.
+        if not verdict_rendered and sub["p_value"].min() >= 0.95:
             st.markdown(
                 "<div style='"
-                "background:linear-gradient(90deg, rgba(129,201,149,0.10), rgba(129,201,149,0.02));"
-                "border:1px solid #1c2433;"
-                "border-left:2px solid #81c995;"
+                # Sky-blue gradient wash instead of green — "pass" in the
+                # institutional palette is accent/calm, never neon emerald.
+                "background:linear-gradient(90deg,"
+                "rgba(56,189,248,0.10), rgba(56,189,248,0.02));"
+                f"border:1px solid {TOK_C['border']};"
+                f"border-left:2px solid {TOK_C['accent']};"
                 "padding:0.85rem 1rem;"
                 "border-radius:4px;"
-                "margin:0.75rem 0 0.25rem 0;"
-                "'>"
-                "<div style='color:#81c995;font-family:\"Geist Mono\",monospace;"
-                "font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;"
-                "margin-bottom:0.25rem;'>Falsification · pass</div>"
-                "<div style='color:#cfd6e4;font-size:0.88rem;line-height:1.5;'>"
+                "margin:0.75rem 0 0.25rem 0;'>"
+                f"<div style='color:{TOK_C['accent']};"
+                f"font-family:{TOK_FONT['mono']};"
+                "font-size:0.72rem;letter-spacing:0.08em;"
+                "text-transform:uppercase;margin-bottom:0.25rem;'>"
+                "Falsification · pass</div>"
+                f"<div style='color:{TOK_C['textPrimary']};"
+                "font-size:0.88rem;line-height:1.5;'>"
                 f"All {len(lags_arr)} lag{'s' if len(lags_arr) != 1 else ''} ≥ 0.95. "
-                "The null <em>is not rejected</em> — BSI does <strong>not</strong> Granger-cause "
-                "this tier's subprime-credit stress target. The BNPL signal is "
-                "idiosyncratic to BNPL, not a restatement of general subprime stress."
+                "The null <em>is not rejected</em> — BSI does "
+                "<strong>not</strong> Granger-cause this tier's subprime-credit "
+                "stress target. The BNPL signal is idiosyncratic to BNPL, not "
+                "a restatement of general subprime stress."
                 "</div></div>",
                 unsafe_allow_html=True,
             )
@@ -1133,7 +1406,8 @@ with tab_backtest:
     # FOOTER
     # -------------------------------------------------------------------------
     st.markdown(
-        f"<div style='color:#4a5568;font-size:0.7rem;margin-top:24px;text-align:right;'>"
+        f"<div style='color:{TOK_C['textMuted']};font-size:0.7rem;"
+        "margin-top:24px;text-align:right;'>"
         f"warehouse = <code>{settings.duckdb_path.name}</code> · "
         f"as-of = {as_of.isoformat()} · "
         f"mode = {mode.value} · window = {window_key}"
@@ -1241,57 +1515,105 @@ with tab_math:
             help="95th-percentile survival — best-case tail, benign-regime ceiling.",
         )
 
+        # Dual-regime overlay: in addition to the live STRESS sim, run a
+        # benign-baseline NORMAL sim (BSI=0, MOVE=100) so the two hazard
+        # curves can be read against each other under a single unified-x
+        # tooltip. Smooth-interpolated (spline) because linear step
+        # interpolation on hazard paths looks jagged and we want the eye
+        # to follow trend-of-median, not per-sample noise.
+        sim_normal = _jt_simulate(
+            bsi=0.0, move=100.0,
+            alpha=alpha, beta_bsi=beta_bsi, beta_move=beta_move,
+            kappa=kappa, theta=theta, sigma=sigma,
+            horizon_days=int(horizon), n_paths=int(n_paths),
+        )
+
         paths = sim["paths"]
-        # Downsample path count for the spaghetti plot to keep the chart light.
-        plot_paths = min(150, paths.shape[0])
-        idx = np.linspace(0, paths.shape[0]-1, plot_paths).astype(int)
         t_axis = np.arange(paths.shape[1])
+        stress_p05 = np.percentile(paths, 5,  axis=0)
+        stress_p50 = np.percentile(paths, 50, axis=0)
+        stress_p95 = np.percentile(paths, 95, axis=0)
+        normal_p50 = np.percentile(sim_normal["paths"], 50, axis=0)
 
         fig_jt = go.Figure()
-        for p in paths[idx]:
-            fig_jt.add_scatter(x=t_axis, y=p, mode="lines",
-                               line=dict(color="rgba(129,201,149,0.16)", width=1),
-                               hoverinfo="skip", showlegend=False)
-        # overlay median
-        fig_jt.add_scatter(x=t_axis, y=np.median(paths, axis=0),
-                           mode="lines",
-                           line=dict(color="#22d3ee", width=2),
-                           name="median λ(t)")
-        fig_jt.add_hline(y=sim["lambda0"], line_dash="dot", line_color="#f59e0b",
-                         annotation_text=f" λ₀ = {sim['lambda0']:.4f}",
-                         annotation_position="top left",
-                         annotation_font_color="#f59e0b")
+        # Stress 5–95 percentile band (tonexty pairs with the preceding trace)
+        fig_jt.add_scatter(
+            x=t_axis, y=stress_p95, mode="lines",
+            line=dict(color=TOK_C["critical"], width=0, shape="spline"),
+            hoverinfo="skip", showlegend=False,
+            name="stress · P95",
+        )
+        fig_jt.add_scatter(
+            x=t_axis, y=stress_p05, mode="lines",
+            line=dict(color=TOK_C["critical"], width=0, shape="spline"),
+            fill="tonexty", fillcolor="rgba(239,68,68,0.14)",
+            hoverinfo="skip", showlegend=False,
+            name="stress · P5",
+        )
+        # Stress regime median
+        fig_jt.add_scatter(
+            x=t_axis, y=stress_p50, mode="lines",
+            line=dict(color=TOK_C["critical"], width=2, shape="spline"),
+            name="Stress Regime · median λ(t)",
+            hovertemplate="t=%{x}d<br>λ stress = %{y:.4f}<extra></extra>",
+        )
+        # Normal regime median (benign baseline)
+        fig_jt.add_scatter(
+            x=t_axis, y=normal_p50, mode="lines",
+            line=dict(color=TOK_C["accent"], width=2, shape="spline",
+                      dash="solid"),
+            name="Normal Regime · median λ(t)",
+            hovertemplate="t=%{x}d<br>λ normal = %{y:.4f}<extra></extra>",
+        )
+        fig_jt.add_hline(
+            y=sim["lambda0"], line_dash="dot", line_color=TOK_C["warn"],
+            annotation_text=f" λ₀ = {sim['lambda0']:.4f}",
+            annotation_position="top left",
+            annotation_font_color=TOK_C["warn"],
+        )
         fig_jt.update_layout(
-            height=360,
-            paper_bgcolor="#0b111b", plot_bgcolor="#0b111b",
-            font=dict(color="#cfd6e4", family="Geist Mono"),
-            xaxis=dict(title="Days ahead", gridcolor="#1c2433"),
-            yaxis=dict(title="Hazard rate λ(t)", gridcolor="#1c2433"),
-            margin=dict(l=40, r=20, t=10, b=40),
+            template="institutional",
+            height=380,
+            hovermode="x unified",
+            xaxis=dict(title=dict(text="Days ahead",
+                                  font=dict(color=TOK_C["textSecondary"])),
+                       tickfont=dict(family=TOK_FONT["mono"], size=10)),
+            yaxis=dict(title=dict(text="Hazard rate λ(t)",
+                                  font=dict(color=TOK_C["textSecondary"])),
+                       tickfont=dict(family=TOK_FONT["mono"], size=10)),
+            margin=dict(l=50, r=20, t=20, b=40),
             showlegend=True,
-            legend=dict(orientation="h", yanchor="bottom", y=1.02, x=0),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, x=0,
+                        bgcolor="rgba(0,0,0,0)"),
         )
         st.plotly_chart(fig_jt, width="stretch")
 
-        # Survival histogram
+        # Survival histogram — kept for diagnostic (path-level dispersion),
+        # now re-themed with token palette and JetBrains Mono tickfonts.
         fig_s = go.Figure()
-        fig_s.add_histogram(x=sim["surv"], nbinsx=40,
-                            marker_color="#81c995",
-                            marker_line_color="#0b111b",
-                            name="S(T)")
-        for pct, color, label in (("surv_p05", "#f28b82", "P5"),
-                                  ("surv_p50", "#22d3ee", "P50"),
-                                  ("surv_p95", "#fdd663", "P95")):
-            fig_s.add_vline(x=sim[pct], line_dash="dash", line_color=color,
-                            annotation_text=label, annotation_font_color=color)
+        fig_s.add_histogram(
+            x=sim["surv"], nbinsx=40,
+            marker=dict(color=TOK_C["accent"], line=dict(color=TOK_C["card"], width=1)),
+            name="S(T)",
+        )
+        for pct, color, label in (("surv_p05", TOK_C["critical"], "P5"),
+                                  ("surv_p50", TOK_C["accent"],   "P50"),
+                                  ("surv_p95", TOK_C["warn"],     "P95")):
+            fig_s.add_vline(
+                x=sim[pct], line_dash="dash", line_color=color,
+                annotation_text=label, annotation_font_color=color,
+            )
         fig_s.update_layout(
+            template="institutional",
             height=240,
-            paper_bgcolor="#0b111b", plot_bgcolor="#0b111b",
-            font=dict(color="#cfd6e4", family="Geist Mono"),
-            xaxis=dict(title=f"Survival S({int(horizon)}d)", gridcolor="#1c2433",
-                       range=[0, 1]),
-            yaxis=dict(title="Path count", gridcolor="#1c2433"),
-            margin=dict(l=40, r=20, t=10, b=40),
+            xaxis=dict(title=dict(text=f"Survival S({int(horizon)}d)",
+                                  font=dict(color=TOK_C["textSecondary"])),
+                       range=[0, 1],
+                       tickfont=dict(family=TOK_FONT["mono"], size=10)),
+            yaxis=dict(title=dict(text="Path count",
+                                  font=dict(color=TOK_C["textSecondary"])),
+                       tickfont=dict(family=TOK_FONT["mono"], size=10)),
+            margin=dict(l=50, r=20, t=10, b=40),
             showlegend=False,
         )
         st.plotly_chart(fig_s, width="stretch")
@@ -1353,6 +1675,287 @@ with tab_funnel:
                 "c_appstore deferred to Sprint B."),
         section="§4.2 — BSI construction · §10 — data limitations",
     )
+
+    # =====================================================================
+    # STAGE COLUMN · four-stage BSI-construction pipeline at a glance.
+    # Row-wise: Raw Ingest → FinBERT Sentiment → Pillar Weights + Freeze
+    # → Residual z_bsi. Chosen over a Sankey because rigor > decoration:
+    # we care about the _rigor of each stage_ — counts, distributions,
+    # weight sanity, today's residual — not the flow.
+    # =====================================================================
+    st.markdown('<div class="panel-title">BSI pipeline · stage view</div>',
+                unsafe_allow_html=True)
+
+    @st.cache_data(ttl=120, show_spinner=False)
+    def _pillar_counts() -> dict:
+        con = _con()
+        cols = ["c_cfpb", "c_trends", "c_reddit", "c_appstore",
+                "c_move", "c_vitality"]
+        out: dict = {}
+        for c in cols:
+            try:
+                n = con.execute(
+                    f'SELECT COUNT(*) FROM bsi_daily WHERE {c} IS NOT NULL'
+                ).fetchone()[0]
+            except Exception:  # noqa: BLE001
+                n = 0
+            out[c] = int(n)
+        return out
+
+    @st.cache_data(ttl=120, show_spinner=False)
+    def _finbert_scores() -> pd.DataFrame:
+        """Pulls sentiment scores from the complaint-level tables. Falls back
+        to empty frame if tables are absent or the `sentiment` column is
+        missing (pre-FinBERT backfill)."""
+        con = _con()
+        rows: list[pd.DataFrame] = []
+        for q in (
+            "SELECT 'cfpb' AS source, sentiment FROM cfpb_complaints "
+            "WHERE sentiment IS NOT NULL",
+            "SELECT 'appstore' AS source, sentiment FROM appstore_reviews "
+            "WHERE sentiment IS NOT NULL",
+        ):
+            try:
+                df = con.execute(q).df()
+                if not df.empty:
+                    rows.append(df)
+            except Exception:  # noqa: BLE001
+                continue
+        if not rows:
+            return pd.DataFrame(columns=["source", "sentiment"])
+        return pd.concat(rows, ignore_index=True)
+
+    @st.cache_data(ttl=120, show_spinner=False)
+    def _pillar_weights() -> pd.DataFrame:
+        path = Path(__file__).resolve().parent.parent / "config" / "weights.yaml"
+        defaults: dict = {}
+        try:
+            import yaml  # lazy — avoid a hard dep if config/ missing
+            defaults = (yaml.safe_load(path.read_text())
+                          .get("default_weights") or {})
+        except Exception:  # noqa: BLE001
+            defaults = {
+                "cfpb_complaint_momentum": 0.25,
+                "google_trends_distress":  0.20,
+                "reddit_finbert_neg":      0.20,
+                "appstore_keyword_freq":   0.15,
+                "move_index_overlay":      0.20,
+            }
+        return pd.DataFrame(
+            [{"pillar": k, "weight": float(v)} for k, v in defaults.items()]
+        )
+
+    @st.cache_data(ttl=120, show_spinner=False)
+    def _freeze_count_180d() -> int:
+        try:
+            n = _con().execute(
+                "SELECT COUNT(*) FROM bsi_daily "
+                "WHERE freeze_flag = TRUE "
+                "  AND observed_at >= CURRENT_DATE - INTERVAL 180 DAY"
+            ).fetchone()[0]
+            return int(n)
+        except Exception:  # noqa: BLE001
+            return 0
+
+    @st.cache_data(ttl=120, show_spinner=False)
+    def _z_bsi_180d() -> pd.DataFrame:
+        try:
+            df = _con().execute(
+                "SELECT observed_at, z_bsi FROM bsi_daily "
+                "WHERE observed_at >= CURRENT_DATE - INTERVAL 180 DAY "
+                "  AND z_bsi IS NOT NULL "
+                "ORDER BY observed_at"
+            ).df()
+            if not df.empty:
+                df["observed_at"] = pd.to_datetime(df["observed_at"])
+            return df
+        except Exception:  # noqa: BLE001
+            return pd.DataFrame(columns=["observed_at", "z_bsi"])
+
+    col_raw, col_finb, col_w, col_z = st.columns([1, 1, 1, 1], gap="small")
+
+    # ─── Stage 1 · Raw Ingest ───────────────────────────────────────────
+    with col_raw:
+        st.markdown(
+            f"<div style='font-size:0.72rem;letter-spacing:0.22em;"
+            f"text-transform:uppercase;color:{TOK_C['textSecondary']};"
+            f"margin-bottom:6px;'>1 · Raw Ingest</div>",
+            unsafe_allow_html=True,
+        )
+        pc = _pillar_counts()
+        pc_df = pd.DataFrame(
+            [{"pillar": k.replace("c_", ""), "rows": v} for k, v in pc.items()]
+        ).sort_values("rows", ascending=True)
+        fig_raw = go.Figure(go.Bar(
+            y=pc_df["pillar"], x=pc_df["rows"],
+            orientation="h",
+            marker=dict(color=TOK_C["accent"]),
+            text=pc_df["rows"].map(lambda n: f"{n:,}"),
+            textposition="outside",
+            textfont=dict(family=TOK_FONT["mono"], color=TOK_C["textSecondary"], size=10),
+            hovertemplate="%{y}: %{x:,}<extra></extra>",
+        ))
+        fig_raw.update_layout(
+            template="institutional",
+            height=180,
+            margin=dict(l=70, r=40, t=10, b=20),
+            xaxis=dict(showgrid=False, visible=False),
+            yaxis=dict(tickfont=dict(family=TOK_FONT["mono"], size=10)),
+            showlegend=False,
+        )
+        st.plotly_chart(fig_raw, width="stretch",
+                        config={"displayModeBar": False})
+        with st.expander("ℹ What is this stage?"):
+            st.markdown(
+                "**What** · row counts for each of the six BSI pillar columns "
+                "in `bsi_daily`.\n\n"
+                "**How** · `SELECT COUNT(*) WHERE c_<pillar> IS NOT NULL`.\n\n"
+                "**Values** · thousands = backfilled; zero = deferred / "
+                "awaiting ingest.\n\n"
+                "**§** · §4.2 — BSI construction"
+            )
+
+    # ─── Stage 2 · FinBERT Sentiment ────────────────────────────────────
+    with col_finb:
+        st.markdown(
+            f"<div style='font-size:0.72rem;letter-spacing:0.22em;"
+            f"text-transform:uppercase;color:{TOK_C['textSecondary']};"
+            f"margin-bottom:6px;'>2 · FinBERT Sentiment</div>",
+            unsafe_allow_html=True,
+        )
+        fdf = _finbert_scores()
+        if fdf.empty:
+            st.caption("No FinBERT-scored rows yet. Run complaint/review "
+                       "ingest + sentiment backfill.")
+        else:
+            fig_fb = go.Figure()
+            for src in fdf["source"].unique():
+                fig_fb.add_trace(go.Histogram(
+                    x=fdf[fdf["source"] == src]["sentiment"],
+                    name=str(src),
+                    opacity=0.75,
+                    marker=dict(color=(TOK_C["accent"] if src == "cfpb"
+                                       else TOK_C["violet"])),
+                    nbinsx=24,
+                ))
+            fig_fb.update_layout(
+                template="institutional",
+                height=180, barmode="overlay",
+                margin=dict(l=30, r=10, t=10, b=20),
+                legend=dict(orientation="h", y=1.22, x=0,
+                            bgcolor="rgba(0,0,0,0)",
+                            font=dict(size=9)),
+                xaxis=dict(title=dict(text="sentiment",
+                                      font=dict(size=10)),
+                           tickfont=dict(family=TOK_FONT["mono"], size=9)),
+                yaxis=dict(showgrid=False, visible=False),
+            )
+            st.plotly_chart(fig_fb, width="stretch",
+                            config={"displayModeBar": False})
+        with st.expander("ℹ What is this stage?"):
+            st.markdown(
+                "**What** · distribution of FinBERT negative-sentiment scores "
+                "feeding the reddit/appstore pillars.\n\n"
+                "**How** · joined from `cfpb_complaints.sentiment` + "
+                "`appstore_reviews.sentiment`.\n\n"
+                "**Values** · scores on [-1, +1]; mass above 0 = negative.\n\n"
+                "**§** · §4.2 — BSI construction"
+            )
+
+    # ─── Stage 3 · Pillar Weights & Freeze ──────────────────────────────
+    with col_w:
+        st.markdown(
+            f"<div style='font-size:0.72rem;letter-spacing:0.22em;"
+            f"text-transform:uppercase;color:{TOK_C['textSecondary']};"
+            f"margin-bottom:6px;'>3 · Weights &amp; Freeze</div>",
+            unsafe_allow_html=True,
+        )
+        wdf = _pillar_weights()
+        st.dataframe(
+            wdf.style.format({"weight": "{:.2f}"}),
+            width="stretch", hide_index=True,
+        )
+        freezes = _freeze_count_180d()
+        st.markdown(
+            f"<div style='margin-top:6px;font-family:{TOK_FONT['mono']};"
+            f"font-size:0.85rem;color:{TOK_C['textPrimary']};'>"
+            f"freeze_flag · 180d · <b>{freezes}</b>"
+            f"</div>",
+            unsafe_allow_html=True,
+        )
+        with st.expander("ℹ What is this stage?"):
+            st.markdown(
+                "**What** · current default pillar weights (priors) + count "
+                "of days the firm-vitality freeze fired over the last 180d.\n\n"
+                "**How** · weights from `config/weights.yaml`; freeze count "
+                "from `bsi_daily.freeze_flag = TRUE`.\n\n"
+                "**Values** · weights sum to 1.0; freeze rare (≤2/y in normal "
+                "regime).\n\n"
+                "**§** · §4.2 — BSI construction · §10 — frozen weights"
+            )
+
+    # ─── Stage 4 · Residual z_bsi ───────────────────────────────────────
+    with col_z:
+        st.markdown(
+            f"<div style='font-size:0.72rem;letter-spacing:0.22em;"
+            f"text-transform:uppercase;color:{TOK_C['textSecondary']};"
+            f"margin-bottom:6px;'>4 · Residual z_bsi · 180d</div>",
+            unsafe_allow_html=True,
+        )
+        zdf = _z_bsi_180d()
+        if zdf.empty:
+            st.caption("No z_bsi rows in the last 180d. Populate `bsi_daily`.")
+        else:
+            last = float(zdf["z_bsi"].iloc[-1])
+            is_red = last >= 1.5
+            line_c = TOK_C["critical"] if is_red else TOK_C["accent"]
+            fig_z = go.Figure()
+            fig_z.add_trace(go.Scatter(
+                x=zdf["observed_at"], y=zdf["z_bsi"],
+                mode="lines",
+                line=dict(shape="spline", color=line_c, width=1.5),
+                fill="tozeroy",
+                fillcolor=(f"rgba(56,189,248,0.12)" if not is_red
+                           else f"rgba(239,68,68,0.14)"),
+                hovertemplate="%{x|%Y-%m-%d}<br>z = %{y:.2f}<extra></extra>",
+            ))
+            fig_z.add_hline(
+                y=1.5, line_dash="dash",
+                line_color=TOK_C["warn"], line_width=1,
+                annotation=dict(text="+1.5σ",
+                                font=dict(color=TOK_C["warn"], size=9),
+                                xanchor="left"),
+            )
+            fig_z.update_layout(
+                template="institutional",
+                height=150,
+                margin=dict(l=30, r=10, t=10, b=20),
+                xaxis=dict(showgrid=False,
+                           tickfont=dict(family=TOK_FONT["mono"], size=9)),
+                yaxis=dict(tickfont=dict(family=TOK_FONT["mono"], size=9)),
+                showlegend=False,
+            )
+            st.plotly_chart(fig_z, width="stretch",
+                            config={"displayModeBar": False})
+            st.markdown(
+                f"<div style='font-family:{TOK_FONT['mono']};"
+                f"font-size:1rem;color:{line_c};'>"
+                f"today · {last:+.2f}σ"
+                f"</div>",
+                unsafe_allow_html=True,
+            )
+        with st.expander("ℹ What is this stage?"):
+            st.markdown(
+                "**What** · the output: residual z-score `z_bsi`, 180d "
+                "trajectory with the Gate-1 threshold.\n\n"
+                "**How** · weighted pillar aggregate → 180d causal residual "
+                "z. Dashed amber = +1.5σ (Gate 1 fires above).\n\n"
+                "**Values** · typical band −3 to +5. Line flips red when "
+                "z ≥ +1.5σ.\n\n"
+                "**§** · §4.2 — BSI construction"
+            )
+
+    st.markdown("---")
 
     # --------- shared loaders for this tab (cached separately from tab1) ---
     @st.cache_data(ttl=120, show_spinner=False)
@@ -1457,27 +2060,30 @@ with tab_funnel:
         ).df()
 
     # --------- Palette reused across plots -------------------------------
-    PLOT_BG = "#0b111b"
-    GRID = "#1c2433"
-    TEXT = "#cfd6e4"
+    # Palette sourced from the institutional token set so Tab 5 backtest
+    # charts read identically to the rest of the app.
+    PLOT_BG = TOK_C["card"]
+    GRID = TOK_C["chartGrid"]
+    TEXT = TOK_C["textPrimary"]
     LINE_PALETTE = [
-        "#8ab4f8", "#f28b82", "#81c995", "#fdd663", "#b794f4",
-        "#78d9ec", "#ff8a65", "#aed581", "#f48fb1", "#4db6ac",
-        "#ffd54f",
+        TOK_C["accent"], TOK_C["critical"], TOK_C["violet"],
+        TOK_C["warn"], TOK_C["textSecondary"],
     ]
 
     def _style(fig: go.Figure, height: int = 320) -> go.Figure:
+        """Thin wrapper — applies the registered ``institutional`` template
+        plus the per-chart margin/height/legend overrides this tab needs.
+        The institutional template is set as Plotly default on import of
+        :mod:`dashboard.plotly_theme`, so all figures already inherit the
+        institutional background + font; we only patch the layout knobs
+        that vary per-call."""
         fig.update_layout(
-            template="plotly_dark",
-            paper_bgcolor=PLOT_BG, plot_bgcolor=PLOT_BG,
+            template="institutional",
             margin=dict(l=40, r=20, t=30, b=30),
             height=height,
             hovermode="x unified",
             legend=dict(orientation="h", y=1.12, x=0,
                         bgcolor="rgba(0,0,0,0)"),
-            xaxis=dict(gridcolor=GRID, zerolinecolor=GRID),
-            yaxis=dict(gridcolor=GRID, zerolinecolor=GRID),
-            font=dict(color=TEXT),
         )
         return fig
 
@@ -1508,8 +2114,9 @@ with tab_funnel:
 
     def _row_style(row: pd.Series) -> list[str]:
         # Populated = card-tone; Empty = dim-muted (not alarmist red).
-        color = "#0e1524" if row["status"] == "POPULATED" else "#0b111b"
-        text = "#cfd6e4" if row["status"] == "POPULATED" else "#6b7689"
+        # Token-sourced so it tracks the rest of the app's palette.
+        color = TOK_C["card"] if row["status"] == "POPULATED" else TOK_C["borderMuted"]
+        text = TOK_C["textPrimary"] if row["status"] == "POPULATED" else TOK_C["textMuted"]
         return [f"background-color:{color};color:{text};"] * len(row)
 
     st.dataframe(
@@ -1649,14 +2256,22 @@ with tab_funnel:
         fig_bsi.add_trace(go.Scatter(
             x=bsi_df_full["observed_at"], y=bsi_df_full["z_bsi"],
             mode="lines", name="z_bsi",
-            line=dict(color="#8ab4f8", width=2.2),
+            # Primary composite — sky-blue, the calm/pass accent.
+            line=dict(color=TOK_C["accent"], width=2.2, shape="spline"),
             hovertemplate="%{x|%Y-%m-%d}<br>z_bsi = %{y:+.2f}<extra></extra>",
         ))
-        # overlay each component that has ANY non-null values.
+        # Overlay each component that has ANY non-null values.
+        # Palette is token-sourced: critical for complaints/vitality stress,
+        # warn for attention signals, violet for demand, secondary-text for
+        # the rest. Colors mirror the Layer-1 gate ladder semantics so a
+        # reviewer can pattern-match across layers.
         comp_palette = {
-            "c_cfpb": "#f28b82", "c_reddit": "#fdd663",
-            "c_trends": "#b794f4", "c_vitality": "#78d9ec",
-            "c_move": "#81c995", "c_appstore": "#ff8a65",
+            "c_cfpb":     TOK_C["critical"],        # complaints spike → red
+            "c_reddit":   TOK_C["warn"],            # chatter → amber
+            "c_trends":   TOK_C["violet"],          # search demand
+            "c_vitality": TOK_C["textSecondary"],   # macro proxy
+            "c_move":     TOK_C["warn"],            # vol — amber like gate 2
+            "c_appstore": TOK_C["textMuted"],       # review cadence
         }
         for c in present_cols:
             if cov[c] == 0:
@@ -1664,12 +2279,18 @@ with tab_funnel:
             fig_bsi.add_trace(go.Scatter(
                 x=bsi_df_full["observed_at"], y=bsi_df_full[c],
                 mode="lines", name=c, opacity=0.55,
-                line=dict(color=comp_palette.get(c, "#c9d3e3"), width=1.1),
+                line=dict(
+                    color=comp_palette.get(c, TOK_C["textSecondary"]),
+                    width=1.1, shape="spline",
+                ),
                 hovertemplate=f"%{{x|%Y-%m-%d}}<br>{c} = %{{y:+.2f}}<extra></extra>",
             ))
-        fig_bsi.add_hline(y=1.5, line=dict(color="#f28b82", dash="dash"),
-                          annotation_text="gate threshold z = 1.5",
-                          annotation_position="top left")
+        fig_bsi.add_hline(
+            y=1.5,
+            line=dict(color=TOK_C["warn"], dash="dash"),
+            annotation_text="gate threshold z = 1.5",
+            annotation_position="top left",
+        )
         fig_bsi.update_layout(
             yaxis=dict(title="z-score", gridcolor=GRID, zerolinecolor=GRID),
             xaxis=dict(title="observed_at", gridcolor=GRID, zerolinecolor=GRID),
@@ -1786,7 +2407,14 @@ with tab_funnel:
         # Gantt-like scatter of deadlines.
         cat_plot = cat_df.copy()
         cat_plot["deadline_date"] = pd.to_datetime(cat_plot["deadline_date"])
-        mat_color = {"HIGH": "#f28b82", "MEDIUM": "#fdd663", "LOW": "#81c995"}
+        # Materiality → token palette: HIGH=critical, MEDIUM=warn, LOW=accent.
+        # Same semantic as the compliance-engine gate states, so a reviewer
+        # reads the gantt through the same red/amber/sky lens.
+        mat_color = {
+            "HIGH":   TOK_C["critical"],
+            "MEDIUM": TOK_C["warn"],
+            "LOW":    TOK_C["accent"],
+        }
         fig_cat = go.Figure()
         for i, row in cat_plot.iterrows():
             fig_cat.add_trace(go.Scatter(
@@ -1795,7 +2423,8 @@ with tab_funnel:
                 marker=dict(
                     size=16,
                     color=mat_color.get(
-                        str(row.get("materiality", "")).upper(), "#8ab4f8"
+                        str(row.get("materiality", "")).upper(),
+                        TOK_C["textSecondary"],
                     ),
                 ),
                 text=[row["title"][:30]], textposition="middle right",
@@ -1829,13 +2458,15 @@ with tab_funnel:
         fig_g = go.Figure()
         fig_g.add_trace(go.Bar(
             x=latest["lag_weeks"], y=latest["p_value"],
-            marker=dict(color="#8ab4f8"),
+            marker=dict(color=TOK_C["accent"]),
             hovertemplate="lag=%{x}w<br>p=%{y:.4f}<extra></extra>",
             name="p-value",
         ))
-        fig_g.add_hline(y=0.05, line=dict(color="#f28b82", dash="dash"),
-                        annotation_text="α = 0.05",
-                        annotation_position="top left")
+        fig_g.add_hline(
+            y=0.05, line=dict(color=TOK_C["warn"], dash="dash"),
+            annotation_text="α = 0.05",
+            annotation_position="top left",
+        )
         fig_g.update_layout(
             yaxis=dict(title="p-value", type="log", gridcolor=GRID,
                        zerolinecolor=GRID),

@@ -182,6 +182,64 @@ def build_ticker(con: duckdb.DuckDBPyConnection) -> list[dict]:
     return out
 
 
+# ---------------------------------------------------------------------------
+# 180-day spark-series helpers (used by Layer 1 AreaChart + horizon strip)
+# ---------------------------------------------------------------------------
+def _bsi_series_180d(con: duckdb.DuckDBPyConnection, as_of: date) -> list[float]:
+    """Daily z_bsi values across the trailing 180d, oldest-first."""
+    rows = con.execute(
+        "SELECT observed_at, z_bsi FROM bsi_daily "
+        "WHERE z_bsi IS NOT NULL AND observed_at BETWEEN ? AND ? "
+        "ORDER BY observed_at",
+        [as_of - timedelta(days=180), as_of],
+    ).fetchall()
+    return [round(float(r[1]), 3) for r in rows]
+
+
+def _scp_series_180d(con: duckdb.DuckDBPyConnection, as_of: date) -> list[float]:
+    """Daily z_scp values across the trailing 180d, oldest-first.
+    Empty list if scp_daily has not been backfilled."""
+    rows = con.execute(
+        "SELECT observed_at, z_scp FROM scp_daily "
+        "WHERE z_scp IS NOT NULL AND observed_at BETWEEN ? AND ? "
+        "ORDER BY observed_at",
+        [as_of - timedelta(days=180), as_of],
+    ).fetchall()
+    return [round(float(r[1]), 3) for r in rows]
+
+
+def _move_series_180d(con: duckdb.DuckDBPyConnection, as_of: date) -> list[float]:
+    """Daily MOVE index values across the trailing 180d, oldest-first."""
+    rows = con.execute(
+        "SELECT observed_at, value FROM fred_series "
+        "WHERE series_id='MOVE' AND observed_at BETWEEN ? AND ? "
+        "ORDER BY observed_at",
+        [as_of - timedelta(days=180), as_of],
+    ).fetchall()
+    return [round(float(r[1]), 2) for r in rows]
+
+
+def _ccd2_countdown_180d(con: duckdb.DuckDBPyConnection, as_of: date) -> list[int]:
+    """Days-to-next-material-catalyst across the trailing 180d.
+
+    Synthetic: we take today's days_to and reconstruct the series by linear
+    descent (assumes the "next" catalyst is stable over the window). Good
+    enough for a horizon sparkline — the visual point is whether the gate is
+    tracking toward breach (below `ccd2_dto` threshold).
+    """
+    cat = con.execute(
+        "SELECT deadline_date FROM regulatory_catalysts "
+        "WHERE deadline_date >= ? AND materiality >= 0.80 "
+        "ORDER BY deadline_date LIMIT 1",
+        [as_of],
+    ).fetchone()
+    if not cat:
+        return [999] * 180
+    base = (cat[0] - as_of).days
+    # Oldest day first: `base + 179` … then `base`.
+    return [int(base + d) for d in range(179, -1, -1)]
+
+
 def build_bsi(con: duckdb.DuckDBPyConnection) -> dict:
     latest = con.execute(
         "SELECT observed_at, z_bsi FROM bsi_daily WHERE z_bsi IS NOT NULL ORDER BY observed_at DESC LIMIT 1"
@@ -190,7 +248,9 @@ def build_bsi(con: duckdb.DuckDBPyConnection) -> dict:
         return {
             "current": 0.0, "peak30d": 0.0, "peakDate": "—",
             "allTimeHigh": 0.0, "mean180d": 0.0,
-            "redGlowThreshold": THRESH["bsi_z"], "spark12m": [0] * 12,
+            "redGlowThreshold": THRESH["bsi_z"],
+            "spark12m": [0] * 12,
+            "spark180d": [],
         }
     as_of = latest[0]
     current = float(latest[1])
@@ -228,6 +288,8 @@ def build_bsi(con: duckdb.DuckDBPyConnection) -> dict:
         "mean180d": round(float(mu180) if mu180 is not None else 0.0, 2),
         "redGlowThreshold": THRESH["bsi_z"],
         "spark12m": spark,
+        # 180 daily z_bsi values for the Layer 1 AreaChart + multi-gate horizon.
+        "spark180d": _bsi_series_180d(con, as_of),
     }
 
 
@@ -254,11 +316,22 @@ def build_move(con: duckdb.DuckDBPyConnection) -> dict:
         "ytdHigh":  round(ytd_high, 1),
         "floor":    50,
         "ceiling":  160,
+        "spark180d": _move_series_180d(con, as_of),
     }
 
 
-def build_gates(bsi: dict, move: dict, con: duckdb.DuckDBPyConnection) -> dict:
-    """Four-pill gate ladder. G1 BSI, G2 SCP, G3 MOVE, G4 CCD-II countdown."""
+def build_gates(
+    bsi: dict, move: dict, con: duckdb.DuckDBPyConnection,
+    as_of: date | None = None,
+) -> dict:
+    """Four-pill gate ladder. G1 BSI, G2 SCP, G3 MOVE, G4 CCD-II countdown.
+
+    Each ladder entry carries a `spark180d` — the 180-day trajectory used by
+    the Layer 1 MultiGateHorizonStrip. Series are oldest-first.
+    """
+    if as_of is None:
+        as_of = date.today()
+
     # G2 (SCP) — if scp_daily is empty, use a placeholder near-threshold value
     # so the bar renders. The card subtitle should make clear it's pending.
     scp_row = con.execute(
@@ -277,17 +350,21 @@ def build_gates(bsi: dict, move: dict, con: duckdb.DuckDBPyConnection) -> dict:
     ladder = [
         {"id": "G1", "name": "BSI z-score",    "current": bsi["current"],
          "threshold": THRESH["bsi_z"], "unit": "σ",
-         "hold": bsi["current"] < THRESH["bsi_z"]},
+         "hold": bsi["current"] < THRESH["bsi_z"],
+         "spark180d": bsi.get("spark180d", [])},
         {"id": "G2", "name": "SCP z-score",    "current": round(scp_z, 2),
          "threshold": THRESH["scp_z"], "unit": "σ",
-         "hold": scp_z < THRESH["scp_z"]},
+         "hold": scp_z < THRESH["scp_z"],
+         "spark180d": _scp_series_180d(con, as_of)},
         {"id": "G3", "name": "MOVE Index",     "current": move["current"],
          "threshold": THRESH["move_lvl"], "unit": "",
-         "hold": move["current"] < THRESH["move_lvl"]},
+         "hold": move["current"] < THRESH["move_lvl"],
+         "spark180d": move.get("spark180d", [])},
         {"id": "G4", "name": "CCD-II T-minus", "current": days_to,
          "threshold": THRESH["ccd2_dto"], "unit": "d",
          # FIRES when days_to is INSIDE the window (below threshold) — inverse of others
-         "hold": days_to > THRESH["ccd2_dto"]},
+         "hold": days_to > THRESH["ccd2_dto"],
+         "spark180d": _ccd2_countdown_180d(con, as_of)},
     ]
     all_hold = all(g["hold"] for g in ladder)
     return {
@@ -586,13 +663,19 @@ def build() -> dict:
 
         bsi_blk  = build_bsi(con)
         move_blk = build_move(con)
+        scp_180 = _scp_series_180d(con, as_of)
 
         snapshot = {
             "meta":            build_meta(as_of),
             "ticker":          build_ticker(con),
             "bsi":             bsi_blk,
             "move":            move_blk,
-            "gates":           build_gates(bsi_blk, move_blk, con),
+            # New top-level SCP block — consumed by Layer 1 sparkline row.
+            # 180d z_scp trajectory; empty list if scp_daily hasn't been
+            # backfilled. Unit is σ (z-score), distinct from the basis-point
+            # telemetry shown inside gates.telemetry.scp.
+            "scp":             {"spark180d": scp_180},
+            "gates":           build_gates(bsi_blk, move_blk, con, as_of=as_of),
             "catalyst":        build_catalyst(con),
             "backtest":        build_backtest(),
             "granger":         build_granger(con),
@@ -627,7 +710,10 @@ if __name__ == "__main__":
     print(f"  commit       : {snap['meta']['commit']}")
     print(f"  ticker rows  : {len(snap['ticker'])}")
     print(f"  BSI current  : {snap['bsi']['current']:+.2f}z  (peak30d {snap['bsi']['peak30d']:+.2f})")
+    print(f"  BSI spark180d: {len(snap['bsi']['spark180d'])} daily z")
     print(f"  MOVE current : {snap['move']['current']:.1f}  (gate {snap['move']['gate']})")
+    print(f"  MOVE spark180d: {len(snap['move']['spark180d'])} daily vals")
+    print(f"  SCP spark180d : {len(snap['scp']['spark180d'])} daily z_scp")
     print(f"  gate state   : {snap['gates']['state']}")
     print(f"  next catalyst: {snap['catalyst']['name']} in {snap['catalyst']['daysTo']}d")
     print(f"  backtest     : {len(snap['backtest']['windows'])} windows, "

@@ -1,0 +1,27 @@
+# .streamlit/config.toml
+# ─────────────────────────────────────────────────────────────────────────
+# BNPL Pod — Streamlit institutional theme.
+# Values MUST stay in lockstep with dashboard/design_tokens.py and
+# web/design_tokens.ts. Single source of truth = design_tokens.py.
+# ─────────────────────────────────────────────────────────────────────────
+
+[theme]
+base = "dark"
+
+# Surfaces
+backgroundColor          = "#0F172A"   # C.bg          — slate-900
+secondaryBackgroundColor = "#1E293B"   # C.card        — slate-800
+
+# Accents
+primaryColor             = "#38BDF8"   # C.accent      — sky-blue
+
+# Text
+textColor                = "#F8FAFC"   # C.textPrimary — slate-50
+
+# Typography — inherited; the actual @import happens at app start
+# via st.markdown CSS injection (see dashboard/sbg_dashboard.py Phase 3.0).
+font                     = "sans serif"
+
+[server]
+headless = true
+runOnSave = false
