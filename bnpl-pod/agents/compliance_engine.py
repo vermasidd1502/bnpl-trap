@@ -203,7 +203,7 @@ class ComplianceEngine:
             reasons.insert(
                 0,
                 f"BSI-only bypass FIRED: |z|={abs(inputs.bsi_z):.2f} >= "
-                f"bypass_z_threshold={bypass_z_req:.1f}. Behavioural "
+                f"bypass_z_threshold={bypass_z_req:.4f}. Behavioural "
                 f"top-of-funnel consumer-panic signal has dominated the "
                 f"macro regime; trade approved on BSI alone and macro-"
                 f"corroboration gates (MOVE, catalyst) would otherwise "

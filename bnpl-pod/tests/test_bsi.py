@@ -9,7 +9,10 @@ Pins the paper's empirical claims to the code forever:
         γ_cfpb = γ_move = γ_appstore = 1  (every load-bearing pillar online)
 
   * Sprint Q bypass wiring (compliance_engine + thresholds.yaml):
-        |z_bsi| >= bypass_z_threshold (10.0 σ) AND conjunction gates fail
+        |z_bsi| >= bypass_z_threshold (5.3406 σ, 99.9-th pct of the
+                     shuffle-catalyst null per signals.permutation_null,
+                     recalibrated from the round-number 10.0 σ on
+                     2026-04-23; see paper §13.X) AND conjunction gates fail
             =>  bypass_fired = True, approved = True
         |z_bsi| <  bypass_z_threshold
             =>  bypass_fired = False, approved = False (when conjunction
@@ -207,13 +210,14 @@ def test_bypass_fires_when_z_exceeds_super_threshold_and_other_gates_fail():
     """
     Core Sprint Q contract: |z_bsi| >= bypass_z_threshold must approve
     on BSI alone when MOVE and the reg-catalyst gate would otherwise
-    reject. Uses the YAML-loaded default threshold (10.0 σ per
-    config/thresholds.yaml).
+    reject. Uses the YAML-loaded default threshold (5.3406 σ per
+    config/thresholds.yaml, recalibrated 2026-04-23 to the 99.9-th
+    percentile of the shuffle-catalyst empirical null).
     """
     engine = ComplianceEngine()
     inputs = GateInputs(
         as_of=datetime(2025, 1, 17),
-        bsi_z=12.5,                     # well above 10 σ
+        bsi_z=7.0,                      # well above 5.3406 σ
         scp_by_ticker={},
         move_ma30=50.0,                 # fails Gate 2
         nearest_catalyst_date=None,     # fails Gate 3
@@ -225,16 +229,37 @@ def test_bypass_fires_when_z_exceeds_super_threshold_and_other_gates_fail():
     assert "BSI-only bypass FIRED" in decision.reasons[0]
 
 
-def test_bypass_does_not_fire_below_super_threshold():
+def test_flagship_9p69_sigma_now_fires_bypass_under_recalibrated_threshold():
     """
-    A +9.69 σ reading — paper's flagship — is BELOW the 10 σ bypass.
-    With every other gate failing, the trade must reject cleanly and
-    NOT mark bypass_fired.
+    Post-recalibration contract (v2.1, 2026-04-23): the flagship
+    9.6870 σ reading on 2025-01-17 is ABOVE the empirically-derived
+    5.3406 σ bypass, so with all conjunction gates failing the trade
+    must APPROVE via the bypass path. This inverts the pre-recalibration
+    expectation that 9.687 σ sat below the round-number 10 σ gate.
     """
     engine = ComplianceEngine()
     inputs = GateInputs(
         as_of=datetime(2025, 1, 17),
-        bsi_z=9.687,                    # paper headline, sub-bypass
+        bsi_z=9.687,                    # paper headline
+        scp_by_ticker={},
+        move_ma30=50.0,                 # fails Gate 2
+        nearest_catalyst_date=None,     # fails Gate 3
+    )
+    decision = engine.evaluate(inputs)
+    assert decision.bypass_fired is True
+    assert decision.approved is True
+
+
+def test_bypass_does_not_fire_below_super_threshold():
+    """
+    A +2.0 σ reading is BELOW the 5.3406 σ bypass. With every other
+    gate failing, the trade must reject cleanly and NOT mark
+    bypass_fired.
+    """
+    engine = ComplianceEngine()
+    inputs = GateInputs(
+        as_of=datetime(2025, 1, 17),
+        bsi_z=2.0,                      # sub-bypass
         scp_by_ticker={},
         move_ma30=50.0,
         nearest_catalyst_date=None,
