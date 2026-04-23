@@ -22,6 +22,11 @@ Baker, M. and Wurgler, J. (2007).
 \newblock Investor sentiment in the stock market.
 \newblock {\em Journal of Economic Perspectives}, 21(2):129--152.
 
+\bibitem[Campbell et~al., 1997]{campbell1997econometrics}
+Campbell, J.~Y., Lo, A.~W., and MacKinlay, A.~C. (1997).
+\newblock {\em The Econometrics of Financial Markets}.
+\newblock Princeton University Press, Princeton, NJ.
+
 \bibitem[Cochrane, 2011]{cochrane2011discount}
 Cochrane, J.~H. (2011).
 \newblock Presidential address: Discount rates.
@@ -175,6 +180,12 @@ Mian, A. and Sufi, A. (2014).
 \newblock {\em House of Debt: How They (and You) Caused the Great Recession,
   and How We Can Prevent It from Happening Again}.
 \newblock University of Chicago Press.
+
+\bibitem[Patell, 1976]{patell1976corporate}
+Patell, J.~M. (1976).
+\newblock Corporate forecasts of earnings per share and stock price behavior:
+  Empirical test.
+\newblock {\em Journal of Accounting Research}, 14(2):246--276.
 
 \bibitem[Peng and Xiong, 2006]{pengxiong2006category}
 Peng, L. and Xiong, W. (2006).

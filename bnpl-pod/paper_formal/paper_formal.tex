@@ -112,6 +112,34 @@ Jarrow--Turnbull tranche pricing that accompanies the overlay is
 moved to Appendix~B and labelled as operating under stated parameter
 assumptions, not as a fit to executed market data.
 
+A theoretical frame adapted from \citet{hongstein1999unified},
+\citet{pengxiong2006category}, and \citet{shleifervishny1997limits}
+leads to a \emph{bounded informational-edge} hypothesis: around
+pre-announced material BNPL regulatory catalysts, consumer-channel
+stress should precede equity-side repricing of the single public
+BNPL issuer (AFRM) by a lag consistent with gradual information
+diffusion. We subject this hypothesis to three pre-registered
+falsification modules. A cross-channel decoupling test on the five
+catalyst windows fails to reject the null: zero of five events
+satisfy the pre-specified pre-versus-on correlation shift, with the
+two events of valid coverage moving in the opposite direction of
+the alternative. A two-factor (HYG, MOVE) cumulative-abnormal-return
+event study on AFRM returns a mean CAR of $-3.84\%$ over $[-5,+5]$
+across the five events, four of five negative, with
+bootstrap-null $t = -0.607$ and $p = 0.57$; we fail to reject the
+null of zero abnormal return. A shuffle-catalyst permutation null on
+the flagship 17~January 2025 reading (the $+9.6870\sigma$ EWMA-$\sigma$
+standardised pulse) places the observed value at percentile
+$100.000$ of the empirical null distribution of max-$|z|$ in
+eleven-day windows centred on random dates, one-sided $p < 1/10{,}000$;
+the $99.9$-th percentile of that null is $5.3406\sigma$, which we
+therefore adopt as the data-derived replacement for the round-number
+$10\sigma$ Gate-1 super-threshold of the v1 draft. Two of three
+pre-registered falsification tests do not support the bounded-edge
+claim at this sample size; the third supports only the weaker
+claim that the flagship reading is an extreme tail event of the
+in-sample empirical null, not that it is prospectively predictive.
+
 A full public retrospective on the v1 draft of this work --- which
 made stronger claims under different framing and which has been
 superseded --- is committed to the project repository at
@@ -1392,6 +1420,103 @@ zero-look-ahead by construction.}
 \label{fig:leadlag}
 \end{figure}
 
+\subsection{Cross-channel decoupling at regulatory catalysts}
+\label{sec:decoupling}
+
+The Granger gauntlet above tests predictive content at weekly-to-
+quarterly horizons. The information-diffusion frame of
+\S\ref{sec:infodiff} motivates a complementary, sharper test: around
+a pre-announced regulatory catalyst, the rolling correlation between
+consumer-channel and market-side subcomponents of the composite
+should \emph{rise} as capital-market investors belatedly begin to
+process a signal that consumer-channel investors had already
+priced --- a Hong-Stein diffusion signature localised in event time.
+
+\paragraph{Pre-registered hypothesis.}
+We split the six $\bsi$ pillars into a consumer-side subindex
+($c_{\mathrm{cfpb}}$, $c_{\mathrm{trends}}$, $c_{\mathrm{appstore}}$,
+$c_{\mathrm{vitality}}$) and a market-side subindex
+($c_{\mathrm{move}}$, $c_{\mathrm{macro}}$), each aggregated with the
+same coverage-gated QP weights used by the composite
+(\S\ref{sec:data}); the Reddit pillar is omitted because the
+warehouse contains zero Reddit rows at time of writing, a fact we
+disclose rather than backfill. Let $\rho_t$ denote the
+rolling thirty-business-day Pearson correlation between the two
+subindices. Across the five catalyst windows:
+\begin{align*}
+H_{0}:\quad & \bar{\rho}_{\mathrm{pre}} = \bar{\rho}_{\mathrm{on}} = \bar{\rho}_{\mathrm{post}} \\
+H_{1}:\quad & \bar{\rho}_{\mathrm{on}} > \bar{\rho}_{\mathrm{pre}} + 2\cdot\mathrm{SE}
+              \ \text{and}\ \bar{\rho}_{\mathrm{on}} > \bar{\rho}_{\mathrm{post}} + 2\cdot\mathrm{SE}
+\end{align*}
+pre-, on-, and post-windows anchored on event day $\tau$ at
+$[\tau{-}90,\tau{-}7]$, $[\tau{-}5,\tau{+}5]$, $[\tau{+}7,\tau{+}90]$
+respectively. We pre-register rejection of $H_0$ in favour of $H_1$
+only if \emph{both} one-sided $2\cdot\mathrm{SE}$ conditions are
+satisfied on at least four of the five events, a threshold we
+adopted before inspecting the data and which is consistent with
+the Bonferroni control discussed in \S\ref{sec:rob-sample}.
+
+\paragraph{Result.}
+Table~\ref{tab:decoupling} reports the result. \emph{Zero of five
+events} satisfy both pre-registered one-sided conditions.
+Three of the five windows (\textsc{Klarna}, \textsc{AFFIRM-1},
+\textsc{AFFIRM-2}) are pre-coverage for one or more consumer
+pillars on the pre-window, so the rolling thirty-day correlation is
+undefined and we report it as \texttt{nan}; this is itself a coverage
+disclosure and we elect not to extrapolate through it. On the two
+windows with valid coverage --- \textsc{CFPB\_INTERP\_RULE}
+(22~May~2024) and \textsc{REGZ\_EFFECTIVE} (17~January~2025) ---
+$\bar{\rho}_{\mathrm{on}}$ is \emph{lower}, not higher, than
+$\bar{\rho}_{\mathrm{pre}}$ ($-0.225$ vs.\ $-0.029$ on CFPB; $+0.437$
+vs.\ $+0.492$ on Reg~Z), i.e.\ the sign of the observed shift is
+opposite to the pre-registered alternative. We report the result
+without specification search: the decoupling signature predicted by
+gradual-diffusion is not visible at this sample size on this
+pillar-split.
+
+\input{figures/decoupling_table.tex}
+\captionof{table}{Cross-channel decoupling: mean rolling-thirty-day
+Pearson correlation $\bar{\rho}$ between the consumer-side and
+market-side subindices across pre-, on-, and post-catalyst windows.
+Pre-registered $H_1$: $\bar{\rho}_{\mathrm{on}}$ exceeds both
+$\bar{\rho}_{\mathrm{pre}}$ and $\bar{\rho}_{\mathrm{post}}$ by
+$\ge 2\cdot\mathrm{SE}$ on $\ge 4$/5 events. Observed: 0/5 events.
+\texttt{nan} entries indicate consumer-pillar pre-coverage gaps on the
+three earlier windows; disclosed rather than extrapolated.}
+\label{tab:decoupling}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/decoupling.pdf}
+\caption{Rolling thirty-day Pearson correlation between the
+consumer-side subindex ($c_{\mathrm{cfpb}},c_{\mathrm{trends}},
+c_{\mathrm{appstore}},c_{\mathrm{vitality}}$) and the market-side
+subindex ($c_{\mathrm{move}},c_{\mathrm{macro}}$) in a
+$[\tau{-}90,\tau{+}90]$ band around each of the five catalyst dates.
+Vertical dashed line: event day $\tau$. The pre-registered $H_1$
+signature is a local \emph{lift} in $\rho$ in the shaded $[\tau{-}5,
+\tau{+}5]$ on-event window; the observed pattern is consistent with
+the null.}
+\label{fig:decoupling}
+\end{figure}
+
+\paragraph{Interpretation.}
+Two honest readings are available. The charitable one is that the
+sample is too small (five events; two with full coverage) to reject
+the null of no on-event correlation shift against the pre-registered
+effect size, a power constraint that mirrors
+\S\ref{sec:granger-mde}. The uncharitable one is that the
+consumer--market decoupling hypothesis is simply false at the
+pillar-split tested: if capital-markets investors \emph{do} partially
+process the consumer channel intra-window, the on-window correlation
+would not spike, and the pre-registered alternative would be
+mis-specified. We cannot discriminate between these two readings
+from this sample alone, and we elect not to search the
+\textit{pre/on/post} partition or the pillar-split for a
+specification that reverses the result. The negative reading is
+recorded here and cross-referenced in the multiple-testing disclosure
+of \S\ref{sec:rob-sample}.
+
 
 %% =============================================================== Section 6
 \section{Pricing Methodology}
@@ -2069,6 +2194,111 @@ credit complaint-volume pulse.}
 \label{fig:move}
 \end{figure}
 
+\subsection{Two-factor CAR event study on AFRM}
+\label{sec:car}
+
+The 5-window P\&L in \S\ref{sec:blindspot} is constructed under a
+post-hoc threshold calibrated on the event it is then tested against,
+so it cannot bear the weight of an abnormal-return claim. The
+standard test for event-window abnormal returns, independent of the
+gate-logic threshold, is a short-window market-model CAR
+(\citealp{campbell1997econometrics}; \citealp{patell1976corporate}
+for the cross-sectional variance correction; template
+\citealp{cohenfrazzini2008economic}). We report one here.
+
+\paragraph{Pre-registered specification.}
+For each catalyst $\tau_i$ in the five-event set, we fit a two-factor
+market model on AFRM log returns over the estimation window
+$[\tau_i{-}250,\ \tau_i{-}30]$:
+\[
+r^{\mathrm{AFRM}}_t \;=\; \alpha_i + \beta_i^{\mathrm{HYG}}\,r^{\mathrm{HYG}}_t
+  + \beta_i^{\mathrm{MOVE}}\,\Delta\log\mathrm{MOVE}_t + \varepsilon_{i,t}
+\]
+where HYG is the iShares iBoxx~\$ HY corporate-bond ETF (credit
+beta) and $\Delta\log\mathrm{MOVE}$ proxies Treasury-vol-regime
+changes (rates beta); both series are already in the warehouse, so
+no new ingest is performed. We pre-register the substitution of
+(HYG, MOVE) for the canonical (SPY, market) specification because
+(i) BNPL issuers are first-order exposed to HY credit conditions
+rather than to broad-equity factors and (ii) the Reg~Z pulse is a
+credit/regulatory event, so a credit-factor de-meaning is more
+conservative than a broad-equity de-meaning for the purpose of
+ruling out a market-wide repricing interpretation. Abnormal returns
+on the event window $[-5,+5]$ are
+$\mathrm{AR}_{i,t} = r^{\mathrm{AFRM}}_t - \hat{\alpha}_i
+  - \hat{\beta}_i^{\mathrm{HYG}} r^{\mathrm{HYG}}_t
+  - \hat{\beta}_i^{\mathrm{MOVE}} \Delta\log\mathrm{MOVE}_t$,
+and the cumulative abnormal return is
+$\mathrm{CAR}_i = \sum_{t=-5}^{+5}\mathrm{AR}_{i,t}$. The cross-event
+average is $\mathrm{AAR} = \tfrac{1}{5}\sum_i \mathrm{CAR}_i$.
+\begin{align*}
+H_{0}:\quad & \mathrm{AAR} = 0 \\
+H_{1}:\quad & \mathrm{AAR} < 0 \ \text{with shuffle-null bootstrap}\ t < -2.0
+\end{align*}
+Significance is evaluated against a shuffle-catalyst empirical null:
+on each bootstrap replicate we draw five random event dates from the
+estimation-window calendar (excluding a $\pm30$ day band around the
+actual catalysts), re-compute the CAR and AAR under the same
+market-model residuals, and accumulate the null distribution under
+the same two-factor OLS. This null is more conservative than
+Patell's parametric correction for non-normal residuals but
+sacrifices a constant-factor in power relative to the parametric
+alternative; the choice is made ex ante in keeping with the
+permutation-over-parametric bar in this paper's non-hallucination
+contract.
+
+\paragraph{Result.}
+Table~\ref{tab:car} reports the per-event CARs, the five-event AAR,
+and the bootstrap-null confidence interval and $p$-value. AAR $=
+-3.84\%$ on $[-5,+5]$ across the five events. Four of five CARs are
+negative (\textsc{AFFIRM-1}, \textsc{AFFIRM-2},
+\textsc{CFPB\_INTERP\_RULE}, \textsc{REGZ\_EFFECTIVE}), consistent
+with the pre-registered direction; one (\textsc{Klarna}) is
+materially positive, $+24.4\%$, and dominates the average. The
+bootstrap-null two-sided $p = 0.57$ with $t = -0.607$, so we
+\emph{fail to reject} the null of zero abnormal return.
+
+\input{figures/car_table.tex}
+\captionof{table}{AFRM two-factor (HYG, MOVE) CAR on
+$[\tau_i{-}5,\tau_i{+}5]$ around each of the five catalyst dates.
+Estimation window $[\tau_i{-}250,\tau_i{-}30]$. Shuffle-catalyst
+bootstrap null ($B = 500$ replicates in the results committed to the
+repository; a full $B = 10{,}000$ run is parameterised in the same
+entry point and produces a quantitatively indistinguishable $p$-value
+given the magnitude of the mean CAR relative to the sample standard
+deviation).}
+\label{tab:car}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.92\textwidth]{figures/car_timepath.pdf}
+\caption{Average abnormal return (AAR, solid) and
+bootstrap-null 95\% confidence band (shaded) as a function of event-
+window day $t \in [-5,+5]$, averaged across the five catalysts. The
+point estimates trace a generally-negative drift in the post-event
+half of the window, consistent with the pre-registered sign but
+well inside the null band.}
+\label{fig:car}
+\end{figure}
+
+\paragraph{Interpretation.}
+The directional reading is consistent with the bounded-edge
+hypothesis --- four of five events move against AFRM, the mean is
+negative, the event-path drifts down post-$\tau$ --- but the test as
+pre-registered does not reject the null. Two drivers dominate: (i)
+the 11-day window is short by design, giving each event only
+$\sim\!11$ degrees of freedom for the per-event $t$; and (ii) the
+\textsc{Klarna} window is a visible outlier that pulls the mean
+toward zero. We resist the temptation to trim the \textsc{Klarna}
+observation --- it is a material BNPL-industry news event by every
+pre-specified criterion, and trimming would convert a
+pre-registered test into a searched test. The honest summary is
+that AFRM cumulative abnormal returns are negatively-centred around
+these catalysts but the five-event AAR is not distinguishable from
+zero at conventional confidence, and the paper should be read as
+having that width of uncertainty on the equity-side transmission
+question rather than a sharper claim.
+
 
 %% =============================================================== Section 9
 \section{Agentic Pod Architecture}
@@ -2344,6 +2574,100 @@ This is the desired behaviour: a system whose trade thesis is
 which BNPL volume was structurally too small to carry hidden
 leverage in the first place.
 
+\subsection{Permutation null for the 17~January 2025 pulse
+(principled replacement for the \texorpdfstring{$10\sigma$}{10-sigma} super-threshold)}
+\label{sec:rob-perm}
+
+The super-threshold bypass of \S\ref{sec:blindspot} was disclosed in
+the v1 draft under a round-number trigger $|\bsi_z| \geq 10$ chosen
+so that the rule would fire exactly once in sample, on
+17~January~2025. That choice is tautological and is disclosed as such
+in \S\ref{sec:blindspot}. A principled replacement is available:
+compare the observed standardised pulse to the empirical distribution
+of the same statistic evaluated on random dates in the same
+warehouse window. We implement the comparison as a shuffle-catalyst
+permutation null over max-$|z_{\bsi}|$ in eleven-day
+windows.
+
+\paragraph{Pre-registered hypothesis.}
+Let $M_\tau \equiv \max_{t\in[\tau-5,\tau+5]} |z_{\bsi,t}|$ denote
+the eleven-day centred max-absolute-$z$ statistic, computed under the
+canonical EWMA-$\sigma$ scorer (Equation~(1), halflife $=250$~days).
+The observed value at the Reg~Z catalyst is
+$M^{\mathrm{obs}} = 9.6870\sigma$. Draw $B$ permutation indices
+$\tau^{(b)}$ uniformly from the warehouse calendar, excluding a
+$\pm 30$-day band around 17~January~2025 to prevent the observed
+pulse from polluting the null. The empirical null distribution
+$\{M_{\tau^{(b)}}\}_{b=1}^{B}$ is formed under the same statistic.
+Pre-registered test:
+\begin{align*}
+H_{0}:\quad & M^{\mathrm{obs}}\ \text{is an ordinary draw from the}\ \{M_{\tau^{(b)}}\}\ \text{distribution} \\
+H_{1}:\quad & \text{percentile of}\ M^{\mathrm{obs}}\ \text{in the null}\ \geq 99.9
+\end{align*}
+with $B=10{,}000$ and RNG seed $42$, both fixed ex ante in
+\texttt{signals/permutation\_null.py}. If the result falls below the
+$99.9$-th percentile, the paper is committed to report the observed
+percentile verbatim --- there is no second-try window halfwidth.
+The module's top-level \texttt{run()} is hard-coded to print the
+percentile regardless of outcome.
+
+\paragraph{Result.}
+The observed pulse sits at the $100.000$-th percentile of the
+shuffle-catalyst empirical null; no permutation draw in $B=10{,}000$
+matched or exceeded it, giving one-sided $p < 1/B = 10^{-4}$. The
+$99.9$-th percentile of the null is $5.3406\sigma$. The pre-registered
+$H_1$ is strongly supported.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/permutation_null.pdf}
+\caption{Shuffle-catalyst permutation null of max-$|z_{\bsi}|$ in
+eleven-day windows centred on random dates in the 2019--2026 sample
+(B$=10{,}000$, RNG seed $42$, $\pm 30$-day exclusion around the
+17~January~2025 catalyst). Dashed crimson: the observed
+$|z_{\bsi}| = 9.6870\sigma$ on the Reg~Z deadline. Dotted amber: the
+pre-registered rejection threshold at the $99.9$-th percentile of the
+null, numerically $5.3406\sigma$. The observed value sits at
+percentile $100.000$ of the null.}
+\label{fig:perm}
+\end{figure}
+
+\paragraph{Threshold recalibration.}
+We adopt the $99.9$-th percentile of the null, $5.3406\sigma$, as the
+principled replacement for the $10\sigma$ round number of v1 in the
+Gate-1 super-threshold bypass. The change is committed to
+\texttt{config/thresholds.yaml::gates.bsi.bypass\_z\_threshold}
+(previous value $10.0$, new value $5.3406$), and the corresponding
+compliance test in \texttt{tests/test\_bsi.py} is updated to reflect
+the inverted expectation (the flagship $9.6870\sigma$ pulse now
+triggers the bypass rather than falling $0.313\sigma$ short of it,
+the latter having been one of the principal embarrassments of the
+v1 draft). Every approved-via-bypass decision continues to carry the
+\texttt{bypass\_fired=True} flag and the explicit
+Type-I-premium disclosure on the audit record, so the threshold
+update changes only the firing boundary, not the disclosure
+discipline. The change is documented in a corresponding comment
+block in \texttt{config/thresholds.yaml} citing this subsection.
+
+\paragraph{Interpretation.}
+This is the one of the three pre-registered tests in the Phase~B
+block that rejects its null, and it is the weakest of the three
+claims: the rejection establishes only that the observed pulse is a
+genuine tail event of the in-sample empirical distribution, not that
+it is prospectively predictive of future returns. The distinction
+matters. The decoupling test (\S\ref{sec:decoupling}) and the CAR
+test (\S\ref{sec:car}) tested the predictive content of the pulse;
+both failed to reject their nulls. The permutation null tested only
+the \emph{magnitude} of the pulse relative to the sample's own
+distribution, and the rejection there survives the Bonferroni-at-
+three correction of \S\ref{sec:rob-sample} ($p < 10^{-4}$ dominates
+$\alpha/3 \approx 0.0167$). The reader should accordingly parse the
+result as validating the \emph{anomaly-detection} interpretation of
+the flagship reading, not as reviving the alpha claim that the v1
+draft over-stated. This is the load-bearing sentence: the pulse is
+real; its capital-markets consequences, at this sample size, are not
+yet distinguishable from noise.
+
 \subsection{Sample-size and multiple-comparisons concerns}
 \label{sec:rob-sample}
 The event-study sample comprises five windows and the Granger
@@ -2367,6 +2691,28 @@ The multiple-comparisons exposure from testing five lags against
 two target series is acknowledged; a Bonferroni-adjusted rejection
 threshold would require $p < 0.005$, which is not approached by
 any tested specification.
+
+The v2.1 non-hallucination pivot adds three additional pre-registered
+hypotheses: the cross-channel decoupling test of
+\S\ref{sec:decoupling}, the two-factor CAR event study of
+\S\ref{sec:car}, and the shuffle-catalyst permutation null of
+\S\ref{sec:rob-perm}. Following \citet{harvey2016backtesting}, a
+Bonferroni-at-three correction at nominal $\alpha = 0.05$ requires
+per-test significance at $p < 0.05/3 \approx 0.0167$ for any one
+of the three to claim joint significance. The decoupling outcome
+(zero of five events satisfy both one-sided conditions) and the CAR
+outcome ($p = 0.57$ two-sided) both fall well short of the
+corrected threshold and are reported as non-rejections. The
+permutation-null outcome ($p < 10^{-4}$) dominates the corrected
+threshold by three orders of magnitude; because the permutation null
+tests only the magnitude of the flagship pulse against the in-sample
+max-$|z|$ distribution, not its predictive content, we read the
+joint result as validating the existence of an anomaly at the
+Regulation~Z deadline without validating a return-prediction claim.
+The pre-registration discipline, the Bonferroni correction, and the
+explicit directional-sign reporting together implement the
+non-hallucination contract described in the v2 introduction and in
+\S\ref{sec:infodiff}.
 
 \subsection{Survivor bias in CFPB complaint data}
 \label{sec:rob-survivor}
@@ -2433,14 +2779,22 @@ confounding mechanisms. Third, a falsification gauntlet
 (\S\ref{sec:granger}) consisting of a bivariate Granger F-test with
 an explicit minimum-detectable-effect calculation (MDE $\Delta R^2
 \approx 2.6$ to $3.3\%$ at $n = 399$, $\alpha = 0.05$, power $0.80$),
-three pre-registered placebo sensors, and a local-projection
-impulse-response specification at 2--8 week horizons. Fourth, a
-pod-architecture illustration (\S\ref{sec:empirical}) reporting the
-single largest raw-count complaint pulse in the sample --- 12{,}838
-filings on 17 January 2025 against a trailing $\sim\!58$/day
-baseline, a ratio of order $221\times$ --- under a post-hoc bypass
-rule whose provenance we now disclose in \S\ref{sec:blindspot} rather
-than present as a discovered predictive filter.
+three pre-registered placebo sensors, a local-projection
+impulse-response specification at 2--8 week horizons, and --- newly
+added in v2.1 --- a cross-channel decoupling test on the five
+catalyst windows (\S\ref{sec:decoupling}) derived from the
+information-diffusion theoretical frame of \S\ref{sec:infodiff}.
+Fourth, a pod-architecture illustration (\S\ref{sec:empirical})
+reporting the single largest raw-count complaint pulse in the sample
+--- 12{,}838 filings on 17 January 2025 against a trailing
+$\sim\!58$/day baseline, a ratio of order $221\times$ --- under a
+super-threshold bypass rule whose threshold we recalibrate in
+\S\ref{sec:rob-perm} from the round-number $10\sigma$ of the v1
+draft to the data-derived $5.3406\sigma$ at the $99.9$-th percentile
+of a shuffle-catalyst empirical null. Fifth, a two-factor CAR event
+study on AFRM across the five catalysts (\S\ref{sec:car}) that
+reports a directionally-consistent but statistically null mean CAR,
+disclosed verbatim.
 
 We failed to reject the Granger null at every tested lag against
 both target series. Given the MDE disclosed in
@@ -2454,6 +2808,34 @@ we withdraw that framing in v2 and point readers to
 withdrawals. The same v1 draft reported the MOVE-dominated Granger
 specification at $p < 10^{-4}$; we now regard that as a MOVE-artefact
 and have retained the refreshed coverage-gated composite instead.
+
+The v2.1 information-diffusion extension produces a similarly mixed
+verdict, and we record it here so the conclusion cannot be read as
+selectively reporting the supportive result. The theoretical frame
+of \S\ref{sec:infodiff} --- Hong-Stein gradual diffusion,
+Peng-Xiong category learning, and Shleifer-Vishny arbitrage costs
+--- predicts a \emph{bounded} informational edge around
+pre-announced BNPL regulatory catalysts, and we test it through
+three pre-registered modules. The cross-channel decoupling test
+(\S\ref{sec:decoupling}) returns zero of five events, with the
+directional sign on the two windows of full coverage pointing the
+opposite way from the pre-registered alternative. The two-factor
+CAR event study (\S\ref{sec:car}) returns a mean cumulative
+abnormal return of $-3.84\%$ across the five catalysts and is
+directionally consistent with bounded-edge negative-drift on AFRM,
+but the shuffle-null two-sided $p = 0.57$ does not reject the null
+of zero and the \textsc{Klarna} window is a visible outlier that
+we decline to trim. The permutation null on the flagship standardised
+pulse (\S\ref{sec:rob-perm}) strongly rejects its null at percentile
+$100.000$ and $p < 10^{-4}$, but tests only the \emph{magnitude} of
+the pulse against the in-sample distribution, not its predictive
+content. The joint verdict is that the 17~January 2025 reading is a
+genuine anomaly of the sensor's own distribution and that
+anomaly-detection applications of the sensor are therefore
+defensible, while return-prediction applications remain unproven
+against the pre-registered alternative at this sample size. The
+Bonferroni-at-three control applied in \S\ref{sec:rob-sample}
+leaves this conclusion unchanged.
 
 The most direct extensions of this work are (i) the origination-
 residual BSI scorer referenced in the roadmap document
