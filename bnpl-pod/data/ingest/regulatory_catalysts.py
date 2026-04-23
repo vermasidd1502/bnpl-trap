@@ -14,8 +14,8 @@ openings, and speeches without rule-making content are excluded. The set
 below is deliberately small — the gate doesn't need comprehensiveness, it
 needs DATED MATERIAL events spaced through the backtest window.
 
-Seed rows (as of Sprint H)
---------------------------
+Seed rows (as of Sprint H + 2026-04-23 paper-anchor amendment)
+--------------------------------------------------------------
 * cfpb_2022_market_report      2022-09-15  US-CFPB  m=0.80  report
       "Buy Now, Pay Later: Market Trends and Consumer Impacts"
       First comprehensive regulator survey of the BNPL sector; explicitly
@@ -28,6 +28,16 @@ Seed rows (as of Sprint H)
       Interpretive rule classifying BNPL lenders as card issuers under
       Regulation Z. Direct ABS-pricing relevance — dispute rights and
       chargeback symmetry now enforceable.
+* cfpb_2025_regz_effective     2025-01-17  US-CFPB  m=0.95  regulation
+      Regulation Z compliance deadline for BNPL lenders (billing dispute
+      / refund rights). THIS IS THE PAPER'S FLAGSHIP DATE — §7.2 pins
+      z_bsi = +9.69 σ on this day, driven by a 12,838-complaint CFPB
+      surge (≈213× baseline). Without this row the live pod and
+      backtester structurally cannot fire Gate 3 on the paper's anchor:
+      the next catalyst (CCD II 2026-11-20) is 673 days out, far past
+      the 180d horizon. Mirrors the warehouse row pre-seeded manually
+      on 2026-04-21; codified here so `ingest_all()` is the single
+      source of truth.
 * ccd_ii_transposition_2026    2026-11-20  EU       m=1.00  transposition
       EU Consumer Credit Directive II member-state transposition deadline.
       Full scope over BNPL: creditworthiness assessments, APR disclosure,
@@ -94,6 +104,27 @@ SEED: list[SeedRow] = [
         notes=(
             "Dispute rights and chargeback symmetry become enforceable. "
             "Directly re-prices ABS-level expected-loss assumptions."
+        ),
+    ),
+    SeedRow(
+        catalyst_id="cfpb_2025_regz_effective",
+        jurisdiction="US-CFPB",
+        deadline_date=date(2025, 1, 17),
+        title=(
+            "Regulation Z compliance deadline for BNPL lenders "
+            "(billing dispute / refund rights)"
+        ),
+        materiality=0.95,
+        category="regulation",
+        notes=(
+            "PAPER ANCHOR: §7.2 pins z_bsi = +9.69 σ on this day. Compliance "
+            "effective-date for the 2024 interpretive rule; first day BNPL "
+            "lenders must provide Reg-Z-grade dispute / refund rights. "
+            "Empirical peak of the 2019-2026 window: 12,838 BNPL complaints "
+            "filed on this single day (≈213× daily baseline). Without this "
+            "seed row, Gate 3 structurally fails on the paper's flagship "
+            "day — the next material catalyst (CCD II 2026-11-20) is 673 "
+            "days out, far past the 180d proximity horizon."
         ),
     ),
     SeedRow(

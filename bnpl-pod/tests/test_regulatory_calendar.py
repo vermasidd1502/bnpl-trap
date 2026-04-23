@@ -21,14 +21,18 @@ windows with the real seed calendar and verify every window now has
 from __future__ import annotations
 
 from datetime import date
+from pathlib import Path
 
+import duckdb
 import pytest
 
+from data.ingest.regulatory_catalysts import SEED, ingest_all
 from data.regulatory_calendar import (
     Catalyst,
     days_to_nearest,
     nearest_material_catalyst,
 )
+from data.schema import DDL
 
 
 # --- Seed catalysts mirroring the warehouse -------------------------------
@@ -147,6 +151,98 @@ def test_every_historical_window_now_has_material_catalyst_in_horizon(name, as_o
         f"{name} at {as_of}: days_to_nearest={days} exceeds 180d horizon — "
         f"the temporal leak is NOT fixed. Expected <=180 after Sprint H."
     )
+
+
+# --- Seed integrity (paper v2.0.1 — 2026-04-23 amendment) -----------------
+# These tests operate on the source-controlled SEED list from
+# data/ingest/regulatory_catalysts.py. They guard against seed drift: if
+# anyone removes the Reg Z 2025-01-17 row, Gate 3 will structurally fail
+# on the paper's flagship day, and the tests below will turn red loudly.
+
+def test_seed_contains_paper_anchor_reg_z_2025():
+    """The paper's §7.2 headline requires a material catalyst on 2025-01-17.
+
+    Without this seed, a fresh-clone `ingest_all()` produces a calendar
+    where the nearest material catalyst to 2025-01-17 is the CCD II 2026
+    deadline, 673 days out — far past the 180d horizon. Gate 3 then
+    silently fails on every live-pod tick near the Reg Z event and the
+    backtester cannot reproduce the paper's flagship day.
+    """
+    anchor = next(
+        (s for s in SEED if s.catalyst_id == "cfpb_2025_regz_effective"),
+        None,
+    )
+    assert anchor is not None, (
+        "SEED is missing `cfpb_2025_regz_effective` — the paper §7.2 "
+        "anchor date. Without this row Gate 3 structurally fails on the "
+        "paper's flagship day."
+    )
+    assert anchor.deadline_date == date(2025, 1, 17)
+    assert anchor.materiality >= 0.5   # above default gate threshold
+
+
+def test_seed_covers_every_historical_event_window():
+    """Every canonical historical window must find a material catalyst
+    within the 180d horizon using ONLY the source-controlled SEED."""
+    seeded = [
+        Catalyst(
+            catalyst_id=s.catalyst_id,
+            jurisdiction=s.jurisdiction,
+            deadline_date=s.deadline_date,
+            title=s.title,
+            materiality=s.materiality,
+            category=s.category,
+            notes=s.notes,
+        )
+        for s in SEED
+    ]
+    # Windows from backtest/event_study — must each find a catalyst.
+    probes: list[tuple[str, date]] = [
+        *_HISTORICAL_WINDOWS,
+        ("REG_Z_EFFECTIVE_2025", date(2025, 1, 17)),   # paper headline
+    ]
+    for name, as_of in probes:
+        days = days_to_nearest(as_of, seeded)
+        assert days is not None, f"{name}: seed has no material catalyst"
+        assert 0 <= days <= 180, (
+            f"{name} at {as_of}: seed yields days_to_nearest={days}, "
+            f"exceeds 180d horizon. Gate 3 would structurally fail on "
+            f"this day under the source-controlled seed."
+        )
+
+
+def test_ingest_all_is_idempotent(tmp_path: Path, monkeypatch):
+    """`ingest_all()` must be safe to run repeatedly — the paper pod and
+    CI both re-run ingest on every deploy; we must not accumulate
+    duplicates or drift catalyst_id -> row identity."""
+    from data.ingest import regulatory_catalysts as ingest_mod
+    from data import regulatory_calendar as cal_mod
+
+    db = tmp_path / "warehouse.duckdb"
+    # Initialise the schema the seeder will write into.
+    con = duckdb.connect(str(db))
+    for stmt in DDL:
+        con.execute(stmt)
+    con.close()
+
+    # Both the seeder and the calendar resolver use settings.duckdb_path,
+    # so point both at the temp warehouse.
+    monkeypatch.setattr(ingest_mod.settings, "duckdb_path", db)
+    monkeypatch.setattr(cal_mod.settings, "duckdb_path", db)
+
+    n1 = ingest_all()
+    n2 = ingest_all()
+    assert n1 == n2 == len(SEED)
+
+    con = duckdb.connect(str(db), read_only=True)
+    (rows,) = con.execute("SELECT COUNT(*) FROM regulatory_catalysts").fetchone()
+    (distinct_ids,) = con.execute(
+        "SELECT COUNT(DISTINCT catalyst_id) FROM regulatory_catalysts"
+    ).fetchone()
+    con.close()
+
+    assert rows == len(SEED), f"expected {len(SEED)} rows, got {rows}"
+    assert rows == distinct_ids, "duplicate catalyst_id after double-run"
 
 
 def test_empirical_audit_four_windows_all_approve_post_sprint_h():

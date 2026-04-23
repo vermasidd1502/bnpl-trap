@@ -139,12 +139,19 @@ def _synthetic_fixture(
 # Registry integrity
 # ============================================================================
 def test_canonical_windows_registered():
-    """The four Sprint G catalyst windows are all present with plausible dates."""
+    """Every canonical catalyst window is present with plausible dates.
+
+    Four Sprint G windows (2022–2024) + the 2026-04-21 post-merge paper
+    anchor REGZ_EFFECTIVE on 2025-01-17 (§7.2 headline). If this asserts
+    red, check WINDOWS in backtest/event_study.py against the paper
+    §7 / §9 window list.
+    """
     expected = {
         "KLARNA_DOWNROUND":  date(2022, 7, 11),
         "AFFIRM_GUIDANCE_1": date(2022, 8, 26),
         "AFFIRM_GUIDANCE_2": date(2023, 2, 9),
         "CFPB_INTERP_RULE":  date(2024, 5, 22),
+        "REGZ_EFFECTIVE":    date(2025, 1, 17),   # paper §7.2 anchor
     }
     assert set(WINDOWS.keys()) == set(expected.keys())
     for key, expected_date in expected.items():

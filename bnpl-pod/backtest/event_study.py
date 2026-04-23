@@ -96,14 +96,15 @@ class EventWindow:
         return self.lookback_days + self.lookahead_days + 1
 
 
-# Canonical event windows (MASTERPLAN v4.1 §9 + 2026-04-21 data-refresh).
+# Canonical event windows (paper_formal.tex §7 / §9, 2026-04-21 data-refresh).
 # REGZ_EFFECTIVE was added after the April 2026 CFPB ingest revealed that
 # the Regulation Z compliance deadline triggered a one-day z_bsi spike of
-# +44 (driven by 12,838 BNPL complaints vs. a <60/day baseline). Including
-# this window is essential to the backtest because BSI's whole claim is
-# that it detects structural stress — a +44σ print is the cleanest positive
-# specimen we have, and the four pre-existing 2022-2024 windows turn out to
-# be too mild to trigger Gate-1 at the causal-z-score threshold.
+# +9.69 σ (paper v2.0.1 §7.2 headline under the canonical EWMA-σ scorer,
+# driven by 12,838 BNPL complaints vs. a <60/day baseline). Earlier
+# iterations of the scorer (180d rolling σ) quoted this pulse at ~+44 σ;
+# the v2.0.1 Equation (1) EWMA σ tightens the estimate but the event is
+# still by far the cleanest positive specimen we have — the four
+# pre-existing 2022-2024 windows are too mild to trigger Gate 1.
 WINDOWS: dict[str, EventWindow] = {
     "KLARNA_DOWNROUND":   EventWindow("KLARNA_DOWNROUND",  date(2022, 7, 11)),
     "AFFIRM_GUIDANCE_1":  EventWindow("AFFIRM_GUIDANCE_1", date(2022, 8, 26)),
