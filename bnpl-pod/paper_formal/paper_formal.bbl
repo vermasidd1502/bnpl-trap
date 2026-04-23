@@ -27,10 +27,24 @@ Cochrane, J.~H. (2011).
 \newblock Presidential address: Discount rates.
 \newblock {\em The Journal of Finance}, 66(4):1047--1108.
 
+\bibitem[Cohen and Frazzini, 2008]{cohenfrazzini2008economic}
+Cohen, L. and Frazzini, A. (2008).
+\newblock Economic links and predictable returns.
+\newblock {\em The Journal of Finance}, 63(4):1977--2011.
+
 \bibitem[{Consumer Financial Protection Bureau}, 2023]{cfpb2023bnpl}
 {Consumer Financial Protection Bureau} (2023).
 \newblock Buy now, pay later: Market trends and consumer impacts.
 \newblock Report, Consumer Financial Protection Bureau.
+
+\bibitem[{Consumer Financial Protection Bureau}, 2024]{cfpb2024makingendsmeet}
+{Consumer Financial Protection Bureau} (2024).
+\newblock Consumer use of buy now, pay later: Insights from the cfpb making
+  ends meet survey.
+\newblock Research report, Consumer Financial Protection Bureau.
+\newblock Government-published BNPL-user financial-profile survey; complements
+  the complaint-volume evidence with direct household-balance-sheet
+  measurement.
 
 \bibitem[Da et~al., 2011]{da2011search}
 Da, Z., Engelberg, J., and Gao, P. (2011).
@@ -41,6 +55,14 @@ Da, Z., Engelberg, J., and Gao, P. (2011).
 Da, Z., Engelberg, J., and Gao, P. (2015).
 \newblock The sum of all fears: Investor sentiment and asset prices.
 \newblock {\em The Review of Financial Studies}, 28(1):1--32.
+
+\bibitem[deHaan et~al., 2023]{fedphilly2023bnpl}
+deHaan, E., Kim, J., Lourie, B., and Zhu, C. (2023).
+\newblock How does buy now, pay later affect customers' credit?
+\newblock Discussion Paper 2023-01, Federal Reserve Bank of Philadelphia.
+\newblock Causal evidence that BNPL use raises revolving-credit utilisation and
+  delinquency probability; grounds the complaint pillar as a credit-fundamental
+  signal.
 
 \bibitem[deHaan et~al., 2024]{dehaan2024accuracy}
 deHaan, E., Kim, J., Lourie, B., and Zhu, C. (2024).
@@ -58,6 +80,13 @@ Di~Maggio, M., Katz, J., and Williams, E. (2022).
 Duffie, D. and Singleton, K.~J. (1999).
 \newblock Modeling term structures of defaultable bonds.
 \newblock {\em The Review of Financial Studies}, 12(4):687--720.
+
+\bibitem[{Federal Reserve Bank of Boston}, 2024]{fedboston2024bnpl}
+{Federal Reserve Bank of Boston} (2024).
+\newblock Buy now, pay later: Who uses it and why.
+\newblock Current policy perspectives, Federal Reserve Bank of Boston.
+\newblock Demographic characterisation of the BNPL cohort as credit-fragile;
+  supports cohort-vulnerability claim.
 
 \bibitem[Granger, 1969]{granger1969investigating}
 Granger, C. W.~J. (1969).
@@ -93,6 +122,12 @@ Hirshleifer, D. and Shumway, T. (2003).
 \newblock Good day sunshine: Stock returns and the weather.
 \newblock {\em The Journal of Finance}, 58(3):1009--1032.
 
+\bibitem[Hong and Stein, 1999]{hongstein1999unified}
+Hong, H. and Stein, J.~C. (1999).
+\newblock A unified theory of underreaction, momentum trading, and overreaction
+  in asset markets.
+\newblock {\em The Journal of Finance}, 54(6):2143--2184.
+
 \bibitem[Jarrow and Turnbull, 1995]{jarrow1995pricing}
 Jarrow, R.~A. and Turnbull, S.~M. (1995).
 \newblock Pricing derivatives on financial securities subject to credit risk.
@@ -102,6 +137,14 @@ Jarrow, R.~A. and Turnbull, S.~M. (1995).
 Jord\`a, O. (2005).
 \newblock Estimation and inference of impulse responses by local projections.
 \newblock {\em American Economic Review}, 95(1):161--182.
+
+\bibitem[{JPMorgan Chase Institute}, 2024]{jpmc2024bnpl}
+{JPMorgan Chase Institute} (2024).
+\newblock Convenience or liquidity valve? buy now, pay later, and homeowner
+  balance sheets.
+\newblock Policy brief, JPMorgan Chase Institute.
+\newblock Macro-scale exposure evidence via bank-account panel data; quantifies
+  BNPL as a share of household cash flow.
 
 \bibitem[Loughran and McDonald, 2011]{loughran2011liability}
 Loughran, T. and McDonald, B. (2011).
@@ -133,10 +176,29 @@ Mian, A. and Sufi, A. (2014).
   and How We Can Prevent It from Happening Again}.
 \newblock University of Chicago Press.
 
+\bibitem[Peng and Xiong, 2006]{pengxiong2006category}
+Peng, L. and Xiong, W. (2006).
+\newblock Investor attention, overconfidence and category learning.
+\newblock {\em Journal of Financial Economics}, 80(3):563--602.
+
+\bibitem[{Psaros Center for Financial Markets and Policy},
+  2023]{georgetown2023altdata}
+{Psaros Center for Financial Markets and Policy} (2023).
+\newblock Alternate data in credit underwriting.
+\newblock Research report, Georgetown University McDonough School of Business.
+\newblock Meta-legitimises alternative-data approaches for assessing credit
+  risk in under-banked populations; policy anchor for the behavioral-sensor
+  construct.
+
 \bibitem[Romer, 2019]{romer2019guide}
 Romer, P. (2019).
 \newblock A simple guide to pre-registration for empirical economics.
 \newblock {\em AEA Papers and Proceedings}, 109:319--323.
+
+\bibitem[Shleifer and Vishny, 1997]{shleifervishny1997limits}
+Shleifer, A. and Vishny, R.~W. (1997).
+\newblock The limits of arbitrage.
+\newblock {\em The Journal of Finance}, 52(1):35--55.
 
 \bibitem[Tetlock, 2007]{tetlock2007giving}
 Tetlock, P.~C. (2007).

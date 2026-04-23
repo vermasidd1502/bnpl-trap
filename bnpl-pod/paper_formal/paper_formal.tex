@@ -174,6 +174,24 @@ Total-Return Swap (TRS) on a junior BNPL ABS tranche, where the
 economic exposure isolates credit-loss cadence from equity microstructure.
 \end{enumerate}
 
+The scale and demographic locus of this exposure are now
+documented in the official policy-research literature.
+\citet{jpmc2024bnpl}, using a panel of anonymised Chase
+deposit accounts, quantifies BNPL flows as a material share of
+household cash flow for homeowners --- a cohort not previously
+thought of as the BNPL user base --- and frames BNPL as a
+liquidity valve rather than a pure convenience product.
+\citet{cfpb2024makingendsmeet}, drawing on the CFPB's
+nationally-representative Making Ends Meet survey, profiles
+BNPL users as systematically more financially-fragile than
+non-users on every measurable balance-sheet dimension.
+\citet{fedboston2024bnpl} arrives at the same characterisation
+through a different sampling frame. These three sources
+collectively establish that the BNPL cohort is not a benign
+slice of convenience-driven consumers; it is a credit-fragile
+cohort whose aggregate balance-sheet stress is precisely the
+quantity a credit-stress monitor should be designed to read.
+
 Viewed at aggregate, this constitutes an \emph{off-ledger}
 layer of consumer credit: thousands of sub-\$1{,}000 credit
 obligations, held off-bureau, aggregated into an ABS stack
@@ -466,6 +484,38 @@ that question, under pre-registered horizons, and with an
 explicit minimum-detectable-effect disclosure that bounds how
 strong a signal the test is capable of resolving.
 
+\paragraph{Why complaint intensity is a credible proxy for a
+credit-fundamental signal.} A referee might reasonably ask
+whether $C_{it}$ contains any credit-fundamental content at
+all, or whether it is purely generic consumer anger. The
+peer-reviewed and official-policy literature answers the
+question in the affirmative on an ex-ante basis. Using a
+consumer-credit-panel research design that does not rely on any
+complaint data, \citet{fedphilly2023bnpl} document that BNPL
+usage CAUSES an increase in revolving-credit utilisation and
+a measurable increase in the probability of delinquency on
+non-BNPL obligations within the same household. Using the
+separate NBER BNPL-spending-pattern design,
+\citet{dimaggio2022buy} show that BNPL adoption is associated
+with systematically elevated consumption of goods that
+households did not previously finance, with the post-adoption
+default rate on the user's \emph{other} credit lines rising in
+step. \citet{fedboston2024bnpl} independently confirms the
+cohort fragility characterisation. \citet{dehaan2024accuracy}
+documents the companion measurement problem: self-reported
+BNPL-use surveys understate true usage, which makes the CFPB
+complaint-stream one of the few non-self-reported signals with
+any resolution at this frequency. Taken together, these four
+sources establish that (i) BNPL use \emph{causes} measurable
+credit-quality deterioration downstream, and (ii) the
+conventional credit-bureau measurement apparatus under-resolves
+it. Complaint-velocity is therefore not a proxy for generic
+consumer anger; it is a proxy for a real credit-fundamental
+signal that the official credit-reporting infrastructure is
+currently blind to. The empirical question is whether
+$C_{it}$'s signal content is strong enough and clean enough to
+be useful, not whether such content exists in principle.
+
 \paragraph{Referee guide.} A critical referee should read the
 decomposition above and identify the confound they regard as
 most threatening to our claim. For each of the three confounds
@@ -563,6 +613,81 @@ multiple-comparisons discipline of
 \citet{cochrane2011discount} as a reminder that cross-asset
 benchmarks co-move for reasons unrelated to the signal under test,
 and the pre-registration discipline of \citet{romer2019guide}.
+The broader case for alternative-data channels as inputs to
+credit assessment is surveyed by \citet{georgetown2023altdata}, whose
+Georgetown-Psaros policy report argues that non-bureau signals are
+mechanically necessary for populations whose obligations never appear
+on a traditional credit file --- exactly the situation Pay-in-4 BNPL
+creates.
+
+\subsection{Information-Diffusion Hypothesis}
+\label{sec:infodiff}
+
+The preceding literature justifies our construction of a complaint-based
+behavioural sensor but leaves open a theoretical question: if a
+category of consumer-credit stress is measurable in CFPB, App-Store, and
+Google-Trends channels, why would it \emph{not} already be reflected in
+capital-market benchmarks such as HYG, AFRM equity, or subprime-auto
+trustee roll rates? The v2 Granger results (\S\ref{sec:granger}) report
+$p > 0.95$ against both subprime-auto and HYG at ISO-weekly lags of
+four through eight --- a finding the present paper interprets not as
+failure of the sensor but as evidence of \emph{structural orthogonality}
+between consumer-channel stress and capital-markets pricing. We
+articulate this frame through three load-bearing prior results.
+
+First, \citet{hongstein1999unified} derive a model in which
+``news-watchers'' and ``momentum-traders'' interact with information
+arriving gradually across investor types, producing short-horizon
+underreaction followed by medium-horizon overreaction. Their central
+prediction --- that public but non-uniformly-processed information
+generates predictable drift --- is the mechanism our information-
+diffusion hypothesis relies on: consumer-channel stress is a public
+signal whose processing latency across capital-markets investors
+is materially non-zero.
+
+Second, \citet{pengxiong2006category} formalise the constraint that
+limited investor attention forces agents to learn in \emph{categories}
+(industries, asset classes, credit-quality buckets) rather than at the
+individual-security level. Applied here: BNPL is not yet a category in
+the same sense that auto-ABS, credit-card-ABS, or corporate-HY are.
+Capital-market investors who have learned those categories attend to
+their canonical indicators (auto cohort FICO, card charge-off, HYG
+spread) and do not, in general, ingest CFPB or App-Store streams. The
+category-learning constraint predicts that BNPL-specific stress
+propagates slowly until either (i) BNPL receivables acquire a public
+secondary market and the category is learned \emph{de novo}, or (ii)
+a regulatory event forces cross-category attention.
+
+Third, \citet{shleifervishny1997limits} explain why orthogonality of
+this kind can persist in equilibrium: the arbitrage trade that would
+close the gap --- short AFRM equity or HYG around a BNPL regulatory
+catalyst, long consumer-channel exposure --- requires costly
+infrastructure (CFPB complaint-ingest, App-Store review harvesting,
+Google-Trends API, coverage-gated aggregation) that most arbitrageurs
+rationally elect not to build. \citet{cohenfrazzini2008economic}
+provide the empirical template for a closely related setting:
+returns are predictable across \emph{economically linked} assets
+whose linkage is public but costly to observe.
+
+Taken together, these three priors motivate a bounded informational-
+edge hypothesis. We hypothesise that, \emph{around pre-announced
+material BNPL regulatory catalysts}, consumer-channel stress measured
+by the $\bsi$ precedes equity-side repricing of the single public
+BNPL issuer (AFRM) by a measurable lag consistent with Hong-Stein
+gradual-diffusion. The hypothesis is bounded in three explicit ways,
+each of which we test in later sections: (i) no public BNPL ABS
+market exists, so the trade is exclusively via equity or HYG proxy
+and its expected Sharpe is correspondingly diluted
+(\S\ref{sec:exec}); (ii) the edge is predicted to dissipate at the
+catalyst itself, so any evidence must appear as a $(t-5, t+5)$
+abnormal-return pattern rather than as sustained alpha; (iii) the
+minimum detectable effect given our sample of five events is
+$\mathrm{MDE} \approx 3\%\ \Delta R^{2}$ (\S\ref{sec:granger}), which
+means the hypothesis is falsifiable but statistically under-powered
+against small-effect alternatives. We do not in this paper claim the
+hypothesis is supported; we state it here so that subsequent
+falsification tests are pre-registered in the sense of
+\citet{romer2019guide}.
 
 \begin{figure}[H]
 \centering
@@ -835,7 +960,7 @@ out-of-sample refit. We disclose here that this residualisation is
 \emph{specified and interface-staged but not yet populating the
 numerical results reported in this paper}. The v2 numerical panels
 (Figure~\ref{fig:bsicov}, Table~\ref{tab:warehouse},
-\S\ref{sec:event-panel} event study) are computed on the EWMA-$\sigma$
+\S\ref{sec:empirical} event study) are computed on the EWMA-$\sigma$
 coverage-gated CFPB--MOVE composite of Equation~\eqref{eq:bsi},
 \emph{without} the origination residualisation applied. The
 residualisation depends on two external data pulls
