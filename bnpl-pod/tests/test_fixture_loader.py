@@ -299,17 +299,20 @@ def test_afrm_returns_are_returns_not_levels():
 
 
 def test_load_all_windows_from_warehouse_round_trip():
-    """End-to-end: all four windows reconstruct from one warehouse snapshot."""
+    """End-to-end: all five windows reconstruct from one warehouse snapshot."""
     from backtest.event_study import load_all_windows_from_warehouse
 
-    # One warehouse that covers the full 2022–2024 span. We have to load four
-    # windows, so seed wide enough for the furthest one (CFPB 2024).
+    # One warehouse that covers the full 2022–2025 span. Must be wide enough
+    # for BOTH the earliest window (KLARNA 2022-07-11) and the latest
+    # (REGZ_EFFECTIVE 2025-01-17, added when the paper anchor landed).
     con = duckdb.connect(":memory:")
     for s in DDL:
         con.execute(s)
-    # Reuse helper by inserting a combined span manually.
+    # Reuse helper by inserting a combined span manually. `lookahead=700` puts
+    # the right edge well past 2025-04-06 (the loader's pad-right horizon for
+    # REGZ_EFFECTIVE: 40 trading-day lookahead * 1.6 + 15d pad).
     combined = _seed_con(date(2023, 6, 1),
-                         lookback=400, lookahead=400,
+                         lookback=400, lookahead=700,
                          include_excess_spread=True)
     # Move the seeded rows into `con` by re-emitting via INSERT.
     # Simpler: just pass `combined` directly to the loader — it already holds

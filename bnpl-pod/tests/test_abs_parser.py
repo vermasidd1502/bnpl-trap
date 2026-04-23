@@ -100,7 +100,9 @@ def tmp_duckdb(tmp_path: Path, monkeypatch):
 
 def test_parse_all_unparsed_writes_row(monkeypatch, tmp_duckdb):
     monkeypatch.setattr(ap.settings, "offline", False)
-    monkeypatch.setattr(ap, "_fetch_document_text", lambda acc: AFRMMT_BLURB)
+    monkeypatch.setattr(
+        ap, "_fetch_document_text", lambda acc, *, url=None: AFRMMT_BLURB
+    )
 
     counts = ap.parse_all_unparsed()
     assert counts["parsed"] == 1
@@ -118,7 +120,9 @@ def test_parse_all_unparsed_writes_row(monkeypatch, tmp_duckdb):
 
 def test_parse_all_skips_already_parsed(monkeypatch, tmp_duckdb):
     monkeypatch.setattr(ap.settings, "offline", False)
-    monkeypatch.setattr(ap, "_fetch_document_text", lambda acc: AFRMMT_BLURB)
+    monkeypatch.setattr(
+        ap, "_fetch_document_text", lambda acc, *, url=None: AFRMMT_BLURB
+    )
 
     ap.parse_all_unparsed()
     # Second run must find nothing to do.
@@ -128,7 +132,10 @@ def test_parse_all_skips_already_parsed(monkeypatch, tmp_duckdb):
 
 def test_offline_is_noop_on_parse_filing(monkeypatch, tmp_duckdb):
     monkeypatch.setattr(ap.settings, "offline", True)
-    monkeypatch.setattr(ap, "_fetch_document_text",
-                        lambda acc: pytest.fail("called in offline mode"))
+    monkeypatch.setattr(
+        ap,
+        "_fetch_document_text",
+        lambda acc, *, url=None: pytest.fail("called in offline mode"),
+    )
     m = ap.parse_filing("x", "y", None)
     assert m.nonnull() == 0
