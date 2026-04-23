@@ -45,6 +45,12 @@ fonts/
 .claude/sessions/
 .claude/cache/
 
+# Per-machine Claude workspace noise inside the pod tree (never committed)
+bnpl-pod/.claude/
+
+# Local rescue backups (paranoia copies of the working tree; never committed)
+bnpl-pod-rescue-backup-*/
+
 # Design-brief archives (kept locally, not in version control)
 BNPL pod design.zip
 _design_unpack/

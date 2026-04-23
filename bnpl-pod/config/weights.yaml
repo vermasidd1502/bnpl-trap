@@ -1,33 +1,97 @@
 # -----------------------------------------------------------------------------
-# BNPL Stress Index (BSI) — component weights.
+# BNPL Stress Index (BSI) — pillar weights + EWMA / σ-floor / coverage config.
 #
-# Default weights are PRIORS, not final. They are the starting point for the
-# constrained QP refinement in signals/weights_qp.py, which solves:
+# This file is the single source of truth for Equation (1) of paper §6
+# ("Data Architecture and the CFPB--MOVE Composite"). Every field here is
+# consumed by signals/bsi.py::load_spec(). Any change to any field is a
+# specification change.
 #
-#     minimize   || BSI(w) - AFRMMT_stress ||^2
-#     subject to w >= 0, sum(w) = 1, per-component caps.
+# Paper v2.0.1 pillar inventory
+# -----------------------------
+#   LOAD-BEARING  (consistently populated, carry the signal):
+#       cfpb       — CFPB BNPL-tagged complaint momentum
+#       move       — ICE BofA MOVE Treasury-volatility index
+#   COVERAGE-GATED (enter only when pre-registered coverage threshold is met):
+#       trends     — Google Trends BNPL-distress keyword volume
+#       reddit     — Reddit BNPL-subreddit FinBERT negative sentiment
+#       appstore   — Affirm/Klarna app-store review keyword frequency
+#   AUXILIARY     (flagged as informative but non-gating):
+#       vitality   — firm-vitality composite (web traffic, hiring, etc.)
+#       macro      — macro FRED factors (UNRATE, credit tightening)
 #
-# Weights are ONLY refreshed on pre-test data. During rolling-OOS windows the
-# weights are frozen (see signals/rolling_oos.py) to prevent look-ahead bias.
+# Defaults are PRIORS, not final. They are the starting point for a
+# constrained QP refinement on pre-test data; refinement is frozen during
+# rolling-OOS windows to prevent look-ahead bias. See docs/v2_roadmap.md §C
+# for the QP scheduling policy.
 # -----------------------------------------------------------------------------
 
+# ---- Per-pillar priors. Must sum to 1.0. -----------------------------------
 default_weights:
-  cfpb_complaint_momentum: 0.25
-  google_trends_distress:  0.20
-  reddit_finbert_neg:      0.20
-  appstore_keyword_freq:   0.15      # substitute with CFPB keyword freq until AppStore feed clean
-  move_index_overlay:      0.20
+  cfpb:      0.30   # load-bearing
+  move:      0.30   # load-bearing
+  trends:    0.10   # coverage-gated
+  reddit:    0.10   # coverage-gated
+  appstore:  0.10   # coverage-gated
+  vitality:  0.05   # auxiliary
+  macro:     0.05   # auxiliary
 
-# Per-component hard caps enforced by the QP. Prevents any single noisy stream
-# from dominating. Caps must be >= default weight to be feasible.
+# ---- Per-pillar hard caps enforced by the QP. Must be >= default weight. ---
 caps:
-  cfpb_complaint_momentum: 0.40
-  google_trends_distress:  0.30
-  reddit_finbert_neg:      0.30     # capped lower: sentiment is the noisiest input
-  appstore_keyword_freq:   0.25
-  move_index_overlay:      0.35
+  cfpb:      0.45
+  move:      0.45
+  trends:    0.20
+  reddit:    0.20
+  appstore:  0.20
+  vitality:  0.10
+  macro:     0.10
 
-# QP refresh schedule.
+# ---- EWMA + coverage window (Equation (1) of §6). --------------------------
+# half-life = 250 trading days  =>  λ = 1 − 2^(−1/250) ≈ 0.00277
+# Paper body quotes both forms; keep only halflife here and derive λ in code.
+ewma:
+  halflife_days:        250
+  coverage_window_days: 180
+
+# ---- Per-pillar σ floor (paper §6 σ-floor vector). -------------------------
+# Prevents a sleepy pillar's EWMA σ from collapsing to ~0 and producing
+# arithmetic-artefact z-scores. Units match each pillar's native scale.
+sigma_floor:
+  cfpb:      0.25     # complaint-momentum ratio (scale-free)
+  move:      2.50     # MOVE index points
+  trends:    0.50     # Google Trends 0–100 scale
+  reddit:    0.50     # FinBERT neg-sentiment fraction × 100
+  appstore:  0.25     # keyword frequency per review × 100
+  vitality:  0.10     # vitality composite (standardised)
+  macro:     0.10     # FRED-factor composite (standardised)
+
+# ---- Per-pillar coverage-gate threshold γ (paper §6 coverage-gate). --------
+# γ_{i,t} = 1 iff trailing coverage_window_days non-null density on pillar i
+# is at least this much. Otherwise γ_{i,t} = 0 and the pillar contributes
+# zero on date t. Intentionally conservative on coverage-gated pillars so a
+# thinly populated feed drops out rather than injecting a spuriously large z.
+coverage_min:
+  cfpb:      0.80
+  move:      0.95
+  trends:    0.50
+  reddit:    0.50
+  appstore:  0.50
+  vitality:  0.30
+  macro:     0.30
+
+# ---- QP refresh schedule. --------------------------------------------------
 refresh:
-  frequency_days: 30
-  min_training_window_days: 540     # ~18 months pre-test data before first fit
+  frequency_days:            30
+  min_training_window_days:  540    # ~18 months pre-test data before first fit
+
+# ---- Backwards-compatibility alias block. ---------------------------------
+# Earlier sprints of the pod used verbose pillar names. Keep the alias map
+# here so any legacy caller can still resolve weights. New code should use
+# the canonical short names above. To be removed in v2.1.
+pillar_name_aliases:
+  cfpb_complaint_momentum: cfpb
+  google_trends_distress:  trends
+  reddit_finbert_neg:      reddit
+  appstore_keyword_freq:   appstore
+  move_index_overlay:      move
+  firm_vitality_composite: vitality
+  macro_fred_composite:    macro

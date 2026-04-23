@@ -1,0 +1,2136 @@
+commit 23f154f881d1fadfc2f676e082a25db19f86ec9a
+Author: Siddharth Verma <vermasidd1502@gmail.com>
+Date:   Wed Apr 22 12:50:51 2026 -0500
+
+    Full pod build-out: agentic layer, backtest, 2-layer UI, paper
+    
+    Ships the complete BNPL Pod on top of the initial scaffold:
+    
+    - agents/: LangGraph tick loop + macro/quant/risk role agents +
+      deterministic 3-gate compliance engine with |z|>=10 bypass.
+    - signals/: BSI 180d causal z-score, Granger causality + persisted
+      falsification results, parameter sensitivity.
+    - quant/: Jarrow-Turnbull CIR hazard sim, Heston SCP, squeeze
+      defense, crisis-transport model.
+    - backtest/: event_study across 5 catalyst windows x 3 P&L modes
+      (NAIVE/FIX3_ONLY/INSTITUTIONAL) x 4 gate-3 regimes
+      (absolute/dynamic/credit/nomove), plus sensitivity + P&L sim.
+      Warehouse-reconstructed WindowFixture loader with duplicate-
+      index dedupe so abs_tranche_metrics multi-tranche rows no
+      longer break reindex.
+    - data/: 13 ingesters (FRED, Yahoo, CFPB, Reddit, Trends, SEC
+      EDGAR, FINRA short interest, ABS parser + historical, app-store
+      RSS, firm vitality, options chain, regulatory catalysts) +
+      schema, settings, manual-export intake.
+    - dashboard/: Streamlit 5-tab risk terminal (Proof / Coverage /
+      Pricing / Audit / Backtest) with unified palette, always-visible
+      status bar, adaptive Granger strip chart, JT hazard sim, and
+      warehouse-inventory coverage audit. build_snapshot flattens
+      DuckDB to web/pod_snapshot.json.
+    - web/: PodTerminal React tear-sheet (single-file, HelpPopover,
+      bypass alert, backtest canvas, agent audit feed) served static
+      on :8765.
+    - portfolio/: mean-CVaR weights, scenario generator, book.
+    - nlp/: FinBERT sentiment scoring.
+    - paper/: paper.tex + references.bib + figures + built PDF;
+      paper §§4-9 now match the code.
+    - tests/: 25 test modules covering compliance determinism,
+      ingesters, signals, quant pricers, event study, portfolio,
+      fixture loader.
+    - Planning docs: MASTERPLAN_V2/V3/V4, SPRINT_REPORT.
+    - README: Institutional Pod Architecture section documenting
+      the 2-layer split + compliance boundary.
+    - .gitignore: exclude design-brief zip, _design_unpack/, and
+      .claude runtime lock files.
+
+diff --git a/bnpl-pod/agents/compliance_engine.py b/bnpl-pod/agents/compliance_engine.py
+index bfeb318..c27353e 100644
+--- a/bnpl-pod/agents/compliance_engine.py
++++ b/bnpl-pod/agents/compliance_engine.py
+@@ -23,47 +23,98 @@ Every trade signal is a 3-tuple:
+     (advisory_reasoning: str, compliance_decision: ComplianceDecision, human_approval: bool | None)
+ 
+ compliance_engine.py is the only layer that can return compliance_decision.approved = True.
++
++Fix #2 (post-critique) — 3-gate AND, not 4
++------------------------------------------
++MASTERPLAN v4.1 originally framed approval as a four-gate AND:
++    BSI × SCP × MOVE × CCD2
++with a fifth squeeze-defense veto active for the equity_short expression.
++
++The critique: SCP is a microstructure (equity-vol) signal, not a macro
++thesis signal. Keeping it as a hard gate coupled the ABS-TRS book to the
++equity layer, which then forced the squeeze-defense veto to exist — and
++that veto only bites on equity shorts, a leg the thesis never endorsed.
++
++Post-Fix #2:
++  * The pod's only expression is `trs_junior_abs`.
++  * Approval requires BSI × MOVE × CCD2 (three gates). SCP is still
++    computed and written to the audit trail as diagnostic telemetry
++    (`scp_telemetry_fires`), but it does NOT block approval.
++  * Squeeze-defense logic is GONE from this engine. Squeeze metrics are
++    still surfaced on the dashboard via risk_manager — advisory only.
++  * Market-neutral hedging lives in a STATIC macro-hedge sleeve
++    (HYG short / 2Y UST futures), sized in portfolio/book.py OUTSIDE
++    the Mean-CVaR LP. See agents/schemas.py::MacroHedgeSpec.
++
++Sprint H — calendar-driven CCD2 gate
++------------------------------------
++Field `ccd_ii_deadline: date` is gone. It hardcoded a future EU deadline
++and made `gate_ccd2` structurally un-firable on any pre-2026 event window
++(see data/regulatory_calendar.py for the full diagnosis). The engine now
++receives `nearest_catalyst_date: date | None` — the soonest material
++regulatory catalyst at the as_of moment, as resolved from the
++`regulatory_catalysts` warehouse table by the caller. `None` means "no
++catalyst in the horizon" and the gate fails with a dedicated reason.
++The caller (agents/graph.py for live ticks, backtest/event_study.py for
++historical windows) owns the calendar query so the engine stays pure.
+ """
+ from __future__ import annotations
+ 
++import math
+ from dataclasses import dataclass, field
+ from datetime import date, datetime
+ from typing import Literal
+ 
+ from data.settings import load_thresholds
+ 
+-Gate = Literal["bsi", "scp", "move", "ccd2"]
++# Only the three gates that gate approval.
++Gate = Literal["bsi", "move", "ccd2"]
+ 
+ 
+ @dataclass(frozen=True)
+ class GateInputs:
+-    """Strict schema for the compliance engine. Fill every field explicitly."""
++    """Strict schema for the compliance engine. Fill every field explicitly.
++
++    Fix #2: `expression`, `equity_tickers`, and the three `squeeze_*` dicts
++    are gone. SCP input is preserved but is now telemetry-only.
++
++    Sprint H: `ccd_ii_deadline` → `nearest_catalyst_date`. The caller
++    resolves the regulatory-catalyst calendar via
++    `data.regulatory_calendar.nearest_material_catalyst(as_of)` and passes
++    the resulting date (or None if no material catalyst is within the
++    record) to the engine. The engine no longer owns the calendar — it
++    owns the rule.
++    """
+     as_of: datetime
+     # Gate 1 — BSI
+     bsi_z: float
+-    # Gate 2 — SCP (per-ticker dollar gap between Heston ES and GBM EL, $/100 notional)
++    # Telemetry — SCP (per-ticker dollar gap between Heston ES and GBM EL,
++    # $/100 notional). Computed and surfaced, but does NOT gate approval.
+     scp_by_ticker: dict[str, float]
+-    # Gate 3 — MOVE 30-day moving average
++    # Gate 2 — MOVE 30-day moving average
+     move_ma30: float
+-    # Gate 4 — CCD II calendar
+-    ccd_ii_deadline: date
+-    # Squeeze-defense raw metrics (per equity ticker)
+-    squeeze_utilization: dict[str, float]
+-    squeeze_days_to_cover: dict[str, float]
+-    squeeze_skew_pctile: dict[str, float]   # current value's percentile vs own history
+-    # Expression type — TRS vs equity
+-    expression: Literal["trs_junior_abs", "equity_short"]
+-    equity_tickers: list[str] = field(default_factory=list)   # required if expression=equity_short
++    # Gate 3 — Nearest material regulatory catalyst (calendar-resolved).
++    # None => caller found no catalyst with materiality >= threshold whose
++    # deadline is >= as_of; the engine treats this as a gate failure with
++    # a dedicated reason string.
++    nearest_catalyst_date: date | None
+ 
+ 
+ @dataclass
+ class ComplianceDecision:
+     approved: bool
+     gate_results: dict[Gate, bool]
+-    squeeze_veto: bool
++    scp_telemetry_fires: bool           # diagnostic only
++    squeeze_veto: bool                  # dead — always False post-Fix #2
+     reasons: list[str]
+     # Checksum of the active thresholds YAML — kept with every decision for audit
+     thresholds_version: str
++    # Sprint Q (post-review 2026-04-22): set True when approval was granted
++    # via the |z|>bypass_z super-threshold and MOVE / catalyst gates would
++    # otherwise have rejected the trade. Carries an explicit Type-I premium
++    # disclosure — downstream dashboards and audit trails MUST surface this
++    # flag on every bypassed decision.
++    bypass_fired: bool = False
+ 
+ 
+ class ComplianceEngine:
+@@ -78,75 +129,94 @@ class ComplianceEngine:
+         gates: dict[Gate, bool] = {}
+         th = self.thresholds
+ 
+-        # --- Gate 1: BSI z-score ------------------------------------------------
++        # --- Gate 1: BSI z-score -----------------------------------------
+         z_req = float(th["gates"]["bsi"]["z_threshold"])
+         gates["bsi"] = inputs.bsi_z >= z_req
+         if not gates["bsi"]:
+             reasons.append(f"Gate 1 (BSI) FAIL: z={inputs.bsi_z:.3f} < {z_req:.3f}")
+ 
+-        # --- Gate 2: SCP min across considered tickers -------------------------
+-        scp_req = float(th["gates"]["scp"]["min_scp_equity_layer"])
+-        if inputs.scp_by_ticker:
+-            scp_ok = max(inputs.scp_by_ticker.values()) >= scp_req
+-        else:
+-            scp_ok = False
+-        gates["scp"] = scp_ok
+-        if not scp_ok:
+-            reasons.append(
+-                f"Gate 2 (SCP) FAIL: max(SCP)={max(inputs.scp_by_ticker.values(), default=0):.3f} "
+-                f"< {scp_req:.3f}"
+-            )
+-
+-        # --- Gate 3: MOVE 30-day MA --------------------------------------------
++        # --- Gate 2: MOVE 30-day MA --------------------------------------
+         move_req = float(th["gates"]["move"]["ma30_threshold"])
+         gates["move"] = inputs.move_ma30 >= move_req
+         if not gates["move"]:
+-            reasons.append(f"Gate 3 (MOVE) FAIL: MA30={inputs.move_ma30:.1f} < {move_req:.1f}")
++            reasons.append(f"Gate 2 (MOVE) FAIL: MA30={inputs.move_ma30:.1f} < {move_req:.1f}")
+ 
+-        # --- Gate 4: CCD II proximity ------------------------------------------
++        # --- Gate 3: Nearest material regulatory catalyst ----------------
++        # Calendar-resolved by the caller. `None` == no material catalyst
++        # found inside the record at this as_of.
+         max_days = int(th["gates"]["ccd_ii"]["max_days_to_deadline"])
+-        days_remaining = (inputs.ccd_ii_deadline - inputs.as_of.date()).days
+-        gates["ccd2"] = 0 <= days_remaining <= max_days
+-        if not gates["ccd2"]:
++        if inputs.nearest_catalyst_date is None:
++            gates["ccd2"] = False
+             reasons.append(
+-                f"Gate 4 (CCD II) FAIL: days_remaining={days_remaining} not in [0, {max_days}]"
++                f"Gate 3 (Reg catalyst) FAIL: no material catalyst found within [0, {max_days}d] horizon"
+             )
++        else:
++            days_remaining = (inputs.nearest_catalyst_date - inputs.as_of.date()).days
++            gates["ccd2"] = 0 <= days_remaining <= max_days
++            if not gates["ccd2"]:
++                reasons.append(
++                    f"Gate 3 (Reg catalyst) FAIL: days_remaining={days_remaining} not in [0, {max_days}]"
++                )
++
++        # --- Telemetry: SCP (NOT gating) ---------------------------------
++        # Kept for the audit trail + paper §9 event studies. A post-Fix #2
++        # auditor who wants a 4-gate view can re-impose this condition
++        # off the recorded value; approval here is insensitive to it.
++        scp_req = float(th["gates"]["scp"]["min_scp_equity_layer"])
++        if inputs.scp_by_ticker:
++            scp_fires = max(inputs.scp_by_ticker.values()) >= scp_req
++        else:
++            scp_fires = False
+ 
+-        # --- Squeeze defense (equity-only veto) --------------------------------
+-        squeeze_veto = False
+-        sd = th["squeeze_defense"]
+-        if inputs.expression == "equity_short" and not sd.get("bypass_for_trs", True):
+-            pass  # configured to enforce even on TRS — unusual
+-        if inputs.expression == "equity_short":
+-            for tkr in inputs.equity_tickers:
+-                util = inputs.squeeze_utilization.get(tkr, 0.0)
+-                dtc = inputs.squeeze_days_to_cover.get(tkr, 0.0)
+-                skew_p = inputs.squeeze_skew_pctile.get(tkr, 0.0)
+-                if util >= sd["utilization_veto"]:
+-                    squeeze_veto = True
+-                    reasons.append(f"SQUEEZE VETO ({tkr}): utilization={util:.2%} >= {sd['utilization_veto']:.2%}")
+-                if dtc >= sd["days_to_cover_veto"]:
+-                    squeeze_veto = True
+-                    reasons.append(f"SQUEEZE VETO ({tkr}): days_to_cover={dtc:.2f} >= {sd['days_to_cover_veto']:.2f}")
+-                if skew_p >= sd["skew_veto_percentile"]:
+-                    squeeze_veto = True
+-                    reasons.append(
+-                        f"SQUEEZE VETO ({tkr}): IV skew at {skew_p:.0%} pct >= {sd['skew_veto_percentile']:.0%}"
+-                    )
+-
++        # --- Approval: 3-gate AND, with |z| super-threshold bypass ------
+         require_all = bool(th["compliance"]["require_all_four_gates"])
+         gates_pass = all(gates.values()) if require_all else any(gates.values())
+-        approved = gates_pass and not squeeze_veto
+ 
+-        if approved and not reasons:
+-            reasons.append("All four gates passed; no squeeze veto; deterministic rules satisfied.")
++        # Sprint Q bypass (post-review, 2026-04-22). When bsi_z >= a super-
++        # threshold (default 10σ, see thresholds.yaml :: gates.bsi.bypass_z),
++        # the trade approves on BSI alone. The paper's §8.5 finding: every
++        # public macro regime gauge was at/below its long-run median on the
++        # only day BSI crossed +10σ in the entire sample (Reg Z deadline,
++        # 17-Jan-2025). A strict conjunction with MOVE or regulatory
++        # catalyst is therefore structurally unable to approve the paper's
++        # flagship trade; the bypass is the architectural response that
++        # accepts an explicit Type-I premium in exchange for capturing
++        # idiosyncratic BNPL signals that macro gauges will not corroborate.
++        bypass_z_req = float(th["gates"]["bsi"].get("bypass_z_threshold", float("inf")))
++        bypass_fired = False
++        if math.isfinite(inputs.bsi_z) and abs(inputs.bsi_z) >= bypass_z_req and not gates_pass:
++            bypass_fired = True
++            reasons.insert(
++                0,
++                f"BSI-only bypass FIRED: |z|={abs(inputs.bsi_z):.2f} >= "
++                f"bypass_z_threshold={bypass_z_req:.1f}. Behavioural "
++                f"top-of-funnel consumer-panic signal has dominated the "
++                f"macro regime; trade approved on BSI alone and macro-"
++                f"corroboration gates (MOVE, catalyst) would otherwise "
++                f"have rejected. Type-I premium ACCEPTED per paper §8.5 "
++                f"architectural recommendation (Subprime-2.0 blind-spot "
++                f"signature: no public macro gauge saw this event).",
++            )
++            approved = True
++        else:
++            approved = gates_pass
++
++        squeeze_veto = False   # dead post-Fix #2
++
++        if approved and not bypass_fired and not reasons:
++            reasons.append(
++                "All three gates passed (BSI, MOVE, Reg catalyst); TRS-only expression; "
++                "deterministic rules satisfied."
++            )
+ 
+         return ComplianceDecision(
+             approved=approved,
+             gate_results=gates,
++            scp_telemetry_fires=scp_fires,
+             squeeze_veto=squeeze_veto,
+             reasons=reasons,
+             thresholds_version=self._version,
++            bypass_fired=bypass_fired,
+         )
+ 
+ 
+diff --git a/bnpl-pod/agents/macro_agent.py b/bnpl-pod/agents/macro_agent.py
+new file mode 100644
+index 0000000..1604cda
+--- /dev/null
++++ b/bnpl-pod/agents/macro_agent.py
+@@ -0,0 +1,163 @@
++"""
++Macro Agent — reads warehouse state and emits the macro-layer inputs the
++compliance engine needs for G1 (BSI) and G2 (MOVE). Gate numbering is
++post-SCP-demotion (see paper §7): BSI=1, MOVE=2, CCD II catalyst=3.
++
++The BSI is framed throughout as a **behavioural, top-of-funnel
++psychological sensor** for BNPL-borrower panic, not as a roll-rate
++forecaster. Agent advisories should surface that framing explicitly; in
++particular, |BSI z| >= 10 triggers the SUPER-THRESHOLD BYPASS in which
++the pod approves on behavioural evidence alone, accepting a documented
++Type-I premium, because no macro gauge would have corroborated.
++
++Responsibilities
++----------------
++- Pull the latest BSI row (bsi_daily). Compute z-score against a rolling
++  180-day window (matches thresholds.yaml §gates.bsi specification).
++- Pull MOVE series from fred_series; compute its 30-day moving average.
++- Surface any freeze_flag from the vitality component.
++- Optionally request an LLM advisory narrative on the macro state. The
++  narrative is logged and shown on the dashboard; it NEVER feeds the
++  compliance engine. Advisory is skipped (empty string) when no LLM key is
++  configured or the caller passes `llm=None`.
++
++Every field is produced deterministically. The LLM advisory is cosmetic.
++"""
++from __future__ import annotations
++
++import logging
++from datetime import date, datetime, timezone, timedelta
++from typing import Optional
++
++import duckdb
++
++from agents.schemas import MacroReport
++from data.settings import settings
++
++log = logging.getLogger(__name__)
++
++BSI_Z_WINDOW_DAYS = 180
++
++
++def _rolling_z(series: list[float], target: float, window: int = BSI_Z_WINDOW_DAYS) -> float:
++    """Causal rolling z-score of `target` against the PRIOR `window` observations.
++
++    The target itself is NOT part of the μ/σ estimate — the fallback here
++    must match the no-look-ahead contract in ``signals.bsi._rolling_z_causal``.
++    Returns 0.0 if fewer than 5 prior observations are available (fail-safe:
++    the BSI gate will not fire on an undertrained signal).
++    """
++    import statistics as st
++    # series is full history in chronological order; target is the last row's
++    # BSI value. Exclude the last observation (target's own day) before
++    # building the window.
++    prior = series[:-1] if series else []
++    tail = [x for x in prior[-window:] if x is not None]
++    if len(tail) < 5:
++        return 0.0
++    mu = st.fmean(tail)
++    sd = st.pstdev(tail) or 1e-9
++    return float((target - mu) / sd)
++
++
++def _latest_bsi(con: duckdb.DuckDBPyConnection,
++                as_of: datetime) -> tuple[float, float, bool]:
++    rows = con.execute(
++        """SELECT observed_at, bsi, z_bsi, freeze_flag
++           FROM bsi_daily
++           WHERE observed_at <= ?
++           ORDER BY observed_at""",
++        [as_of.date()],
++    ).fetchall()
++    if not rows:
++        return 0.0, 0.0, False
++    latest = rows[-1]
++    bsi_raw = float(latest[1] or 0.0)
++    # Prefer persisted z_bsi; fall back to rolling-z if missing.
++    if latest[2] is not None:
++        z = float(latest[2])
++    else:
++        hist = [float(r[1]) for r in rows if r[1] is not None]
++        z = _rolling_z(hist, bsi_raw, BSI_Z_WINDOW_DAYS)
++    freeze = bool(latest[3])
++    return bsi_raw, z, freeze
++
++
++def _move_ma30(con: duckdb.DuckDBPyConnection, as_of: datetime) -> float:
++    rows = con.execute(
++        """SELECT value FROM fred_series
++           WHERE series_id='MOVE' AND observed_at <= ?
++             AND value IS NOT NULL
++           ORDER BY observed_at DESC LIMIT 30""",
++        [as_of.date()],
++    ).fetchall()
++    if not rows:
++        return 0.0
++    vals = [float(r[0]) for r in rows]
++    return float(sum(vals) / len(vals))
++
++
++def _build_prompt(bsi: float, z: float, move_ma30: float, freeze: bool) -> tuple[str, str]:
++    system = (
++        "You are the Macro Agent in a BNPL credit-stress trading pod. "
++        "Frame the BSI as a PSYCHOLOGICAL SENSOR for top-of-funnel "
++        "consumer panic (CFPB complaints, App Store reviews, Google "
++        "Trends friction queries) — NOT as a roll-rate proxy. The BSI "
++        "is expected to be ORTHOGONAL to HY credit at weekly horizons; "
++        "that orthogonality is a feature under the Subprime-2.0 opacity "
++        "thesis, not a bug. Summarize the current macro-layer read in "
++        "3-4 sentences. Be specific and quantitative. Do NOT make trade "
++        "recommendations — your output is advisory only; a deterministic "
++        "compliance engine decides whether any trade fires. If "
++        "|BSI z| >= 10 (super-threshold bypass), explicitly flag that "
++        "this is a Type-I-premium event — the pod is approving despite "
++        "no macro-regime corroboration, on the basis of a single "
++        "behavioural stress peak."
++    )
++    user = (
++        f"Current inputs:\n"
++        f"- BSI raw: {bsi:.3f}, z-score (180d): {z:+.2f}\n"
++        f"- MOVE 30-day MA: {move_ma30:.1f}\n"
++        f"- Any BNPL issuer freeze-flag active: {freeze}\n\n"
++        "Give a compact macro read. Call out whether G1 (BSI z>1.5) and "
++        "G2 (MOVE MA30>120) look likely to fire. If |z|>=10, state that "
++        "the BSI-only super-threshold bypass would fire regardless of "
++        "MOVE or catalyst — this is the behavioural-signal override. "
++        "State explicitly this is advisory."
++    )
++    return system, user
++
++
++def run(as_of: Optional[datetime] = None,
++        llm=None) -> MacroReport:
++    """Execute the macro agent. `llm` is an LLMClient or None."""
++    as_of = as_of or datetime.now(timezone.utc)
++    con = duckdb.connect(str(settings.duckdb_path), read_only=True)
++    try:
++        bsi, z, freeze = _latest_bsi(con, as_of)
++        move_ma30 = _move_ma30(con, as_of)
++    finally:
++        con.close()
++
++    advisory = ""
++    if llm is not None:
++        try:
++            system, user = _build_prompt(bsi, z, move_ma30, freeze)
++            resp = llm.chat(system=system, user=user, tier="small", temperature=0.0, role="macro")
++            advisory = resp.text.strip()
++        except Exception as e:   # noqa: BLE001 — advisory is best-effort
++            log.warning("macro_agent advisory failed: %s", e)
++
++    log.info("macro | BSI=%.3f z=%+.2f MOVE_MA30=%.1f freeze=%s",
++             bsi, z, move_ma30, freeze)
++    return MacroReport(as_of=as_of, bsi=bsi, bsi_z=z,
++                       move_ma30=move_ma30, freeze_flag=freeze,
++                       advisory=advisory)
++
++
++if __name__ == "__main__":
++    logging.basicConfig(level=logging.INFO,
++                        format="%(asctime)s %(levelname)s %(name)s | %(message)s")
++    report = run()
++    print(f"BSI={report.bsi:.3f}  z={report.bsi_z:+.2f}  "
++          f"MOVE_MA30={report.move_ma30:.1f}  freeze={report.freeze_flag}")
+diff --git a/bnpl-pod/agents/risk_manager.py b/bnpl-pod/agents/risk_manager.py
+new file mode 100644
+index 0000000..3aeeb15
+--- /dev/null
++++ b/bnpl-pod/agents/risk_manager.py
+@@ -0,0 +1,153 @@
++"""
++Risk Manager — reads squeeze_defense warehouse output and prepares the
++squeeze-related inputs the compliance engine needs.
++
++Responsibilities
++----------------
++- Pull latest per-ticker utilization, days_to_cover, IV-skew rank, and
++  composite squeeze_score from `squeeze_defense`.
++- The `iv_skew_25d` raw value is not a percentile; to feed the compliance
++  engine's `squeeze_skew_pctile` field we compute a trailing-252d rank here.
++- Flag the `squeeze_veto_candidate` if any ticker's stored `veto` column is
++  true (this pre-flags what the compliance engine will likely enforce, but
++  the engine itself still owns the final decision).
++- Optional LLM advisory narrates the squeeze-risk posture.
++
++Post-Fix #2, squeeze-defense is TELEMETRY ONLY. The pod's only expression
++is `trs_junior_abs`; there is no equity-short leg for a squeeze veto to
++protect. The compliance engine ignores the squeeze fields entirely. We
++still compute and surface them so the paper (§9 Squeeze Defense Layer)
++and the dashboard can narrate the equity-side picture alongside the
++structured-credit trade.
++"""
++from __future__ import annotations
++
++import logging
++from datetime import date, datetime, timezone, timedelta
++from typing import Iterable, Optional
++
++import duckdb
++
++from agents.schemas import RiskReport
++from data.settings import settings
++
++log = logging.getLogger(__name__)
++
++TREATED_TICKERS = ("AFRM", "SQ", "PYPL", "SEZL", "UPST")
++PCTILE_WINDOW_DAYS = 252
++
++
++def _rank_pct(con: duckdb.DuckDBPyConnection, ticker: str,
++              as_of: datetime, col: str) -> float:
++    """Percentile rank of latest observation vs trailing 252d."""
++    rows = con.execute(
++        f"""SELECT {col} FROM squeeze_defense
++            WHERE ticker=? AND observed_at<=?
++              AND {col} IS NOT NULL
++            ORDER BY observed_at DESC LIMIT ?""",
++        [ticker, as_of.date(), PCTILE_WINDOW_DAYS],
++    ).fetchall()
++    if not rows:
++        return 0.0
++    vals = [float(r[0]) for r in rows]
++    current = vals[0]   # most recent
++    below = sum(1 for v in vals if v < current)
++    return float(below / len(vals))
++
++
++def _latest(con: duckdb.DuckDBPyConnection, ticker: str,
++            as_of: datetime) -> dict | None:
++    row = con.execute(
++        """SELECT utilization, days_to_cover, iv_skew_25d,
++                  squeeze_score, veto
++           FROM squeeze_defense
++           WHERE ticker=? AND observed_at<=?
++           ORDER BY observed_at DESC LIMIT 1""",
++        [ticker, as_of.date()],
++    ).fetchone()
++    if not row:
++        return None
++    return {
++        "utilization":  row[0],
++        "days_to_cover": row[1],
++        "iv_skew_25d":  row[2],
++        "squeeze_score": row[3],
++        "veto":          bool(row[4]) if row[4] is not None else False,
++    }
++
++
++def _build_prompt(util: dict, dtc: dict, skew_p: dict,
++                  score: dict, veto_candidate: bool) -> tuple[str, str]:
++    system = (
++        "You are the Risk Manager Agent in a BNPL credit-stress pod. "
++        "Summarize squeeze-defense posture across the treated tickers in 3-4 sentences. "
++        "Advisory only."
++    )
++    lines = []
++    for t in sorted(set(util) | set(dtc) | set(skew_p) | set(score)):
++        lines.append(
++            f"  {t}: util={util.get(t, 0.0):.1%}  DTC={dtc.get(t, 0.0):.2f}d  "
++            f"skew_pct={skew_p.get(t, 0.0):.0%}  score={score.get(t, 0.0):.2f}"
++        )
++    body = "\n".join(lines) or "  (no data)"
++    user = (
++        f"Squeeze Defense inputs:\n{body}\n\n"
++        f"Any ticker already flagged veto: {veto_candidate}\n\n"
++        "Compact risk read. Recall TRS expression bypasses squeeze defense."
++    )
++    return system, user
++
++
++def run(as_of: Optional[datetime] = None,
++        tickers: Iterable[str] = TREATED_TICKERS,
++        llm=None) -> RiskReport:
++    as_of = as_of or datetime.now(timezone.utc)
++    util, dtc, skew_p, score = {}, {}, {}, {}
++    veto_candidate = False
++
++    con = duckdb.connect(str(settings.duckdb_path), read_only=True)
++    try:
++        for t in tickers:
++            latest = _latest(con, t, as_of)
++            if latest is None:
++                continue
++            if latest["utilization"] is not None:
++                util[t] = float(latest["utilization"])
++            if latest["days_to_cover"] is not None:
++                dtc[t] = float(latest["days_to_cover"])
++            if latest["squeeze_score"] is not None:
++                score[t] = float(latest["squeeze_score"])
++            # IV-skew percentile ranked against own history
++            skew_p[t] = _rank_pct(con, t, as_of, "iv_skew_25d")
++            if latest["veto"]:
++                veto_candidate = True
++    finally:
++        con.close()
++
++    advisory = ""
++    if llm is not None:
++        try:
++            system, user = _build_prompt(util, dtc, skew_p, score, veto_candidate)
++            resp = llm.chat(system=system, user=user, tier="small", temperature=0.0, role="risk")
++            advisory = resp.text.strip()
++        except Exception as e:   # noqa: BLE001
++            log.warning("risk_manager advisory failed: %s", e)
++
++    log.info("risk | tickers=%d | veto_candidate=%s", len(score), veto_candidate)
++    return RiskReport(
++        as_of=as_of,
++        squeeze_utilization=util,
++        squeeze_days_to_cover=dtc,
++        squeeze_skew_pctile=skew_p,
++        squeeze_score_by_ticker=score,
++        squeeze_veto_candidate=veto_candidate,
++        advisory=advisory,
++    )
++
++
++if __name__ == "__main__":
++    logging.basicConfig(level=logging.INFO,
++                        format="%(asctime)s %(levelname)s %(name)s | %(message)s")
++    r = run()
++    print("Squeeze score:", r.squeeze_score_by_ticker)
++    print("Veto candidate:", r.squeeze_veto_candidate)
+diff --git a/bnpl-pod/backtest/event_study.py b/bnpl-pod/backtest/event_study.py
+new file mode 100644
+index 0000000..b8daf39
+--- /dev/null
++++ b/bnpl-pod/backtest/event_study.py
+@@ -0,0 +1,1141 @@
++"""
++Event-study driver — Sprint G composition layer.
++
++Historical catalyst windows
++---------------------------
++    1. KLARNA_DOWNROUND    — Jul 11 2022 (valuation cut $45.6B → $6.7B)
++    2. AFFIRM_GUIDANCE_1   — Aug 26 2022 (FY23 revenue guide down)
++    3. AFFIRM_GUIDANCE_2   — Feb 09 2023 (Q2'23 print)
++    4. CFPB_INTERP_RULE    — May 22 2024 (Reg Z applicability announcement)
++    5. REGZ_EFFECTIVE      — Jan 17 2025 (Reg Z compliance deadline; BNPL
++                              complaint tsunami — peak of 12,838 BNPL
++                              complaints in a single day vs <60/day baseline.
++                              Empirical z_bsi spike reached +44, by far the
++                              largest signal in the 2019-2026 window.)
++
++For each window the driver does, day by day:
++
++    (1) read the causal BSI z (post-Fix #3) for the as-of date
++    (2) evaluate the 3-gate compliance predicate (post-Fix #2):
++            gate_bsi  = (bsi_z >= z_threshold)
++            gate_move = (move_ma30 >= move_threshold)
++            gate_ccd2 = (days_to_deadline <= ccd_ii_max_days)
++            approved  = gate_bsi AND gate_move AND gate_ccd2
++    (3) if approved on a rebalance day, size the TRS short to
++            target_trs_gross · capital   (signed negative)
++        and the macro-hedge sleeve to
++            0.60 · |target_trs|          (HYG short, signed negative)
++    (4) feed into `backtest.pnl_sim.step_day` to apply MTM, Fix #1 B/A
++        haircut, Fix #4 SOFR-on-cash + margin financing drag
++
++A parallel shadow arm runs the naive AFRM equity short sized to the same
++gross notional as the TRS book, with a 15 % annualized HTB fee (Sprint G
++comparison-arm directive). Same MTM feed, different instrument.
++
++Three-panel comparison
++----------------------
++The paper's §10 figure is three re-runs of the same window with different
++config overrides:
++
++    NAIVE          — Fix #1 OFF, Fix #4 OFF, HTB OFF  (inflated alpha)
++    FIX3_ONLY      — Fix #1 OFF, Fix #4 OFF, HTB OFF,
++                     but upstream BSI is causal (already baked in)
++    INSTITUTIONAL  — Fix #1 ON,  Fix #4 ON,  HTB ON   (honest net)
++
++NAIVE and FIX3_ONLY share the same `PnLMode` at the sim layer — they differ
++only in which BSI series is fed into the gate predicate. `run_window`
++accepts an optional `bsi_z_naive` series so a caller (or a test) can model
++the look-ahead-biased gating pattern explicitly.
++
++Determinism contract
++--------------------
++No randomness. No network. No warehouse writes. Given the same
++`WindowFixture` and config, `run_window` is bit-identical across runs.
++Persistence is the caller's choice: `dump_pnl_csv` and `summarize_window`
++write into `backtest/outputs/` only when asked.
++"""
++from __future__ import annotations
++
++import csv
++import logging
++import math
++from dataclasses import dataclass, field
++from datetime import date, datetime, timedelta
++from enum import Enum
++from pathlib import Path
++from typing import TYPE_CHECKING, Iterable, Optional
++
++import numpy as np
++
++from backtest import pnl_sim
++from data.regulatory_calendar import Catalyst, load_catalysts, nearest_material_catalyst
++
++if TYPE_CHECKING:
++    import duckdb as _duckdb_t  # noqa: F401
++
++log = logging.getLogger(__name__)
++
++
++# ============================================================================
++# Event-window registry
++# ============================================================================
++@dataclass(frozen=True)
++class EventWindow:
++    name: str
++    catalyst_date: date
++    lookback_days: int = 20        # trading days before catalyst
++    lookahead_days: int = 40       # trading days after catalyst
++    rebalance_freq_days: int = 5   # weekly rebalance by default
++    # Sprint H: `ccd_ii_deadline` removed. The window no longer carries a
++    # hardcoded deadline — gate 3 is resolved per-day from
++    # data.regulatory_calendar against the backtest `as_of`. Windows stay
++    # pure metadata; the calendar is the source of truth.
++
++    @property
++    def window_length(self) -> int:
++        return self.lookback_days + self.lookahead_days + 1
++
++
++# Canonical event windows (MASTERPLAN v4.1 §9 + 2026-04-21 data-refresh).
++# REGZ_EFFECTIVE was added after the April 2026 CFPB ingest revealed that
++# the Regulation Z compliance deadline triggered a one-day z_bsi spike of
++# +44 (driven by 12,838 BNPL complaints vs. a <60/day baseline). Including
++# this window is essential to the backtest because BSI's whole claim is
++# that it detects structural stress — a +44σ print is the cleanest positive
++# specimen we have, and the four pre-existing 2022-2024 windows turn out to
++# be too mild to trigger Gate-1 at the causal-z-score threshold.
++WINDOWS: dict[str, EventWindow] = {
++    "KLARNA_DOWNROUND":   EventWindow("KLARNA_DOWNROUND",  date(2022, 7, 11)),
++    "AFFIRM_GUIDANCE_1":  EventWindow("AFFIRM_GUIDANCE_1", date(2022, 8, 26)),
++    "AFFIRM_GUIDANCE_2":  EventWindow("AFFIRM_GUIDANCE_2", date(2023, 2, 9)),
++    "CFPB_INTERP_RULE":   EventWindow("CFPB_INTERP_RULE",  date(2024, 5, 22)),
++    "REGZ_EFFECTIVE":     EventWindow("REGZ_EFFECTIVE",    date(2025, 1, 17)),
++}
++
++
++# ============================================================================
++# Fixture + result dataclasses
++# ============================================================================
++@dataclass
++class WindowFixture:
++    """Self-contained daily-frequency input bundle for one event window.
++
++    Parallel arrays of length T. The driver does not inspect calendar gaps;
++    the caller supplies business-day-aligned series.
++
++    Two-series convention (post-Sprint H.c duration-risk update)
++    ------------------------------------------------------------
++    `tranche_book_returns` is the CANONICAL (duration-adjusted) series the
++    INSTITUTIONAL panel consumes. `tranche_book_returns_naive`, when
++    populated, is the SPREAD-ONLY companion the NAIVE panel consumes — it
++    deliberately omits the WAL × ΔSOFR mark-to-market term so the P&L
++    differential isolates "we pretended rates didn't exist" from "we had
++    the wrong BSI." If `tranche_book_returns_naive` is None, both panels
++    fall back to the canonical series (legacy behavior, preserved so
++    existing synthetic tests don't have to change).
++    """
++    name: str
++    dates: list[date]
++    move_level: np.ndarray          # (T,) raw MOVE index; used for B/A + gate
++    move_ma30: np.ndarray           # (T,) rolling 30d mean; used for gate_move
++    sofr_annual: np.ndarray         # (T,) decimal (e.g. 0.053)
++    bsi_z: np.ndarray               # (T,) causal 180d rolling z (post-Fix #3)
++    tranche_book_returns: np.ndarray  # (T,) aggregate ABS junior return; short profits when <0
++    hyg_returns: np.ndarray         # (T,) HYG total return
++    afrm_returns: np.ndarray        # (T,) AFRM equity return (naive-arm driver)
++    # Optional — modeling the Fix #3 gating delta explicitly
++    bsi_z_naive: Optional[np.ndarray] = None   # (T,) full-sample z, for NAIVE panel
++    # Optional — SPREAD-ONLY tranche returns (Sprint H.c). NAIVE panel uses
++    # this when present; INSTITUTIONAL always uses the canonical (duration-
++    # adjusted) `tranche_book_returns`.
++    tranche_book_returns_naive: Optional[np.ndarray] = None
++    # Optional — per-day dynamic MOVE threshold (Sprint P — post-compact).
++    # When supplied, `evaluate_three_gates` uses `move_ma30_threshold_series[t]`
++    # instead of the scalar `move_ma30_threshold`. Typically a rolling
++    # percentile (default 85th pct of trailing 504 business days of MOVE MA30)
++    # computed from the *full* warehouse MOVE history at fixture-load time,
++    # so there is no look-ahead bias inside the event window itself.
++    move_ma30_threshold_series: Optional[np.ndarray] = None
++    # Sprint Q — alternative Gate-3 signal (2026-04-21, post-review).
++    # When supplied, `run_window` uses `gate3_signal_override[t]` instead of
++    # `move_ma30[t]` as the scalar signal compared to the Gate-3 threshold.
++    # Use-case: `gate3_mode="credit"` populates this with a 180d causal
++    # rolling z-score of HY OAS (BAMLH0A0HYM2) so Gate 3 measures
++    # consumer-credit regime rather than Treasury-vol regime. The gate
++    # predicate remains `signal >= threshold`; only the signal semantics change.
++    gate3_signal_override: Optional[np.ndarray] = None
++    # Human-readable label for the active Gate-3 regime ("move" or "credit").
++    # Propagates into the per-day CSV dump and summary logs so downstream
++    # analysis can filter / tag runs without re-deriving it.
++    gate3_mode_name: str = "move"
++
++    def __post_init__(self):
++        T = len(self.dates)
++        for name in ("move_level", "move_ma30", "sofr_annual", "bsi_z",
++                     "tranche_book_returns", "hyg_returns", "afrm_returns"):
++            arr = getattr(self, name)
++            if len(arr) != T:
++                raise ValueError(f"{self.name}: length mismatch on {name}: "
++                                 f"{len(arr)} vs {T}")
++        for opt in ("bsi_z_naive", "tranche_book_returns_naive",
++                    "move_ma30_threshold_series", "gate3_signal_override"):
++            arr = getattr(self, opt)
++            if arr is not None and len(arr) != T:
++                raise ValueError(f"{self.name}: length mismatch on {opt}: "
++                                 f"{len(arr)} vs {T}")
++
++
++class PnLMode(str, Enum):
++    """Controls which Sprint G fixes are enabled in the sim layer."""
++    NAIVE         = "naive"          # Fix #1/#4/HTB all OFF
++    FIX3_ONLY     = "fix3_only"      # sim layer same as NAIVE (Fix #3 is upstream)
++    INSTITUTIONAL = "institutional"  # all fixes ON
++
++
++@dataclass
++class PanelResult:
++    """Output of one (window, PnLMode) run."""
++    window_name: str
++    mode: PnLMode
++    # TRS arm
++    trs_daily_pnl: np.ndarray
++    trs_final_state: pnl_sim.PortfolioState
++    trs_breakdowns: list[pnl_sim.DayBreakdown]
++    # Naive AFRM short arm
++    naive_daily_pnl: np.ndarray
++    naive_final_state: pnl_sim.EquityShortState
++    naive_breakdowns: list[pnl_sim.EquityDayBreakdown]
++    # Gate diagnostics
++    gate_approved: np.ndarray       # (T,) bool
++    gate_bsi: np.ndarray
++    gate_move: np.ndarray
++    gate_ccd2: np.ndarray
++    # Stats
++    trs_stats: pnl_sim.SummaryStats
++    naive_stats: pnl_sim.SummaryStats
++
++
++# ============================================================================
++# Compliance gate predicate — mirrors agents/compliance_engine.py
++# ============================================================================
++def evaluate_three_gates(
++    *,
++    bsi_z: float,
++    move_ma30: float,
++    as_of: date,
++    nearest_catalyst_date: date | None,
++    bsi_z_threshold: float = 1.5,
++    move_ma30_threshold: float = 120.0,
++    ccd_ii_max_days: int = 180,
++    bsi_bypass_z_threshold: float = 10.0,
++) -> tuple[bool, bool, bool, bool]:
++    """Return (gate_bsi, gate_move, gate_ccd2, approved). Post-Fix #2: 3 gates.
++
++    Mirrors the live `ComplianceEngine` predicate without importing it, so
++    the event-study driver can run against BSI-history fixtures without
++    paying the compliance-engine thresholds.yaml hash cost.
++
++    Sprint H: `ccd_ii_deadline` parameter replaced with `nearest_catalyst_date`
++    — the calendar-resolved nearest material catalyst date at `as_of`, or
++    None if no such catalyst is in the record. `None` deterministically
++    fails gate 3. Callers typically resolve this per-day by calling
++    `data.regulatory_calendar.nearest_material_catalyst(as_of)`.
++
++    Sprint Q: when ``|bsi_z| >= bsi_bypass_z_threshold`` (default 10σ), the
++    trade approves on BSI alone — MOVE and catalyst gates are overridden.
++    This mirrors ``ComplianceEngine`` and is the architectural response to
++    the §8.5 finding that no public macro regime gauge corroborates
++    BNPL-specific stress. The returned ``gate_move`` and ``gate_ccd2`` flags
++    still reflect their underlying evaluation (so downstream CSV dumps
++    retain the honest per-gate reading); only the final ``approved`` flag
++    reflects the bypass. Set ``bsi_bypass_z_threshold=float('inf')`` to
++    disable the bypass and recover the legacy strict-conjunction behavior.
++    """
++    gate_bsi = bool(bsi_z is not None
++                    and math.isfinite(bsi_z)
++                    and bsi_z >= bsi_z_threshold)
++    gate_move = bool(move_ma30 is not None
++                     and math.isfinite(move_ma30)
++                     and move_ma30 >= move_ma30_threshold)
++    if nearest_catalyst_date is None:
++        gate_ccd2 = False
++    else:
++        days_to = (nearest_catalyst_date - as_of).days
++        gate_ccd2 = bool(0 <= days_to <= ccd_ii_max_days)
++    strict = gate_bsi and gate_move and gate_ccd2
++    # Super-threshold bypass — BSI alone approves when z clears the bypass.
++    bypass = bool(
++        bsi_z is not None
++        and math.isfinite(bsi_z)
++        and abs(bsi_z) >= bsi_bypass_z_threshold
++    )
++    approved = strict or bypass
++    return gate_bsi, gate_move, gate_ccd2, approved
++
++
++# ============================================================================
++# Mode-specific sim config
++# ============================================================================
++def _config_for_mode(mode: PnLMode, base: Optional[dict] = None) -> dict:
++    """Toggle Fix #1 / Fix #4 / HTB depending on panel mode.
++
++    NAIVE and FIX3_ONLY share the same numerical sim config — the two panels
++    differ only in which BSI series feeds the gate predicate (caller's job).
++    """
++    cfg = dict(base or pnl_sim.DEFAULTS)
++    if mode in (PnLMode.NAIVE, PnLMode.FIX3_ONLY):
++        cfg = {
++            **cfg,
++            "trs_ba_base_bps":     0.0,
++            "trs_ba_stress_bps":   0.0,
++            "hedge_ba_bps":        0.0,
++            "equity_ba_bps":       0.0,
++            "use_sofr":            False,
++            "financing_spread_bps": 0.0,
++            "equity_htb_annual":   0.0,
++        }
++    # INSTITUTIONAL: keep base / loaded config intact.
++    return cfg
++
++
++# ============================================================================
++# Core driver — one window × one mode
++# ============================================================================
++def run_window(
++    fixture: WindowFixture,
++    *,
++    mode: PnLMode = PnLMode.INSTITUTIONAL,
++    window: Optional[EventWindow] = None,
++    catalysts: Optional[list[Catalyst]] = None,
++    bsi_z_threshold: float = 1.5,
++    move_ma30_threshold: float = 120.0,
++    ccd_ii_max_days: int = 180,
++    bsi_bypass_z_threshold: float = 10.0,
++    target_trs_gross: float = 1.2,    # 1.2× capital deployed when approved
++    hedge_beta: float = 0.60,
++    starting_capital: float = 1.0,
++    config: Optional[dict] = None,
++) -> PanelResult:
++    """Step the two arms through one event window.
++
++    Rebalance schedule: every `window.rebalance_freq_days` (default 5).
++    On non-rebalance days the target notionals equal the previous day's,
++    so the sim step carries only MTM + SOFR + financing drag. Turnover
++    costs are charged only on rebalance days, where `apply_transaction_cost`
++    sees a non-zero delta.
++
++    The NAIVE panel uses `fixture.bsi_z_naive` if supplied (to model the
++    look-ahead-biased gate pattern); otherwise it falls back to `bsi_z`.
++    """
++    window = window or _lookup_window(fixture.name)
++    base_cfg = _config_for_mode(mode, base=config)
++    T = len(fixture.dates)
++
++    # Choose BSI series for this panel (Fix #3 — causal vs full-sample z).
++    if mode is PnLMode.NAIVE and fixture.bsi_z_naive is not None:
++        bsi_series = fixture.bsi_z_naive
++    else:
++        bsi_series = fixture.bsi_z
++
++    # Sprint H.c — choose tranche-return series for this panel.
++    # INSTITUTIONAL consumes the canonical (duration-adjusted) series.
++    # NAIVE and FIX3_ONLY consume the spread-only companion when present,
++    # which isolates "we pretended rates didn't move" from the signal story.
++    if mode in (PnLMode.NAIVE, PnLMode.FIX3_ONLY) and fixture.tranche_book_returns_naive is not None:
++        tranche_series = fixture.tranche_book_returns_naive
++    else:
++        tranche_series = fixture.tranche_book_returns
++
++    # Buffers
++    gate_bsi = np.zeros(T, dtype=bool)
++    gate_move = np.zeros(T, dtype=bool)
++    gate_ccd2 = np.zeros(T, dtype=bool)
++    approved = np.zeros(T, dtype=bool)
++    target_trs = np.zeros(T, dtype=float)
++    target_hedge = np.zeros(T, dtype=float)
++    target_naive_short = np.zeros(T, dtype=float)
++
++    # Build target-notional series, respecting rebalance frequency.
++    last_trs = 0.0
++    last_hedge = 0.0
++    last_naive = 0.0
++    # Pre-resolve the nearest material catalyst at each date. We do this once
++    # per day rather than caching across days because the "nearest" answer
++    # rolls forward as the calendar advances — sitting at 2023-01-02 vs.
++    # 2024-01-02 can see different catalysts come into the 180d horizon.
++    for t in range(T):
++        as_of_t = fixture.dates[t]
++        nearest_t = nearest_material_catalyst(as_of_t, catalysts)
++        nearest_date = nearest_t.deadline_date if nearest_t is not None else None
++        # Sprint P — if the fixture carries a per-day dynamic threshold series
++        # (computed from the warehouse's full MOVE history at fixture-load time),
++        # the gate-evaluator uses the day-t value instead of the scalar default.
++        if fixture.move_ma30_threshold_series is not None:
++            move_thr_t = float(fixture.move_ma30_threshold_series[t])
++        else:
++            move_thr_t = float(move_ma30_threshold)
++        # Sprint Q — if the fixture carries an alternative Gate-3 signal
++        # (e.g. HY OAS causal z-score for the "credit" regime), substitute it
++        # for MOVE MA30 at day t. The gate predicate (signal >= threshold)
++        # is unchanged; only the measurement regime changes.
++        if fixture.gate3_signal_override is not None:
++            gate3_signal_t = float(fixture.gate3_signal_override[t])
++        else:
++            gate3_signal_t = float(fixture.move_ma30[t])
++        # Evaluate gates every day (cheap). The `move_ma30` kwarg carries
++        # whichever Gate-3 signal is active for this run — we keep the name
++        # for backward-compat of the public predicate API.
++        gb, gm, gc, ok = evaluate_three_gates(
++            bsi_z=float(bsi_series[t]),
++            move_ma30=gate3_signal_t,
++            as_of=as_of_t,
++            nearest_catalyst_date=nearest_date,
++            bsi_z_threshold=bsi_z_threshold,
++            move_ma30_threshold=move_thr_t,
++            ccd_ii_max_days=ccd_ii_max_days,
++            bsi_bypass_z_threshold=bsi_bypass_z_threshold,
++        )
++        gate_bsi[t], gate_move[t], gate_ccd2[t], approved[t] = gb, gm, gc, ok
++
++        # Rebalance only on pre-specified cadence.
++        is_rebalance = (t % max(1, window.rebalance_freq_days) == 0)
++        if is_rebalance:
++            if ok:
++                new_trs = -target_trs_gross * starting_capital
++                new_hedge = -hedge_beta * abs(new_trs)
++                new_naive = -target_trs_gross * starting_capital  # same gross
++            else:
++                new_trs = 0.0
++                new_hedge = 0.0
++                new_naive = 0.0
++            last_trs, last_hedge, last_naive = new_trs, new_hedge, new_naive
++        target_trs[t] = last_trs
++        target_hedge[t] = last_hedge
++        target_naive_short[t] = last_naive
++
++    # TRS arm — uses the mode-selected tranche series (see above).
++    trs_state, trs_bd = pnl_sim.run_trs_arm(
++        move_series=fixture.move_level,
++        sofr_series=fixture.sofr_annual,
++        tranche_returns=tranche_series,
++        hyg_returns=fixture.hyg_returns,
++        target_trs_notionals=target_trs,
++        target_hedge_notionals=target_hedge,
++        starting_cash=starting_capital,
++        config=base_cfg,
++    )
++
++    # Naive AFRM short arm (comparison)
++    naive_state, naive_bd = pnl_sim.run_equity_short_arm(
++        move_series=fixture.move_level,
++        sofr_series=fixture.sofr_annual,
++        equity_returns=fixture.afrm_returns,
++        target_short_notionals=target_naive_short,
++        starting_cash=starting_capital,
++        config=base_cfg,
++    )
++
++    trs_daily = np.asarray([b.total for b in trs_bd], dtype=float)
++    naive_daily = np.asarray([b.total for b in naive_bd], dtype=float)
++
++    # Rolled-up stats
++    sofr_avg = float(np.mean(fixture.sofr_annual))
++    trs_stats = pnl_sim.summarize(
++        trs_daily,
++        starting_capital=starting_capital,
++        transaction_costs_total=trs_state.transaction_costs_cum,
++        cash_carry_total=trs_state.cash_carry_cum,
++        sofr_annual=sofr_avg,
++    )
++    naive_stats = pnl_sim.summarize(
++        naive_daily,
++        starting_capital=starting_capital,
++        transaction_costs_total=naive_state.transaction_costs_cum,
++        cash_carry_total=naive_state.cash_carry_cum,
++        sofr_annual=sofr_avg,
++    )
++
++    log.info(
++        "event_study | window=%s mode=%s | TRS: ret=%+.4f sharpe=%+.2f dd=%+.4f | "
++        "NAIVE: ret=%+.4f sharpe=%+.2f dd=%+.4f | approved=%d/%d days",
++        fixture.name, mode.value,
++        trs_stats.total_return, trs_stats.sharpe, trs_stats.max_drawdown,
++        naive_stats.total_return, naive_stats.sharpe, naive_stats.max_drawdown,
++        int(approved.sum()), T,
++    )
++
++    return PanelResult(
++        window_name=fixture.name,
++        mode=mode,
++        trs_daily_pnl=trs_daily,
++        trs_final_state=trs_state,
++        trs_breakdowns=trs_bd,
++        naive_daily_pnl=naive_daily,
++        naive_final_state=naive_state,
++        naive_breakdowns=naive_bd,
++        gate_approved=approved,
++        gate_bsi=gate_bsi,
++        gate_move=gate_move,
++        gate_ccd2=gate_ccd2,
++        trs_stats=trs_stats,
++        naive_stats=naive_stats,
++    )
++
++
++def _lookup_window(name: str) -> EventWindow:
++    if name in WINDOWS:
++        return WINDOWS[name]
++    # Permissive fallback for ad-hoc fixture names in tests.
++    return EventWindow(name, catalyst_date=date(2020, 1, 1))
++
++
++# ============================================================================
++# Three-panel comparison
++# ============================================================================
++@dataclass
++class ThreePanelComparison:
++    window_name: str
++    panels: dict[PnLMode, PanelResult] = field(default_factory=dict)
++
++    def summary_rows(self) -> list[dict]:
++        """One row per panel — shape suitable for CSV dump or DataFrame."""
++        rows = []
++        for mode, panel in self.panels.items():
++            rows.append({
++                "window": self.window_name,
++                "panel": mode.value,
++                "trs_total_return":   panel.trs_stats.total_return,
++                "trs_ann_return":     panel.trs_stats.ann_return,
++                "trs_ann_vol":        panel.trs_stats.ann_vol,
++                "trs_sharpe":         panel.trs_stats.sharpe,
++                "trs_max_drawdown":   panel.trs_stats.max_drawdown,
++                "trs_hit_rate":       panel.trs_stats.hit_rate,
++                "trs_tx_cost_pct":    panel.trs_stats.transaction_costs_pct,
++                "trs_cash_carry_pct": panel.trs_stats.cash_carry_pct,
++                "naive_total_return": panel.naive_stats.total_return,
++                "naive_ann_return":   panel.naive_stats.ann_return,
++                "naive_sharpe":       panel.naive_stats.sharpe,
++                "naive_max_drawdown": panel.naive_stats.max_drawdown,
++                "naive_hit_rate":     panel.naive_stats.hit_rate,
++                "approved_days":      int(panel.gate_approved.sum()),
++                "n_days":             int(panel.gate_approved.size),
++            })
++        return rows
++
++
++def run_three_panel_comparison(
++    fixture: WindowFixture,
++    **kwargs,
++) -> ThreePanelComparison:
++    """Produce all three panels (naive / fix3 / institutional) for one window."""
++    cmp = ThreePanelComparison(window_name=fixture.name)
++    for mode in (PnLMode.NAIVE, PnLMode.FIX3_ONLY, PnLMode.INSTITUTIONAL):
++        cmp.panels[mode] = run_window(fixture, mode=mode, **kwargs)
++    return cmp
++
++
++# ============================================================================
++# Persistence — pnl.csv + summary.csv
++# ============================================================================
++OUTPUT_DIR_DEFAULT = Path(__file__).resolve().parent / "outputs"
++
++
++def dump_pnl_csv(
++    panel: PanelResult,
++    fixture: WindowFixture,
++    out_dir: Path | str = OUTPUT_DIR_DEFAULT,
++) -> Path:
++    """Dump per-day P&L breakdown to `<out_dir>/pnl_<window>_<mode>.csv`.
++
++    One row per day with the full Fix #1 / Fix #4 accounting decomposition,
++    plus gate diagnostics. Suitable as the input to the paper §10 figure.
++    """
++    out_dir = Path(out_dir)
++    out_dir.mkdir(parents=True, exist_ok=True)
++    path = out_dir / f"pnl_{panel.window_name}_{panel.mode.value}.csv"
++
++    header = [
++        "date", "day_idx",
++        "bsi_z", "move_ma30", "sofr", "tranche_return", "hyg_return", "afrm_return",
++        "gate_bsi", "gate_move", "gate_ccd2", "approved",
++        # TRS arm fields
++        "trs_cash_carry", "trs_financing_drag", "trs_mtm_trs", "trs_mtm_hedge",
++        "trs_transaction_costs", "trs_daily_pnl",
++        # Naive arm fields
++        "naive_cash_carry", "naive_mtm", "naive_tx_costs", "naive_htb_fee",
++        "naive_daily_pnl",
++    ]
++    with path.open("w", newline="") as f:
++        w = csv.writer(f)
++        w.writerow(header)
++        for t, d in enumerate(fixture.dates):
++            tb = panel.trs_breakdowns[t]
++            nb = panel.naive_breakdowns[t]
++            w.writerow([
++                d.isoformat(), t,
++                f"{fixture.bsi_z[t]:.6f}",
++                f"{fixture.move_ma30[t]:.4f}",
++                f"{fixture.sofr_annual[t]:.6f}",
++                f"{fixture.tranche_book_returns[t]:.6f}",
++                f"{fixture.hyg_returns[t]:.6f}",
++                f"{fixture.afrm_returns[t]:.6f}",
++                int(panel.gate_bsi[t]),
++                int(panel.gate_move[t]),
++                int(panel.gate_ccd2[t]),
++                int(panel.gate_approved[t]),
++                f"{tb.cash_carry:.8f}",
++                f"{tb.financing_drag:.8f}",
++                f"{tb.mtm_trs:.8f}",
++                f"{tb.mtm_hedge:.8f}",
++                f"{tb.transaction_costs:.8f}",
++                f"{tb.total:.8f}",
++                f"{nb.cash_carry:.8f}",
++                f"{nb.mtm:.8f}",
++                f"{nb.transaction_costs:.8f}",
++                f"{nb.htb_fee:.8f}",
++                f"{nb.total:.8f}",
++            ])
++    log.info("event_study | wrote %s (%d rows)", path, len(fixture.dates))
++    return path
++
++
++def dump_summary_csv(
++    comparisons: Iterable[ThreePanelComparison],
++    out_dir: Path | str = OUTPUT_DIR_DEFAULT,
++    filename: str = "summary.csv",
++) -> Path:
++    """Rolled-up stats across all (window × panel) cells in one CSV."""
++    out_dir = Path(out_dir)
++    out_dir.mkdir(parents=True, exist_ok=True)
++    path = out_dir / filename
++    rows: list[dict] = []
++    for cmp in comparisons:
++        rows.extend(cmp.summary_rows())
++    if not rows:
++        log.warning("event_study | no rows to dump (empty comparisons)")
++        return path
++    header = list(rows[0].keys())
++    with path.open("w", newline="") as f:
++        w = csv.writer(f)
++        w.writerow(header)
++        for r in rows:
++            w.writerow([r[k] for k in header])
++    log.info("event_study | wrote summary to %s (%d rows)", path, len(rows))
++    return path
++
++
++# ============================================================================
++# Warehouse → WindowFixture bridge (Sprint H.b)
++# ============================================================================
++# Until Sprint H.b, `run_all_windows` could only be driven by synthetic
++# fixtures manually constructed in tests/notebooks. That made every backtest
++# number in the paper a statement about the fixture, not about the world.
++#
++# `load_window_from_warehouse` is the data bridge: it reconstructs a
++# `WindowFixture` for one of the four canonical event windows by querying
++# DuckDB. The data contract is:
++#
++#     MOVE level, MA30       ← fred_series (via data.ingest.yahoo_macro)
++#     SOFR annual decimal    ← fred_series (via data.ingest.fred, percent→decimal)
++#     BSI causal z           ← bsi_daily (via signals.bsi)
++#     HYG daily returns      ← fred_series (yahoo_macro: HYG close, pct_change)
++#     AFRM daily returns     ← fred_series (yahoo_macro: AFRM close, pct_change)
++#     Tranche book returns   ← β_HYG · HYG_return + excess_spread carry
++#                              (Phase 1 proxy; Phase 2 adds duration penalty)
++#
++# All series are re-indexed onto a business-day calendar spanning the window
++# (catalyst ± lookback/lookahead), left-padded by ~45 calendar days so the
++# MA30 has a warm start. Forward-fill handles holiday gaps (MOVE isn't
++# published on closed-market days); any un-fillable gap in the *window*
++# proper raises — we refuse to backtest against a series full of zeros
++# pretending to be data.
++# ----------------------------------------------------------------------------
++def _pct_to_decimal(x: float | None) -> float | None:
++    """FRED reports SOFR / DGS10 as percent; pnl_sim consumes decimal."""
++    return None if x is None else float(x) / 100.0
++
++
++def load_window_from_warehouse(
++    window_key: str,
++    con: Optional["_duckdb_t.DuckDBPyConnection"] = None,
++    *,
++    move_ma_window: int = 30,
++    tranche_hyg_beta: float = 1.0,
++    include_excess_spread_carry: bool = True,
++    # Sprint H.c / Phase 2 — duration adjustment for rate moves.
++    # Default flipped to True on 2026-04-19: 2022-2023 tranche returns without
++    # duration were structurally overstated. The spread-only companion is
++    # still returned (as `tranche_book_returns_naive`) so the NAIVE panel can
++    # quantify how much of the "alpha" was actually just unhedged duration.
++    apply_duration_adjustment: bool = True,
++    tranche_wal_years: float = 3.0,
++    duration_sofr_series: str = "SOFR",
++    # Sprint P / Q — Gate-3 regime selection.
++    #   "absolute" : keep the legacy scalar threshold (`move_ma30_threshold`)
++    #                as set by the caller of run_window; fixture emits None.
++    #   "dynamic"  : precompute a per-day threshold = rolling-percentile of
++    #                MOVE MA30 over the trailing `gate3_lookback_days` of
++    #                the full warehouse history (causal, no look-ahead).
++    #   "credit"   : replace the MOVE signal entirely with the Chicago
++    #                Fed's National Financial Conditions Index (FRED
++    #                ``NFCI``), forward-filled from weekly to business-day
++    #                cadence. NFCI is normalized so that 0 = long-run
++    #                neutral; positive = tighter than average. Gate fires
++    #                when NFCI $\geq$ ``gate3_credit_nfci_threshold``
++    #                (default 0.0 — any above-neutral tightness qualifies
++    #                the macro regime as corroborating a BNPL stress
++    #                signal). We use NFCI rather than BAMLH0A0HYM2 (HY
++    #                OAS) because FRED's live feed for ICE BofA spread
++    #                indices only returns the last ~3 years (data before
++    #                2023-04 is unavailable from the public API), while
++    #                our oldest event window is 2022-06. NFCI is an
++    #                18-input financial-conditions composite that captures
++    #                the same latent regime factor and extends back to
++    #                1971 with continuous weekly publication.
++    gate3_mode: str = "absolute",
++    gate3_percentile: float = 0.85,
++    gate3_lookback_days: int = 504,   # ~2 calendar years of business days
++    gate3_credit_nfci_threshold: float = 0.0,
++) -> WindowFixture:
++    """Reconstruct a `WindowFixture` for `window_key` from the DuckDB warehouse.
++
++    Parameters
++    ----------
++    window_key : one of `WINDOWS.keys()` — 'KLARNA_DOWNROUND', etc.
++    con : optional live DuckDB connection. If None, opens a read-only
++        handle on `settings.duckdb_path` and closes it before returning.
++    move_ma_window : rolling window for MOVE MA30 (default 30 business days).
++    tranche_hyg_beta : scalar relating HYG daily return to junior-tranche
++        MTM. β=1.0 is the naive proxy; a calibration step (Sprint H.c)
++        refines this with regression of HYG vs. AFRMT secondary prints.
++    include_excess_spread_carry : if True and abs_tranche_metrics has any
++        row at or before the window, add (excess_spread% / 252) as a daily
++        positive carry to the tranche return (the TRS long pays this to
++        the seller; we hold short, so the sign flips downstream).
++    apply_duration_adjustment : Phase 2 flag. When True, subtract a
++        mark-to-market duration loss = -WAL_years × ΔSOFR from the daily
++        tranche return; this captures the 2022-2023 Fed hiking-cycle
++        duration drag that a pure spread model misses.
++    tranche_wal_years : baseline weighted-average-life assumption for
++        junior BNPL ABS tranches (default 3.0y).
++
++    Returns
++    -------
++    WindowFixture with length T = lookback_days + lookahead_days + 1
++    (measured in business days, aligned to the catalyst date).
++
++    Raises
++    ------
++    KeyError  : unknown window_key.
++    ValueError: any required series has no rows in the span, or any
++                un-fillable NaN remains inside the window after ffill.
++    """
++    import duckdb   # local import — keep module import light for tests
++    import pandas as pd
++
++    if window_key not in WINDOWS:
++        raise KeyError(f"{window_key!r} not in WINDOWS registry "
++                       f"(valid: {list(WINDOWS)})")
++    w = WINDOWS[window_key]
++
++    own_con = False
++    if con is None:
++        from data.settings import settings
++        con = duckdb.connect(str(settings.duckdb_path), read_only=True)
++        own_con = True
++
++    try:
++        # --- Calendar span -------------------------------------------------
++        # lookback/lookahead are in *business days*; pad the query span
++        # generously so reindex+ffill handles holidays and the MA30 warmup.
++        pad_left  = int(move_ma_window * 1.7) + 15   # ~65 calendar days
++        pad_right = 15
++        q_start = w.catalyst_date - timedelta(days=int(w.lookback_days * 1.6) + pad_left)
++        q_end   = w.catalyst_date + timedelta(days=int(w.lookahead_days * 1.6) + pad_right)
++
++        # --- Generic fred_series puller -----------------------------------
++        def _pull_series(sid: str, *, required: bool = True) -> pd.Series:
++            rows = con.execute(
++                "SELECT observed_at, value FROM fred_series "
++                "WHERE series_id = ? AND observed_at BETWEEN ? AND ? "
++                "ORDER BY observed_at",
++                [sid, q_start, q_end],
++            ).fetchall()
++            if not rows:
++                if required:
++                    raise ValueError(
++                        f"{window_key}: no {sid!r} rows in fred_series within "
++                        f"[{q_start}, {q_end}]. Run "
++                        f"`python -m data.ingest.yahoo_macro` (for MOVE/HYG/AFRM) "
++                        f"or `python -m data.ingest.fred` (for SOFR/DGS10)."
++                    )
++                return pd.Series(dtype=float, name=sid)
++            idx = pd.DatetimeIndex([pd.Timestamp(d) for d, _ in rows])
++            vals = [float(v) if v is not None else np.nan for _, v in rows]
++            s = pd.Series(vals, index=idx, name=sid)
++            # Defensive dedup: the warehouse has no UNIQUE(series_id, observed_at)
++            # constraint, so a re-ingest can seed two rows for the same date.
++            # `reindex(cal)` downstream raises on duplicate labels — collapse
++            # to the most-recently-inserted row (rows are in insertion order
++            # within the same `observed_at`).
++            if not s.index.is_unique:
++                s = s[~s.index.duplicated(keep="last")]
++            return s.sort_index()
++
++        move = _pull_series("MOVE")
++        sofr = _pull_series(duration_sofr_series)
++        hyg  = _pull_series("HYG")
++        afrm = _pull_series("AFRM")
++
++        # --- BSI causal z -------------------------------------------------
++        bsi_rows = con.execute(
++            "SELECT observed_at, z_bsi FROM bsi_daily "
++            "WHERE observed_at BETWEEN ? AND ? ORDER BY observed_at",
++            [q_start, q_end],
++        ).fetchall()
++        if not bsi_rows:
++            raise ValueError(
++                f"{window_key}: no bsi_daily rows in [{q_start}, {q_end}]. "
++                f"Run `python -m signals.bsi` to build the causal BSI series."
++            )
++        bsi_idx = pd.DatetimeIndex([pd.Timestamp(d) for d, _ in bsi_rows])
++        bsi_vals = [float(v) if v is not None else np.nan for _, v in bsi_rows]
++        bsi_z = pd.Series(bsi_vals, index=bsi_idx, name="bsi_z")
++        if not bsi_z.index.is_unique:
++            bsi_z = bsi_z[~bsi_z.index.duplicated(keep="last")]
++        bsi_z = bsi_z.sort_index()
++
++        # --- Excess-spread carry (optional, quarterly) --------------------
++        es_series: pd.Series | None = None
++        if include_excess_spread_carry:
++            es_rows = con.execute(
++                "SELECT period_end, excess_spread FROM abs_tranche_metrics "
++                "WHERE period_end <= ? "
++                "ORDER BY period_end DESC LIMIT 12",
++                [q_end],
++            ).fetchall()
++            if es_rows:
++                es_idx = pd.DatetimeIndex([pd.Timestamp(d) for d, _ in es_rows])
++                es_vals = [float(v) if v is not None else np.nan for _, v in es_rows]
++                es_series = pd.Series(es_vals, index=es_idx,
++                                       name="excess_spread").sort_index()
++                if not es_series.index.is_unique:
++                    es_series = es_series[~es_series.index.duplicated(keep="last")]
++
++        # --- Align on business-day calendar -------------------------------
++        cal = pd.bdate_range(start=q_start, end=q_end)
++        frame = pd.DataFrame(index=cal)
++        frame["move"]        = move.reindex(cal).ffill()
++        frame["sofr_pct"]    = sofr.reindex(cal).ffill()
++        frame["hyg_close"]   = hyg.reindex(cal).ffill()
++        frame["afrm_close"]  = afrm.reindex(cal).ffill()
++        frame["bsi_z"]       = bsi_z.reindex(cal).ffill()
++        frame["move_ma30"]   = frame["move"].rolling(
++            move_ma_window, min_periods=max(5, move_ma_window // 4),
++        ).mean()
++        frame["hyg_return"]  = frame["hyg_close"].pct_change().fillna(0.0)
++        frame["afrm_return"] = frame["afrm_close"].pct_change().fillna(0.0)
++        frame["sofr_dec"]    = frame["sofr_pct"] / 100.0
++
++        # Spread-only tranche return = β · HYG + daily spread carry.
++        # This is the NAIVE companion — what a back-tester who ignored the
++        # 2022-2023 hiking cycle would have computed.
++        frame["tranche_return_spread_only"] = tranche_hyg_beta * frame["hyg_return"]
++        if es_series is not None:
++            # Quarterly %  →  daily decimal accrual. Forward-fill so every
++            # day in the window sees the most-recent trustee print.
++            daily_carry = (es_series.reindex(cal, method="ffill") / 100.0) / 252.0
++            frame["tranche_return_spread_only"] = (
++                frame["tranche_return_spread_only"] + daily_carry.fillna(0.0)
++            )
++
++        # Phase 2 duration penalty — subtract WAL · ΔSOFR_decimal.
++        # SOFR is reported in percent on FRED; the decimal diff is
++        # ΔSOFR_pct / 100. A +25 bp hike on a 3y-WAL tranche is a -0.75 %
++        # MTM hit — exactly the term the 2022-2023 spread-only fixtures
++        # were hiding. The canonical `tranche_return` is spread + duration;
++        # the `tranche_return_spread_only` column is preserved so the
++        # fixture carries both arms into the three-panel comparison.
++        d_sofr = frame["sofr_pct"].diff().fillna(0.0) / 100.0
++        frame["duration_hit"] = -float(tranche_wal_years) * d_sofr
++        if apply_duration_adjustment:
++            frame["tranche_return"] = (
++                frame["tranche_return_spread_only"] + frame["duration_hit"]
++            )
++        else:
++            # Legacy / test path — canonical series stays spread-only.
++            frame["tranche_return"] = frame["tranche_return_spread_only"].copy()
++
++        # --- Trim to exact window ----------------------------------------
++        cat_ts = pd.Timestamp(w.catalyst_date)
++        if cat_ts in cal:
++            pos = cal.get_loc(cat_ts)
++        else:
++            # Catalyst fell on a holiday — use the NEXT business day.
++            pos = int(cal.searchsorted(cat_ts, side="left"))
++            pos = min(pos, len(cal) - 1)
++        i_lo = max(0, pos - w.lookback_days)
++        i_hi = min(len(cal) - 1, pos + w.lookahead_days)
++        sub = frame.iloc[i_lo : i_hi + 1]
++
++        required_cols = ["move", "move_ma30", "sofr_dec", "bsi_z",
++                         "tranche_return", "hyg_return", "afrm_return"]
++        nan_cols = [c for c in required_cols if sub[c].isna().any()]
++        if nan_cols:
++            first_bad = {c: sub[sub[c].isna()].index[0].date() for c in nan_cols}
++            raise ValueError(
++                f"{window_key}: NaN in warehouse-reconstructed window on columns "
++                f"{nan_cols} (first: {first_bad}). The warehouse is missing data "
++                f"for this span — re-run ingest or extend backfill. "
++                f"Window span was [{sub.index[0].date()}, {sub.index[-1].date()}]."
++            )
++
++        # --- Dynamic Gate-3 threshold (Sprint P) --------------------------
++        # Pull the FULL warehouse MOVE history once, compute the 30d MA,
++        # then at each date t in the event window take the
++        # `gate3_percentile` of the trailing `gate3_lookback_days` MA30
++        # values (causal — strictly t-k ... t-1). This series is attached
++        # to the fixture so `run_window` can prefer it over the scalar
++        # threshold on a per-day basis.
++        move_thr_series: Optional[np.ndarray] = None
++        gate3_signal_override: Optional[np.ndarray] = None
++        gate3_mode_name = "move"
++        if gate3_mode == "dynamic":
++            full_move = con.execute(
++                "SELECT observed_at, value FROM fred_series "
++                "WHERE series_id = 'MOVE' ORDER BY observed_at"
++            ).fetchall()
++            if full_move:
++                full_idx = pd.DatetimeIndex([pd.Timestamp(d) for d, _ in full_move])
++                full_vals = np.asarray([float(v) for _, v in full_move])
++                full_s = pd.Series(full_vals, index=full_idx).asfreq("B").ffill()
++                full_ma = full_s.rolling(move_ma_window,
++                                         min_periods=max(5, move_ma_window // 4)).mean()
++                thr = full_ma.rolling(gate3_lookback_days,
++                                      min_periods=max(30, gate3_lookback_days // 8)
++                                      ).quantile(gate3_percentile)
++                # For each date in the event window, take the threshold that
++                # would have been visible on the previous business day (shift
++                # by one to enforce strict causality in the rolling stats).
++                thr_shifted = thr.shift(1)
++                thr_reidx = thr_shifted.reindex(sub.index, method="ffill")
++                if thr_reidx.isna().any():
++                    raise ValueError(
++                        f"{window_key}: dynamic Gate-3 threshold has NaN at "
++                        f"{thr_reidx[thr_reidx.isna()].index[0].date()}; "
++                        f"extend the warehouse MOVE history or lower "
++                        f"gate3_lookback_days (currently {gate3_lookback_days})."
++                    )
++                move_thr_series = thr_reidx.to_numpy(dtype=float)
++        elif gate3_mode == "credit":
++            # Replace the MOVE signal entirely with NFCI (FRED's Chicago
++            # Fed National Financial Conditions Index). NFCI is published
++            # weekly, already mean-centered (0 = long-run-neutral, higher
++            # = tighter conditions), with continuous history back to 1971
++            # — dramatically longer than the public FRED feed for ICE
++            # BofA HY OAS (~3 years). Weekly values are forward-filled to
++            # business-day cadence; the gate predicate becomes
++            #   gate_credit = NFCI_t >= gate3_credit_nfci_threshold
++            # with default threshold = 0.0 (any above-neutral tightness).
++            full_nfci = con.execute(
++                "SELECT observed_at, value FROM fred_series "
++                "WHERE series_id = 'NFCI' ORDER BY observed_at"
++            ).fetchall()
++            if not full_nfci:
++                raise ValueError(
++                    f"{window_key}: gate3_mode='credit' but no NFCI "
++                    f"rows in fred_series. Run "
++                    f"`python -m data.ingest.fred` to backfill NFCI."
++                )
++            full_idx = pd.DatetimeIndex([pd.Timestamp(d) for d, _ in full_nfci])
++            full_vals = np.asarray(
++                [float(v) if v is not None else np.nan for _, v in full_nfci]
++            )
++            full_s = pd.Series(full_vals, index=full_idx).asfreq("B").ffill()
++            nfci_reidx = full_s.reindex(sub.index, method="ffill")
++            if nfci_reidx.isna().any():
++                first_bad = nfci_reidx[nfci_reidx.isna()].index[0].date()
++                raise ValueError(
++                    f"{window_key}: gate3_mode='credit' produced NaN NFCI "
++                    f"at {first_bad}; extend the warehouse NFCI history "
++                    f"(run `python -m data.ingest.fred`)."
++                )
++            gate3_signal_override = nfci_reidx.to_numpy(dtype=float)
++            move_thr_series = np.full(
++                len(sub), float(gate3_credit_nfci_threshold), dtype=float,
++            )
++            gate3_mode_name = "credit"
++
++        fx = WindowFixture(
++            name=window_key,
++            dates=[ts.date() for ts in sub.index],
++            move_level=sub["move"].to_numpy(dtype=float),
++            move_ma30=sub["move_ma30"].to_numpy(dtype=float),
++            sofr_annual=sub["sofr_dec"].to_numpy(dtype=float),
++            bsi_z=sub["bsi_z"].to_numpy(dtype=float),
++            tranche_book_returns=sub["tranche_return"].to_numpy(dtype=float),
++            hyg_returns=sub["hyg_return"].to_numpy(dtype=float),
++            afrm_returns=sub["afrm_return"].to_numpy(dtype=float),
++            tranche_book_returns_naive=sub["tranche_return_spread_only"].to_numpy(dtype=float),
++            move_ma30_threshold_series=move_thr_series,
++            gate3_signal_override=gate3_signal_override,
++            gate3_mode_name=gate3_mode_name,
++        )
++        gate3_diag = ""
++        if fx.gate3_signal_override is not None:
++            gate3_diag = (
++                f" gate3={fx.gate3_mode_name} "
++                f"z∈[{fx.gate3_signal_override.min():+.2f},"
++                f"{fx.gate3_signal_override.max():+.2f}]"
++            )
++        log.info(
++            "event_study | loaded window=%s dates=[%s..%s] T=%d "
++            "| MOVE∈[%.1f,%.1f] SOFR∈[%.3f,%.3f] BSI_z∈[%.2f,%.2f] "
++            "tranche_ret∈[%+.4f,%+.4f]%s%s",
++            window_key, fx.dates[0].isoformat(), fx.dates[-1].isoformat(), len(fx.dates),
++            float(fx.move_level.min()),   float(fx.move_level.max()),
++            float(fx.sofr_annual.min()),  float(fx.sofr_annual.max()),
++            float(fx.bsi_z.min()),        float(fx.bsi_z.max()),
++            float(fx.tranche_book_returns.min()),
++            float(fx.tranche_book_returns.max()),
++            " (duration-adjusted)" if apply_duration_adjustment else "",
++            gate3_diag,
++        )
++        return fx
++    finally:
++        if own_con:
++            con.close()
++
++
++def load_all_windows_from_warehouse(
++    con: Optional["_duckdb_t.DuckDBPyConnection"] = None,
++    **kwargs,
++) -> dict[str, WindowFixture]:
++    """Convenience: build every fixture in `WINDOWS` via the warehouse.
++
++    Shares one DuckDB connection across the four queries when `con` is None.
++    Any window that fails to load raises — we do not silently skip, because
++    a partial run produces a misleading summary CSV.
++    """
++    import duckdb
++    own_con = False
++    if con is None:
++        from data.settings import settings
++        con = duckdb.connect(str(settings.duckdb_path), read_only=True)
++        own_con = True
++    try:
++        return {k: load_window_from_warehouse(k, con=con, **kwargs)
++                for k in WINDOWS}
++    finally:
++        if own_con:
++            con.close()
++
++
++# ============================================================================
++# Programmatic entry — `python -m backtest.event_study`
++# ============================================================================
++def run_all_windows(
++    fixtures: dict[str, WindowFixture],
++    *,
++    out_dir: Path | str = OUTPUT_DIR_DEFAULT,
++    **kwargs,
++) -> dict[str, ThreePanelComparison]:
++    """Run 3-panel comparison on every supplied fixture, dump CSVs, return map.
++
++    `fixtures` is typically built upstream from the warehouse — see the
++    notebooks for an example. Tests inject synthetic fixtures directly.
++    """
++    results: dict[str, ThreePanelComparison] = {}
++    for name, fx in fixtures.items():
++        cmp = run_three_panel_comparison(fx, **kwargs)
++        results[name] = cmp
++        for panel in cmp.panels.values():
++            dump_pnl_csv(panel, fx, out_dir=out_dir)
++    dump_summary_csv(results.values(), out_dir=out_dir)
++    return results
++
++
++if __name__ == "__main__":
++    import argparse
++
++    logging.basicConfig(
++        level=logging.INFO,
++        format="%(asctime)s %(levelname)s %(name)s | %(message)s",
++    )
++
++    parser = argparse.ArgumentParser(
++        prog="python -m backtest.event_study",
++        description=(
++            "BNPL event-study driver. `--source=registry` (default) prints "
++            "the window registry and exits. `--source=warehouse` pulls real "
++            "series from DuckDB, runs the 3-panel backtest on every window, "
++            "and writes pnl_*.csv / summary.csv into backtest/outputs/."
++        ),
++    )
++    parser.add_argument(
++        "--source", choices=("registry", "warehouse"), default="registry",
++        help="registry = print-and-exit; warehouse = live DuckDB-backed run",
++    )
++    parser.add_argument(
++        "--windows", nargs="+", default=None,
++        help="Subset of window keys to run (default: all 4).",
++    )
++    parser.add_argument(
++        "--apply-duration", action="store_true",
++        help="Phase 2: apply WAL × ΔSOFR duration penalty to tranche returns.",
++    )
++    parser.add_argument(
++        "--tranche-wal", type=float, default=3.0,
++        help="Weighted-average-life assumption for junior ABS (default 3.0y).",
++    )
++    parser.add_argument(
++        "--out-dir", type=Path, default=OUTPUT_DIR_DEFAULT,
++        help="Directory for pnl_*.csv and summary.csv dumps.",
++    )
++    args = parser.parse_args()
++
++    if args.source == "registry":
++        print("Sprint G event_study — window registry:")
++        for name, w in WINDOWS.items():
++            print(f"  {name:22s} catalyst={w.catalyst_date.isoformat()} "
++                  f"window=[-{w.lookback_days}d, +{w.lookahead_days}d]  "
++                  f"rebalance={w.rebalance_freq_days}d")
++        print("\nRe-run with `--source=warehouse` to execute the 3-panel "
++              "backtest on real DuckDB-backed fixtures. Prerequisites:")
++        print("  python -m data.ingest.fred")
++        print("  python -m data.ingest.yahoo_macro")
++        print("  python -m data.ingest.regulatory_catalysts")
++        print("  python -m signals.bsi")
++        raise SystemExit(0)
++
++    # --source=warehouse — real backtest.
++    window_keys = args.windows or list(WINDOWS)
++    unknown = [k for k in window_keys if k not in WINDOWS]
++    if unknown:
++        raise SystemExit(f"unknown windows: {unknown} "
++                         f"(valid: {list(WINDOWS)})")
++
++    print(f"event_study | warehouse mode — loading {len(window_keys)} window(s)"
++          f"{' with duration adjustment' if args.apply_duration else ''}")
++    catalysts = load_catalysts()
++    fixtures: dict[str, WindowFixture] = {}
++    for k in window_keys:
++        fixtures[k] = load_window_from_warehouse(
++            k,
++            apply_duration_adjustment=args.apply_duration,
++            tranche_wal_years=args.tranche_wal,
++        )
++    results = run_all_windows(fixtures, out_dir=args.out_dir, catalysts=catalysts)
++    print(f"\nevent_study | wrote CSVs to {args.out_dir.resolve()}")
++    # Compact textual summary.
++    print(f"\n{'WINDOW':22s} {'PANEL':14s} {'TRS ret':>8s} {'TRS Sh':>7s} "
++          f"{'TRS MDD':>8s} | {'NAIVE ret':>10s} {'NAIVE Sh':>9s} {'Appr':>5s}")
++    print("-" * 96)
++    for name, cmp in results.items():
++        for mode, panel in cmp.panels.items():
++            t, n = panel.trs_stats, panel.naive_stats
++            print(f"{name:22s} {mode.value:14s} "
++                  f"{t.total_return:+8.4f} {t.sharpe:+7.2f} {t.max_drawdown:+8.4f} | "
++                  f"{n.total_return:+10.4f} {n.sharpe:+9.2f} "
++                  f"{int(panel.gate_approved.sum()):>5d}")
++    raise SystemExit(0)
+diff --git a/bnpl-pod/config/thresholds.yaml b/bnpl-pod/config/thresholds.yaml
+index 8a0ec3b..71185f2 100644
+--- a/bnpl-pod/config/thresholds.yaml
++++ b/bnpl-pod/config/thresholds.yaml
+@@ -15,6 +15,22 @@ gates:
+   bsi:
+     # BSI z-score (computed over rolling 180-day window) must exceed this to fire.
+     z_threshold: 1.5
++    # Sprint Q bypass (post-review, 2026-04-22): when bsi_z >= this
++    # super-threshold, the trade approves on BSI alone — no macro
++    # corroboration from MOVE / catalyst required. Empirical motivation is
++    # §8.5 of the paper: on 17-Jan-2025 BSI spiked to +27σ (12,838 BNPL
++    # complaints filed on the Reg Z deadline) while every public macro regime
++    # gauge (MOVE, HY OAS, NFCI, STLFSI4, UMCSENT) was at or below its
++    # long-run median. By construction of the Subprime-2.0 opacity thesis,
++    # no macro gauge corroborates BNPL-specific stress during BNPL events;
++    # a strict 4-gate conjunctive rule is therefore structurally unable to
++    # approve the paper's flagship trade. The bypass converts the
++    # blind-spot counterfactual into the recommended live-strategy variant
++    # at the cost of an explicit Type-I premium (logged on every bypassed
++    # decision). Calibration: z >= 10 has fired exactly once in the
++    # 2023–2026 warehouse window (Reg Z deadline), so the FPR is <<1
++    # event/decade under the current composite.
++    bypass_z_threshold: 10.0
+   scp:
+     # Structural Complexity Premium (ES_Heston - EL_GBM), in dollars per $100 notional.
+     # Wide gap => equity is underpricing tail risk. Per-asset threshold.
+@@ -65,6 +81,73 @@ portfolio:
+   max_single_trust_weight: 0.25
+   # CVaR confidence level used by the Mean-CVaR optimizer.
+   cvar_alpha: 0.95
++  # Risk-aversion penalty in the Mean-CVaR objective (Sprint F).
++  # gamma=5.0 is a deliberate override above institutional default (~2.0) to
++  # force the optimizer to respect the BNPL debt-stacking tail rather than
++  # chase near-term spread. See paper §8 and v4.1 §8.2.
++  gamma_risk_aversion: 5.0
++  # Monte-Carlo scenario count for the CVaR LP. Must balance statistical
++  # stability (T>=1000) against LP solve time.
++  n_scenarios: 2000
++  # Share of scenarios drawn from the crisis-transported regime. The rest
++  # come from the current calibrated CIR — a blended, not purely stressed, set.
++  stress_blend_weight: 0.30
++  # Planning horizon used for PV convergence and carry — days.
++  horizon_days: 252
++
++  # ---- Macro-hedge sleeve (Fix #2) -----------------------------------------
++  # The Mean-CVaR LP sizes the TRS short book. A PARALLEL static sleeve
++  # hedges credit-beta (HYG short) or rates-beta (2Y UST futures) so the
++  # LP's risk budget is not contaminated by hedge-leg optimization.
++  #
++  # Sizing rules
++  # ------------
++  #   beta_credit    |hedge_notional| = beta_credit * sum_i |w_i|
++  #                  Default β=0.60 reflects junior-ABS vs HYG duration-adj
++  #                  regression on 2020-2024 weekly returns (documented in
++  #                  paper §8). Conservative: HYG is broader IG+HY, so a
++  #                  junior-ABS short is only partially hedged.
++  #
++  #   dv01_neutral   size ZT futures so ΔHedge_DV01 ≈ dv01_target * TRS_DV01.
++  #                  Placeholder — full DV01 attribution requires the ABS
++  #                  WAL and is wired in Sprint G once the event-study
++  #                  backtest plumbs cashflow durations.
++  hedge:
++    instrument: "HYG_SHORT"            # HYG_SHORT | ZT_FUT
++    sizing_rule: "beta_credit"         # beta_credit | dv01_neutral
++    beta_credit: 0.60
++    dv01_target:  1.00                 # placeholder for dv01_neutral path
++
++# ---- Sprint G: Transaction costs (Fix #1 — regime-dependent B/A) --------------
++# Dealer friction on BNPL junior-ABS TRS is NOT screen-traded and NOT symmetric.
++# Round-trip B/A realistically 50-150 bps in normal regimes, 300+ bps in stress.
++# Edge is regime-dependent in the WRONG direction: gates fire when MOVE widens,
++# which is exactly when dealer B/A also widens (inventory-risk premium). We
++# therefore scale the bps LINEARLY above a median MOVE level:
++#
++#   ba_bps_t  =  trs_ba_base_bps  +  trs_ba_stress_bps · max(0, MOVE_t/move_median − 1)
++#
++# Charged as a half-spread on absolute turnover at every rebalance in
++# backtest/pnl_sim.py. HYG (the macro-hedge sleeve) is liquid → flat thin bps.
++# The naive AFRM equity-short comparison arm gets a 15% annualized HTB fee.
++transaction_costs:
++  trs_ba_base_bps:    35.0    # ≈ 70 bps round-trip at median MOVE
++  trs_ba_stress_bps:  80.0    # +1.6% round-trip at 2× median MOVE
++  move_median_level:  95.0    # historical MOVE median 2015-2022
++  hedge_ba_bps:        2.0    # HYG ETF round-trip ≈ 4 bps, flat
++  equity_ba_bps:      10.0    # AFRM round-trip ≈ 20 bps base
++  equity_htb_annual:   0.15   # Sprint G: naive-AFRM-short HTB penalty
++
++# ---- Sprint G: Cash / margin accounting (Fix #4 — SOFR on unallocated cash) ---
++# Without this, a strategy that deploys 20% of capital shows 0% return in
++# quiet regimes while T-bills earn SOFR — a ~400 bps/yr artificial drag. The
++# daily P&L loop accrues SOFR/252 on `cash`, and debits (financing_spread/252)
++# on `trs_margin`. See backtest/pnl_sim.py::step_day for the accounting order.
++cash_carry:
++  use_sofr:             true
++  financing_spread_bps: 50.0   # broker spread above SOFR on posted margin
++  margin_ratio_trs:      0.20  # 20% of TRS notional posted as margin
++  equity_margin_ratio:   0.30  # Reg T + borrow for AFRM short
+ 
+ # ---- Agent advisory vs deterministic compliance ------------------------------
+ # LLM risk_manager.py produces advisory reasoning only.
+
+commit 456d99965e71cf9d3b6159c3c05579f7e1c6583a
+Author: Sid Jha <sjha@illinois.edu>
+Date:   Sat Apr 18 13:43:00 2026 -0500
+
+    Initial commit: BNPL Trap — research paper + agentic pod scaffold
+
+diff --git a/bnpl-pod/agents/compliance_engine.py b/bnpl-pod/agents/compliance_engine.py
+new file mode 100644
+index 0000000..bfeb318
+--- /dev/null
++++ b/bnpl-pod/agents/compliance_engine.py
+@@ -0,0 +1,159 @@
++"""
++Deterministic compliance engine.
++
++This module is the SOLE source of trade-approval decisions in the pod.
++It contains NO LLM calls, NO probabilistic logic, and NO external I/O
++beyond reading the thresholds YAML.
++
++Design rationale
++----------------
++LLMs (including the risk_manager agent) are probabilistic: they can produce
++different outputs for identical inputs. For a trading system this is a
++compliance hazard — regulators auditing a bad trade cannot accept "an AI
++approved it based on a Reddit post" as a defense.
++
++Therefore we separate concerns:
++
++    LLM risk_manager.py   ->  ADVISORY reasoning, narrative, hypothesis.
++    compliance_engine.py  ->  DETERMINISTIC approval/veto.
++    Human-in-the-loop     ->  final sign-off. Required, non-optional.
++
++Every trade signal is a 3-tuple:
++
++    (advisory_reasoning: str, compliance_decision: ComplianceDecision, human_approval: bool | None)
++
++compliance_engine.py is the only layer that can return compliance_decision.approved = True.
++"""
++from __future__ import annotations
++
++from dataclasses import dataclass, field
++from datetime import date, datetime
++from typing import Literal
++
++from data.settings import load_thresholds
++
++Gate = Literal["bsi", "scp", "move", "ccd2"]
++
++
++@dataclass(frozen=True)
++class GateInputs:
++    """Strict schema for the compliance engine. Fill every field explicitly."""
++    as_of: datetime
++    # Gate 1 — BSI
++    bsi_z: float
++    # Gate 2 — SCP (per-ticker dollar gap between Heston ES and GBM EL, $/100 notional)
++    scp_by_ticker: dict[str, float]
++    # Gate 3 — MOVE 30-day moving average
++    move_ma30: float
++    # Gate 4 — CCD II calendar
++    ccd_ii_deadline: date
++    # Squeeze-defense raw metrics (per equity ticker)
++    squeeze_utilization: dict[str, float]
++    squeeze_days_to_cover: dict[str, float]
++    squeeze_skew_pctile: dict[str, float]   # current value's percentile vs own history
++    # Expression type — TRS vs equity
++    expression: Literal["trs_junior_abs", "equity_short"]
++    equity_tickers: list[str] = field(default_factory=list)   # required if expression=equity_short
++
++
++@dataclass
++class ComplianceDecision:
++    approved: bool
++    gate_results: dict[Gate, bool]
++    squeeze_veto: bool
++    reasons: list[str]
++    # Checksum of the active thresholds YAML — kept with every decision for audit
++    thresholds_version: str
++
++
++class ComplianceEngine:
++    """Pure-python rule evaluator. No network. No LLM."""
++
++    def __init__(self, thresholds: dict | None = None) -> None:
++        self.thresholds = thresholds or load_thresholds()
++        self._version = _stable_hash(self.thresholds)
++
++    def evaluate(self, inputs: GateInputs) -> ComplianceDecision:
++        reasons: list[str] = []
++        gates: dict[Gate, bool] = {}
++        th = self.thresholds
++
++        # --- Gate 1: BSI z-score ------------------------------------------------
++        z_req = float(th["gates"]["bsi"]["z_threshold"])
++        gates["bsi"] = inputs.bsi_z >= z_req
++        if not gates["bsi"]:
++            reasons.append(f"Gate 1 (BSI) FAIL: z={inputs.bsi_z:.3f} < {z_req:.3f}")
++
++        # --- Gate 2: SCP min across considered tickers -------------------------
++        scp_req = float(th["gates"]["scp"]["min_scp_equity_layer"])
++        if inputs.scp_by_ticker:
++            scp_ok = max(inputs.scp_by_ticker.values()) >= scp_req
++        else:
++            scp_ok = False
++        gates["scp"] = scp_ok
++        if not scp_ok:
++            reasons.append(
++                f"Gate 2 (SCP) FAIL: max(SCP)={max(inputs.scp_by_ticker.values(), default=0):.3f} "
++                f"< {scp_req:.3f}"
++            )
++
++        # --- Gate 3: MOVE 30-day MA --------------------------------------------
++        move_req = float(th["gates"]["move"]["ma30_threshold"])
++        gates["move"] = inputs.move_ma30 >= move_req
++        if not gates["move"]:
++            reasons.append(f"Gate 3 (MOVE) FAIL: MA30={inputs.move_ma30:.1f} < {move_req:.1f}")
++
++        # --- Gate 4: CCD II proximity ------------------------------------------
++        max_days = int(th["gates"]["ccd_ii"]["max_days_to_deadline"])
++        days_remaining = (inputs.ccd_ii_deadline - inputs.as_of.date()).days
++        gates["ccd2"] = 0 <= days_remaining <= max_days
++        if not gates["ccd2"]:
++            reasons.append(
++                f"Gate 4 (CCD II) FAIL: days_remaining={days_remaining} not in [0, {max_days}]"
++            )
++
++        # --- Squeeze defense (equity-only veto) --------------------------------
++        squeeze_veto = False
++        sd = th["squeeze_defense"]
++        if inputs.expression == "equity_short" and not sd.get("bypass_for_trs", True):
++            pass  # configured to enforce even on TRS — unusual
++        if inputs.expression == "equity_short":
++            for tkr in inputs.equity_tickers:
++                util = inputs.squeeze_utilization.get(tkr, 0.0)
++                dtc = inputs.squeeze_days_to_cover.get(tkr, 0.0)
++                skew_p = inputs.squeeze_skew_pctile.get(tkr, 0.0)
++                if util >= sd["utilization_veto"]:
++                    squeeze_veto = True
++                    reasons.append(f"SQUEEZE VETO ({tkr}): utilization={util:.2%} >= {sd['utilization_veto']:.2%}")
++                if dtc >= sd["days_to_cover_veto"]:
++                    squeeze_veto = True
++                    reasons.append(f"SQUEEZE VETO ({tkr}): days_to_cover={dtc:.2f} >= {sd['days_to_cover_veto']:.2f}")
++                if skew_p >= sd["skew_veto_percentile"]:
++                    squeeze_veto = True
++                    reasons.append(
++                        f"SQUEEZE VETO ({tkr}): IV skew at {skew_p:.0%} pct >= {sd['skew_veto_percentile']:.0%}"
++                    )
++
++        require_all = bool(th["compliance"]["require_all_four_gates"])
++        gates_pass = all(gates.values()) if require_all else any(gates.values())
++        approved = gates_pass and not squeeze_veto
++
++        if approved and not reasons:
++            reasons.append("All four gates passed; no squeeze veto; deterministic rules satisfied.")
++
++        return ComplianceDecision(
++            approved=approved,
++            gate_results=gates,
++            squeeze_veto=squeeze_veto,
++            reasons=reasons,
++            thresholds_version=self._version,
++        )
++
++
++def _stable_hash(obj) -> str:
++    """Deterministic short hash for a YAML-loaded dict. For audit provenance."""
++    import hashlib
++    import json
++
++    payload = json.dumps(obj, sort_keys=True, default=str).encode()
++    return hashlib.sha256(payload).hexdigest()[:12]
+diff --git a/bnpl-pod/config/thresholds.yaml b/bnpl-pod/config/thresholds.yaml
+new file mode 100644
+index 0000000..8a0ec3b
+--- /dev/null
++++ b/bnpl-pod/config/thresholds.yaml
+@@ -0,0 +1,79 @@
++# -----------------------------------------------------------------------------
++# Four-gate thresholds + Squeeze Defense thresholds + JT lambda guardrails.
++#
++# These are the deterministic parameters consumed by:
++#   - agents/compliance_engine.py   (hard-coded veto rules)
++#   - quant/squeeze_defense.py      (equity veto)
++#   - quant/jarrow_turnbull.py      (lambda clipping / smoothing)
++#
++# Keep this file under version control. Every change is an ablation worth
++# documenting in paper/ablations.md.
++# -----------------------------------------------------------------------------
++
++# ---- Four-Gate Trade Logic ----------------------------------------------------
++gates:
++  bsi:
++    # BSI z-score (computed over rolling 180-day window) must exceed this to fire.
++    z_threshold: 1.5
++  scp:
++    # Structural Complexity Premium (ES_Heston - EL_GBM), in dollars per $100 notional.
++    # Wide gap => equity is underpricing tail risk. Per-asset threshold.
++    min_scp_equity_layer: 2.50
++  move:
++    # ICE BofA MOVE Index 30-day moving average.
++    ma30_threshold: 120.0
++  ccd_ii:
++    # EU Consumer Credit Directive II deadline proximity, in days.
++    max_days_to_deadline: 180
++
++# ---- Squeeze Defense Layer (equity-only veto) ---------------------------------
++squeeze_defense:
++  # Short utilization: SI / free float. >= this value vetoes equity exposure.
++  utilization_veto: 0.85
++  # Days-to-cover: SI / 10-day ADV.
++  days_to_cover_veto: 5.0
++  # 25-delta IV skew: IV(put 25d) - IV(call 25d). Veto if > historical 90th pct.
++  skew_veto_percentile: 0.90
++  # These metrics are computed in quant/squeeze_defense.py.
++  # TRS expression bypasses squeeze defense (structured-credit channel).
++  bypass_for_trs: true
++
++# ---- Jarrow-Turnbull lambda(t) guardrails -------------------------------------
++# Addresses the "parameter instability" critique: social-media-driven lambda
++# cannot be allowed to spike arbitrarily. Clipping + EWMA smoothing + sensitivity
++# bounds keep the pricer institutionally defensible.
++jarrow_turnbull:
++  # Absolute bounds on the hazard intensity. Outside these, the model is not
++  # trustworthy and the pod flags a "lambda-out-of-range" warning.
++  lambda_floor: 0.002     # 0.2% annualized minimum hazard
++  lambda_cap:   0.250     # 25% annualized maximum hazard (junior-tranche extreme stress)
++  # EWMA smoothing half-life applied to the SENTIMENT component of the regressor.
++  # Macro and excess-spread regressors are NOT smoothed (they are already slow-moving).
++  sentiment_ewma_halflife_days: 5
++  # Maximum allowed one-day move in the calibrated lambda. Exceeding this triggers
++  # re-calibration with prior-day lambda as a regularizer.
++  max_daily_abs_change: 0.02
++  # Sensitivity sanity-check: if a +1 z-score shock to BSI moves lambda by more
++  # than this ratio, the beta_BSI coefficient is regularized toward prior.
++  max_sensitivity_to_bsi_shock: 0.10
++
++# ---- Portfolio risk budget ----------------------------------------------------
++portfolio:
++  # Total notional leverage cap on the simulated TRS book.
++  max_gross_leverage: 3.0
++  # Max notional per single BNPL trust.
++  max_single_trust_weight: 0.25
++  # CVaR confidence level used by the Mean-CVaR optimizer.
++  cvar_alpha: 0.95
++
++# ---- Agent advisory vs deterministic compliance ------------------------------
++# LLM risk_manager.py produces advisory reasoning only.
++# compliance_engine.py is a pure-python rules engine with NO LLM calls and is
++# the sole source of trade approvals. Every trade signal must carry:
++#   compliance_engine_approved: bool
++#   compliance_engine_reasons:  list[str]
++# See agents/compliance_engine.py for the canonical ruleset.
++compliance:
++  require_all_four_gates: true
++  require_human_approval: true     # human-in-the-loop is NOT optional
++  require_advisory_signature: true # LLM reasoning must be logged alongside rules decision

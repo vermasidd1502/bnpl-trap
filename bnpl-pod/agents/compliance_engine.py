@@ -130,10 +130,24 @@ class ComplianceEngine:
         th = self.thresholds
 
         # --- Gate 1: BSI z-score -----------------------------------------
+        # Paper v2.0.1 carry-over: z_threshold was calibrated against the v1
+        # 180-day rolling σ implementation; mechanical carry-over to the
+        # post-v2 EWMA σ is disclosed in paper_formal.tex §6 and in
+        # config/thresholds.yaml. Every audit reason emitted below carries a
+        # `(v1-calibrated carry-over; see paper §6)` marker so a downstream
+        # reader cannot mistake Gate 1 for a re-fit rule.
         z_req = float(th["gates"]["bsi"]["z_threshold"])
         gates["bsi"] = inputs.bsi_z >= z_req
         if not gates["bsi"]:
-            reasons.append(f"Gate 1 (BSI) FAIL: z={inputs.bsi_z:.3f} < {z_req:.3f}")
+            reasons.append(
+                f"Gate 1 (BSI) FAIL: z={inputs.bsi_z:.3f} < {z_req:.3f}"
+                " (v1-calibrated carry-over; see paper §6)"
+            )
+        else:
+            reasons.append(
+                f"Gate 1 (BSI) PASS: z={inputs.bsi_z:.3f} >= {z_req:.3f}"
+                " (v1-calibrated carry-over; see paper §6)"
+            )
 
         # --- Gate 2: MOVE 30-day MA --------------------------------------
         move_req = float(th["gates"]["move"]["ma30_threshold"])
@@ -203,7 +217,13 @@ class ComplianceEngine:
 
         squeeze_veto = False   # dead post-Fix #2
 
-        if approved and not bypass_fired and not reasons:
+        # Consolidated approval line is emitted on every approved decision
+        # (conjunction or bypass). Earlier versions gated this on
+        # `not reasons`, but Gate 1 now appends a carry-over provenance
+        # marker on both PASS and FAIL by construction (paper v2.0.1), so
+        # the reason list is never empty and the headline would otherwise
+        # be suppressed in every real decision path.
+        if approved and not bypass_fired:
             reasons.append(
                 "All three gates passed (BSI, MOVE, Reg catalyst); TRS-only expression; "
                 "deterministic rules satisfied."
