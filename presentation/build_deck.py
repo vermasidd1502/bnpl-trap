@@ -16,7 +16,7 @@ from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
 
-OUT = Path("C:/Users/siddh/Desktop/spring 2026/580/BNPL_v9_FINAL/03_presentation/BearWatch_Research_Deck_v9m.pptx")
+OUT = Path("C:/Users/siddh/Desktop/spring 2026/580/BNPL_v9_FINAL/03_presentation/BearWatch_Research_Deck_v9o.pptx")
 LOGO = Path("C:/Users/siddh/Desktop/Fall 2025/Illinois-Logo-No-background.png")
 
 SCREENSHOT_DIR = Path("C:/Users/siddh/Desktop/spring 2026/580/BNPL_v9_FINAL/03_presentation/screenshots")
@@ -303,7 +303,7 @@ def s_title():
     # Two-row tagline strip — umbrella term + the universe
     panel(s, M + Inches(0.5), Inches(5.2), SW - 2 * M - Inches(1.0), Inches(1.0),
           fill=ORANGE_SOFT, border=ORANGE, border_w=1.2)
-    text(s, "UNSECURED NON-BANK CONSUMER CREDIT  ·  installment lending / BNPL",
+    text(s, "UNSECURED NON-BANK CONSUMER CREDIT  ·  installment lending / Buy Now, Pay Later (BNPL)",
          M + Inches(0.5), Inches(5.32), SW - 2 * M - Inches(1.0), Inches(0.4),
          size=13, color=ORANGE_DEEP, bold=True, font=FONT_MONO, align=PP_ALIGN.CENTER)
     text(s, "BNPL  ·  Subprime Auto  ·  Marketplace Lending  ·  Consumer Finance  ·  Card Monolines",
@@ -396,7 +396,7 @@ def s_motivation():
 
 
 # ===============================================================================
-# SLIDE 3 - What is BSI? (NEW · introduce the instrument visually)
+# SLIDE 3 - What is Behavioural Stress Index (BSI)? (NEW · introduce the instrument visually)
 # ===============================================================================
 def s_what_is_bsi():
     s = prs.slides.add_slide(BLANK); bg(s)
@@ -420,7 +420,7 @@ def s_what_is_bsi():
          in_x + Inches(0.25), col_y + Inches(0.15), in_w, Inches(0.3),
          size=11, color=ORANGE, bold=True, font=FONT_MONO)
     block(s, [
-        {"text": "·  CFPB complaints   (weight 0.45 ★)",
+        {"text": "·  Consumer Financial Protection Bureau (CFPB) complaints   (weight 0.45 ★)",
          "size": 12, "color": TEXT, "bold": True, "space_before": 8, "font": FONT_MONO},
         {"text": "·  App-store reviews   (0.15)",
          "size": 12, "color": TEXT_DIM, "bold": True, "space_before": 4, "font": FONT_MONO},
@@ -434,7 +434,7 @@ def s_what_is_bsi():
          "size": 12, "color": TEXT_DIM, "bold": True, "space_before": 4, "font": FONT_MONO},
         {"text": "·  8-K filings   (0.05)",
          "size": 12, "color": TEXT_DIM, "bold": True, "space_before": 4, "font": FONT_MONO},
-        {"text": "·  MOVE / FRED macro   (gate G3)",
+        {"text": "·  Merrill Option Volatility Estimate index (MOVE) / FRED macro   (gate G3)",
          "size": 12, "color": TEXT_DIM, "bold": True, "space_before": 4, "font": FONT_MONO},
         {"text": "7 of 8 are volume-derived series.",
          "size": 11, "color": ORANGE_DEEP, "bold": True, "italic": False, "space_before": 14},
@@ -546,7 +546,7 @@ def s_neural_diagram():
     # Layer headers
     headers = [
         (col1_x,  Inches(2.6), node_w_in, "INPUT  ·  8 PILLARS",      "#4A6E8F"),
-        (col2_x,  Inches(2.6), engine_w,  "ENGINE  ·  EWMA + WEIGHTS","#E84A27"),
+        (col2_x,  Inches(2.6), engine_w,  "ENGINE  ·  exponentially-weighted moving average (EWMA) + WEIGHTS","#E84A27"),
         (col3_x,  Inches(2.6), gate_w,    "GATES  ·  G1 → G5",        "#B8841C"),
         (col4_x,  Inches(2.6), verdict_w, "VERDICT",                   "#2D7A4F"),
     ]
@@ -619,10 +619,10 @@ def s_neural_diagram():
     # Gate nodes — 5 stacked
     gates = [
         ("G1  BSI",   "z ≥ 2.0",     ORANGE),
-        ("G2  SCP",   "phase 2",     SLATE),
+        ("G2  Subprime-Credit Profile (SCP)",   "phase 2",     SLATE),
         ("G3  MOVE",  "z ≤ 1.0",     PLUM),
-        ("G4  CCD",   "elevated",    GOLD),
-        ("G5  FDS",   "EDGAR XBRL",  GREEN),
+        ("G4  Consumer-Credit Divergence (CCD)",   "elevated",    GOLD),
+        ("G5  Fundamentals Distress Score (FDS)",   "EDGAR XBRL",  GREEN),
     ]
     gate_y_positions = []
     g_spacing = (diagram_h - Inches(0.2)) / (len(gates) - 1)
@@ -717,7 +717,7 @@ def s_hypothesis():
     block(s, [
         {"text": "BSI Granger-causes forward 30-day equity abnormal returns,",
          "size": 17, "color": TEXT, "bold": True, "space_before": 6, "line_spacing": 1.4},
-        {"text": "after controlling for firm fixed effects and the FRED macro panel.",
+        {"text": "after controlling for firm fixed effects and the Federal Reserve Economic Data (FRED) macro panel.",
          "size": 17, "color": TEXT, "bold": True, "space_before": 4, "line_spacing": 1.4},
         {"text": "Reject H₀ at p < 0.05  →  signal carries information.",
          "size": 13, "color": ORANGE_DEEP, "bold": True, "italic": True,
@@ -769,7 +769,7 @@ def s_cascade():
     stage_w = (SW - 2 * M - Inches(0.4)) / 5
     stages = [
         ("T+0",  "Soft signals",      "CFPB · Reddit · Trends",     ORANGE,    "BSI input"),
-        ("T+1",  "DPD ↑",             "30+ / 60+ buckets fill",     TEXT_DIM,  "lag ~30-90d"),
+        ("T+1",  "days past due (DPD) ↑",             "30+ / 60+ buckets fill",     TEXT_DIM,  "lag ~30-90d"),
         ("T+2",  "Spreads widen",     "junior tranche I-spread",    GOLD,      "spread LHS"),
         ("T+3",  "Equity drops",      "forward 30d CAR",            GREEN,     "equity LHS"),
         ("T+4",  "Default",           "bankruptcy filing",          RED_TERRA, "endogenous"),
@@ -810,8 +810,8 @@ def s_data():
         ("Reddit text",              "Common Crawl + PRAW",        "0.10"),
         ("Bluesky text",             "AT-Proto firehose",          "0.05"),
         ("Google Trends",            "trends.google.com",          "0.10"),
-        ("ABS pool metrics",         "EDGAR ABS-EE filings",       "0.10"),
-        ("8-K filings",              "SEC EDGAR",                  "0.05"),
+        ("asset-backed securities (ABS) pool metrics",         "EDGAR ABS-EE filings",       "0.10"),
+        ("8-K filings",              "Securities and Exchange Commission (SEC) EDGAR",                  "0.05"),
     ]
 
     y0 = Inches(3.0)
@@ -933,8 +933,11 @@ def s_regression():
     text(s, "CARᵢ,ₜ:ₜ₊₃₀ = α + β · BSIᵢ,ₜ₋₁ + γ' Mₜ + μᵢ + εᵢ,ₜ",
          M + col_w + Inches(0.75), Inches(3.5), col_w - Inches(0.7), Inches(0.7),
          size=12, color=TEXT, font=FONT_MONO, line_spacing=1.45)
+    text(s, "CAR = cumulative abnormal returns",
+         M + col_w + Inches(0.75), Inches(4.15), col_w - Inches(0.7), Inches(0.3),
+         size=10, color=TEXT_DIM, italic=False, font=FONT_HEAD)
     block(s, [
-        {"text": "Mₜ  =  UNRATE, STLFSI4, NFCI, HY OAS",
+        {"text": "Mₜ  =  UNRATE, STLFSI4, NFCI, high-yield option-adjusted spread (HY OAS)",
          "size": 11, "color": TEXT_DIM, "italic": True, "font": FONT_MONO, "space_before": 18},
         {"text": "μᵢ  =  firm fixed effects",
          "size": 11, "color": TEXT_DIM, "italic": True, "font": FONT_MONO, "space_before": 4},
@@ -982,7 +985,7 @@ def s_analysis():
          M + col_w + Inches(0.7), Inches(3.0), col_w, Inches(0.3),
          size=10, color=ORANGE, bold=True, font=FONT_MONO)
     block(s, [
-        {"text": "1.  HC1 White heteroskedasticity-robust",
+        {"text": "1.  White heteroskedasticity-consistent (HC1) White heteroskedasticity-robust",
          "size": 12, "color": TEXT, "space_before": 10},
         {"text": "2.  HAC Newey-West (12-lag)",
          "size": 12, "color": TEXT, "space_before": 5},
@@ -994,7 +997,7 @@ def s_analysis():
          "size": 12, "color": ORANGE, "bold": True, "space_before": 5},
         {"text": "6.  Block-bootstrap CI (10k iters)",
          "size": 12, "color": TEXT, "space_before": 5},
-        {"text": "+ permutation null  +  Holm + BH-FDR  +  Wilson CIs",
+        {"text": "+ permutation null  +  Holm + BH-false discovery rate (FDR)  +  Wilson CIs",
          "size": 11, "color": TEXT_DIM, "italic": True, "space_before": 12, "line_spacing": 1.4},
     ], M + col_w + Inches(0.7), Inches(3.4), col_w - Inches(0.6), Inches(3.0))
 
@@ -1048,7 +1051,7 @@ def s_table_events():
     rows = [
         ("CVNA-2022",       "Carvana",     "Nov 2021",   "z = 4.20",   "578 d",  "−97%  /  ABS spread +600 bp"),
         ("AFRM-2022",       "Affirm",      "Feb 2022",   "z = 2.50",   "60 d",   "−65%  in 2 months"),
-        ("KLAR-2024",       "Klarna",      "Sep 2024",   "z = 3.10",   "50 d",   "−40%  pre-IPO valuation"),
+        ("KLAR-2024",       "Klarna",      "Sep 2024",   "z = 3.10",   "50 d",   "−40%  pre-initial public offering (IPO) valuation"),
         ("AFRM-2025",       "Affirm",      "Q1 2025",    "z = 2.70",   "90 d",   "junior I-spread widening"),
         ("BNPL-pulse-2024", "industry",    "Q3 2024",    "z = 2.40",   "varies", "sector drawdown"),
     ]
@@ -1211,7 +1214,7 @@ def s_case_cvna():
          "size": 12, "color": RED_TERRA, "bold": True, "space_before": 4, "font": FONT_MONO},
 
         {"text": "Credit",  "size": 13, "color": TEXT, "bold": True, "space_before": 14},
-        {"text": "Senior unsecured spread  +400 → +2,500 bp   ·   CDS-implied 5y PD  12% → 52%",
+        {"text": "Senior unsecured spread  +400 → +2,500 bp   ·   credit default swap (CDS)-implied 5y probability of default (PD)  12% → 52%",
          "size": 11, "color": TEXT_DIM, "space_before": 4, "line_spacing": 1.5},
 
         {"text": "Junior ABS (Bridgecrest)",  "size": 13, "color": TEXT, "bold": True, "space_before": 14},
@@ -1534,7 +1537,7 @@ def s_results():
     rows = [
         ("Naive",                      "−0.082", "0.024", "−3.42", "0.001", "rejects H₀"),
         ("HC1 White",                  "−0.082", "0.029", "−2.83", "0.005", "rejects H₀"),
-        ("HAC Newey-West (12)",        "−0.082", "0.031", "−2.65", "0.010", "rejects H₀"),
+        ("heteroskedasticity- and autocorrelation-consistent (HAC) Newey-West (12)",        "−0.082", "0.031", "−2.65", "0.010", "rejects H₀"),
         ("Cluster (firm)",             "−0.082", "0.030", "−2.73", "0.007", "rejects H₀"),
         ("Two-way (firm × month)",     "−0.082", "0.034", "−2.41", "0.018", "rejects H₀"),
         ("Driscoll-Kraay  ★",          "−0.082", "0.030", "−2.71", "0.007", "rejects H₀"),
@@ -1701,7 +1704,7 @@ def s_contribution():
 
 
 # ===============================================================================
-# SLIDE 16 - False positive + TRS opportunity bridge
+# SLIDE 16 - False positive + total return swap (TRS) opportunity bridge
 # ===============================================================================
 def s_fp_trs():
     s = prs.slides.add_slide(BLANK); bg(s)
