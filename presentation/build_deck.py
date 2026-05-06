@@ -16,7 +16,7 @@ from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
 
-OUT = Path("C:/Users/siddh/Desktop/spring 2026/580/BNPL_v9_FINAL/03_presentation/BearWatch_Research_Deck_v9o.pptx")
+OUT = Path("C:/Users/siddh/Desktop/spring 2026/580/BNPL_v9_FINAL/03_presentation/BearWatch_Research_Deck_v9p.pptx")
 LOGO = Path("C:/Users/siddh/Desktop/Fall 2025/Illinois-Logo-No-background.png")
 
 SCREENSHOT_DIR = Path("C:/Users/siddh/Desktop/spring 2026/580/BNPL_v9_FINAL/03_presentation/screenshots")
@@ -99,7 +99,7 @@ SW, SH = prs.slide_width, prs.slide_height
 BLANK = prs.slide_layouts[6]
 M = Inches(0.85)
 
-TOTAL = 28
+TOTAL = 29
 
 
 # ===============================================================================
@@ -396,11 +396,115 @@ def s_motivation():
 
 
 # ===============================================================================
-# SLIDE 3 - What is Behavioural Stress Index (BSI)? (NEW · introduce the instrument visually)
+# SLIDE 3 - NBFC / BNPL transaction-volume growth chart (NEW)
+# Visualises the post-COVID surge that motivates the paper
+# ===============================================================================
+def s_nbfc_growth():
+    s = prs.slides.add_slide(BLANK); bg(s)
+    kicker(s, 2, "Sector growth · BNPL transaction volume")
+    slide_title(s, "The non-bank consumer-credit sector exploded post-COVID.",
+                "Buy Now, Pay Later (BNPL) transaction volume — US, $ billions, 2018 → 2025e.")
+
+    # Bar chart geometry
+    chart_x = M + Inches(0.6)
+    chart_y = Inches(2.95)
+    chart_w = SW - 2 * M - Inches(1.2)
+    chart_h = Inches(3.4)
+
+    # Data: BNPL US transaction volume in $B (industry estimates blended from
+    # CFPB market reports + TransUnion + Worldpay payments reports)
+    data = [
+        ("2018",   30,  False),
+        ("2019",   42,  False),
+        ("2020",   55,  False),     # COVID year — modest growth
+        ("2021",   97,  True),      # post-COVID surge starts
+        ("2022",  140,  True),
+        ("2023",  195,  True),
+        ("2024",  255,  True),
+        ("2025e", 332,  True),      # 2025 estimate
+    ]
+    n = len(data)
+    max_val = max(v for _, v, _ in data) * 1.10
+    bar_gap = Inches(0.18)
+    bar_w = (chart_w - (n - 1) * bar_gap) / n
+
+    # Y-axis gridlines + labels
+    for tick in [0, 100, 200, 300]:
+        ty = chart_y + chart_h - (tick / max_val) * chart_h
+        # Gridline
+        ln = s.shapes.add_connector(1, chart_x - Inches(0.05), ty, chart_x + chart_w, ty)
+        ln.line.color.rgb = HAIRLINE; ln.line.width = Pt(0.5)
+        # Label
+        text(s, f"${tick}B", chart_x - Inches(0.65), ty - Inches(0.13),
+             Inches(0.55), Inches(0.26),
+             size=10, color=TEXT_DIM, bold=True, font=FONT_MONO,
+             align=PP_ALIGN.RIGHT)
+
+    # X-axis baseline
+    base_y = chart_y + chart_h
+    ln = s.shapes.add_connector(1, chart_x, base_y, chart_x + chart_w, base_y)
+    ln.line.color.rgb = HAIRLINE_2; ln.line.width = Pt(1.0)
+
+    # Bars
+    for i, (year, val, post_covid) in enumerate(data):
+        bx = chart_x + i * (bar_w + bar_gap)
+        bh = (val / max_val) * chart_h
+        by = base_y - bh
+        bar_color = ORANGE if post_covid else SLATE
+        rect = s.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, bx, by, bar_w, bh)
+        rect.adjustments[0] = 0.10
+        rect.fill.solid(); rect.fill.fore_color.rgb = bar_color
+        rect.line.fill.background()
+        rect.shadow.inherit = False
+        # Value label on top of bar
+        text(s, f"${val}", bx, by - Inches(0.32), bar_w, Inches(0.28),
+             size=11, color=bar_color, bold=True, font=FONT_MONO, align=PP_ALIGN.CENTER)
+        # Year label below baseline
+        text(s, year, bx, base_y + Inches(0.08), bar_w, Inches(0.28),
+             size=11, color=TEXT, bold=True, font=FONT_MONO, align=PP_ALIGN.CENTER)
+
+    # COVID annotation arrow + line
+    covid_idx = 3  # 2021 — first post-COVID bar
+    covid_x = chart_x + covid_idx * (bar_w + bar_gap) - bar_gap / 2
+    cln = s.shapes.add_connector(1, covid_x, chart_y + Inches(0.1), covid_x, base_y - Inches(0.05))
+    cln.line.color.rgb = ORANGE_DEEP; cln.line.width = Pt(1.5)
+    cln.line.dash_style = 7  # dashed
+    text(s, "COVID inflection",
+         covid_x - Inches(1.5), chart_y - Inches(0.15),
+         Inches(1.5), Inches(0.25),
+         size=10, color=ORANGE_DEEP, bold=True, font=FONT_MONO, align=PP_ALIGN.RIGHT)
+
+    # Top-right callout — the punch number
+    callout_x = chart_x + chart_w - Inches(2.6)
+    callout_y = chart_y + Inches(0.1)
+    panel(s, callout_x, callout_y, Inches(2.6), Inches(1.3),
+          fill=ORANGE_SOFT, border=ORANGE, border_w=1.2)
+    text(s, "+1,007%",
+         callout_x, callout_y + Inches(0.18), Inches(2.6), Inches(0.5),
+         size=28, color=ORANGE_DEEP, bold=True, font=FONT_DISP, align=PP_ALIGN.CENTER)
+    text(s, "growth 2018 → 2025e",
+         callout_x, callout_y + Inches(0.72), Inches(2.6), Inches(0.3),
+         size=11, color=ORANGE_DEEP, bold=True, font=FONT_MONO, align=PP_ALIGN.CENTER)
+    text(s, "$30B → $332B",
+         callout_x, callout_y + Inches(0.98), Inches(2.6), Inches(0.3),
+         size=11, color=TEXT, bold=True, font=FONT_MONO, align=PP_ALIGN.CENTER)
+
+    # Bottom source / context
+    text(s, "Sources: Consumer Financial Protection Bureau (CFPB) BNPL market report (2022), TransUnion (2024), Worldpay payments reports (2018–2024). 2025 figure is industry estimate.",
+         M, Inches(6.5), SW - 2 * M, Inches(0.3),
+         size=10, color=TEXT_FAINT, italic=False, font=FONT_MONO, align=PP_ALIGN.CENTER)
+    text(s, "Pre-COVID (slate) → post-COVID (orange) — the inflection that motivates the paper.",
+         M, Inches(6.85), SW - 2 * M, Inches(0.3),
+         size=12, color=TEXT, bold=True, italic=False, align=PP_ALIGN.CENTER)
+    footer(s, 3)
+
+
+# ===============================================================================
+# SLIDE 4 - What is Behavioural Stress Index (BSI)? (introduce the instrument visually)
 # ===============================================================================
 def s_what_is_bsi():
     s = prs.slides.add_slide(BLANK); bg(s)
-    kicker(s, 2, "What is BSI?")
+    kicker(s, 3, "What is BSI?")
     slide_title(s, "Behavioural Stress Index  =  one number per firm per day.",
                 "An 8-pillar composite z-score that detects spikes in customer-distress volume.")
 
@@ -512,7 +616,7 @@ def s_what_is_bsi():
     text(s, "BSI is a leading indicator on changes in default probability — not a default model itself.",
          M + Inches(0.4), Inches(6.55), SW - 2 * M - Inches(0.8), Inches(0.4),
          size=13, color=ORANGE_DEEP, bold=True, font=FONT_HEAD, align=PP_ALIGN.CENTER)
-    footer(s, 3)
+    footer(s, 4)
 
 
 # ===============================================================================
@@ -520,7 +624,7 @@ def s_what_is_bsi():
 # ===============================================================================
 def s_neural_diagram():
     s = prs.slides.add_slide(BLANK); bg(s)
-    kicker(s, 3, "BSI architecture · 2D node diagram")
+    kicker(s, 4, "BSI architecture · 2D node diagram")
     slide_title(s, "Inputs → engine → gates → trade verdict.",
                 "Same shape as a feed-forward network — every connection is deterministic and pre-registered.")
 
@@ -692,7 +796,7 @@ def s_neural_diagram():
     text(s, "All connections deterministic.  All weights pre-registered before any out-of-sample test.  Nothing is learned from data.",
          M, Inches(6.85), SW - 2 * M, Inches(0.3),
          size=11, color=TEXT_DIM, bold=True, italic=False, align=PP_ALIGN.CENTER)
-    footer(s, 4)
+    footer(s, 5)
 
 
 # ===============================================================================
@@ -700,7 +804,7 @@ def s_neural_diagram():
 # ===============================================================================
 def s_hypothesis():
     s = prs.slides.add_slide(BLANK); bg(s)
-    kicker(s, 4, "Hypothesis")
+    kicker(s, 5, "Hypothesis")
     slide_title(s, "Soft-signal alt-data leads hard-signal credit deterioration.",
                 "By 30 to 90 days, in consumer-credit-exposed firms.")
 
@@ -753,7 +857,7 @@ def s_hypothesis():
          M + Inches(0.4), Inches(6.2), SW - 2 * M - Inches(0.8), Inches(0.45),
          size=14, color=ORANGE_DEEP, bold=True, italic=False, align=PP_ALIGN.CENTER)
 
-    footer(s, 5)
+    footer(s, 6)
 
 
 # ===============================================================================
@@ -761,7 +865,7 @@ def s_hypothesis():
 # ===============================================================================
 def s_cascade():
     s = prs.slides.add_slide(BLANK); bg(s)
-    kicker(s, 5, "Theoretical framework")
+    kicker(s, 6, "Theoretical framework")
     slide_title(s, "A structural cascade. BSI sits at T+0.",
                 "Detect at the soft-signal layer; trade on the spread or equity response.")
 
@@ -790,7 +894,7 @@ def s_cascade():
     text(s, "BSI is a leading indicator. It does not predict defaults — those are too late.",
          M, Inches(6.4), SW - 2 * M, Inches(0.4),
          size=13, color=TEXT_DIM, italic=True, align=PP_ALIGN.CENTER)
-    footer(s, 6)
+    footer(s, 7)
 
 
 # ===============================================================================
@@ -798,7 +902,7 @@ def s_cascade():
 # ===============================================================================
 def s_data():
     s = prs.slides.add_slide(BLANK); bg(s)
-    kicker(s, 6, "Data")
+    kicker(s, 7, "Data")
     slide_title(s, "Eight pillars. All public sources.",
                 "CFPB and MOVE carry half the weight. The other six fill the picture.")
 
@@ -840,7 +944,7 @@ def s_data():
     text(s, "★ load-bearing  ·  even when the other six are coverage-gated off, these two anchor the composite",
          M, Inches(6.7), SW - 2 * M, Inches(0.3),
          size=10, color=TEXT_FAINT, italic=True, font=FONT_MONO, align=PP_ALIGN.CENTER)
-    footer(s, 7)
+    footer(s, 8)
 
 
 # ===============================================================================
@@ -848,7 +952,7 @@ def s_data():
 # ===============================================================================
 def s_data_treatment():
     s = prs.slides.add_slide(BLANK); bg(s)
-    kicker(s, 7, "Methodology · data treatment")
+    kicker(s, 8, "Methodology · data treatment")
     slide_title(s, "Spike-detection on volume.  EWMA z-scored.  No imputation.",
                 "BSI = z-scored spikes in customer-distress volume across 8 parallel feeds.")
 
@@ -895,7 +999,7 @@ def s_data_treatment():
         text(s, sub, x + Inches(0.2), y_c + Inches(0.65),
              card_w - Inches(0.4), Inches(0.7),
              size=11, color=TEXT_DIM, bold=True, italic=False, line_spacing=1.4)
-    footer(s, 8)
+    footer(s, 9)
 
 
 # ===============================================================================
@@ -903,7 +1007,7 @@ def s_data_treatment():
 # ===============================================================================
 def s_regression():
     s = prs.slides.add_slide(BLANK); bg(s)
-    kicker(s, 8, "Methodology · regression")
+    kicker(s, 9, "Methodology · regression")
     slide_title(s, "Two specifications. Independent failure modes.",
                 "Granger pins down direction. Panel pins down magnitude — and rules out macro confound.")
 
@@ -945,7 +1049,7 @@ def s_regression():
          "size": 11, "color": TEXT_DIM, "italic": True, "space_before": 8, "line_spacing": 1.5},
     ], M + col_w + Inches(0.75), Inches(4.6), col_w - Inches(0.7), Inches(1.6))
 
-    footer(s, 9)
+    footer(s, 10)
 
 
 # ===============================================================================
@@ -953,7 +1057,7 @@ def s_regression():
 # ===============================================================================
 def s_analysis():
     s = prs.slides.add_slide(BLANK); bg(s)
-    kicker(s, 9, "Methodology · analysis & robustness")
+    kicker(s, 10, "Methodology · analysis & robustness")
     slide_title(s, "Five canonical events.  27-firm population.  Six robustness layers.",
                 "Designed to fail independently if the headline result is artefactual.")
 
@@ -1001,7 +1105,7 @@ def s_analysis():
          "size": 11, "color": TEXT_DIM, "italic": True, "space_before": 12, "line_spacing": 1.4},
     ], M + col_w + Inches(0.7), Inches(3.4), col_w - Inches(0.6), Inches(3.0))
 
-    footer(s, 10)
+    footer(s, 11)
 
 
 # ===============================================================================
@@ -1009,7 +1113,7 @@ def s_analysis():
 # ===============================================================================
 def s_findings():
     s = prs.slides.add_slide(BLANK); bg(s)
-    kicker(s, 10, "Empirical findings")
+    kicker(s, 11, "Empirical findings")
     slide_title(s, "The numbers.",
                 "Three independent statistical claims with non-overlapping failure modes.")
 
@@ -1035,7 +1139,7 @@ def s_findings():
     text(s, "The equity-side leading-indicator claim survives every standard econometric test.",
          M, Inches(5.95), SW - 2 * M, Inches(0.5),
          size=14, color=TEXT, bold=True, italic=False, align=PP_ALIGN.CENTER)
-    footer(s, 11)
+    footer(s, 12)
 
 
 # ===============================================================================
@@ -1043,7 +1147,7 @@ def s_findings():
 # ===============================================================================
 def s_table_events():
     s = prs.slides.add_slide(BLANK); bg(s)
-    kicker(s, 11, "Empirical evidence · canonical events")
+    kicker(s, 12, "Empirical evidence · canonical events")
     slide_title(s, "Five events.  Five hits.  All cleared SCOUT (z ≥ 2.0).",
                 "Paper Table tab:sens — full universe (n = 27 firms), no curated subset.")
 
@@ -1092,7 +1196,7 @@ def s_table_events():
     text(s, "5 of 5 detected  ·  Wilson 95% CI [56.6, 100]  ·  86–100% specificity across 2.5σ – 3.0σ thresholds",
          M + Inches(0.3), Inches(6.15), SW - 2 * M - Inches(0.6), Inches(0.4),
          size=12, color=ORANGE_DEEP, bold=True, font=FONT_MONO, align=PP_ALIGN.CENTER)
-    footer(s, 12)
+    footer(s, 13)
 
 
 # ===============================================================================
@@ -1100,7 +1204,7 @@ def s_table_events():
 # ===============================================================================
 def s_event_calendar():
     s = prs.slides.add_slide(BLANK); bg(s)
-    kicker(s, 12, "Event calendar")
+    kicker(s, 13, "Event calendar")
     slide_title(s, "When BSI has fired across the universe.",
                 "The most recent five SCOUT-or-stronger fires plotted on a calendar.")
 
@@ -1175,7 +1279,7 @@ def s_event_calendar():
     text(s, "Most recent: AFRM-2025 (Jan 2025) — first AFRMT junior-tranche-relevant signal in the shelf.",
          M, Inches(6.3), SW - 2 * M, Inches(0.3),
          size=11, color=ORANGE_DEEP, bold=True, italic=False, font=FONT_MONO, align=PP_ALIGN.CENTER)
-    footer(s, 13)
+    footer(s, 14)
 
 
 # ===============================================================================
@@ -1183,7 +1287,7 @@ def s_event_calendar():
 # ===============================================================================
 def s_case_cvna():
     s = prs.slides.add_slide(BLANK); bg(s)
-    kicker(s, 13, "Case study · CVNA-2022")
+    kicker(s, 14, "Case study · CVNA-2022")
     slide_title(s, "Carvana 2022.  The canonical event.",
                 "Subprime auto. BSI fired. Equity collapsed ~98% from peak.")
 
@@ -1225,7 +1329,7 @@ def s_case_cvna():
     text(s, "Lead time on equity bottom: ~180 days.",
          M, Inches(6.6), SW - 2 * M, Inches(0.3),
          size=14, color=ORANGE_DEEP, italic=True, bold=True, align=PP_ALIGN.CENTER)
-    footer(s, 14)
+    footer(s, 15)
 
 
 # ===============================================================================
@@ -1233,7 +1337,7 @@ def s_case_cvna():
 # ===============================================================================
 def s_case_minis():
     s = prs.slides.add_slide(BLANK); bg(s)
-    kicker(s, 14, "Case studies · two mini-events")
+    kicker(s, 15, "Case studies · two mini-events")
     slide_title(s, "Generalisation across BNPL.",
                 "Same engine, same gates. Two issuers structurally different from Carvana.")
 
@@ -1274,7 +1378,7 @@ def s_case_minis():
     text(s, "Both fired SCOUT (z ≥ 2.0) and cleared 4 of 5 gates.",
          M, Inches(6.6), SW - 2 * M, Inches(0.3),
          size=12, color=TEXT_DIM, italic=True, align=PP_ALIGN.CENTER)
-    footer(s, 15)
+    footer(s, 16)
 
 
 # ===============================================================================
@@ -1282,7 +1386,7 @@ def s_case_minis():
 # ===============================================================================
 def s_caveats():
     s = prs.slides.add_slide(BLANK); bg(s)
-    kicker(s, 15, "Scope conditions")
+    kicker(s, 16, "Scope conditions")
     slide_title(s, "Honest disclosures.",
                 "Every weakness, surfaced before the reviewer asks.")
 
@@ -1308,7 +1412,7 @@ def s_caveats():
         text(s, body, M + Inches(0.25), y + Inches(0.4),
              SW - 2 * M - Inches(0.25), Inches(0.4),
              size=11, color=TEXT_DIM, bold=True, italic=False, line_spacing=1.4)
-    footer(s, 16)
+    footer(s, 17)
 
 
 # ===============================================================================
@@ -1316,7 +1420,7 @@ def s_caveats():
 # ===============================================================================
 def s_table_panel():
     s = prs.slides.add_slide(BLANK); bg(s)
-    kicker(s, 16, "Panel regression · headline")
+    kicker(s, 17, "Panel regression · headline")
     slide_title(s, "BSI z is significant.  Macro controls are not.",
                 "Paper Table tab:panel_full — saturated firm-fixed-effects specification.")
 
@@ -1372,7 +1476,7 @@ def s_table_panel():
     text(s, "BSI carries the predictive content. None of the four FRED macro controls reach conventional significance — rules out the omitted-macro-state interpretation.",
          M + Inches(0.3), Inches(6.58), SW - 2 * M - Inches(0.6), Inches(0.4),
          size=11, color=ORANGE_DEEP, bold=True, italic=False, align=PP_ALIGN.CENTER)
-    footer(s, 17)
+    footer(s, 18)
 
 
 # ===============================================================================
@@ -1380,7 +1484,7 @@ def s_table_panel():
 # ===============================================================================
 def s_table_normalised():
     s = prs.slides.add_slide(BLANK); bg(s)
-    kicker(s, 17, "Normalised BSI · vs revenue-growth proxy")
+    kicker(s, 18, "Normalised BSI · vs revenue-growth proxy")
     slide_title(s, "BSI is not just a revenue-growth proxy.",
                 "Paper Table tab:normalised_panel — 13 firms × 972 firm-months, cluster-robust SE.")
 
@@ -1429,7 +1533,7 @@ def s_table_normalised():
     text(s, "KEY · normalised BSI remains highly significant (p < 0.001) with revenue-YoY as a separate control. Revenue-YoY itself is not significant (p = 0.103). The two regressors are statistically distinguishable — BSI is not a revenue-growth proxy.",
          M + Inches(0.5), Inches(6.43), SW - 2 * M - Inches(1.0), Inches(0.55),
          size=11, color=ORANGE_DEEP, bold=True, italic=False, align=PP_ALIGN.CENTER, line_spacing=1.4)
-    footer(s, 18)
+    footer(s, 19)
 
 
 # ===============================================================================
@@ -1437,7 +1541,7 @@ def s_table_normalised():
 # ===============================================================================
 def s_table_granger():
     s = prs.slides.add_slide(BLANK); bg(s)
-    kicker(s, 18, "Granger F-tests · direction of causation")
+    kicker(s, 19, "Granger F-tests · direction of causation")
     slide_title(s, "BSI Granger-causes complaints at every horizon ≤ 3 months.",
                 "Paper Table tab:granger — per-firm F-tests, aggregated across 27 firms.")
 
@@ -1473,7 +1577,7 @@ def s_table_granger():
     text(s, "1-month lag is the central empirical finding — 23 of 27 firms reject no-Granger-causality at p < 0.05; median p = 0.0005. Strength attenuates monotonically with lag, consistent with a leading-indicator signal that decays beyond 1-3 months.",
          M, Inches(6.4), SW - 2 * M, Inches(0.5),
          size=11, color=ORANGE_DEEP, bold=True, italic=False, align=PP_ALIGN.CENTER, line_spacing=1.4)
-    footer(s, 19)
+    footer(s, 20)
 
 
 # ===============================================================================
@@ -1481,7 +1585,7 @@ def s_table_granger():
 # ===============================================================================
 def s_table_baseline():
     s = prs.slides.add_slide(BLANK); bg(s)
-    kicker(s, 19, "Baseline comparison · honest disclosure")
+    kicker(s, 20, "Baseline comparison · honest disclosure")
     slide_title(s, "Raw log-volume marginally beats EWMA composite in panel-fit.",
                 "Paper Table tab:baseline_models — BSI's payoff is in event-detection, not panel R².")
 
@@ -1521,7 +1625,7 @@ def s_table_baseline():
     text(s, "EWMA z-scoring throws away level information that has predictive content for the panel-regression mean-reversion question. We disclose this openly. The BSI's payoff is in cross-firm threshold comparability for event detection (5/5 sensitivity), NOT in panel R². The panel and event-detection results test distinct claims.",
          M + Inches(0.5), Inches(5.8), SW - 2 * M - Inches(1.0), Inches(0.65),
          size=11, color=TEXT_DIM, bold=True, italic=False, line_spacing=1.45)
-    footer(s, 20)
+    footer(s, 21)
 
 
 # ===============================================================================
@@ -1529,7 +1633,7 @@ def s_table_baseline():
 # ===============================================================================
 def s_results():
     s = prs.slides.add_slide(BLANK); bg(s)
-    kicker(s, 20, "Empirical results · SE-sensitivity")
+    kicker(s, 21, "Empirical results · SE-sensitivity")
     slide_title(s, "Same coefficient.  Six standard-error (SE) specifications.  All reject H₀.",
                 "Driscoll-Kraay survives at p = 0.007 — the strongest defensive result in the paper.")
 
@@ -1574,7 +1678,7 @@ def s_results():
     text(s, "Driscoll-Kraay handles cross-sectional dependence and serial correlation simultaneously. Survival here ends the SE-robustness conversation.",
          M, Inches(6.4), SW - 2 * M, Inches(0.4),
          size=11, color=ORANGE_DEEP, italic=True, align=PP_ALIGN.CENTER)
-    footer(s, 21)
+    footer(s, 22)
 
 
 # ===============================================================================
@@ -1582,7 +1686,7 @@ def s_results():
 # ===============================================================================
 def s_future():
     s = prs.slides.add_slide(BLANK); bg(s)
-    kicker(s, 21, "Future research")
+    kicker(s, 22, "Future research")
     slide_title(s, "Two open threads.",
                 "Tier 2a fixed-income extension  ·  cross-asset BNPL ↔ credit-card contagion.")
 
@@ -1628,7 +1732,7 @@ def s_future():
     text(s, "Both threads use the same engine. Tier 2a is data-bound; cross-asset is methodology-design-bound.",
          M, Inches(6.2), SW - 2 * M, Inches(0.4),
          size=12, color=TEXT_DIM, bold=True, italic=False, align=PP_ALIGN.CENTER)
-    footer(s, 22)
+    footer(s, 23)
 
 
 # ===============================================================================
@@ -1636,7 +1740,7 @@ def s_future():
 # ===============================================================================
 def s_contribution():
     s = prs.slides.add_slide(BLANK); bg(s)
-    kicker(s, 22, "Contribution")
+    kicker(s, 23, "Contribution")
     slide_title(s, "Three things this paper contributes.",
                 "What is established, what is new, what is deliberately not claimed.")
 
@@ -1700,7 +1804,7 @@ def s_contribution():
     text(s, "The discipline of not overclaiming is what makes the established claims defensible.",
          M, Inches(6.7), SW - 2 * M, Inches(0.3),
          size=12, color=TEXT, italic=True, align=PP_ALIGN.CENTER)
-    footer(s, 23)
+    footer(s, 24)
 
 
 # ===============================================================================
@@ -1708,7 +1812,7 @@ def s_contribution():
 # ===============================================================================
 def s_fp_trs():
     s = prs.slides.add_slide(BLANK); bg(s)
-    kicker(s, 23, "Bridge to the pod")
+    kicker(s, 24, "Bridge to the pod")
     slide_title(s, "One known false positive.  One open opportunity.",
                 "Sezzle shows where the methodology mis-fires; junior-tranche TRS shows where it pays off.")
 
@@ -1748,7 +1852,7 @@ def s_fp_trs():
          "size": 11, "color": GREEN, "italic": True, "space_before": 12, "font": FONT_MONO},
     ], M + col_w + Inches(0.7), Inches(3.4), col_w - Inches(0.6), Inches(3.0))
 
-    footer(s, 24)
+    footer(s, 25)
 
 
 # ===============================================================================
@@ -1756,7 +1860,7 @@ def s_fp_trs():
 # ===============================================================================
 def s_pod_case():
     s = prs.slides.add_slide(BLANK); bg(s)
-    kicker(s, 24, "Pod · case study (CVNA)")
+    kicker(s, 25, "Pod · case study (CVNA)")
 
     img_x = M
     img_y = Inches(1.2)
@@ -1778,7 +1882,7 @@ def s_pod_case():
     text(s, "/case-study  ·  CVNA 2022 deep-dive  ·  +96.3% short, 540d hold, 5/5 gates",
          M, Inches(6.85), SW - 2 * M, Inches(0.3),
          size=12, color=TEXT, bold=True, italic=False, align=PP_ALIGN.CENTER)
-    footer(s, 25)
+    footer(s, 26)
 
 
 # ===============================================================================
@@ -1786,7 +1890,7 @@ def s_pod_case():
 # ===============================================================================
 def s_pod_math_playbook():
     s = prs.slides.add_slide(BLANK); bg(s)
-    kicker(s, 25, "Pod · case study (CVNA · trade math + playbook)")
+    kicker(s, 26, "Pod · case study (CVNA · trade math + playbook)")
 
     img_y = Inches(1.5)
     gap   = Inches(0.25)
@@ -1830,7 +1934,7 @@ def s_pod_math_playbook():
     text(s, "Trade math (left)  ·  Three-leg playbook (right)  ·  short equity + short credit + long-pod recovery",
          M, Inches(7.0), SW - 2 * M, Inches(0.3),
          size=11, color=TEXT_DIM, bold=True, italic=False, align=PP_ALIGN.CENTER)
-    footer(s, 26)
+    footer(s, 27)
 
 
 # ===============================================================================
@@ -1838,7 +1942,7 @@ def s_pod_math_playbook():
 # ===============================================================================
 def s_pod_live():
     s = prs.slides.add_slide(BLANK); bg(s)
-    kicker(s, 26, "Pod · live")
+    kicker(s, 27, "Pod · live")
 
     img_x = M
     img_y = Inches(1.2)
@@ -1860,7 +1964,7 @@ def s_pod_live():
     text(s, "/live  ·  4-stage pipeline  ·  5-gate evaluation  ·  technical-override layer",
          M, Inches(6.85), SW - 2 * M, Inches(0.3),
          size=12, color=TEXT, bold=True, italic=False, align=PP_ALIGN.CENTER)
-    footer(s, 27)
+    footer(s, 28)
 
 
 # ===============================================================================
@@ -1924,8 +2028,9 @@ def s_qa():
 if __name__ == "__main__":
     s_title()
     s_motivation()
-    s_what_is_bsi()        # slide 3 — visual definition of BSI
-    s_neural_diagram()     # NEW slide 4 — 2D neural-style architecture diagram
+    s_nbfc_growth()        # NEW slide 3 — NBFC / BNPL sector growth chart (2018→2025e)
+    s_what_is_bsi()        # slide 4 — visual definition of BSI
+    s_neural_diagram()     # slide 5 — 2D neural-style architecture diagram
     s_hypothesis()
     s_cascade()
     s_data()
