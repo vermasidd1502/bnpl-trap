@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Empirical Evidence · BearWatch</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/v2.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+  <style>
+    .emp-hero { background: linear-gradient(135deg, rgba(74,222,128,0.10), transparent 60%), var(--bg-elevated);
+      border: 1px solid rgba(74,222,128,0.35); border-left: 4px solid #4ade80;
+      border-radius: 12px; padding: 24px 28px; margin-bottom: 18px; }
+    .emp-headline { font-family: var(--font-display, sans-serif); font-size: 26px; font-weight: 700; color: var(--text); margin: 0; }
+    .emp-sub { font-size: 13px; color: var(--text-secondary); margin-top: 6px; line-height: 1.55; }
+
+    .emp-toc { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 14px 0 0; }
+    .emp-toc a { display: block; padding: 10px 12px; background: var(--bg-card); border: 1px solid var(--border);
+      border-left: 3px solid #4ade80; border-radius: 5px; font-size: 11px; color: var(--text); text-decoration: none;
+      font-family: var(--font-mono); }
+    .emp-toc a:hover { background: var(--bg-elevated); }
+    .emp-toc a .num { color: #4ade80; font-weight: 700; margin-right: 6px; }
+
+    .emp-section { background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 8px; padding: 22px 26px; margin-bottom: 20px; scroll-margin-top: 80px; }
+    .emp-section-title { font-size: 18px; font-weight: 700; color: var(--text); margin: 0 0 6px;
+      font-family: var(--font-display, sans-serif); }
+    .emp-section-num { font-family: var(--font-mono); font-size: 10px; color: #4ade80; text-transform: uppercase;
+      letter-spacing: 0.08em; font-weight: 700; }
+    .emp-section-sub { font-size: 12px; color: var(--text-secondary); line-height: 1.55; margin-bottom: 16px; }
+
+    .stat-tile { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 6px; padding: 14px; }
+    .stat-tile .lbl { font-size: 9px; color: var(--text-tertiary); text-transform: uppercase;
+      letter-spacing: 0.06em; font-weight: 700; font-family: var(--font-mono); }
+    .stat-tile .val { font-family: var(--font-mono); font-size: 24px; font-weight: 700; margin-top: 4px; }
+    .stat-tile .sub { font-size: 10px; color: var(--text-tertiary); margin-top: 4px; }
+
+    table.dx { width: 100%; border-collapse: collapse; font-size: 11px; font-family: var(--font-mono); }
+    table.dx th, table.dx td { padding: 7px 10px; border-bottom: 1px solid var(--border); }
+    table.dx th { background: var(--bg-elevated); text-align: left; font-size: 9px; color: var(--text-tertiary);
+      text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; }
+    table.dx td.num { text-align: right; }
+    table.dx td.center { text-align: center; }
+
+    .chart-box { position: relative; height: 280px; margin-top: 10px; }
+
+    .honest-banner { background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.4);
+      border-left: 3px solid #fbbf24; border-radius: 6px; padding: 12px 14px; margin: 12px 0;
+      font-size: 11px; color: var(--text-secondary); line-height: 1.6; }
+
+    .green-banner { background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.4);
+      border-left: 3px solid #4ade80; border-radius: 6px; padding: 12px 14px; margin: 12px 0;
+      font-size: 11px; color: var(--text-secondary); line-height: 1.6; }
+
+    .case-card { background: var(--bg-elevated); border: 1px solid var(--border);
+      border-radius: 6px; padding: 12px 14px; }
+    .case-card .firm { font-size: 13px; font-weight: 700; color: var(--text); }
+    .case-card .pnl { font-size: 18px; font-weight: 700; font-family: var(--font-mono); }
+
+    .demo-card { background: var(--bg-elevated); border: 1px solid var(--border); border-left: 3px solid #60a5fa;
+      border-radius: 6px; padding: 16px 18px; }
+
+    .toggle-detail { font-size: 10px; color: #4ade80; font-family: var(--font-mono);
+      text-decoration: none; margin-left: 8px; }
+  </style>
+</head>
+<body class="dark">
+
+{% include '_nav.html' %}
+
+<main class="container" style="max-width: 1280px; padding: 18px;">
+
+  <!-- USP HERO — plain-English statement of what BearWatch detects + verifiable examples -->
+  {% include '_usp_hero.html' %}
+
+  <!-- HERO + TOC -->
+  <div class="emp-hero">
+    <div style="display:flex; gap:18px; align-items:center;">
+      <div style="font-size:60px;">📊</div>
+      <div style="flex:1;">
+        <h1 class="emp-headline">Empirical Evidence · Phase 2 Consolidated</h1>
+        <div class="emp-sub">
+          The full Phase 2 evidence stack on one page — headline statistical claim, per-pillar dashboard,
+          stress tests / diagnostics, weight provenance, ROBO Monte Carlo, BNPL event study, case studies, and demo walkthrough.
+        </div>
+      </div>
+    </div>
+    <div class="emp-toc" style="grid-template-columns:repeat(3,1fr);">
+      <a href="#sec-headline"><span class="num">01</span> Headline</a>
+      <a href="#sec-bifurcation" style="border-left-color:#fbbf24;"><span class="num" style="color:#fbbf24;">01.5</span> Why we bifurcated</a>
+      <a href="#sec-dashboard"><span class="num">02</span> Pillar Dashboard</a>
+      <a href="#sec-stress"><span class="num">03</span> Stress Tests</a>
+      <a href="#sec-weights"><span class="num">04</span> Weight Provenance</a>
+      <a href="#sec-robo"><span class="num">05</span> ROBO Monte Carlo</a>
+      <a href="#sec-events"><span class="num">06</span> Event Study</a>
+      <a href="#sec-cases"><span class="num">07</span> Case Studies</a>
+      <a href="#sec-demo"><span class="num">08</span> Demo Walkthrough</a>
+    </div>
+  </div>
+
+  <!-- ====================== SECTION 01 — HEADLINE ====================== -->
+  <div id="sec-headline" class="emp-section" style="border-left: 4px solid #4ade80;">
+    <div class="emp-section-num">SECTION 01</div>
+    <h2 class="emp-section-title">Headline statistical claim</h2>
+    <div class="emp-section-sub">
+      Phase 2A panel regression headline survives <strong>every standard SE estimator</strong> at p&lt;0.01,
+      including Driscoll-Kraay (the strictest test simultaneously handling cross-sectional dependence and serial correlation).
+      Phase 2 Capstone confirms a CFPB-anchored leading indicator at <strong>p=0.010 under HAC + macro controls</strong> with 35-day lag correction.
+    </div>
+
+    <div id="headline-tiles" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;">
+      <div class="stat-tile"><div class="lbl">Phase 2A SE estimators</div><div class="val" style="color:#4ade80;">6 of 6</div><div class="sub">survive at p&lt;0.01 (incl. Driscoll-Kraay)</div></div>
+      <div class="stat-tile"><div class="lbl">Capstone HAC+macro</div><div class="val" style="color:#4ade80;" id="hl-cap-p">—</div><div class="sub">c_cfpb p-value (35d lag)</div></div>
+      <div class="stat-tile"><div class="lbl">Total prediction horizon</div><div class="val" style="color:#a78bfa;" id="hl-horizon">—</div><div class="sub">days (lag + forward target)</div></div>
+      <div class="stat-tile"><div class="lbl">Block-bootstrap CI</div><div class="val" style="color:#4ade80;font-size:13px;line-height:1.3;" id="hl-bootstrap">—</div><div class="sub">95% CI on c_move (excludes 0)</div></div>
+    </div>
+
+    <div style="font-size:11px;color:#4ade80;text-transform:uppercase;letter-spacing:0.06em;font-weight:700;font-family:var(--font-mono);margin:18px 0 8px;">▶ Phase 2A v2 — SE-estimator sensitivity (n = 2,058 firm-months, 22 firms)</div>
+    <table class="dx">
+      <thead><tr>
+        <th>Estimator</th><th class="num">Coef</th><th class="num">SE</th><th class="num">t-stat</th><th class="num">p-value</th><th class="center">Sig</th>
+      </tr></thead>
+      <tbody>
+        <tr><td>Nonrobust (naive)</td><td class="num">−0.1518</td><td class="num">0.0100</td><td class="num">−15.12</td><td class="num">&lt;0.001</td><td class="center">★★★</td></tr>
+        <tr><td>HC1 White-robust</td><td class="num">−0.1518</td><td class="num">0.0116</td><td class="num">−13.06</td><td class="num">&lt;0.001</td><td class="center">★★★</td></tr>
+        <tr><td>HAC NW-12</td><td class="num">−0.1518</td><td class="num">0.0141</td><td class="num">−10.76</td><td class="num">&lt;0.001</td><td class="center">★★★</td></tr>
+        <tr><td><strong>Cluster (firm)</strong> ← original Phase 2A</td><td class="num">−0.1518</td><td class="num">0.0243</td><td class="num">−6.25</td><td class="num">&lt;0.001</td><td class="center">★★★</td></tr>
+        <tr><td>Two-way (firm + month)</td><td class="num">−0.1518</td><td class="num">0.0272</td><td class="num">−5.59</td><td class="num">&lt;0.001</td><td class="center">★★★</td></tr>
+        <tr style="background:rgba(74,222,128,0.05);"><td><strong>Driscoll-Kraay (NW-4)</strong> ← strictest</td><td class="num">−0.1518</td><td class="num">0.0563</td><td class="num">−2.70</td><td class="num"><strong>0.0071</strong></td><td class="center">★★</td></tr>
+      </tbody>
+    </table>
+    <div class="green-banner">
+      <strong>Survival verdict:</strong> the published Phase 2A panel result is rock-solid. Even under Driscoll-Kraay (the strictest test that handles
+      both cross-sectional dependence between firms AND serial correlation within firms), the headline survives at p=0.007 — well below the 1% threshold.
+      The systematic t-statistic shrinkage from naive (-15.12) to Driscoll-Kraay (-2.70) is the expected pattern when proper standard errors are applied;
+      the fact that significance survives the maximum correction is the sign of a genuine finding.
+    </div>
+  </div>
+
+  <!-- ====================== SECTION 01.5 — WHY WE BIFURCATED ====================== -->
+  <div id="sec-bifurcation" class="emp-section" style="border-left: 4px solid #fbbf24;">
+    <div class="emp-section-num">SECTION 01.5</div>
+    <h2 class="emp-section-title">Why we bifurcated — the thesis behind the framework</h2>
+    <div class="emp-section-sub">
+      Calendar-time α on a naive "short every BSI fire" basket is <strong>t = 0.08 (statistical zero)</strong>.
+      This is NOT a weakness of the BSI signal — it's the empirical motivation for the entire bifurcated long-or-short architecture.
+      A naive equity wrapper averages dying firms (where you should SHORT) with surviving firms (where you should LONG) and gets zero.
+      A bifurcated wrapper that routes them differently captures both sides.
+    </div>
+
+    <div style="display:grid;grid-template-columns:1.1fr 0.9fr;gap:18px;margin-bottom:14px;">
+      <div style="padding:18px 20px;background:var(--bg-elevated);border:1px solid rgba(248,113,113,0.4);border-left:3px solid #f87171;border-radius:6px;">
+        <div style="font-size:9px;color:#f87171;text-transform:uppercase;letter-spacing:0.06em;font-weight:700;font-family:var(--font-mono);">NAIVE WRAPPER</div>
+        <div style="font-size:20px;font-weight:700;color:var(--text);margin:6px 0;font-family:var(--font-display, sans-serif);">"Short every BSI fire"</div>
+        <div style="font-family:var(--font-mono);">
+          <div style="font-size:11px;color:var(--text-secondary);margin-top:8px;line-height:1.7;">
+            CVNA short  →  <strong style="color:#4ade80;">+96%</strong><br>
+            UPST short  →  <strong style="color:#4ade80;">+88%</strong><br>
+            CURO short  →  <strong style="color:#4ade80;">+32%</strong><br>
+            TRICOLOR short  →  <strong style="color:#4ade80;">+28%</strong><br>
+            <strong style="color:#f87171;">SEZL short  →  −600%</strong>  ← false positive
+          </div>
+          <div style="margin-top:14px;padding-top:10px;border-top:1px dashed var(--border);">
+            <div style="font-size:9px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.05em;font-weight:700;">Calendar-time α</div>
+            <div style="font-size:34px;font-weight:700;color:#f87171;font-family:var(--font-mono);margin-top:4px;">t = 0.08</div>
+            <div style="font-size:10px;color:var(--text-tertiary);">CAPM / Fama-French 3-factor · 2018-2024 · |t| &gt; 2 threshold</div>
+            <div style="font-size:11px;color:var(--text-secondary);margin-top:6px;font-style:italic;">statistical zero. This is the problem.</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding:18px 20px;background:var(--bg-elevated);border:1px solid rgba(74,222,128,0.4);border-left:3px solid #4ade80;border-radius:6px;">
+        <div style="font-size:9px;color:#4ade80;text-transform:uppercase;letter-spacing:0.06em;font-weight:700;font-family:var(--font-mono);">BIFURCATED WRAPPER (the framework)</div>
+        <div style="font-size:20px;font-weight:700;color:var(--text);margin:6px 0;font-family:var(--font-display, sans-serif);">"Route by 2nd-stage filter"</div>
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-secondary);line-height:1.7;margin-top:8px;">
+          BSI fires → 5-gate + denominator-normalisation routes:<br>
+          <strong style="color:#dc2626;">SHORT pod</strong> (Renaissance, Citadel, BearWatch) →<br>
+          &nbsp;&nbsp;<strong style="color:#4ade80;">CVNA, UPST, CURO, TRICOLOR</strong> (dying)<br>
+          <strong style="color:#4ade80;">LONG pod</strong> (Buffett, Marks, Druckenmiller) →<br>
+          &nbsp;&nbsp;<strong style="color:#4ade80;">SEZL</strong> (denominator-survived → recovery LONG)
+        </div>
+        <div style="margin-top:14px;padding-top:10px;border-top:1px dashed var(--border);">
+          <div style="font-size:9px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.05em;font-weight:700;">Phase 2B projected TRS mean</div>
+          <div style="font-size:34px;font-weight:700;color:#4ade80;font-family:var(--font-mono);margin-top:4px;">+30.85%</div>
+          <div style="font-size:10px;color:var(--text-tertiary);">stylised model projection · 4 named cases · all idiosyncratic α positive</div>
+          <div style="font-size:11px;color:var(--text-secondary);margin-top:6px;font-style:italic;">the framework is the answer.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="green-banner">
+      <strong style="color:#4ade80;">The thesis, restated cleanly:</strong>
+      BSI is a consumer-credit-distress detector. The detection itself does not tell you which side to trade —
+      that requires a <strong>second-stage filter</strong> combining (i) denominator normalisation (Phase 2A) to rule out growth-stage
+      false positives like SEZL, (ii) 5-gate firing (G1 BSI ∧ G2 SCP ∧ G3 MOVE ∧ G4 CCD ∧ G5 FDS) to confirm the distress is structural,
+      and (iii) archetype-aware <strong>long-vs-short routing</strong> (BLITZ/SCOUT/GUARDIAN for shorts; Buffett/Marks/Druckenmiller for longs).
+      The bifurcated strategy turns the t=0.08 calendar-time null into +30.85% projected TRS return (Phase 2B model, stylised) and 100% archetype-backtest hit rate (Phase 2C).
+    </div>
+    <div class="honest-banner">
+      <strong>Why we still report t = 0.08:</strong> we're not hiding it — we're using it as the empirical motivation for why the
+      framework's complexity exists. A reviewer who asks "did you try a naive equity short?" gets a clear answer (yes, it's zero alpha)
+      AND a clear architectural response (that's why we bifurcated). This is stronger than pretending the naive strategy works.
+    </div>
+  </div>
+
+  <!-- ====================== SECTION 02 — PER-PILLAR DASHBOARD ====================== -->
+  <div id="sec-dashboard" class="emp-section" style="border-left: 4px solid #4ade80;">
+    <div class="emp-section-num">SECTION 02</div>
+    <h2 class="emp-section-title">Per-pillar diagnostic dashboard (Phase 2S)</h2>
+    <div class="emp-section-sub">
+      Single comprehensive table consolidating: alt-data classification, BSI v1 vs v3 weight assignment, coverage,
+      HAC + macro p-value, survival under proper SEs, and production-readiness for each pillar.
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="dx" id="pillar-dashboard">
+        <thead>
+          <tr>
+            <th>Pillar</th><th class="center">Alt-data</th><th class="center">v1→v3</th>
+            <th>Coverage</th><th class="num">HAC+macro p</th>
+            <th class="center">Survives 5%</th><th>Production status</th>
+          </tr>
+        </thead>
+        <tbody><tr><td colspan="7" class="center" style="color:var(--text-tertiary);padding:20px;">loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ====================== SECTION 03 — STRESS TESTS / DIAGNOSTICS ====================== -->
+  <div id="sec-stress" class="emp-section" style="border-left: 4px solid #fbbf24;">
+    <div class="emp-section-num">SECTION 03</div>
+    <h2 class="emp-section-title">Stress tests &amp; econometric diagnostics</h2>
+    <div class="emp-section-sub">
+      Full diagnostic battery on the BSI v3 regression: heteroskedasticity (Breusch-Pagan, White),
+      multicollinearity (VIF), autocorrelation (Durbin-Watson, Ljung-Box), stationarity (ADF, KPSS), and
+      IID-violation tests (Engle ARCH, CUSUM-OLS structural break, stationary block bootstrap).
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;">
+      <div>
+        <div style="font-size:10px;color:#fbbf24;text-transform:uppercase;letter-spacing:0.06em;font-weight:700;font-family:var(--font-mono);margin-bottom:8px;">▶ HETEROSKEDASTICITY</div>
+        <div id="diag-het" class="stat-tile">loading…</div>
+      </div>
+      <div>
+        <div style="font-size:10px;color:#fbbf24;text-transform:uppercase;letter-spacing:0.06em;font-weight:700;font-family:var(--font-mono);margin-bottom:8px;">▶ MULTICOLLINEARITY</div>
+        <div id="diag-multi" class="stat-tile">loading…</div>
+      </div>
+      <div>
+        <div style="font-size:10px;color:#fbbf24;text-transform:uppercase;letter-spacing:0.06em;font-weight:700;font-family:var(--font-mono);margin-bottom:8px;">▶ AUTOCORRELATION</div>
+        <div id="diag-auto" class="stat-tile">loading…</div>
+      </div>
+      <div>
+        <div style="font-size:10px;color:#fbbf24;text-transform:uppercase;letter-spacing:0.06em;font-weight:700;font-family:var(--font-mono);margin-bottom:8px;">▶ STATIONARITY (ADF + KPSS)</div>
+        <div id="diag-stat" class="stat-tile">loading…</div>
+      </div>
+    </div>
+
+    <div style="font-size:10px;color:#fbbf24;text-transform:uppercase;letter-spacing:0.06em;font-weight:700;font-family:var(--font-mono);margin:18px 0 8px;">▶ IID-VIOLATION TESTS (Phase 2T)</div>
+    <div id="iid-tests" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">loading…</div>
+
+    <div style="font-size:10px;color:#fbbf24;text-transform:uppercase;letter-spacing:0.06em;font-weight:700;font-family:var(--font-mono);margin:18px 0 8px;">▶ SURVIVAL UNDER PROPER SEs (Phase 2N v3)</div>
+    <table class="dx" id="survival-table">
+      <thead><tr>
+        <th>Pillar (BSI v3)</th><th class="num">Naive p</th><th class="num">HC1 p</th>
+        <th class="num">HAC p</th><th class="num">HAC+macro p</th><th class="center">Survives 5%</th>
+      </tr></thead>
+      <tbody><tr><td colspan="6" class="center" style="color:var(--text-tertiary);padding:20px;">loading…</td></tr></tbody>
+    </table>
+
+    <div class="honest-banner">
+      <strong>Honest framing.</strong> The model fails the IID assumption catastrophically (Durbin-Watson 0.09, KPSS rejects c_cfpb stationarity,
+      Engle ARCH p&lt;10⁻⁶). This is expected for time-series data with overlapping forward-30d targets. We address each violation explicitly:
+      HAC NW-30 SEs handle autocorrelation, HC1 handles heteroskedasticity, rolling-window z-scoring mitigates non-stationarity,
+      and block bootstrap provides autocorrelation-respecting confidence intervals. The headline survives every correction.
+    </div>
+  </div>
+
+  <!-- ====================== SECTION 04 — WEIGHT PROVENANCE ====================== -->
+  <div id="sec-weights" class="emp-section" style="border-left: 4px solid #fbbf24;">
+    <div class="emp-section-num">SECTION 04</div>
+    <h2 class="emp-section-title">Weight provenance — Phase 2E/2F regression-based check</h2>
+    <div class="emp-section-sub">
+      The most likely peer-review critique of BSI is "the weights look hand-picked." We test it directly: learn pillar weights from
+      the bsi_daily panel using 5 regression methods (OLS, Ridge, LASSO, ElasticNet, Bayesian Ridge) under rolling-origin time-series CV,
+      compare to v1 hand-set priors. The pre-registered weights remain primary; this is reported as a robustness check.
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:12px;">
+      <div>
+        <div style="font-size:10px;color:#fbbf24;text-transform:uppercase;letter-spacing:0.06em;font-weight:700;font-family:var(--font-mono);margin-bottom:8px;">▶ v1 vs DATA-DERIVED (ElasticNet)</div>
+        <div class="chart-box" style="height:240px;"><canvas id="wp-weights"></canvas></div>
+      </div>
+      <div>
+        <div style="font-size:10px;color:#fbbf24;text-transform:uppercase;letter-spacing:0.06em;font-weight:700;font-family:var(--font-mono);margin-bottom:8px;">▶ OOS R² PER METHOD</div>
+        <div class="chart-box" style="height:240px;"><canvas id="wp-r2"></canvas></div>
+      </div>
+    </div>
+    <div id="wp-honest" class="honest-banner">loading…</div>
+  </div>
+
+  <!-- ====================== SECTION 05 — ROBO MONTE CARLO ====================== -->
+  <div id="sec-robo" class="emp-section" style="border-left: 4px solid #a78bfa;">
+    <div class="emp-section-num">SECTION 05</div>
+    <h2 class="emp-section-title">🤖 ROBO meta-archetype Monte Carlo</h2>
+    <div class="emp-section-sub">
+      ROBO bootstraps from a synthetic-user prior at launch and progressively transitions to live user population.
+      Monte Carlo answers: at what user count can we turn the synthetics off? K_target = 500.
+    </div>
+    <div id="robo-status" class="stat-tile" style="margin-bottom:12px;">loading…</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+      <div>
+        <div style="font-size:10px;color:#a78bfa;text-transform:uppercase;letter-spacing:0.06em;font-weight:700;font-family:var(--font-mono);margin-bottom:8px;">▶ CONVERGENCE</div>
+        <div class="chart-box" style="height:220px;"><canvas id="robo-conv"></canvas></div>
+      </div>
+      <div>
+        <div style="font-size:10px;color:#a78bfa;text-transform:uppercase;letter-spacing:0.06em;font-weight:700;font-family:var(--font-mono);margin-bottom:8px;">▶ ADVERSARIAL ROBUSTNESS</div>
+        <div class="chart-box" style="height:220px;"><canvas id="robo-adv"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================== SECTION 06 — EVENT STUDY ====================== -->
+  <div id="sec-events" class="emp-section" style="border-left: 4px solid #4ade80;">
+    <div class="emp-section-num">SECTION 06</div>
+    <h2 class="emp-section-title">📅 BNPL Event Study (Phase 2H)</h2>
+    <div class="emp-section-sub">
+      Six publicly-verifiable BNPL distress events. For each, BSI pillars in the trailing 90 days are reconstructed from the warehouse
+      and the lead time (peak BSI z to event date) is computed. <strong>This is the audience-friendly visual companion</strong> to the
+      Phase 2A panel and Phase 2C archetype backtest.
+    </div>
+    <div id="event-tiles" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;">loading…</div>
+    <div style="font-size:10px;color:#4ade80;text-transform:uppercase;letter-spacing:0.06em;font-weight:700;font-family:var(--font-mono);margin:14px 0 8px;">▶ PER-EVENT LEAD TIMES</div>
+    <table class="dx" id="event-table">
+      <thead><tr>
+        <th>Event</th><th class="center">Date</th>
+        <th class="num">Composite peak z</th><th class="num">Days before event</th>
+        <th class="center">Pillars used</th>
+      </tr></thead>
+      <tbody><tr><td colspan="5" class="center" style="color:var(--text-tertiary);padding:20px;">loading…</td></tr></tbody>
+    </table>
+    <div class="honest-banner" style="margin-top:14px;">
+      <strong>Selection bias acknowledged.</strong> Events were chosen because they are publicly-known distress episodes.
+      This is corroborative, not prospectively predictive. The formal statistical evidence sits in §1 (Phase 2A) and §3 (diagnostics).
+    </div>
+  </div>
+
+  <!-- ====================== SECTION 07 — CASE STUDIES ====================== -->
+  <div id="sec-cases" class="emp-section" style="border-left: 4px solid #60a5fa;">
+    <div class="emp-section-num">SECTION 07</div>
+    <h2 class="emp-section-title">Case studies — 5 named distress events</h2>
+    <div class="emp-section-sub">
+      Each case combines: SHORT equity historical return, projected TRS-short return (stylised model), LONG equity recovery (where applicable),
+      and methodology verdict. Per the Phase 2B projection model, mean firm-level projected TRS return was +30.85% across 4 named cases.
+      <strong style="color:#fbbf24;">These are stylised model projections from cited spread points + duration approximation, not realised P&amp;L from executed TRS.</strong>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;">
+      <div class="case-card" style="border-left:3px solid #4ade80;">
+        <div class="firm">CVNA · Carvana</div>
+        <div style="font-size:10px;color:var(--text-tertiary);margin:4px 0 8px;">Subprime auto distress · 11/2021 → 5/2023</div>
+        <div class="pnl" style="color:#4ade80;">+58.8%</div>
+        <div style="font-size:10px;color:var(--text-tertiary);">projected TRS return (stylised)</div>
+      </div>
+      <div class="case-card" style="border-left:3px solid #4ade80;">
+        <div class="firm">UPST · Upstart</div>
+        <div style="font-size:10px;color:var(--text-tertiary);margin:4px 0 8px;">Marketplace lending · FY2022</div>
+        <div class="pnl" style="color:#4ade80;">+12.0%</div>
+        <div style="font-size:10px;color:var(--text-tertiary);">projected TRS return (stylised)</div>
+      </div>
+      <div class="case-card" style="border-left:3px solid #4ade80;">
+        <div class="firm">CURO · CURO Group</div>
+        <div style="font-size:10px;color:var(--text-tertiary);margin:4px 0 8px;">Consumer-lending pre-Ch11 · 9/2023</div>
+        <div class="pnl" style="color:#4ade80;">+32.4%</div>
+        <div style="font-size:10px;color:var(--text-tertiary);">projected TRS return (stylised)</div>
+      </div>
+      <div class="case-card" style="border-left:3px solid #f87171;">
+        <div class="firm">SEZL · Sezzle</div>
+        <div style="font-size:10px;color:var(--text-tertiary);margin:4px 0 8px;">BNPL false-positive trap (denominator) · 2024</div>
+        <div class="pnl" style="color:#f87171;">−4.2%</div>
+        <div style="font-size:10px;color:var(--text-tertiary);">projected TRS if shorted (stress-test case, AVOIDED by SCOUT/GUARDIAN in 5-gate)</div>
+      </div>
+      <div class="case-card" style="border-left:3px solid #4ade80;">
+        <div class="firm">TRICOLOR</div>
+        <div style="font-size:10px;color:var(--text-tertiary);margin:4px 0 8px;">Subprime auto ABS Class C · 3-8/2025</div>
+        <div class="pnl" style="color:#4ade80;">+28.0%</div>
+        <div style="font-size:10px;color:var(--text-tertiary);">projected TRS return (stylised)</div>
+      </div>
+    </div>
+    <div class="green-banner" style="margin-top:14px;">
+      <strong>Phase 2B projection result:</strong> mean +30.85% projected TRS return across 4 firms with credit-instrument coverage,
+      with idiosyncratic alpha positive in all 4 cases (firm minus HY OAS sector move). The SEZL false-positive case is
+      structurally important — the 5-gate Phase 2C backtest shows SCOUT and GUARDIAN both correctly BLOCK on SEZL because
+      the FDS gate (G5) doesn't fire. BLITZ would have walked into the false positive at smaller size.
+    </div>
+  </div>
+
+  <!-- ====================== SECTION 08 — DEMO WALKTHROUGH ====================== -->
+  <div id="sec-demo" class="emp-section" style="border-left: 4px solid #60a5fa;">
+    <div class="emp-section-num">SECTION 08</div>
+    <h2 class="emp-section-title">Demo walkthrough — guided tour of the framework</h2>
+    <div class="emp-section-sub">
+      The 4-stage pipeline that runs whenever you fire the live pod on a ticker. Each stage produces auditable output.
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+      <div class="demo-card">
+        <div style="font-size:10px;color:#60a5fa;text-transform:uppercase;letter-spacing:0.06em;font-weight:700;font-family:var(--font-mono);">STAGE 01</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-top:4px;">SIGNAL</div>
+        <div style="font-size:11px;color:var(--text-secondary);margin-top:8px;line-height:1.5;">
+          Compute BSI v3 z-score on the ticker from CFPB-velocity + AppStore + Reddit + Bluesky + Trends + ABS + 8-K pillars.
+          Display per-pillar contribution + bear-state classification (NORMAL → ELEVATED → CRISIS).
+        </div>
+      </div>
+      <div class="demo-card">
+        <div style="font-size:10px;color:#60a5fa;text-transform:uppercase;letter-spacing:0.06em;font-weight:700;font-family:var(--font-mono);">STAGE 02</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-top:4px;">DEBATE</div>
+        <div style="font-size:11px;color:var(--text-secondary);margin-top:8px;line-height:1.5;">
+          6 hedge-fund archetypes (Renaissance, Bridgewater, Two Sigma, Millennium, Citadel, BearWatch) vote SHORT/PASS based on
+          deterministic conditions. Long-side: Buffett, Marks, Klarman, Greenblatt, Druckenmiller mirror.
+        </div>
+      </div>
+      <div class="demo-card">
+        <div style="font-size:10px;color:#60a5fa;text-transform:uppercase;letter-spacing:0.06em;font-weight:700;font-family:var(--font-mono);">STAGE 03</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-top:4px;">EXECUTE</div>
+        <div style="font-size:11px;color:var(--text-secondary);margin-top:8px;line-height:1.5;">
+          5-gate firing rule (G1 BSI ∧ G2 SCP ∧ G3 MOVE ∧ G4 CCD ∧ G5 FDS) per archetype.
+          Per-archetype display: BLITZ (3/5, 0.5% size), SCOUT (4/5, 1.0%), GUARDIAN (5/5, 2.0%), ROBO (continuous score).
+        </div>
+      </div>
+      <div class="demo-card">
+        <div style="font-size:10px;color:#60a5fa;text-transform:uppercase;letter-spacing:0.06em;font-weight:700;font-family:var(--font-mono);">STAGE 04</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-top:4px;">LEARN</div>
+        <div style="font-size:11px;color:var(--text-secondary);margin-top:8px;line-height:1.5;">
+          Trade journaled on Execute. Backtest comparable looked up automatically.
+          Apollo Hermes 7-check risk engine validates: sector cap, beta load, R/R floor, drawdown mode, cash floor, position cap, correlated exposure.
+        </div>
+      </div>
+    </div>
+    <!-- Past-case interactive replays — RESTORED -->
+    <div style="margin-top:20px;padding:18px 20px;background:linear-gradient(180deg,rgba(96,165,250,0.05),transparent 70%),var(--bg-elevated);border:1px solid rgba(96,165,250,0.3);border-left:3px solid #60a5fa;border-radius:8px;">
+      <div style="font-size:10px;color:#60a5fa;text-transform:uppercase;letter-spacing:0.06em;font-weight:700;font-family:var(--font-mono);margin-bottom:8px;">▶ INTERACTIVE PAST-CASE REPLAYS</div>
+      <div style="font-size:12px;color:var(--text-secondary);line-height:1.6;margin-bottom:14px;">
+        The 4-stage spec above is the abstract description. Below are <strong style="color:var(--text);">two real interactive replays</strong> that
+        re-run the pod against frozen historical data so you see exactly what a trader would have seen on the event day.
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <a href="/demo" style="text-decoration:none;color:inherit;display:block;padding:16px 18px;background:var(--bg-card);border:1px solid var(--border);border-left:3px solid #4ade80;border-radius:8px;">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;">
+            <div style="font-size:11px;color:#4ade80;text-transform:uppercase;letter-spacing:0.06em;font-weight:700;font-family:var(--font-mono);">▶ TRICOLOR REPLAY</div>
+            <div style="font-size:9px;color:var(--text-tertiary);font-family:var(--font-mono);">2025-09-12</div>
+          </div>
+          <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px;">Tricolor Holdings Chapter 7 event window</div>
+          <div style="font-size:11px;color:var(--text-secondary);line-height:1.5;">
+            Pod replays against frozen 2025-09-12 prices. Bear states, gate decisions, and War Room votes
+            reproduce what the production system saw on that date.
+          </div>
+          <div style="margin-top:10px;font-size:11px;color:#4ade80;font-family:var(--font-mono);">→ /demo</div>
+        </a>
+        <a href="/case-study" style="text-decoration:none;color:inherit;display:block;padding:16px 18px;background:var(--bg-card);border:1px solid var(--border);border-left:3px solid #60a5fa;border-radius:8px;">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;">
+            <div style="font-size:11px;color:#60a5fa;text-transform:uppercase;letter-spacing:0.06em;font-weight:700;font-family:var(--font-mono);">▶ CVNA DEEP-DIVE</div>
+            <div style="font-size:9px;color:var(--text-tertiary);font-family:var(--font-mono);">2021-11-26 entry</div>
+          </div>
+          <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px;">Carvana V8 trade playbook</div>
+          <div style="font-size:11px;color:var(--text-secondary);line-height:1.5;">
+            Full 18-month case detail with V8 long+short P&amp;L breakdown, methodology verdict per stage,
+            and per-archetype trade routing.
+          </div>
+          <div style="margin-top:10px;font-size:11px;color:#60a5fa;font-family:var(--font-mono);">→ /case-study</div>
+        </a>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:18px;">
+      <a href="/live" style="display:inline-block;background:#4ade80;color:#0a0a0a;padding:12px 28px;border-radius:6px;font-size:13px;font-weight:700;text-decoration:none;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.05em;">
+        ▶ Or try the live pod (T-1 real data)
+      </a>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const fmt = (v, d=4) => v === null || v === undefined ? '—' : (+v).toFixed(d);
+const fmtPctRaw = v => (v * 100).toFixed(1) + '%';
+
+// ===== Load all data sources in parallel =====
+async function loadAll() {
+  const [capR, robR, evR, wpR] = await Promise.all([
+    fetch('/api/robo/capstone').catch(()=>null),
+    fetch('/api/robo/montecarlo').catch(()=>null),
+    fetch('/api/bnpl/event_study').catch(()=>null),
+    fetch('/api/robo/weight_provenance').catch(()=>null),
+  ]);
+  const cap = capR && capR.ok ? await capR.json() : null;
+  const rob = robR && robR.ok ? await robR.json() : null;
+  const ev  = evR  && evR.ok  ? await evR.json()  : null;
+  const wp  = wpR  && wpR.ok  ? await wpR.json()  : null;
+
+  if (cap) renderHeadline(cap);
+  if (cap) renderDashboard(cap);
+  if (cap) renderStress(cap);
+  if (wp)  renderWeights(wp);
+  if (rob) renderRobo(rob);
+  if (ev)  renderEvents(ev);
+}
+
+function renderHeadline(d) {
+  const v3 = d.phase_2N_v3 || {};
+  const cfpb = (v3.survival || []).find(s => s.pillar === 'c_cfpb') || {};
+  const lag = (d.phase_2Q_cfpb_lag || {}).empirical_optimal_lag_days || '?';
+  document.getElementById('hl-cap-p').textContent = cfpb.p_hac_macro?.toFixed(4) || '—';
+  document.getElementById('hl-horizon').textContent = lag === '?' ? '?' : `${lag + 30}d`;
+  const bs = (d.phase_2T_iid || {}).block_bootstrap_c_move || {};
+  if (bs.ci_2_5pct !== undefined) {
+    document.getElementById('hl-bootstrap').textContent = `[${bs.ci_2_5pct.toFixed(3)}, ${bs.ci_97_5pct.toFixed(3)}]`;
+  }
+}
+
+function renderDashboard(d) {
+  const rows = d.phase_2S_dashboard || [];
+  document.querySelector('#pillar-dashboard tbody').innerHTML = rows.map(r => {
+    const altCol = r.alt_data === 'YES' ? '#4ade80' : '#f87171';
+    const survCol = r.survives_5pct_under_hac === 'YES' ? '#4ade80' :
+                    r.survives_5pct_under_hac === 'NO' ? '#f87171' : '#a1a1aa';
+    const wt = r.v1_weight === r.v3_weight ? '—' : `${r.v1_weight?.toFixed(2)} → ${r.v3_weight?.toFixed(2)}`;
+    return `<tr>
+      <td><strong>${r.pillar}</strong></td>
+      <td class="center" style="color:${altCol};font-weight:700;">${r.alt_data}</td>
+      <td class="center">${wt}</td>
+      <td>${(r.coverage || '').slice(0, 40)}</td>
+      <td class="num">${r.hac_plus_macro_pvalue !== null && r.hac_plus_macro_pvalue !== undefined ? r.hac_plus_macro_pvalue.toFixed(4) : '—'}</td>
+      <td class="center" style="color:${survCol};font-weight:700;">${r.survives_5pct_under_hac || '—'}</td>
+      <td>${r.production_ready || '—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderStress(d) {
+  const v3 = d.phase_2N_v3 || {};
+  const dx = v3.diagnostics || {};
+  const iid = d.phase_2T_iid || {};
+
+  document.getElementById('diag-het').innerHTML = `
+    <div class="lbl">Breusch-Pagan</div><div class="val">p = ${dx.bp_pvalue}</div>
+    <div class="sub">${dx.bp_pvalue < 0.05 ? 'REJECT homoskedasticity → use HC-robust SEs' : 'no rejection'}</div>`;
+  const maxVif = dx.vif ? Math.max(...Object.values(dx.vif).filter(v => v)) : null;
+  document.getElementById('diag-multi').innerHTML = `
+    <div class="lbl">Variance Inflation Factor (max)</div><div class="val">${maxVif?.toFixed(3) || '—'}</div>
+    <div class="sub">${maxVif < 5 ? 'low — pillars not redundant' : 'moderate or severe'}</div>`;
+  document.getElementById('diag-auto').innerHTML = `
+    <div class="lbl">Durbin-Watson + Ljung-Box</div><div class="val">DW = ${dx.durbin_watson}</div>
+    <div class="sub">LB(30) p = ${dx.lb_lag30_p} → severe autocorr → use HAC NW-30</div>`;
+  document.getElementById('diag-stat').innerHTML = `
+    <div class="lbl">Stationarity</div><div class="val" style="font-size:13px;">mixed</div>
+    <div class="sub">c_move stationary; c_cfpb non-stationary (KPSS rejects); rolling z-scoring mitigates</div>`;
+
+  // IID tests
+  const tests = [
+    {name:'Engle ARCH', val: iid.engle_arch ? `LM = ${iid.engle_arch.lm_stat}, p = ${iid.engle_arch.pvalue}` : 'n/a',
+     flag: iid.engle_arch?.reject_homoskedasticity_over_time ? 'REJECT — variance time-varying' : '—',
+     col: iid.engle_arch?.reject_homoskedasticity_over_time ? '#fbbf24' : '#4ade80',
+     desc:'time-varying variance / volatility clustering'},
+    {name:'CUSUM-OLS', val: 'see results',
+     flag: Object.values(iid.chow_cusum || {}).some(r => r.regime_change_detected) ? 'REGIME CHANGE detected' : '—',
+     col: '#fbbf24', desc:'structural-break / regime change test'},
+    {name:'Block bootstrap (c_move)', val: iid.block_bootstrap_c_move
+       ? `pt = ${iid.block_bootstrap_c_move.point_estimate?.toFixed(3)}, CI [${iid.block_bootstrap_c_move.ci_2_5pct?.toFixed(3)}, ${iid.block_bootstrap_c_move.ci_97_5pct?.toFixed(3)}]` : 'n/a',
+     flag: iid.block_bootstrap_c_move?.ci_excludes_zero ? '✓ CI EXCLUDES zero — robust' : 'CI includes zero',
+     col: iid.block_bootstrap_c_move?.ci_excludes_zero ? '#4ade80' : '#f87171',
+     desc:'autocorrelation-respecting CI'},
+  ];
+  document.getElementById('iid-tests').innerHTML = tests.map(t => `
+    <div class="stat-tile">
+      <div class="lbl">${t.name}</div>
+      <div style="font-size:9.5px;color:var(--text-tertiary);font-style:italic;margin-top:2px;">${t.desc}</div>
+      <div style="font-size:11px;color:var(--text);font-family:var(--font-mono);margin-top:6px;">${t.val}</div>
+      <div style="font-size:10px;color:${t.col};font-weight:700;font-family:var(--font-mono);margin-top:4px;">${t.flag}</div>
+    </div>`).join('');
+
+  // Survival table
+  const survival = v3.survival || [];
+  document.querySelector('#survival-table tbody').innerHTML = survival.map(s => {
+    const sCol = s.survives_5pct ? '#4ade80' : '#f87171';
+    return `<tr>
+      <td><strong>${s.pillar}</strong></td>
+      <td class="num">${fmt(s.p_baseline)}</td>
+      <td class="num">${fmt(s.p_hc1)}</td>
+      <td class="num">${fmt(s.p_hac)}</td>
+      <td class="num"><strong>${fmt(s.p_hac_macro)}</strong></td>
+      <td class="center" style="color:${sCol};font-weight:700;">${s.survives_5pct ? 'YES ★' : 'no'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderWeights(d) {
+  if (!d.pillars) return;
+  const pillars = d.pillars;
+  const v1 = pillars.map(p => d.v1_weights_normalised[p]);
+  const en = pillars.map(p => d.data_weights.ElasticNet[p]);
+  new Chart(document.getElementById('wp-weights'), {
+    type: 'bar',
+    data: { labels: pillars, datasets: [
+      { label: 'v1 hand-set', data: v1, backgroundColor: '#a78bfa', borderColor: '#7c3aed', borderWidth: 1.5 },
+      { label: 'ElasticNet (data)', data: en, backgroundColor: '#fbbf24', borderColor: '#d97706', borderWidth: 1.5 },
+    ]},
+    options: { maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: '#a1a1aa', font: { family: 'monospace', size: 10 }}}},
+      scales: { y: { beginAtZero: true, max: 1.0, ticks: { callback: v => (v*100).toFixed(0)+'%', color: '#a1a1aa' }, grid: { color: 'rgba(255,255,255,0.05)' }},
+                x: { ticks: { color: '#a1a1aa', font: { family: 'monospace', size: 9 }}, grid: { display: false }}}},
+  });
+
+  const methods = ['OLS','Ridge','LASSO','ElasticNet','BayesianRidge'];
+  const r2 = methods.map(m => d.oos_performance[m]?.r2_mean ?? 0);
+  new Chart(document.getElementById('wp-r2'), {
+    type: 'bar',
+    data: { labels: methods, datasets: [{ label: 'OOS R²', data: r2,
+      backgroundColor: r2.map(v => v >= 0 ? '#4ade80' : '#f87171'), borderColor: '#525252', borderWidth: 1 }]},
+    options: { maintainAspectRatio: false, plugins: { legend: { display: false }},
+      scales: { y: { ticks: { color: '#a1a1aa' }, grid: { color: 'rgba(255,255,255,0.05)' }, title: { display: true, text: 'OOS R²', color: '#a1a1aa' }},
+                x: { ticks: { color: '#a1a1aa', font: { family: 'monospace', size: 10 }}, grid: { display: false }}}},
+  });
+
+  const sCol = d.scenario === 'A' ? '#4ade80' : d.scenario === 'B' ? '#fbbf24' : '#f87171';
+  document.getElementById('wp-honest').innerHTML = `
+    <div style="font-size:10px;color:${sCol};text-transform:uppercase;letter-spacing:0.06em;font-weight:700;font-family:var(--font-mono);margin-bottom:6px;">SCENARIO ${d.scenario} — ${d.scenario_label}</div>
+    <div>${d.scenario_message}</div>`;
+}
+
+function renderRobo(d) {
+  const sum = d.summary || {}, dep = d.deployment || {};
+  document.getElementById('robo-status').innerHTML = `
+    <div class="lbl">Deployment</div>
+    <div class="val" style="font-size:14px;color:#a78bfa;font-family:var(--font-mono);">${dep.phase} · ${dep.n_real_users}/${dep.K_target} users</div>
+    <div class="sub">${dep.next_milestone || ''}</div>`;
+  const conv = d.convergence_csv || [];
+  const Ks = [...new Set(conv.map(r => parseInt(r.K)))].sort((a,b)=>a-b);
+  const regimes = ['uniform','pnl_weighted','kelly_weighted'];
+  const colors = { uniform:'#737373', pnl_weighted:'#a78bfa', kelly_weighted:'#4ade80' };
+  new Chart(document.getElementById('robo-conv'), {
+    type: 'line',
+    data: { labels: Ks.map(String), datasets: regimes.map(reg => ({
+      label: reg, data: Ks.map(k => {
+        const row = conv.find(r => parseInt(r.K) === k && r.regime === reg);
+        return row ? parseFloat(row.accuracy_mean) : null; }),
+      borderColor: colors[reg], backgroundColor: colors[reg]+'22', borderWidth: 2,
+      tension: 0.25, pointRadius: 3, pointBackgroundColor: colors[reg],
+    }))},
+    options: { maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: '#a1a1aa', font: { family: 'monospace', size: 9 }}}},
+      scales: { y: { min: 0.5, max: 1.05, ticks: { callback: v => (v*100).toFixed(0)+'%', color: '#a1a1aa' }, grid: { color: 'rgba(255,255,255,0.05)' }},
+                x: { title: { display: true, text: 'K (synthetic users)', color: '#a1a1aa' }, ticks: { color: '#a1a1aa', font: { family: 'monospace' }}, grid: { display: false }}}},
+  });
+  const adv = d.adversarial_csv || [];
+  const advLevels = [...new Set(adv.map(r => parseFloat(r.adversarial_pct)))].sort((a,b)=>a-b);
+  new Chart(document.getElementById('robo-adv'), {
+    type: 'line',
+    data: { labels: advLevels.map(a => Math.round(a*100)+'%'), datasets: regimes.map(reg => ({
+      label: reg, data: advLevels.map(a => {
+        const row = adv.find(r => Math.abs(parseFloat(r.adversarial_pct) - a) < 1e-6 && r.regime === reg);
+        return row ? parseFloat(row.accuracy_mean) : null; }),
+      borderColor: colors[reg], backgroundColor: colors[reg]+'22', borderWidth: 2,
+      tension: 0.25, pointRadius: 3, pointBackgroundColor: colors[reg],
+    }))},
+    options: { maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: '#a1a1aa', font: { family: 'monospace', size: 9 }}}},
+      scales: { y: { min: 0, max: 1.05, ticks: { callback: v => (v*100).toFixed(0)+'%', color: '#a1a1aa' }, grid: { color: 'rgba(255,255,255,0.05)' }},
+                x: { title: { display: true, text: 'adversarial users (%)', color: '#a1a1aa' }, ticks: { color: '#a1a1aa', font: { family: 'monospace' }}, grid: { display: false }}}},
+  });
+}
+
+function renderEvents(d) {
+  document.getElementById('event-tiles').innerHTML = `
+    <div class="stat-tile"><div class="lbl">Events</div><div class="val">${d.n_events}</div><div class="sub">publicly verifiable</div></div>
+    <div class="stat-tile"><div class="lbl">Fire rate</div><div class="val" style="color:#4ade80;">${(d.fire_rate * 100).toFixed(0)}%</div><div class="sub">z≥1.5 for ≥7d before</div></div>
+    <div class="stat-tile"><div class="lbl">Mean lead time</div><div class="val" style="color:#4ade80;">${d.mean_lead_time_days}d</div><div class="sub">peak BSI z → event</div></div>
+    <div class="stat-tile"><div class="lbl">Mean composite peak z</div><div class="val">${d.mean_composite_peak_z >= 0 ? '+' : ''}${d.mean_composite_peak_z}</div><div class="sub">|z| at peak</div></div>`;
+
+  document.querySelector('#event-table tbody').innerHTML = (d.events || []).map(e => {
+    const c = e.composite || {};
+    const z = c.peak_z; const zStr = z === null || z === undefined ? '—' : (z >= 0 ? '+' : '') + z.toFixed(2);
+    const zCol = Math.abs(z||0) >= 2 ? '#4ade80' : (Math.abs(z||0) >= 1.5 ? '#fbbf24' : 'var(--text)');
+    return `<tr>
+      <td><strong>${e.id}</strong> · ${e.name.slice(0, 50)}</td>
+      <td class="center">${e.event_date}</td>
+      <td class="num" style="color:${zCol};font-weight:700;">${zStr}</td>
+      <td class="num">${c.days_before_event ?? '—'}</td>
+      <td class="center">${c.n_pillars_used || 0}</td>
+    </tr>`;
+  }).join('');
+}
+
+loadAll();
+</script>
+
+</body>
+</html>

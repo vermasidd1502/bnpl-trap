@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Your Profile · BearWatch × Apollo Hermes</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='v2.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='pages.css') }}">
+</head>
+<body>
+{% include '_nav.html' %}
+
+{% set p = user.profile %}
+{% set sc = p.scorecard %}
+{% set rec = p.recommended_mascot %}
+{% set rec_color = {"BLITZ":"#dc2626","SCOUT":"#d4a574","GUARDIAN":"#0f766e","ROBO":"#8b5cf6"}[rec] %}
+{% set rec_bear  = {"BLITZ":"bear_fired_up.png","SCOUT":"bear_thinking.png","GUARDIAN":"bear_confident.png","ROBO":"bear_confused.png"}[rec] %}
+{% set rec_label = {"BLITZ":"BLITZ — the hot-blooded hunter","SCOUT":"SCOUT — the patient sharpshooter","GUARDIAN":"GUARDIAN — the old sentinel","ROBO":"ROBO-BEAR — adaptive (alpha)"}[rec] %}
+{% set verd_color = {"Defensive":"var(--success)","Balanced":"var(--accent-signal)","Aggressive":"var(--warning)","Highly Aggressive":"var(--danger)"}[sc.verdict] %}
+
+<main class="page">
+
+  <!-- HEADER -->
+  <section class="hero" style="padding: 32px 0 16px;">
+    <div class="kicker">Your profile</div>
+    <h1 class="block-title" style="font-size: 42px;">
+      Welcome back, <span style="color: var(--accent-signal);">{{ user.username }}</span>.
+    </h1>
+    {% if p.full_name %}
+    <p class="hero-sub">{{ p.full_name }} · {{ p.occupation }} · {{ p.location }}</p>
+    {% else %}
+    <p class="hero-sub">Survey completed. Your scorecard and recommended mascot are below.</p>
+    {% endif %}
+  </section>
+
+  <!-- ============== TOP: SCORECARD ============== -->
+  <section class="section">
+    <h2 class="section-title">Risk Profile Scorecard</h2>
+    <p class="section-intro">Two dimensions: what you <em>can</em> afford (capacity) vs what you <em>want</em> (tolerance). The pod recommends a mascot from these.</p>
+
+    <div style="background: var(--bg-card); border: 1px solid var(--border-strong); border-radius: 16px; padding: 28px; margin-top: 16px;">
+      <!-- Big two scores -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1.4fr; gap: 24px; align-items: center;">
+
+        <!-- Capacity -->
+        <div>
+          <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); font-weight: 600; margin-bottom: 6px;">Risk capacity</div>
+          <div style="font-size: 56px; font-weight: 800; letter-spacing: -0.04em; line-height: 1; color: var(--text-primary); font-variant-numeric: tabular-nums;">{{ sc.risk_capacity }}<span style="font-size: 22px; color: var(--text-tertiary); font-weight: 600;">/100</span></div>
+          <div style="font-size: 12px; color: var(--text-secondary); margin-top: 6px; line-height: 1.4;">Objective: time horizon, income stability, liquidity buffer, age.</div>
+        </div>
+
+        <!-- Tolerance -->
+        <div>
+          <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); font-weight: 600; margin-bottom: 6px;">Risk tolerance</div>
+          <div style="font-size: 56px; font-weight: 800; letter-spacing: -0.04em; line-height: 1; color: var(--text-primary); font-variant-numeric: tabular-nums;">{{ sc.risk_tolerance }}<span style="font-size: 22px; color: var(--text-tertiary); font-weight: 600;">/100</span></div>
+          <div style="font-size: 12px; color: var(--text-secondary); margin-top: 6px; line-height: 1.4;">Subjective: experience, conviction under stress, loss aversion.</div>
+        </div>
+
+        <!-- Verdict -->
+        <div style="text-align: right;">
+          <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); font-weight: 600; margin-bottom: 6px;">Combined verdict</div>
+          <div style="font-size: 28px; font-weight: 700; letter-spacing: -0.02em; color: {{ verd_color }};">{{ sc.verdict }}</div>
+          <div style="font-size: 12px; color: var(--text-tertiary); margin-top: 4px; font-family: var(--font-mono);">combined: {{ sc.combined }}/100</div>
+        </div>
+      </div>
+
+      <!-- Sub-bars -->
+      <div style="margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--border); display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+        {% set bar_dims = [
+          ('Time horizon',       sc.subscores.horizon_capacity,    'capacity'),
+          ('Liquidity buffer',   sc.subscores.liquidity_buffer,    'capacity'),
+          ('Income stability',   sc.subscores.income_stability,    'capacity'),
+          ('Trading experience', sc.subscores.experience,          'tolerance'),
+          ('Stress conviction',  sc.subscores.stress_conviction,   'tolerance'),
+          ('Concentration tilt', sc.subscores.concentration_tilt,  'tolerance'),
+        ] %}
+        {% for label, val, kind in bar_dims %}
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
+            <div style="font-size: 11px; color: var(--text-secondary); font-weight: 500;">{{ label }}</div>
+            <div style="font-family: var(--font-mono); font-size: 11px; color: var(--text-primary); font-weight: 600;">{{ val|int }}</div>
+          </div>
+          <div style="height: 5px; background: var(--bg-elevated); border-radius: 3px; overflow: hidden;">
+            <div style="height: 100%; width: {{ val }}%; background: {% if kind == 'capacity' %}linear-gradient(90deg, #4ade80aa, #4ade80){% else %}linear-gradient(90deg, #d4a574aa, #d4a574){% endif %};"></div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== RECOMMENDED MASCOT ============== -->
+  <section class="section">
+    <div style="background: linear-gradient(135deg, {{ rec_color }}22 0%, transparent 70%); border: 1px solid {{ rec_color }}55; border-radius: 16px; padding: 28px; display: grid; grid-template-columns: auto 1fr; gap: 28px; align-items: center;">
+      <img src="/static/bears/{{ rec_bear }}" alt="" style="width: 160px; height: 160px; object-fit: contain;">
+      <div>
+        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: {{ rec_color }}; font-weight: 600; margin-bottom: 6px;">★ Recommended mascot</div>
+        <h2 style="font-size: 32px; font-weight: 800; letter-spacing: -0.03em; margin: 0 0 12px; color: var(--text-primary);">{{ rec_label }}</h2>
+        <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6; margin: 0 0 18px;">{{ p.recommendation_rationale }}</p>
+        <a href="/demo" class="btn-primary" style="background: {{ rec_color }}; border-color: {{ rec_color }};">Open the demo with {{ rec }} →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== ACTIVE MASCOT — pick from 4 ============== -->
+  {% set active_mascot = p.active_mascot or rec %}
+  <section class="section">
+    <h2 class="section-title">Active mascot</h2>
+    <p class="section-intro">The mascot the pod uses for your trades right now. Defaults to the recommended one, but you can override it any time. The active mascot drives every gate threshold + position-size cap in Apollo's risk engine.</p>
+    <div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:12px;">
+      {% set mascots = [
+        ('BLITZ',    '#dc2626', 'bear_fired_up.png',  'Aggressive · z≥1.5 · 12% size'),
+        ('SCOUT',    '#d4a574', 'bear_thinking.png',  'Default ★ · z≥2.0 · 5% size'),
+        ('GUARDIAN', '#0f766e', 'bear_confident.png', 'Defensive · z≥2.5 · 2% size'),
+        ('ROBO',     '#8b5cf6', 'bear_confused.png',  'Adaptive α · per-event sizing'),
+      ] %}
+      {% for key, color, bear, meta in mascots %}
+      <button class="mascot-pick {{ 'active' if key == active_mascot else '' }}"
+              data-mascot="{{ key }}"
+              style="border-color: {{ color if key == active_mascot else 'var(--border)' }};
+                     box-shadow: {{ '0 0 0 1px ' + color + ', 0 0 28px ' + color + '33' if key == active_mascot else 'none' }};">
+        <img src="/static/bears/{{ bear }}" alt="" style="width:64px;height:64px;object-fit:contain;">
+        <div style="font-weight:700;color:{{ color }};margin-top:8px;font-size:13px;letter-spacing:-0.01em;">{{ key }}{% if key == rec %}<span style="font-size:9px;color:var(--text-tertiary);font-weight:500;margin-left:4px;text-transform:uppercase;letter-spacing:0.04em;">recommended</span>{% endif %}</div>
+        <div style="font-size:10px;color:var(--text-tertiary);margin-top:4px;font-family:var(--font-mono);">{{ meta }}</div>
+        {% if key == active_mascot %}
+        <div style="position:absolute;top:8px;right:8px;background:{{ color }};color:var(--bg-base);font-size:9px;font-weight:700;padding:2px 7px;border-radius:999px;text-transform:uppercase;letter-spacing:0.06em;">active</div>
+        {% endif %}
+      </button>
+      {% endfor %}
+    </div>
+    <div style="font-size:11px;color:var(--text-tertiary);margin-top:12px;text-align:center;font-style:italic;">
+      Click any mascot to make it active. Change syncs immediately to the live demo and is logged to your activity feed.
+    </div>
+  </section>
+
+  <script>
+  document.querySelectorAll(".mascot-pick").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const m = btn.dataset.mascot;
+      const r = await fetch("/api/profile/mascot", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({mascot: m})
+      });
+      if (r.ok) {
+        location.reload();
+      }
+    });
+  });
+  </script>
+
+  {% if p.full_name %}
+  <!-- ============== IDENTITY + FINANCIAL (Sid only / rich profile) ============== -->
+  <section class="section">
+    <h2 class="section-title">Trader profile</h2>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+
+      <!-- Identity -->
+      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 22px;">
+        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-signal); font-weight: 600; margin-bottom: 14px;">Identity</div>
+        <table class="fact-table" style="margin: 0;">
+          <tr><td>Name</td><td><strong style="color: var(--text-primary);">{{ p.full_name }}</strong></td></tr>
+          <tr><td>Age</td><td>{{ p.age }}</td></tr>
+          <tr><td>Location</td><td>{{ p.location }}</td></tr>
+          <tr><td>Occupation</td><td>{{ p.occupation }}</td></tr>
+          {% if p.education %}<tr><td>Education</td><td>{{ p.education }}</td></tr>{% endif %}
+          <tr><td>Dependents</td><td class="num">{{ p.dependents }}</td></tr>
+        </table>
+      </div>
+
+      <!-- Financial -->
+      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 22px;">
+        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-signal); font-weight: 600; margin-bottom: 14px;">Financial picture</div>
+        <table class="fact-table" style="margin: 0;">
+          <tr><td>Annual income</td><td class="num">${{ "{:,}".format(p.annual_income_usd) }}</td></tr>
+          <tr><td>Liquid net worth</td><td class="num">${{ "{:,}".format(p.liquid_net_worth_usd) }}</td></tr>
+          <tr><td>Investable assets</td><td class="num">${{ "{:,}".format(p.investable_assets_usd) }}</td></tr>
+          <tr><td>Monthly expenses</td><td class="num">${{ "{:,}".format(p.monthly_expenses_usd) }}</td></tr>
+          <tr><td>Liquidity buffer</td><td class="num">{{ p.liquidity_months }} months</td></tr>
+          <tr><td>Income stability</td><td class="num">{{ p.income_stability_10 }}/10</td></tr>
+        </table>
+      </div>
+
+      <!-- Trading experience -->
+      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 22px;">
+        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-signal); font-weight: 600; margin-bottom: 14px;">Trading experience</div>
+        <table class="fact-table" style="margin: 0;">
+          <tr><td>Years trading</td><td class="num">{{ p.years_trading }}</td></tr>
+          <tr><td>Instruments</td><td>{{ p.instruments_traded|join(", ") }}</td></tr>
+          <tr><td>Biggest win</td><td class="num pos">+{{ p.biggest_win_pct }}%</td></tr>
+          <tr><td>Biggest loss</td><td class="num neg">{{ p.biggest_loss_pct }}%</td></tr>
+          <tr><td>Max drawdown survived</td><td class="num">{{ p.max_drawdown_survived }}%</td></tr>
+          <tr><td>Research depth</td><td class="num">{{ p.research_depth_hours }}h / position</td></tr>
+        </table>
+      </div>
+
+      <!-- Behavioural -->
+      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 22px;">
+        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-signal); font-weight: 600; margin-bottom: 14px;">Behavioural signals</div>
+        <table class="fact-table" style="margin: 0;">
+          <tr><td>Avg position size</td><td class="num">{{ p.avg_position_size_pct }}%</td></tr>
+          <tr><td>Preferred horizon</td><td>{{ p.preferred_horizon }}</td></tr>
+          <tr><td>Concentration</td><td>{{ p.concentration|capitalize }}</td></tr>
+          <tr><td>Conviction under stress</td><td class="num">{{ p.conviction_under_stress_10 }}/10</td></tr>
+          <tr><td>20% drawdown reaction</td><td>{{ p.reaction_drawdown_20pct|capitalize }}</td></tr>
+          <tr><td>Loss aversion</td><td class="num">{{ p.loss_aversion_10 }}/10</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- ============== TRADING STATS ============== -->
+  <section class="section">
+    <h2 class="section-title">Trading stats</h2>
+    <p class="section-intro">
+      Win rate is necessary but <em>not sufficient</em> for an event-driven asymmetric strategy. A 30% win rate with a 5× win/loss ratio beats 80% with 1:1 every time. We show all four metrics together so the picture is honest.
+    </p>
+    <div id="stats-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px;">
+      <div class="stat-tile">
+        <div class="stat-label">Win rate</div>
+        <div class="stat-value" id="stat-winrate">—</div>
+        <div class="stat-sub" id="stat-winrate-sub">no closed trades</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-label">Win / Loss ratio</div>
+        <div class="stat-value" id="stat-wlratio">—</div>
+        <div class="stat-sub">avg win ÷ avg loss</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-label">Expectancy / trade</div>
+        <div class="stat-value" id="stat-expectancy">—</div>
+        <div class="stat-sub">pct return per trade</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-label">Profit factor</div>
+        <div class="stat-value" id="stat-pf">—</div>
+        <div class="stat-sub">sum wins ÷ sum losses</div>
+      </div>
+    </div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+      <div class="stat-tile">
+        <div class="stat-label">Realised P&L</div>
+        <div class="stat-value" id="stat-realized">—</div>
+        <div class="stat-sub">closed trades only</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-label">Unrealised P&L</div>
+        <div class="stat-value" id="stat-unrealized">—</div>
+        <div class="stat-sub" id="stat-open-count">— open</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-label">Total trades</div>
+        <div class="stat-value" id="stat-total">—</div>
+        <div class="stat-sub" id="stat-closed">— closed</div>
+      </div>
+    </div>
+    <div id="stat-framing" style="margin-top: 14px; padding: 14px 18px; background: var(--bg-card); border-left: 3px solid var(--accent-signal); border-radius: 6px; font-size: 12px; color: var(--text-secondary); line-height: 1.6; font-style: italic;">
+      For event-driven asymmetric short strategies like BearWatch, win rate is necessary but not sufficient. A 30% win rate with a 5× win/loss ratio is far better than 80% with 1:1. The published H1 backtest result of −45.7% mean 18-month abnormal return implies a win/loss ratio around 5–10× at that horizon.
+    </div>
+  </section>
+
+  <script>
+    fetch("/api/stats").then(r=>r.json()).then(s=>{
+      const fmt = (v, suf="%", d=1) => v == null ? "—" : (v >= 0 ? "+" : "") + Number(v).toFixed(d) + suf;
+      const fmtUsd = v => v == null ? "—" : (v >= 0 ? "+" : "−") + "$" + Math.abs(v).toLocaleString(undefined, {maximumFractionDigits: 0});
+      const setEl = (id, txt, color) => { const el = document.getElementById(id); if (el) { el.textContent = txt; if (color) el.style.color = color; } };
+      const greenIfPos = v => v == null ? null : (v > 0 ? "var(--success)" : v < 0 ? "var(--danger)" : "var(--text-tertiary)");
+      setEl("stat-winrate",    s.win_rate_pct == null ? "—" : s.win_rate_pct + "%");
+      if (s.n_closed) setEl("stat-winrate-sub", s.n_closed + " closed");
+      setEl("stat-wlratio",    s.win_loss_ratio == null ? "—" : s.win_loss_ratio + "×",
+            s.win_loss_ratio == null ? null : (s.win_loss_ratio >= 1.5 ? "var(--success)" : "var(--warning)"));
+      setEl("stat-expectancy", fmt(s.expectancy_pct), greenIfPos(s.expectancy_pct));
+      setEl("stat-pf",         s.profit_factor == null ? "—" : s.profit_factor + "×",
+            s.profit_factor == null ? null : (s.profit_factor >= 1.5 ? "var(--success)" : "var(--warning)"));
+      setEl("stat-realized",   fmtUsd(s.realized_pnl_usd), greenIfPos(s.realized_pnl_usd));
+      setEl("stat-unrealized", fmtUsd(s.unrealized_pnl_usd), greenIfPos(s.unrealized_pnl_usd));
+      setEl("stat-total",      s.n_trades);
+      setEl("stat-closed",     s.n_closed + " closed");
+      setEl("stat-open-count", s.n_open + " open");
+    }).catch(()=>{});
+  </script>
+
+  <!-- ============== ACTIVITY LOG ============== -->
+  <section class="section">
+    <h2 class="section-title">Recent activity</h2>
+    <p class="section-intro">Every interaction is logged against your account. Use this for a live demo — refresh the page anytime to see what's been recorded.</p>
+    {% if activity %}
+    <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden;">
+      {% for a in activity %}
+      <div style="display: grid; grid-template-columns: 140px 140px 1fr; gap: 16px; padding: 11px 18px; border-bottom: 1px solid var(--border); font-size: 12px; align-items: center;">
+        <div style="font-family: var(--font-mono); font-size: 11px; color: var(--text-tertiary);">{{ a.timestamp[:19].replace("T"," ") }}</div>
+        {% set evcol = {
+          "user_created":"#a1a1aa","login":"#4ade80","logout":"#71717a","survey_completed":"#d4a574",
+          "bear_fired":"#f87171","trade_executed":"#34d399","mascot_changed":"#8b5cf6"
+        }.get(a.event_type,"#71717a") %}
+        <div><span style="display:inline-block;padding:3px 9px;border-radius:999px;font-size:10px;font-weight:600;letter-spacing:0.04em;background:{{ evcol }}22;color:{{ evcol }};">{{ a.event_type }}</span></div>
+        <div style="font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary);">
+          {%- if a.payload -%}
+            {%- for k, v in a.payload.items() -%}
+              {{ k }}={{ v }}{% if not loop.last %}  ·  {% endif %}
+            {%- endfor -%}
+          {%- endif -%}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div style="background: var(--bg-card); border: 1px dashed var(--border); border-radius: 12px; padding: 32px; text-align: center; font-size: 13px; color: var(--text-tertiary);">
+      No activity yet. Switch a mascot, fire a bear, or execute a trade — it'll show up here.
+    </div>
+    {% endif %}
+  </section>
+
+  <!-- ============== ACCOUNT META + LOGOUT ============== -->
+  <section class="section">
+    <h2 class="section-title">Account</h2>
+    <table class="fact-table" style="max-width: 600px;">
+      <tr><td>Username</td><td><strong style="font-family: var(--font-mono); color: var(--text-primary);">{{ user.username }}</strong></td></tr>
+      <tr><td>Member since</td><td class="num">{{ user.created_at[:10] }}</td></tr>
+      <tr><td>Profile source</td><td>{{ "Hand-seeded demo profile (Sid)" if user.username == "sid" else "Generated from MCQ survey" }}</td></tr>
+    </table>
+    <div style="margin-top: 24px; display: flex; gap: 10px;">
+      <form method="POST" action="/logout"><button type="submit" class="btn-secondary" style="cursor: pointer;">Sign out</button></form>
+      {% if user.username != "sid" %}
+      <a href="/survey" class="btn-secondary">Re-take survey</a>
+      {% endif %}
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div>BearWatch × Apollo Hermes  ·  signed in as <strong>{{ user.username }}</strong></div>
+  <div style="font-family: var(--font-mono);">Siddharth Verma  ·  UIUC FIN 580  ·  Spring 2026</div>
+</footer>
+</body>
+</html>

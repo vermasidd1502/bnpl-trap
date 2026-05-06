@@ -1,0 +1,142 @@
+<!-- Shared nav — included in every page -->
+<style>
+  /* Research dropdown — scoped to nav so it doesn't bleed into other pages */
+  .nav-dropdown { position: relative; display: inline-block; }
+  .nav-dropdown > .nav-link { cursor: pointer; }
+  .nav-dropdown > .nav-link::after {
+    content: "▾"; font-size: 9px; margin-left: 4px; color: var(--text-tertiary);
+  }
+  .nav-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    min-width: 220px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.45);
+    padding: 6px;
+    z-index: 1000;
+  }
+  .nav-dropdown:hover > .nav-dropdown-menu,
+  .nav-dropdown:focus-within > .nav-dropdown-menu {
+    display: block;
+  }
+  .nav-dropdown-menu a {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 10px;
+    border-radius: 5px;
+    color: var(--text-primary);
+    text-decoration: none;
+    font-size: 12.5px;
+    font-weight: 500;
+  }
+  .nav-dropdown-menu a:hover {
+    background: rgba(255,255,255,0.05);
+  }
+  .nav-dropdown-menu a.active {
+    background: rgba(167,139,250,0.10);
+    color: #a78bfa;
+  }
+  .nav-dropdown-menu .dd-tag {
+    font-size: 8px;
+    font-family: var(--font-mono);
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  /* Highlight the parent dropdown when any child is active */
+  .nav-dropdown.has-active > .nav-link {
+    color: #a78bfa;
+  }
+</style>
+
+<header class="nav">
+  <div class="nav-brand">
+    <div class="nav-logo">B</div>
+    <div>
+      <span class="nav-title">BearWatch</span>
+      <span class="nav-subtitle">× Apollo Hermes</span>
+    </div>
+  </div>
+
+  <nav class="nav-links">
+    <a href="/" class="nav-link {{ 'active' if active=='home' else '' }}">Overview</a>
+
+    <a href="/monitor" class="nav-link {{ 'active' if active=='monitor' else '' }}">Universe Monitor<span style="font-size:8px;color:#4ade80;margin-left:4px;text-transform:uppercase;letter-spacing:0.04em;">25 firms</span></a>
+
+    <a href="/equity-monitor" class="nav-link {{ 'active' if active=='equity-monitor' else '' }}" style="position:relative;">
+      🔮 Equity Monitor<span style="position:absolute;top:-2px;right:-6px;background:linear-gradient(135deg,#a78bfa,#7c3aed);color:#fff;font-size:7px;padding:1px 4px;border-radius:3px;font-weight:700;letter-spacing:0.04em;">ANY</span>
+    </a>
+
+    <a href="/macro" class="nav-link {{ 'active' if active=='macro' else '' }}" style="position:relative;">
+      🌐 Macro Tracker<span style="position:absolute;top:-2px;right:-6px;background:linear-gradient(135deg,#06b6d4,#0e7490);color:#fff;font-size:7px;padding:1px 4px;border-radius:3px;font-weight:700;letter-spacing:0.04em;">LIVE</span>
+    </a>
+
+    <a href="/live" class="nav-link {{ 'active' if active=='live' else '' }}" style="position:relative;">
+      Live Pod
+      <span style="position:absolute;top:-2px;right:-6px;background:#22c55e;color:#0a0a0a;font-size:7px;padding:1px 4px;border-radius:3px;font-weight:700;letter-spacing:0.04em;">NEW</span>
+    </a>
+
+    <a href="/portfolio" class="nav-link {{ 'active' if active=='portfolio' else '' }}">Portfolio<span style="font-size:8px;color:#FBBF24;margin-left:4px;text-transform:uppercase;letter-spacing:0.04em;">live</span></a>
+
+    <span style="display:inline-block;width:1px;height:14px;background:var(--border);margin:0 4px;align-self:center;"></span>
+
+    {# === Research dropdown === #}
+    {% set _research_active = active in ['methodology', 'empirical', 'squad', 'case-study', 'v2'] %}
+    <div class="nav-dropdown {% if _research_active %}has-active{% endif %}">
+      <a href="/methodology" class="nav-link {% if _research_active %}active{% endif %}" tabindex="0">
+        📖 Research
+      </a>
+      <div class="nav-dropdown-menu">
+        <a href="/methodology" class="{{ 'active' if active=='methodology' else '' }}">
+          <span>Methodology</span>
+          <span class="dd-tag">paper §5</span>
+        </a>
+        <a href="/empirical" class="{{ 'active' if active=='empirical' else '' }}">
+          <span>Empirical</span>
+          <span class="dd-tag" style="color:#4ade80;">all</span>
+        </a>
+        <a href="/squad" class="{{ 'active' if active=='squad' else '' }}">
+          <span>🐻 Bear Squad</span>
+          <span class="dd-tag" style="color:#dc2626;">4 bots</span>
+        </a>
+        <a href="/case-study" class="{{ 'active' if active=='case-study' else '' }}">
+          <span>Case study · CVNA</span>
+          <span class="dd-tag" style="color:#fbbf24;">+96%</span>
+        </a>
+        <a href="/demo-case" class="{{ 'active' if active=='demo-case' else '' }}">
+          <span>📼 Demo Case Pod</span>
+          <span class="dd-tag" style="color:#fbbf24;">replay</span>
+        </a>
+        <a href="/v2" class="{{ 'active' if active=='v2' else '' }}">
+          <span>v2.0 preview</span>
+          <span class="dd-tag" style="color:#a78bfa;">soon</span>
+        </a>
+      </div>
+    </div>
+
+    <a href="/diag" class="nav-link {{ 'active' if active=='diag' else '' }}" style="font-size:10px;color:var(--text-tertiary);" title="Self-test + troubleshooter">⚙ diag</a>
+  </nav>
+
+  <div class="nav-controls">
+    {% if current_user %}
+      {% set _mascot = current_user.profile.active_mascot or current_user.profile.recommended_mascot %}
+      {% set _color = {'BLITZ':'#dc2626','SCOUT':'#d4a574','GUARDIAN':'#0f766e','ROBO':'#8b5cf6'}.get(_mascot, '#a1a1aa') %}
+      {% set _bear  = {'BLITZ':'bear_fired_up.png','SCOUT':'bear_thinking.png','GUARDIAN':'bear_confident.png','ROBO':'bear_confused.png'}.get(_mascot, 'bear_thinking.png') %}
+      <a href="/profile" class="user-pill" title="{{ current_user.username }} · active mascot: {{ _mascot }}">
+        <img src="/static/bears/{{ _bear }}" alt="" style="width:18px;height:18px;object-fit:contain;border-radius:4px;">
+        <span style="color:{{ _color }};font-weight:600;">{{ _mascot }}</span>
+        <span style="color:var(--text-tertiary);font-size:10px;">·</span>
+        <span>{{ current_user.username }}</span>
+      </a>
+    {% else %}
+      <a href="/login" class="user-pill"><span>Sign in →</span></a>
+    {% endif %}
+    <div class="status-pill"><span class="dot"></span>live</div>
+  </div>
+</header>

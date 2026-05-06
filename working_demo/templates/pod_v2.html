@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BearWatch × Apollo Hermes</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='v2.css') }}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="app">
+
+<!-- ======= NAV ======= -->
+<header class="nav">
+  <div class="nav-brand">
+    <div class="nav-logo">B</div>
+    <div>
+      <span class="nav-title">BearWatch</span>
+      <span class="nav-subtitle">× Apollo Hermes</span>
+    </div>
+  </div>
+
+  <nav class="nav-links">
+    <a href="/" class="nav-link">Overview</a>
+    <a href="/monitor" class="nav-link">Monitor</a>
+    <a href="/live" class="nav-link" style="position:relative;">Live Pod
+      <span style="position:absolute;top:-2px;right:-6px;background:#22c55e;color:#0a0a0a;font-size:7px;padding:1px 4px;border-radius:3px;font-weight:700;letter-spacing:0.04em;">NEW</span>
+    </a>
+    <a href="/methodology" class="nav-link">Methodology</a>
+    <a href="/stress-tests" class="nav-link">Stress Tests</a>
+    <a href="/squad" class="nav-link">Bear Squad</a>
+    <span style="display:inline-block;width:1px;height:14px;background:var(--border);margin:0 4px;align-self:center;"></span>
+    <a href="/case-study" class="nav-link">Case Study</a>
+    <a href="/demo" class="nav-link active">Demo<span style="font-size:8px;color:var(--text-tertiary);margin-left:4px;text-transform:uppercase;letter-spacing:0.04em;">scripted</span></a>
+    <a href="/v2" class="nav-link" style="position:relative;">
+      v2.0 <span style="position:absolute;top:-2px;right:-4px;background:linear-gradient(135deg,#a78bfa,#7c3aed);color:#fff;font-size:7px;padding:1px 4px;border-radius:3px;font-weight:700;letter-spacing:0.04em;">SOON</span>
+    </a>
+  </nav>
+
+  <div class="nav-controls">
+    <div style="position: relative;">
+      <button class="mascot-pill" id="mascot-toggle">
+        <img id="mascot-img" src="/static/bears/bear_thinking.png" alt="" style="width:22px;height:22px;border-radius:50%;background:transparent;object-fit:contain;">
+        <span id="mascot-name">SCOUT</span>
+        <span style="opacity: 0.5; font-size: 10px;">▾</span>
+      </button>
+
+      <div class="menu" id="mascot-menu">
+        <div class="menu-item active" data-mascot="SCOUT" data-z="2.0" data-size="0.05" data-stop="0.07" data-color="#d4a574" data-bear="bear_thinking.png">
+          <img class="menu-item-icon" src="/static/bears/bear_thinking.png" alt="" style="width:36px;height:36px;border-radius:8px;background:transparent;object-fit:contain;">
+          <div class="menu-item-info">
+            <div class="menu-item-name">SCOUT  <span style="color:#facc15">★</span></div>
+            <div class="menu-item-meta">z ≥ 2.0  ·  5%  ·  −7%</div>
+          </div>
+          <div class="check">✓</div>
+        </div>
+        <div class="menu-item" data-mascot="BLITZ" data-z="1.5" data-size="0.12" data-stop="0.10" data-color="#f87171" data-bear="bear_fired_up.png">
+          <img class="menu-item-icon" src="/static/bears/bear_fired_up.png" alt="" style="width:36px;height:36px;border-radius:8px;background:transparent;object-fit:contain;">
+          <div class="menu-item-info">
+            <div class="menu-item-name">BLITZ</div>
+            <div class="menu-item-meta">z ≥ 1.5  ·  12%  ·  −10%</div>
+          </div>
+          <div class="check">✓</div>
+        </div>
+        <div class="menu-item" data-mascot="GUARDIAN" data-z="2.5" data-size="0.02" data-stop="0.05" data-color="#34d399" data-bear="bear_confident.png">
+          <img class="menu-item-icon" src="/static/bears/bear_confident.png" alt="" style="width:36px;height:36px;border-radius:8px;background:transparent;object-fit:contain;">
+          <div class="menu-item-info">
+            <div class="menu-item-name">GUARDIAN</div>
+            <div class="menu-item-meta">z ≥ 2.5  ·  2%  ·  −5%</div>
+          </div>
+          <div class="check">✓</div>
+        </div>
+        <div class="menu-item" data-mascot="ROBO" data-z="1.5" data-size="0.05" data-stop="0.07" data-color="#818cf8" data-bear="bear_confused.png">
+          <img class="menu-item-icon" src="/static/bears/bear_confused.png" alt="" style="width:36px;height:36px;border-radius:8px;background:transparent;object-fit:contain;">
+          <div class="menu-item-info">
+            <div class="menu-item-name">ROBO-BEAR  <span style="color:#71717a; font-size:9px">α</span></div>
+            <div class="menu-item-meta">adaptive  ·  per-event</div>
+          </div>
+          <div class="check">✓</div>
+        </div>
+      </div>
+    </div>
+
+    {% if current_user %}
+      {% set _mascot = current_user.profile.active_mascot or current_user.profile.recommended_mascot %}
+      {% set _color = {'BLITZ':'#dc2626','SCOUT':'#d4a574','GUARDIAN':'#0f766e','ROBO':'#8b5cf6'}.get(_mascot, '#a1a1aa') %}
+      {% set _bear  = {'BLITZ':'bear_fired_up.png','SCOUT':'bear_thinking.png','GUARDIAN':'bear_confident.png','ROBO':'bear_confused.png'}.get(_mascot, 'bear_thinking.png') %}
+      <a href="/profile" class="user-pill" title="{{ current_user.username }} · active mascot: {{ _mascot }}">
+        <img src="/static/bears/{{ _bear }}" alt="" style="width:18px;height:18px;object-fit:contain;border-radius:4px;">
+        <span style="color:{{ _color }};font-weight:600;">{{ _mascot }}</span>
+        <span style="color:var(--text-tertiary);font-size:10px;">·</span>
+        <span>{{ current_user.username }}</span>
+      </a>
+    {% else %}
+      <a href="/login" class="user-pill"><span>Sign in →</span></a>
+    {% endif %}
+    <div class="status-pill" style="background: rgba(167,139,250,0.10); border: 1px solid rgba(167,139,250,0.4); color: #a78bfa;"><span class="dot" style="background:#a78bfa;box-shadow:0 0 4px #a78bfa;"></span>scripted</div>
+  </div>
+</header>
+
+<!-- ======= DATE-CODED EVENT BANNER ======= -->
+<div style="background: linear-gradient(180deg, rgba(167,139,250,0.05), transparent), var(--bg-card); border-bottom: 1px solid rgba(167,139,250,0.25); padding: 10px 20px;">
+  <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap; max-width: 1320px; margin: 0 auto;">
+    <span style="font-size: 9px; padding: 3px 8px; background: rgba(167,139,250,0.15); color: #c4b5fd; border-radius: 3px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; font-family: var(--font-mono);">DEMO · DATE-CODED</span>
+    <span style="font-size: 12px; color: var(--text-secondary);">
+      Pod replayed against the <strong style="color: var(--text);">2025-09-12 Tricolor Holdings Chapter 7</strong> event window. Bear states, gate decisions, and War Room votes reproduce what the production system saw on that date.
+    </span>
+    <span style="margin-left: auto; font-size: 11px; color: var(--text-tertiary); font-family: var(--font-mono);">
+      Other date-coded events: <a href="/case-study" style="color: var(--accent-signal); text-decoration: none;">CVNA 2021-11-26</a> · <a href="/live" style="color: #4ade80; text-decoration: none;">Live (T-1)</a>
+    </span>
+  </div>
+</div>
+
+<!-- ======= PORTFOLIO STRIP ======= -->
+<div class="strip">
+  <div class="strip-cell">
+    <div class="strip-label">Cash</div>
+    <div class="strip-value" id="port-cash">$100,000</div>
+  </div>
+  <div class="strip-cell">
+    <div class="strip-label">Open Positions</div>
+    <div class="strip-value" id="port-positions">0</div>
+  </div>
+  <div class="strip-cell">
+    <div class="strip-label">Drawdown Mode</div>
+    <div class="strip-value" id="port-mode" style="color: var(--success);">NORMAL</div>
+  </div>
+  <div class="strip-cell">
+    <div class="strip-label">Portfolio β</div>
+    <div class="strip-value" id="port-beta">+0.00</div>
+  </div>
+  <div class="strip-cell">
+    <div class="strip-label">Portfolio Value</div>
+    <div class="strip-value" id="port-value">$100,000</div>
+  </div>
+</div>
+
+<!-- ======= 4 PODS ======= -->
+<main class="pods">
+
+  <!-- POD 1 — SIGNAL -->
+  <section class="pod" data-accent="signal">
+    <div class="pod-accent"></div>
+    <div class="pod-header">
+      <div class="pod-id">
+        <div class="pod-num">01</div>
+        <div>
+          <div class="pod-label">SENSE</div>
+          <div class="pod-name">Signal · BSI Engine</div>
+        </div>
+      </div>
+      <div style="font-size: 10px; color: var(--text-tertiary); font-family: var(--font-mono); display:flex;align-items:center;gap:6px;">
+        <span class="live-dot"></span>
+        <span style="color:#22c55e;text-transform:uppercase;letter-spacing:0.05em;">live</span>
+        <span style="color:var(--border-strong);">·</span>
+        <span>25 firms · 8 pillars</span>
+      </div>
+    </div>
+    <div class="pod-body">
+      <div id="signal-firms">
+        <div style="font-size:11px;color:var(--text-tertiary);text-align:center;padding:24px 0;">
+          Loading your watchlist…
+        </div>
+      </div>
+      <div style="margin-top:auto;padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-size:10px;color:var(--text-tertiary);">
+          <span id="watchlist-count">0/5</span> selected · click <a href="/monitor" style="color:var(--accent-signal);">/monitor</a> to add
+        </div>
+        <button class="trigger" id="btn-clear-watchlist" style="font-size:10px;padding:3px 8px;">Clear all</button>
+      </div>
+
+      <div class="gates" id="gates-display" style="display: none;">
+        <div class="gate pass">
+          <div class="gate-label">BSI z</div>
+          <div class="gate-value" id="gate-bsi">3.42</div>
+        </div>
+        <div class="gate pass">
+          <div class="gate-label">Phase</div>
+          <div class="gate-value" id="gate-phase">2</div>
+        </div>
+        <div class="gate pass">
+          <div class="gate-label">H2</div>
+          <div class="gate-value" id="gate-h2">✓</div>
+        </div>
+        <div class="gate pass">
+          <div class="gate-label">Confirm</div>
+          <div class="gate-value" id="gate-confirm">2</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- POD 2 — DEBATE -->
+  <section class="pod" data-accent="debate">
+    <div class="pod-accent"></div>
+    <div class="pod-header">
+      <div class="pod-id">
+        <div class="pod-num">02</div>
+        <div>
+          <div class="pod-label">DEBATE</div>
+          <div class="pod-name">War Room · 5 archetypes</div>
+        </div>
+      </div>
+      <div style="font-size: 10px; color: var(--text-tertiary); font-family: var(--font-mono);" id="debate-event-tag">
+        no event
+      </div>
+    </div>
+    <div class="pod-body">
+      <div id="debate-empty" class="pod-empty">
+        <div class="icon">🎭</div>
+        <div>Awaiting FIRED_UP event from Signal pod</div>
+      </div>
+      <div id="debate-list" style="display: none;">
+        <div class="archetype-list">
+          <div class="archetype-row">
+            <div class="archetype-icon">🧠</div>
+            <div class="archetype-info">
+              <div class="archetype-name">Renaissance</div>
+              <div class="archetype-rationale" id="r-renaissance">—</div>
+            </div>
+            <div class="vote-pill" data-vote="SHORT" id="v-renaissance">SHORT</div>
+          </div>
+          <div class="archetype-row">
+            <div class="archetype-icon">🌍</div>
+            <div class="archetype-info">
+              <div class="archetype-name">Bridgewater</div>
+              <div class="archetype-rationale" id="r-bridgewater">—</div>
+            </div>
+            <div class="vote-pill" data-vote="SHORT" id="v-bridgewater">SHORT</div>
+          </div>
+          <div class="archetype-row">
+            <div class="archetype-icon">🎯</div>
+            <div class="archetype-info">
+              <div class="archetype-name">Two Sigma</div>
+              <div class="archetype-rationale" id="r-twosigma">—</div>
+            </div>
+            <div class="vote-pill" data-vote="SHORT" id="v-twosigma">SHORT</div>
+          </div>
+          <div class="archetype-row">
+            <div class="archetype-icon">⚡</div>
+            <div class="archetype-info">
+              <div class="archetype-name">Millennium</div>
+              <div class="archetype-rationale" id="r-millennium">—</div>
+            </div>
+            <div class="vote-pill" data-vote="PASS" id="v-millennium">PASS</div>
+          </div>
+          <div class="archetype-row">
+            <div class="archetype-icon">💼</div>
+            <div class="archetype-info">
+              <div class="archetype-name">Citadel</div>
+              <div class="archetype-rationale" id="r-citadel">—</div>
+            </div>
+            <div class="vote-pill" data-vote="SHORT" id="v-citadel">SHORT</div>
+          </div>
+          <!-- ★ Our fund — BearWatch — distinguished row -->
+          <div class="archetype-row archetype-our-fund" style="background: linear-gradient(90deg, rgba(167,139,250,0.10), rgba(167,139,250,0.02)); border: 1px solid rgba(167,139,250,0.4); border-radius: 6px; position: relative; padding-left: 18px;">
+            <div class="archetype-icon">🐻</div>
+            <div class="archetype-info">
+              <div class="archetype-name" style="color:#c4b5fd;font-weight:700;">BearWatch <span style="font-size:8px;background:rgba(167,139,250,0.2);color:#c4b5fd;padding:1px 5px;border-radius:3px;margin-left:4px;font-family:var(--font-mono);letter-spacing:0.05em;">★ OURS</span></div>
+              <div class="archetype-rationale" id="r-bearwatch">—</div>
+            </div>
+            <div class="vote-pill" data-vote="SHORT" id="v-bearwatch" style="background: rgba(167,139,250,0.15); color: #c4b5fd; border: 1px solid rgba(167,139,250,0.4);">SHORT</div>
+          </div>
+        </div>
+      </div>
+      <div class="verdict-bar" id="debate-verdict" style="display: none;">
+        <div>
+          <div style="font-size: 10px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600;">Verdict</div>
+          <div class="verdict-text">
+            <strong id="verdict-ratio">4-of-5</strong> SHORT · high conviction
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- POD 3 — EXECUTE -->
+  <section class="pod" data-accent="execute">
+    <div class="pod-accent"></div>
+    <div class="pod-header">
+      <div class="pod-id">
+        <div class="pod-num">03</div>
+        <div>
+          <div class="pod-label">EXECUTE</div>
+          <div class="pod-name">Risk Engine · 7 checks</div>
+        </div>
+      </div>
+      <div style="font-size: 10px; color: var(--text-tertiary); font-family: var(--font-mono);" id="execute-mascot-tag">
+        SCOUT · 5% · −7%
+      </div>
+    </div>
+    <div class="pod-body">
+      <!-- IDLE STATE — proactive trade suggestion -->
+      <div id="execute-empty" class="suggest-card">
+        <div class="suggest-head">
+          <div>
+            <div class="suggest-eyebrow">Suggested next trade</div>
+            <div class="suggest-ticker">
+              <span id="sug-ticker">—</span>
+              <span class="suggest-side" id="sug-side">SHORT</span>
+            </div>
+            <div class="suggest-firm" id="sug-firm">pick a watchlist asset to preview</div>
+          </div>
+          <div class="suggest-z" id="sug-z" title="Current BSI z-score">z —</div>
+        </div>
+        <div class="suggest-grid">
+          <div class="suggest-cell">
+            <div class="lbl">Entry (live)</div>
+            <div class="val" id="sug-entry">—</div>
+          </div>
+          <div class="suggest-cell">
+            <div class="lbl" title="Smart stop = entry × (1 + 7.9%) for shorts; tightens by 0.5% per 0.5 z-step above 2.0">Smart stop</div>
+            <div class="val" id="sug-stop">—</div>
+            <div class="sub" id="sug-stop-sub">—</div>
+          </div>
+          <div class="suggest-cell">
+            <div class="lbl" title="Target = entry × (1 − 5% × min(z, 4.5))">Profit target</div>
+            <div class="val" id="sug-target">—</div>
+            <div class="sub" id="sug-target-sub">—</div>
+          </div>
+          <div class="suggest-cell">
+            <div class="lbl" title="Apollo enforces a max-hold even on profitable shorts">Hold horizon</div>
+            <div class="val" id="sug-horizon">540 d</div>
+            <div class="sub">to T+540</div>
+          </div>
+          <div class="suggest-cell">
+            <div class="lbl">Size (mascot)</div>
+            <div class="val" id="sug-size">—</div>
+            <div class="sub" id="sug-size-sub">—</div>
+          </div>
+          <div class="suggest-cell">
+            <div class="lbl" title="reward / risk ratio at suggested levels">R : R</div>
+            <div class="val" id="sug-rr">—</div>
+            <div class="sub">target vs stop</div>
+          </div>
+        </div>
+        <div class="suggest-foot">
+          <span class="live-dot"></span>
+          <span style="color:var(--text-tertiary);">Suggestion auto-updates from your watchlist · click 🔥 on any row to run the full 7 risk checks</span>
+        </div>
+      </div>
+      <div id="execute-checks" style="display: none;">
+        <div class="check-list" id="check-list-mount"></div>
+      </div>
+      <div class="verdict-execute" id="verdict-execute" style="display: none;">
+        <div class="verdict-status">Verdict</div>
+        <div class="verdict-result" id="exec-result" data-status="APPROVED">APPROVED</div>
+        <div class="verdict-meta" style="grid-template-columns: repeat(5, 1fr);">
+          <div class="verdict-meta-cell">
+            <div class="label">Entry</div>
+            <div class="value" id="exec-entry">—</div>
+          </div>
+          <div class="verdict-meta-cell">
+            <div class="label">Size</div>
+            <div class="value" id="exec-size">$5,000</div>
+          </div>
+          <div class="verdict-meta-cell">
+            <div class="label">Stop</div>
+            <div class="value" id="exec-stop">$291.18</div>
+          </div>
+          <div class="verdict-meta-cell">
+            <div class="label">Target</div>
+            <div class="value" id="exec-target">$54.46</div>
+          </div>
+          <div class="verdict-meta-cell">
+            <div class="label">Hold</div>
+            <div class="value" id="exec-horizon">540 d</div>
+          </div>
+        </div>
+        <button class="btn" id="btn-execute">Execute Trade</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- POD 4 — LEARN -->
+  <section class="pod" data-accent="learn">
+    <div class="pod-accent"></div>
+    <div class="pod-header">
+      <div class="pod-id">
+        <div class="pod-num">04</div>
+        <div>
+          <div class="pod-label">LEARN</div>
+          <div class="pod-name">Journal · feedback loop</div>
+        </div>
+      </div>
+      <div style="font-size: 10px; color: var(--text-tertiary); font-family: var(--font-mono);" id="learn-trade-count">
+        0 trades
+      </div>
+    </div>
+    <div class="pod-body">
+      <div class="stats-grid">
+        <div class="stat">
+          <div class="stat-label">Realized P&L</div>
+          <div class="stat-value" id="stat-realized">$0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Win Rate</div>
+          <div class="stat-value" id="stat-winrate">—</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Avg Hold</div>
+          <div class="stat-value" id="stat-hold">—</div>
+        </div>
+      </div>
+
+      <div class="journal-list" id="journal-list">
+        <div class="pod-empty" style="padding: 24px 0;">
+          <div class="icon" style="font-size: 18px;">📓</div>
+          <div style="font-size: 11px;">No trades yet — execute one from the Risk Engine</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ======= FOOTER ======= -->
+<footer class="footer">
+  <div>BearWatch × Apollo Hermes  ·  v2 design  ·  Backtested simulation, no live capital</div>
+  <div style="font-family: var(--font-mono);">Siddharth Verma  ·  UIUC FIN 580  ·  Spring 2026</div>
+</footer>
+
+</div>
+
+<div id="toast-stack"></div>
+
+<!-- ========= TRADE CONFIRMATION MODAL (Robinhood-style) ========= -->
+<div id="confirm-modal" class="confirm-overlay">
+  <div class="confirm-card">
+    <div class="confirm-head">
+      <div class="confirm-eyebrow">Review your order</div>
+      <div class="confirm-ticker" id="cf-ticker">—</div>
+      <div><span class="confirm-side-pill" id="cf-side">SHORT</span></div>
+      <div class="confirm-title" id="cf-firmname" style="font-size:13px;color:var(--text-tertiary);font-weight:400;margin-top:6px;">—</div>
+    </div>
+    <div class="confirm-body">
+      <div class="confirm-row"><span class="lbl">Mascot config</span><span class="val" id="cf-mascot">SCOUT</span></div>
+      <div class="confirm-row"><span class="lbl">Apollo verdict</span><span class="val" id="cf-verdict">APPROVED</span></div>
+      <div class="confirm-row"><span class="lbl">Shares</span><span class="val" id="cf-shares">—</span></div>
+      <div class="confirm-row"><span class="lbl">Entry price</span><span class="val" id="cf-entry">—</span></div>
+      <div class="confirm-row"><span class="lbl">Stop-loss</span><span class="val" id="cf-stop">—</span></div>
+      <div class="confirm-row"><span class="lbl">Profit target</span><span class="val" id="cf-target">—</span></div>
+      <div class="confirm-row"><span class="lbl">Hold horizon</span><span class="val" id="cf-horizon">540 days</span></div>
+      <div class="confirm-row total"><span class="lbl">Estimated notional</span><span class="val" id="cf-notional">—</span></div>
+      <div class="confirm-disclosure" id="cf-disclosure">
+        Backtested simulation. No live capital deployed.
+      </div>
+    </div>
+    <div class="confirm-footer">
+      <button class="confirm-btn cancel" id="cf-cancel">Cancel</button>
+      <button class="confirm-btn commit" id="cf-commit">Confirm trade</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DEMO MODE — date-coded historical prices for 2025-09-12 (Tricolor Chapter 7 event) ===== -->
+<!-- These override live yfinance prices so the demo numbers reproduce exactly what a trader would have
+     seen on the event date. Pulled from yfinance on 2026-05-01 and frozen here. -->
+<script>
+window.DEMO_DATE = "2025-09-12";
+window.DEMO_DATE_LABEL = "as of 2025-09-12 (Tricolor event window)";
+window.DEMO_DATE_PRICES = {
+  CVNA: 361.77, AFRM: 83.08, UPST: 63.08, SOFI: 26.55, LC: 16.68,
+  OPRT: 6.65,   PYPL: 66.53, CACC: 474.44, OPFI: 10.99, ENVA: 115.14,
+  WRLD: 165.19, RM:   41.92, OMF:  58.43,  BFH:  62.77, ALLY: 41.60,
+  SYF:  74.76,  COF:  222.06, KMX:  59.77,  ACA:  95.07
+};
+// SQ became XYZ in 2026; DFS acquired by COF — no public quote on 2025-09-12 in current ticker namespace
+</script>
+<script src="{{ url_for('static', filename='v2.js') }}"></script>
+
+{% include '_hf_modal.html' %}
+<script src="{{ url_for('static', filename='hedge_fund_profiles.js') }}"></script>
+<script>
+  // ===== Copy-from-hedge-fund -> Pod 3 (Risk Engine) =====
+  // Called by hedge_fund_profiles.js when user clicks "Copy to Risk Engine".
+  // Populates Pod 3's verdict card with the fund's parameters and toasts confirmation.
+  window.applyHedgeFundTrade = function(t, fundName) {
+    if (!t) return;
+    // Show the verdict card (replaces the idle "Suggested next trade" card)
+    const empty = document.getElementById("execute-empty");
+    const verd  = document.getElementById("verdict-execute");
+    if (empty) empty.style.display = "none";
+    if (verd)  verd.style.display = "block";
+
+    // Stamp Pod 3 with the fund's verdict (treat as APPROVED — Apollo math will re-validate)
+    const fmt$ = n => '$' + Math.round(n).toLocaleString();
+    document.getElementById("exec-result").textContent = "FROM " + fundName.toUpperCase().replace(' ', '_');
+    document.getElementById("exec-result").style.color = "var(--accent-signal)";
+    document.getElementById("exec-entry").textContent  = "$" + t.entry.toFixed(2);
+    document.getElementById("exec-size").textContent   = `${t.shares} sh · ${fmt$(t.notional)}`;
+    document.getElementById("exec-stop").textContent   = "$" + t.stop.toFixed(2);
+    document.getElementById("exec-target").textContent = "$" + t.target.toFixed(2);
+    document.getElementById("exec-horizon").textContent = `${t.horizon_days} d`;
+
+    // Build the APOLLO_VERDICT-equivalent so Pod 4 confirm modal can populate
+    window.APOLLO_VERDICT = {
+      verdict: "APPROVED",
+      entry_price: t.entry,
+      stop_price: t.stop,
+      target_price: t.target,
+      recommended_usd: t.notional,
+      recommended_shares: t.shares,
+      recommended_notional: t.notional,
+      rr: parseFloat(t.rr),
+      risk_checks: [
+        {name: "Sourced from " + fundName, status: "PASS", detail: t.rationale},
+      ],
+      _fund_origin: fundName,
+    };
+    // Make sure the Execute button is enabled
+    const btn = document.getElementById("btn-execute");
+    if (btn) btn.disabled = false;
+
+    // Toast + scroll to Pod 3
+    if (typeof toast === "function") {
+      toast(`Copied ${fundName}'s trade for ${t.ticker} → Pod 3`, "ok");
+    }
+    document.querySelector('[data-accent="execute"]')?.scrollIntoView({behavior: "smooth", block: "center"});
+  };
+</script>
+<script>
+  // Wire War Room (Pod 2) rows to open the deep-dive modal.
+  // Names map to v2.js's archetype id: r-renaissance / r-bridgewater / r-twosigma / r-millennium / r-citadel
+  const _archMap = {
+    'renaissance': 'Renaissance',
+    'bridgewater': 'Bridgewater',
+    'twosigma':    'Two Sigma',
+    'millennium':  'Millennium',
+    'citadel':     'Citadel',
+    'bearwatch':   'BearWatch',
+  };
+  document.querySelectorAll('.archetype-row').forEach(row => {
+    row.style.cursor = 'pointer';
+    row.title = 'Click for deep-dive';
+    row.addEventListener('click', () => {
+      // Identify which archetype was clicked
+      const rationaleEl = row.querySelector('.archetype-rationale');
+      const voteEl      = row.querySelector('.vote-pill');
+      const id = (rationaleEl && rationaleEl.id) ? rationaleEl.id.replace('r-', '') : '';
+      const name = _archMap[id];
+      if (!name) return;
+      const vote = voteEl ? voteEl.textContent.trim() : '—';
+      const rationale = rationaleEl ? rationaleEl.textContent.trim() : '—';
+      // Resolve target ticker — prefer the firm currently in the debate event tag, else the suggestion preview ticker
+      const tagText = (document.getElementById('debate-event-tag')?.textContent || '').trim();
+      const tagTicker = tagText && tagText !== 'no event' ? tagText.toUpperCase().split(/\s+/)[0] : '';
+      const ticker = tagTicker || document.getElementById('sug-ticker')?.textContent || '—';
+      // Pass current entry price + bsi z so the trade-suggestion section can render
+      const sugEntryTxt = document.getElementById('sug-entry')?.textContent || '';
+      const entryPrice = parseFloat(sugEntryTxt.replace(/[^0-9.]/g, '')) || null;
+      const sugZTxt = document.getElementById('sug-z')?.textContent || '';
+      const bsiZ = parseFloat(sugZTxt.replace(/[^0-9.\-]/g, '')) || null;
+      openHedgeFundModal(name, { vote, rationale, ticker, entryPrice, bsiZ });
+    });
+  });
+</script>
+</body>
+</html>

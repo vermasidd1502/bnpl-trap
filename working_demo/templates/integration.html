@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BearWatch &harr; Apollo Hermes - Integration spec</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="antialiased">
+
+<!-- NAV -->
+<nav class="border-b border-[#1f2733] bg-[#07090d]/90 backdrop-blur sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="text-2xl">&#9889;</div>
+      <div>
+        <div class="font-bold text-white text-sm tracking-tight">APOLLO HERMES</div>
+        <div class="text-[10px] text-[#64748b] tracking-widest uppercase">Execution + Risk Layer</div>
+      </div>
+    </div>
+    <div class="hidden md:flex items-center gap-8 text-sm">
+      <a href="/" class="nav-link">Dashboard</a>
+      <a href="/integration" class="nav-link active">BearWatch Bridge</a>
+    </div>
+    <div class="pill"><span class="pill-dot pulse-cyan"></span> Integration spec v1</div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="pt-20 pb-16 px-6">
+  <div class="max-w-5xl mx-auto text-center">
+    <div class="pill mb-6">
+      <span class="text-[#d4a574]">&#128059;</span> + <span class="text-[#38bdf8]">&#9889;</span>
+      End-to-end signal &rarr; execution &rarr; learning loop
+    </div>
+    <h1 class="text-5xl md:text-6xl font-extrabold tracking-tighter text-white mb-5 leading-none">
+      The bridge between<br><span class="gradient-text-warm">sense</span> and <span class="gradient-text">act</span>.
+    </h1>
+    <p class="text-lg text-[#94a3b8] max-w-2xl mx-auto">
+      One webhook. One enrichment pass. One verdict. One trade. One post-mortem. Every BearWatch event becomes a closed-loop, journaled, learnable trade in Apollo.
+    </p>
+  </div>
+</section>
+
+<!-- BIG BRIDGE DIAGRAM -->
+<section class="py-12 px-6">
+  <div class="max-w-6xl mx-auto card p-8 md:p-12">
+    <div class="text-center mb-10">
+      <div class="text-xs uppercase tracking-widest text-[#38bdf8] mb-2">The five-stage pipeline</div>
+      <h2 class="text-2xl md:text-3xl font-bold text-white">From CFPB complaint to realized P&amp;L &mdash; auditable every step.</h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-stretch">
+      <div class="bridge-node bear">
+        <div class="text-2xl mb-2">&#128229;</div>
+        <div class="text-xs uppercase tracking-widest text-[#d4a574] mb-1">Stage 1</div>
+        <div class="font-semibold text-white text-sm mb-1">Ingest</div>
+        <div class="text-xs text-[#94a3b8]">CFPB &middot; Reddit &middot; Bluesky &middot; arXiv &middot; FRED &middot; MOVE</div>
+      </div>
+      <div class="bridge-node bear">
+        <div class="text-2xl mb-2">&#129518;</div>
+        <div class="text-xs uppercase tracking-widest text-[#d4a574] mb-1">Stage 2</div>
+        <div class="font-semibold text-white text-sm mb-1">BSI compute</div>
+        <div class="text-xs text-[#94a3b8]">8-pillar EWMA-z (exp.-weighted moving avg) &middot; 11-state bear engine</div>
+      </div>
+      <div class="bridge-node" style="border: 1px dashed #38bdf8; background: linear-gradient(135deg, rgba(212,165,116,0.06), rgba(56,189,248,0.06));">
+        <div class="text-2xl mb-2">&#128279;</div>
+        <div class="text-xs uppercase tracking-widest text-white mb-1">Stage 3</div>
+        <div class="font-semibold text-white text-sm mb-1">HTTP webhook</div>
+        <div class="text-xs text-[#94a3b8]">POST /api/bearwatch/ingest &middot; HMAC-signed</div>
+      </div>
+      <div class="bridge-node apollo">
+        <div class="text-2xl mb-2">&#128737;&#65039;</div>
+        <div class="text-xs uppercase tracking-widest text-[#38bdf8] mb-1">Stage 4</div>
+        <div class="font-semibold text-white text-sm mb-1">Risk verdict</div>
+        <div class="text-xs text-[#94a3b8]">7 checks &middot; sizing &middot; drawdown &middot; cash floor</div>
+      </div>
+      <div class="bridge-node apollo">
+        <div class="text-2xl mb-2">&#128211;</div>
+        <div class="text-xs uppercase tracking-widest text-[#38bdf8] mb-1">Stage 5</div>
+        <div class="font-semibold text-white text-sm mb-1">Execute + journal</div>
+        <div class="text-xs text-[#94a3b8]">Sim broker &middot; post-mortem &middot; closed loop</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT EACH STAGE DOES -->
+<section class="py-12 px-6">
+  <div class="max-w-6xl mx-auto">
+    <h2 class="text-2xl font-bold text-white mb-6">What each stage actually does</h2>
+    <div class="space-y-3">
+      <div class="card p-6">
+        <div class="flex items-start gap-4">
+          <div class="text-2xl">&#128229;</div>
+          <div class="flex-1">
+            <div class="font-semibold text-white mb-2">Stage 1 &middot; Ingest (BearWatch side)</div>
+            <p class="text-sm text-[#94a3b8] leading-relaxed">Six free public data layers stream into a DuckDB warehouse: CFPB consumer complaints, Reddit, Bluesky (Tier A/B/C/D credibility-split), arXiv research, FRED macro, MOVE bond-volatility.</p>
+          </div>
+        </div>
+      </div>
+      <div class="card p-6">
+        <div class="flex items-start gap-4">
+          <div class="text-2xl">&#129518;</div>
+          <div class="flex-1">
+            <div class="font-semibold text-white mb-2">Stage 2 &middot; BSI compute (BearWatch side)</div>
+            <p class="text-sm text-[#94a3b8] leading-relaxed">For each of 25 firms, compute the 8-pillar weighted-z BSI daily. Apply the deterministic 11-state bear engine. Phase classifier blocks Phase-1 GROWTH events from progressing to FIRED_UP.</p>
+          </div>
+        </div>
+      </div>
+      <div class="card p-6 card-accented">
+        <div class="flex items-start gap-4">
+          <div class="text-2xl">&#128279;</div>
+          <div class="flex-1">
+            <div class="font-semibold text-white mb-2">Stage 3 &middot; HTTP webhook bridge</div>
+            <p class="text-sm text-[#94a3b8] leading-relaxed">A new module &mdash; <span class="mono text-sky-300">apollo_bearwatch_bridge.py</span> &mdash; sits in the BearWatch repo. On every FIRED_UP transition, it serializes the bear payload and POSTs it to Apollo's <span class="mono text-sky-300">/api/bearwatch/ingest</span>.</p>
+          </div>
+        </div>
+      </div>
+      <div class="card p-6 card-accented">
+        <div class="flex items-start gap-4">
+          <div class="text-2xl">&#128737;&#65039;</div>
+          <div class="flex-1">
+            <div class="font-semibold text-white mb-2">Stage 4 &middot; Risk Engine verdict (Apollo side)</div>
+            <p class="text-sm text-[#94a3b8] leading-relaxed">The ingest route enriches the bear payload with: live quote, sector exposure check, beta-adjusted size, drawdown-mode multiplier, cash-floor check, R:R ratio. Verdict (APPROVED / SCALED_DOWN / BLOCKED) returned in &lt; 50ms.</p>
+          </div>
+        </div>
+      </div>
+      <div class="card p-6">
+        <div class="flex items-start gap-4">
+          <div class="text-2xl">&#128211;</div>
+          <div class="flex-1">
+            <div class="font-semibold text-white mb-2">Stage 5 &middot; Execute + journal + post-mortem</div>
+            <p class="text-sm text-[#94a3b8] leading-relaxed">When the trader executes, the trade is auto-logged with foreign key to <span class="mono text-sky-300">bearwatch_events.event_id</span>. Realized P&amp;L per BearWatch event accrues in a closed-loop reporting view.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="py-20 px-6 border-t border-[#1f2733]">
+  <div class="max-w-4xl mx-auto text-center">
+    <h2 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight mb-4">
+      Two systems. <span class="gradient-text">One pipeline.</span>
+    </h2>
+    <p class="text-[#94a3b8] mb-8 max-w-2xl mx-auto">
+      Click into the dashboard and fire a demo bear &mdash; this whole pipeline runs live, end to end.
+    </p>
+    <div class="flex items-center justify-center gap-4 flex-wrap">
+      <a href="/" class="px-6 py-3 bg-[#38bdf8] hover:bg-[#0ea5e9] text-[#07090d] font-semibold rounded-lg transition-all shadow-lg shadow-sky-900/40">
+        &larr; Back to live dashboard
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="py-10 px-6 border-t border-[#1f2733]">
+  <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-[#64748b]">
+    <div><span class="text-white font-semibold">Apollo Hermes</span> &middot; companion to <span class="text-[#d4a574]">BearWatch</span></div>
+    <div>Siddharth Verma &middot; UIUC FIN 580 &middot; Spring 2026</div>
+  </div>
+</footer>
+
+</body>
+</html>

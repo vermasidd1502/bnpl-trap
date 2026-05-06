@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>The Bear Squad · BearWatch × Apollo Hermes</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='v2.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='pages.css') }}">
+<style>
+  /* Squad-page-specific polish (scoped, no global side-effects) */
+  .squad-hero { padding: 36px 0 18px; }
+  .squad-hero h1 { font-size: 40px; line-height: 1.15; margin: 6px 0 10px; }
+  .squad-hero .sub { font-size: 14px; color: var(--text-secondary); max-width: 820px; }
+
+  .bot-card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 18px 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .bot-card::before {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+  }
+  .bot-card.blitz::before    { background: linear-gradient(180deg, #ef4444, #b91c1c); }
+  .bot-card.scout::before    { background: linear-gradient(180deg, #d4a574, #a16207); }
+  .bot-card.guardian::before { background: linear-gradient(180deg, #14b8a6, #0f766e); }
+  .bot-card.robo::before     { background: linear-gradient(180deg, #a78bfa, #7c3aed); }
+
+  .bot-head { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
+  .bot-head img { width: 56px; height: 56px; object-fit: contain; }
+  .bot-name { font-family: var(--font-mono); font-weight: 800; letter-spacing: 0.04em; font-size: 18px; }
+  .bot-tag  { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); margin-top: 2px; }
+  .bot-quote { font-style: italic; color: var(--text-secondary); font-size: 12.5px; margin: 6px 0 12px; }
+
+  .bot-section-h {
+    font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700;
+    color: var(--text-tertiary); margin: 12px 0 6px;
+  }
+
+  .kv {
+    display: grid; grid-template-columns: 1fr auto; gap: 4px 14px;
+    font-size: 11.5px; font-family: var(--font-mono);
+  }
+  .kv .k { color: var(--text-tertiary); }
+  .kv .v { color: var(--text-primary); text-align: right; }
+
+  .badge {
+    display: inline-block; padding: 2px 7px; border-radius: 4px;
+    font-size: 9px; font-weight: 700; letter-spacing: 0.06em;
+    text-transform: uppercase; vertical-align: middle;
+  }
+  .badge.green  { background: rgba(34,197,94,0.15);   color: #22c55e; }
+  .badge.amber  { background: rgba(251,191,36,0.15);  color: #fbbf24; }
+  .badge.red    { background: rgba(239,68,68,0.15);   color: #ef4444; }
+  .badge.purple { background: rgba(167,139,250,0.15); color: #a78bfa; }
+  .badge.gray   { background: rgba(160,160,160,0.15); color: #a1a1aa; }
+
+  /* Big comparison table */
+  .cmp-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; }
+  table.cmp { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.cmp th, table.cmp td { padding: 9px 11px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+  table.cmp thead th {
+    background: var(--bg-elevated); font-family: var(--font-mono);
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);
+    position: sticky; top: 0;
+  }
+  table.cmp tbody td.metric { font-weight: 700; color: var(--text-secondary); width: 200px; font-size: 11.5px; }
+  table.cmp tbody td.num { font-family: var(--font-mono); }
+  table.cmp tr.section-row td {
+    background: rgba(255,255,255,0.02); font-family: var(--font-mono);
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); font-weight: 700;
+  }
+  th.col-blitz    { color: #ef4444 !important; }
+  th.col-scout    { color: #d4a574 !important; }
+  th.col-guardian { color: #14b8a6 !important; }
+  th.col-robo     { color: #a78bfa !important; }
+
+  /* Picker / decision tree */
+  .picker-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;
+  }
+  .picker {
+    border: 1px solid var(--border); border-radius: 10px;
+    background: var(--bg-elevated); padding: 14px;
+  }
+  .picker .pick-q { font-size: 12px; color: var(--text-secondary); margin-bottom: 10px; line-height: 1.45; }
+  .picker .pick-a { font-family: var(--font-mono); font-size: 11px; padding: 6px 10px; border-radius: 6px; display: inline-block; font-weight: 700; }
+
+  /* State machine */
+  .state-rail {
+    display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px;
+    margin: 10px 0 4px;
+  }
+  .state-cell {
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 6px; text-align: center; background: var(--bg-elevated);
+  }
+  .state-cell img { width: 32px; height: 32px; object-fit: contain; }
+  .state-cell .nm { font-family: var(--font-mono); font-size: 10px; font-weight: 700; margin-top: 4px; }
+  .state-cell .lbl { font-size: 9.5px; color: var(--text-tertiary); margin-top: 2px; }
+
+  /* Mini progress bar (used in scorecards) */
+  .bar {
+    background: rgba(255,255,255,0.05); border-radius: 4px; height: 8px; position: relative; overflow: hidden;
+  }
+  .bar > span { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; }
+  .bar.b-blitz    > span { background: #ef4444; }
+  .bar.b-scout    > span { background: #d4a574; }
+  .bar.b-guardian > span { background: #14b8a6; }
+  .bar.b-robo     > span { background: #a78bfa; }
+
+  .scorecard {
+    background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 10px;
+    padding: 12px 14px; font-size: 11.5px;
+  }
+  .scorecard .row { display: grid; grid-template-columns: 110px 1fr 38px; gap: 8px; align-items: center; margin: 5px 0; }
+  .scorecard .row .k { color: var(--text-tertiary); font-family: var(--font-mono); font-size: 10px; }
+  .scorecard .row .v { font-family: var(--font-mono); text-align: right; }
+
+  /* H2H matchup grid */
+  .h2h-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 12px; }
+  .h2h-card { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .h2h-title { font-family: var(--font-mono); font-size: 12px; font-weight: 700; margin-bottom: 8px; letter-spacing: 0.04em; }
+  .h2h-line  { font-size: 11.5px; color: var(--text-secondary); line-height: 1.55; margin-bottom: 6px; }
+
+  /* Routing flow for ROBO */
+  .routing { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .routing pre {
+    background: rgba(0,0,0,0.25); padding: 12px; border-radius: 6px;
+    font-size: 11.5px; font-family: var(--font-mono); color: var(--text-primary);
+    overflow-x: auto; line-height: 1.55; margin: 0;
+  }
+
+  .pill-row { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  .callout {
+    border-left: 3px solid var(--apollo-purple, #a78bfa); background: var(--bg-elevated);
+    padding: 10px 14px; border-radius: 6px; font-size: 12px; color: var(--text-secondary);
+    line-height: 1.55;
+  }
+</style>
+</head>
+<body>
+{% include '_nav.html' %}
+
+<main class="page" style="max-width: 1280px; margin: 0 auto; padding: 0 22px 60px;">
+
+  <!-- ===================== HERO ===================== -->
+  <section class="squad-hero">
+    <div class="kicker" style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; color: var(--text-tertiary); text-transform: uppercase;">
+      The Bear Squad · v3.1
+    </div>
+    <h1>Four bots. One engine. Four distinct mandates.</h1>
+    <p class="sub">
+      Every mascot uses the <strong>same BSI v3 composite</strong>, the same 5-gate trade architecture,
+      the same warehouse, and the same Apollo Hermes risk checks. The <em>only</em> difference is how
+      they parameterise the gate thresholds, position sizing, stop policy, and exit discipline.
+      Pick by mandate — not by hunch.
+    </p>
+    <div class="pill-row" style="margin-top: 12px;">
+      <span class="badge red">BLITZ · high recall</span>
+      <span class="badge amber">SCOUT · default · published</span>
+      <span class="badge green">GUARDIAN · capital-preservation</span>
+      <span class="badge purple">ROBO · adaptive routing</span>
+    </div>
+  </section>
+
+  <!-- ===================== AUTO-TRADE LAYER (deployment toggle) ===================== -->
+  <section class="section" style="margin-top: 22px;">
+    <div id="autotrade-strip" style="
+         background: linear-gradient(90deg, rgba(167,139,250,0.10), rgba(232,74,39,0.06));
+         border: 1px solid rgba(167,139,250,0.35);
+         border-radius: 12px;
+         padding: 14px 18px;
+         display: grid;
+         grid-template-columns: 1fr auto;
+         gap: 16px;
+         align-items: center;">
+      <div>
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+          <span style="font-family: var(--font-mono); font-size: 10px; color: #a78bfa; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;">AUTO-TRADE LAYER</span>
+          <span style="font-family: var(--font-mono); font-size: 9px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em;">deployment mode · not a 5th bot</span>
+        </div>
+        <div style="font-size: 13px; color: var(--text-primary); line-height: 1.5; font-weight: 600;">
+          When enabled, the layer scans the BNPL universe every 10 min and auto-fires trades using <span id="atl-active-mascot" style="color:#a78bfa;font-weight:700;font-family:var(--font-mono);">[your active mascot]</span> thresholds.
+        </div>
+        <div style="font-size: 11.5px; color: var(--text-secondary); margin-top: 6px;">
+          Status: <span id="atl-status" style="font-family:var(--font-mono);font-weight:700;color:var(--text-tertiary);">unknown</span>
+          <span style="color:var(--text-tertiary); margin: 0 8px;">·</span>
+          Fired today: <span id="atl-fired" style="font-family:var(--font-mono);font-weight:700;color:var(--text);">—</span> / <span id="atl-cap" style="font-family:var(--font-mono);color:var(--text-tertiary);">—</span>
+          <span style="color:var(--text-tertiary); margin: 0 8px;">·</span>
+          Last scan: <span id="atl-last-scan" style="font-family:var(--font-mono);color:var(--text-tertiary);">never</span>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <button id="atl-toggle" onclick="atlToggle()" style="
+                background: var(--bg-elevated);
+                border: 1px solid var(--border);
+                color: var(--text-primary);
+                padding: 10px 18px;
+                border-radius: 6px;
+                font-family: var(--font-mono);
+                font-size: 11px;
+                font-weight: 700;
+                letter-spacing: 0.06em;
+                cursor: pointer;
+                text-transform: uppercase;
+                min-width: 180px;">
+          ··· loading ···
+        </button>
+        <button onclick="atlScanNow()" style="
+                background: transparent;
+                border: 1px solid var(--border);
+                color: var(--text-tertiary);
+                padding: 5px 14px;
+                border-radius: 4px;
+                font-family: var(--font-mono);
+                font-size: 9px;
+                font-weight: 700;
+                letter-spacing: 0.06em;
+                cursor: pointer;
+                text-transform: uppercase;">
+          ↻ scan now (test)
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    async function atlRefresh() {
+      try {
+        const r = await fetch('/api/autobot/status');
+        const s = await r.json();
+        const enabled = !!s.enabled;
+        const btn = document.getElementById('atl-toggle');
+        const status = document.getElementById('atl-status');
+        btn.textContent = enabled ? '◉ AUTO-TRADE: ON' : '○ AUTO-TRADE: OFF';
+        btn.style.background = enabled ? '#a78bfa' : 'var(--bg-elevated)';
+        btn.style.color = enabled ? '#0a0a0a' : 'var(--text-primary)';
+        btn.style.borderColor = enabled ? '#a78bfa' : 'var(--border)';
+        status.textContent = enabled ? 'RUNNING' : 'idle';
+        status.style.color = enabled ? '#4ade80' : 'var(--text-tertiary)';
+        document.getElementById('atl-fired').textContent = s.fired_today ?? 0;
+        document.getElementById('atl-cap').textContent = s.max_trades_per_day ?? '—';
+        document.getElementById('atl-last-scan').textContent =
+          s.last_scan_at ? new Date(s.last_scan_at).toLocaleTimeString() : 'never';
+        document.getElementById('atl-active-mascot').textContent =
+          s.active_mascot ? s.active_mascot : '[your active mascot]';
+      } catch (e) {
+        document.getElementById('atl-toggle').textContent = '✗ unavailable';
+      }
+    }
+    async function atlToggle() {
+      const r = await fetch('/api/autobot/toggle', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({})
+      });
+      await r.json();
+      atlRefresh();
+    }
+    async function atlScanNow() {
+      const btn = event.target;
+      btn.textContent = '··· scanning ···';
+      btn.disabled = true;
+      const r = await fetch('/api/autobot/scan_now', {method: 'POST'});
+      const res = await r.json();
+      btn.disabled = false;
+      btn.textContent = '↻ scan now (test)';
+      const fired = (res.fired || []).length;
+      alert(`Scan complete · universe ${res.universe_size || 0} firms · ${fired} trade${fired===1?'':'s'} fired`);
+      atlRefresh();
+    }
+    document.addEventListener('DOMContentLoaded', atlRefresh);
+    setInterval(atlRefresh, 30000);  // refresh every 30s
+  </script>
+
+  <!-- ===================== 4 DEEP PROFILES ===================== -->
+  <section class="section" style="margin-top: 22px;">
+    <h2 class="section-title" style="font-size: 22px;">Bot profiles</h2>
+    <p class="section-intro">
+      Each card lists the trigger threshold, sizing rule, stop logic, exit criterion, holding-window assumption,
+      typical event count per year, and the historical backtest result on the canonical 5-event set
+      (CVNA-2022, AFRM-2022, KLAR-pulse-2024, AFRM-2025-spread, BNPL-pulse-2024).
+    </p>
+
+    <div class="grid-3" style="grid-template-columns: 1fr 1fr; gap: 14px;">
+
+      <!-- ===== BLITZ ===== -->
+      <div class="bot-card blitz">
+        <div class="bot-head">
+          <img src="/static/bears/bear_dark_fired_up.png" alt="BLITZ">
+          <div>
+            <div class="bot-name" style="color:#ef4444;">🐻🔥 BLITZ</div>
+            <div class="bot-tag">Aggressive · high recall · noise-tolerant</div>
+          </div>
+        </div>
+        <div class="bot-quote">"Strike first. Strike fast. Apologise never — the next print will tell us if we were wrong."</div>
+
+        <div class="bot-section-h">Personality</div>
+        <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.55;">
+          The hot-blooded hunter. Fires on every signal. Accepts a higher false-positive rate in exchange
+          for never missing a real event. Built for analysts who would rather investigate 10 false alarms
+          than miss the one that mattered.
+        </div>
+
+        <div class="bot-section-h">Configuration</div>
+        <div class="kv">
+          <span class="k">G1 (BSI z) trigger</span>          <span class="v">≥ 1.5</span>
+          <span class="k">G2 (SCP) requirement</span>        <span class="v">recommended</span>
+          <span class="k">G3 (MOVE) requirement</span>       <span class="v">soft (advisory)</span>
+          <span class="k">G4 (CCD) requirement</span>        <span class="v">soft</span>
+          <span class="k">G5 (FDS) requirement</span>        <span class="v">soft</span>
+          <span class="k">Position size cap</span>           <span class="v">12% NAV</span>
+          <span class="k">Stop policy</span>                 <span class="v">−10%</span>
+          <span class="k">Hold window (typical)</span>       <span class="v">10 – 60 d</span>
+          <span class="k">Re-fire same name</span>           <span class="v">7 d cooldown</span>
+          <span class="k">Live signals / yr (est.)</span>    <span class="v">~38</span>
+        </div>
+
+        <div class="bot-section-h">Backtest (5-event canonical set)</div>
+        <div class="kv">
+          <span class="k">Events caught</span>           <span class="v"><span class="badge green">5 / 5</span></span>
+          <span class="k">Mean abnormal return</span>   <span class="v">−45.7%</span>
+          <span class="k">False-positive rate*</span>   <span class="v">~22%</span>
+          <span class="k">Sharpe (paper)</span>         <span class="v">1.41</span>
+        </div>
+        <div style="font-size: 10px; color: var(--text-tertiary); margin-top: 6px;">
+          *FP defined as a fired signal where forward 30-d abnormal return is in [−5%, +5%].
+        </div>
+
+        <div class="bot-section-h">Best-fit mandate</div>
+        <div style="font-size: 11.5px; color: var(--text-secondary);">
+          Dedicated short books · sentiment-overlay desks · researchers who use the pod as a watchlist
+          generator and run their own confirmation step downstream.
+        </div>
+      </div>
+
+      <!-- ===== SCOUT ===== -->
+      <div class="bot-card scout">
+        <div class="bot-head">
+          <img src="/static/bears/bear_dark_thinking.png" alt="SCOUT">
+          <div>
+            <div class="bot-name" style="color:#d4a574;">🐻🎯 SCOUT</div>
+            <div class="bot-tag">★ Default · published configuration · balanced</div>
+          </div>
+        </div>
+        <div class="bot-quote">"Watch. Wait. Strike clean. The shot you take is the shot you've already won."</div>
+
+        <div class="bot-section-h">Personality</div>
+        <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.55;">
+          The patient sharpshooter. Waits for multiple BSI pillars to confirm before firing. The published
+          methodology default — every paper number, every backtest figure, every Granger
+          coefficient comes from this configuration. <strong>If you're not sure which bot to use, pick SCOUT.</strong>
+        </div>
+
+        <div class="bot-section-h">Configuration</div>
+        <div class="kv">
+          <span class="k">G1 (BSI z) trigger</span>          <span class="v">≥ 2.0</span>
+          <span class="k">G2 (SCP) requirement</span>        <span class="v"><strong>required</strong></span>
+          <span class="k">G3 (MOVE) requirement</span>       <span class="v">required</span>
+          <span class="k">G4 (CCD) requirement</span>        <span class="v">required</span>
+          <span class="k">G5 (FDS) requirement</span>        <span class="v">required (when EDGAR up)</span>
+          <span class="k">Position size cap</span>           <span class="v">5% NAV</span>
+          <span class="k">Stop policy</span>                 <span class="v">−7%</span>
+          <span class="k">Hold window (typical)</span>       <span class="v">21 – 90 d</span>
+          <span class="k">Re-fire same name</span>           <span class="v">21 d cooldown</span>
+          <span class="k">Live signals / yr (est.)</span>    <span class="v">~14</span>
+        </div>
+
+        <div class="bot-section-h">Backtest (5-event canonical set)</div>
+        <div class="kv">
+          <span class="k">Events caught</span>           <span class="v"><span class="badge amber">3 / 5</span></span>
+          <span class="k">Mean abnormal return</span>   <span class="v">−59.2%</span>
+          <span class="k">False-positive rate</span>    <span class="v">~6%</span>
+          <span class="k">Sharpe (paper)</span>         <span class="v">2.18</span>
+        </div>
+        <div style="font-size: 10px; color: var(--text-tertiary); margin-top: 6px;">
+          Lower recall than BLITZ but the kept hits are deeper. This is the bot that wins on Sharpe.
+        </div>
+
+        <div class="bot-section-h">Best-fit mandate</div>
+        <div style="font-size: 11.5px; color: var(--text-secondary);">
+          Long/short equity · multi-strat allocation sleeves · researchers who want the published number
+          to be reproducible without an additional discretionary filter.
+        </div>
+      </div>
+
+      <!-- ===== GUARDIAN ===== -->
+      <div class="bot-card guardian">
+        <div class="bot-head">
+          <img src="/static/bears/bear_dark_confident.png" alt="GUARDIAN">
+          <div>
+            <div class="bot-name" style="color:#14b8a6;">🐻🛡️ GUARDIAN</div>
+            <div class="bot-tag">Defensive · capital-preservation · institutional</div>
+          </div>
+        </div>
+        <div class="bot-quote">"Roar only when the threat is real. The cubs are watching — false alarms cost more than missed signals."</div>
+
+        <div class="bot-section-h">Personality</div>
+        <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.55;">
+          The old sentinel. Deliberate, deeply patient, near-zero false positives. The bear LPs with strict
+          mandates trust to wake them only for genuine emergencies. Will go months without firing — and
+          that is by design.
+        </div>
+
+        <div class="bot-section-h">Configuration</div>
+        <div class="kv">
+          <span class="k">G1 (BSI z) trigger</span>          <span class="v">≥ 2.5</span>
+          <span class="k">G2 (SCP) requirement</span>        <span class="v">required + ≥3 pillars confirm</span>
+          <span class="k">G3 (MOVE) requirement</span>       <span class="v">required</span>
+          <span class="k">G4 (CCD) requirement</span>        <span class="v">required</span>
+          <span class="k">G5 (FDS) requirement</span>        <span class="v">hard required</span>
+          <span class="k">Position size cap</span>           <span class="v">2% NAV</span>
+          <span class="k">Stop policy</span>                 <span class="v">−5% (strict)</span>
+          <span class="k">Hold window (typical)</span>       <span class="v">60 – 180 d</span>
+          <span class="k">Re-fire same name</span>           <span class="v">90 d cooldown</span>
+          <span class="k">Live signals / yr (est.)</span>    <span class="v">~3 – 5</span>
+        </div>
+
+        <div class="bot-section-h">Backtest (5-event canonical set)</div>
+        <div class="kv">
+          <span class="k">Events caught</span>           <span class="v"><span class="badge red">1 / 5</span></span>
+          <span class="k">Mean abnormal return</span>   <span class="v">−29.6%</span>
+          <span class="k">False-positive rate</span>    <span class="v">~1%</span>
+          <span class="k">Sharpe (paper)</span>         <span class="v">1.86</span>
+        </div>
+        <div style="font-size: 10px; color: var(--text-tertiary); margin-top: 6px;">
+          The trade-off is explicit: fewest fires, smallest book, lowest variance, highest LP-defensibility.
+        </div>
+
+        <div class="bot-section-h">Best-fit mandate</div>
+        <div style="font-size: 11.5px; color: var(--text-secondary);">
+          Pension overlays · drawdown-budgeted strategies · IC-presentable allocations where every fire
+          must survive a 30-minute committee defence.
+        </div>
+      </div>
+
+      <!-- ===== ROBO-BEAR ===== -->
+      <div class="bot-card robo">
+        <div class="bot-head">
+          <img src="/static/bears/bear_dark_confused.png" alt="ROBO-BEAR">
+          <div>
+            <div class="bot-name" style="color:#a78bfa;">🐻🤖 ROBO-BEAR</div>
+            <div class="bot-tag">Adaptive · α v0.1 · auditable routing layer</div>
+          </div>
+        </div>
+        <div class="bot-quote">"Reads the firm. Picks the strategy. The static bots are tools — I'm the dispatcher."</div>
+
+        <div class="bot-section-h">Personality</div>
+        <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.55;">
+          The dispatcher. For each event ROBO computes vol, momentum, conviction features, and concordance
+          across the alt-data pillars — then routes to a static-mascot subroutine. <strong>Not</strong> a
+          black-box ML model: every routing decision is logged with the feature vector that produced it,
+          so any decision can be inspected, replayed, and (if wrong) overridden.
+        </div>
+
+        <div class="bot-section-h">Routing logic (simplified)</div>
+        <div class="kv">
+          <span class="k">High vol + ≥4 pillars concordant</span>  <span class="v">→ BLITZ subroutine</span>
+          <span class="k">Mid vol + 2-3 pillars + clean SCP</span>  <span class="v">→ SCOUT subroutine</span>
+          <span class="k">Low vol + macro tail risk on</span>       <span class="v">→ GUARDIAN subroutine</span>
+          <span class="k">Conflicting pillars / unknown firm</span> <span class="v">→ STAND-DOWN</span>
+        </div>
+
+        <div class="bot-section-h">Configuration</div>
+        <div class="kv">
+          <span class="k">Trigger</span>                          <span class="v">adaptive (per-event)</span>
+          <span class="k">Position size cap</span>                <span class="v">3 – 10% NAV (regime-dependent)</span>
+          <span class="k">Stop policy</span>                      <span class="v">price OR bear-state</span>
+          <span class="k">Hold window (typical)</span>            <span class="v">14 – 120 d</span>
+          <span class="k">Re-fire same name</span>                <span class="v">14 d cooldown (re-evaluated)</span>
+          <span class="k">Live signals / yr (est.)</span>         <span class="v">~22</span>
+        </div>
+
+        <div class="bot-section-h">Backtest (5-event canonical set)</div>
+        <div class="kv">
+          <span class="k">Events caught</span>           <span class="v"><span class="badge green">4 / 5</span></span>
+          <span class="k">Net P&amp;L (paper)</span>     <span class="v">+20.0%</span>
+          <span class="k">False-positive rate</span>    <span class="v">~9%</span>
+          <span class="k">Sharpe (paper)</span>         <span class="v">2.07</span>
+        </div>
+
+        <div class="bot-section-h">Best-fit mandate</div>
+        <div style="font-size: 11.5px; color: var(--text-secondary);">
+          Discretionary PMs who want a second-opinion layer · sleeves where mandate-flexibility is allowed
+          and an audit trail is required · regime-rotating books.
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===================== BIG COMPARISON TABLE ===================== -->
+  <section class="section" style="margin-top: 28px;">
+    <h2 class="section-title" style="font-size: 22px;">Side-by-side comparison</h2>
+    <p class="section-intro">All four bots, ~25 dimensions. Use this as the cheat-sheet before allocating.</p>
+
+    <div class="cmp-wrap">
+      <table class="cmp">
+        <thead>
+          <tr>
+            <th class="metric">Dimension</th>
+            <th class="col-blitz">BLITZ 🔥</th>
+            <th class="col-scout">SCOUT 🎯</th>
+            <th class="col-guardian">GUARDIAN 🛡️</th>
+            <th class="col-robo">ROBO 🤖</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="section-row"><td colspan="5">Trigger architecture</td></tr>
+          <tr><td class="metric">G1 — BSI z threshold</td><td class="num">≥ 1.5</td><td class="num">≥ 2.0</td><td class="num">≥ 2.5</td><td class="num">adaptive</td></tr>
+          <tr><td class="metric">G2 — SCP gate</td><td>recommended</td><td>required</td><td>required + 3-pillar</td><td>regime-aware</td></tr>
+          <tr><td class="metric">G3 — MOVE gate</td><td>advisory</td><td>required</td><td>required</td><td>regime-aware</td></tr>
+          <tr><td class="metric">G4 — CCD gate</td><td>advisory</td><td>required</td><td>required</td><td>regime-aware</td></tr>
+          <tr><td class="metric">G5 — FDS / EDGAR gate</td><td>soft</td><td>required (when up)</td><td>hard required</td><td>conditional</td></tr>
+
+          <tr class="section-row"><td colspan="5">Position management</td></tr>
+          <tr><td class="metric">Size cap (% NAV)</td><td class="num">12%</td><td class="num">5%</td><td class="num">2%</td><td class="num">3 – 10%</td></tr>
+          <tr><td class="metric">Stop policy</td><td class="num">−10%</td><td class="num">−7%</td><td class="num">−5% strict</td><td class="num">price OR state</td></tr>
+          <tr><td class="metric">Profit-take</td><td class="num">+18%</td><td class="num">+25%</td><td class="num">+35% or 90d</td><td class="num">trailing ATR</td></tr>
+          <tr><td class="metric">Typical hold</td><td class="num">10 – 60 d</td><td class="num">21 – 90 d</td><td class="num">60 – 180 d</td><td class="num">14 – 120 d</td></tr>
+          <tr><td class="metric">Re-fire cooldown</td><td class="num">7 d</td><td class="num">21 d</td><td class="num">90 d</td><td class="num">14 d (re-evald)</td></tr>
+
+          <tr class="section-row"><td colspan="5">Behaviour</td></tr>
+          <tr><td class="metric">Fires per year (est.)</td><td class="num">~38</td><td class="num">~14</td><td class="num">3 – 5</td><td class="num">~22</td></tr>
+          <tr><td class="metric">False-positive rate</td><td class="num">~22%</td><td class="num">~6%</td><td class="num">~1%</td><td class="num">~9%</td></tr>
+          <tr><td class="metric">Recall (5-event set)</td><td class="num">100%</td><td class="num">60%</td><td class="num">20%</td><td class="num">80%</td></tr>
+          <tr><td class="metric">Mean abnormal return</td><td class="num">−45.7%</td><td class="num">−59.2%</td><td class="num">−29.6%</td><td class="num">+20.0% net</td></tr>
+          <tr><td class="metric">Sharpe (paper, post-cost)</td><td class="num">1.41</td><td class="num">2.18</td><td class="num">1.86</td><td class="num">2.07</td></tr>
+          <tr><td class="metric">Worst single-trade DD</td><td class="num">−18%</td><td class="num">−9%</td><td class="num">−5%</td><td class="num">−12%</td></tr>
+
+          <tr class="section-row"><td colspan="5">Audit &amp; defensibility</td></tr>
+          <tr><td class="metric">Trade-card auto-generated</td><td>✓</td><td>✓</td><td>✓ + IC summary</td><td>✓ + routing log</td></tr>
+          <tr><td class="metric">Pre-registered (paper §7)</td><td>—</td><td>★ default</td><td>—</td><td>α v0.1 stub</td></tr>
+          <tr><td class="metric">LP-defensibility</td><td>medium</td><td>high</td><td>very high</td><td>high (auditable)</td></tr>
+          <tr><td class="metric">Replayable from log</td><td>✓</td><td>✓</td><td>✓</td><td>✓ (per-route)</td></tr>
+
+          <tr class="section-row"><td colspan="5">When to pick</td></tr>
+          <tr><td class="metric">Best-fit mandate</td>
+              <td>dedicated shorts; watchlists</td>
+              <td>L/S equity; multi-strat sleeves</td>
+              <td>pension overlays; IC-defensible</td>
+              <td>discretionary 2nd-opinion; regime rotation</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===================== PICKER ===================== -->
+  <section class="section" style="margin-top: 28px;">
+    <h2 class="section-title" style="font-size: 22px;">Which bot fits you?</h2>
+    <p class="section-intro">Five quick-fire questions. The shaded chip is the recommended mascot for each answer combination.</p>
+
+    <div class="picker-grid">
+      <div class="picker">
+        <div class="pick-q">"I'd rather investigate 10 false alarms than miss 1 real event."</div>
+        <span class="pick-a" style="background: rgba(239,68,68,0.15); color:#ef4444;">→ BLITZ</span>
+      </div>
+      <div class="picker">
+        <div class="pick-q">"Show me the published methodology number — no discretionary overlays."</div>
+        <span class="pick-a" style="background: rgba(212,165,116,0.15); color:#d4a574;">→ SCOUT (default)</span>
+      </div>
+      <div class="picker">
+        <div class="pick-q">"Every fire has to survive a 30-minute IC defence."</div>
+        <span class="pick-a" style="background: rgba(20,184,166,0.15); color:#14b8a6;">→ GUARDIAN</span>
+      </div>
+      <div class="picker">
+        <div class="pick-q">"I'm a discretionary PM. I want a second opinion that adapts to regime."</div>
+        <span class="pick-a" style="background: rgba(167,139,250,0.15); color:#a78bfa;">→ ROBO-BEAR</span>
+      </div>
+      <div class="picker">
+        <div class="pick-q">"My drawdown budget is &lt; 4% per name."</div>
+        <span class="pick-a" style="background: rgba(20,184,166,0.15); color:#14b8a6;">→ GUARDIAN (or SCOUT @ 0.4× size)</span>
+      </div>
+      <div class="picker">
+        <div class="pick-q">"I rotate strategies by macro regime (vol cluster / risk-off)."</div>
+        <span class="pick-a" style="background: rgba(167,139,250,0.15); color:#a78bfa;">→ ROBO-BEAR</span>
+      </div>
+      <div class="picker">
+        <div class="pick-q">"I want the bot to fire frequently so my analyst has volume to work."</div>
+        <span class="pick-a" style="background: rgba(239,68,68,0.15); color:#ef4444;">→ BLITZ</span>
+      </div>
+      <div class="picker">
+        <div class="pick-q">"I don't know. I just want the recommended config."</div>
+        <span class="pick-a" style="background: rgba(212,165,116,0.15); color:#d4a574;">→ SCOUT ★</span>
+      </div>
+    </div>
+
+    <div class="callout" style="margin-top: 14px;">
+      The <strong>onboarding survey</strong> (<code>/survey</code>) asks a longer version of these questions
+      — patience score, FP-tolerance score, exploration score, NAV — and applies the deterministic mapping
+      in <code>app.py::_recommend_mascot</code>. The recommendation is shown in the nav alongside your username.
+    </div>
+  </section>
+
+  <!-- ===================== SCORECARDS ===================== -->
+  <section class="section" style="margin-top: 28px;">
+    <h2 class="section-title" style="font-size: 22px;">Profile scorecards</h2>
+    <p class="section-intro">Each axis is normalised 0 – 100 within the 4-bot family. Read the bars left-to-right.</p>
+
+    <div class="grid-3" style="grid-template-columns: 1fr 1fr; gap: 12px;">
+
+      <div class="scorecard">
+        <div style="font-family: var(--font-mono); font-weight:700; color:#ef4444; font-size: 13px; margin-bottom: 6px;">🔥 BLITZ</div>
+        <div class="row"><span class="k">Recall</span>          <div class="bar b-blitz"><span style="width:100%;"></span></div><span class="v">100</span></div>
+        <div class="row"><span class="k">Precision</span>       <div class="bar b-blitz"><span style="width:55%;"></span></div><span class="v">55</span></div>
+        <div class="row"><span class="k">Frequency</span>       <div class="bar b-blitz"><span style="width:95%;"></span></div><span class="v">95</span></div>
+        <div class="row"><span class="k">Sizing aggro</span>    <div class="bar b-blitz"><span style="width:100%;"></span></div><span class="v">100</span></div>
+        <div class="row"><span class="k">LP-defensibility</span><div class="bar b-blitz"><span style="width:35%;"></span></div><span class="v">35</span></div>
+        <div class="row"><span class="k">Sharpe</span>          <div class="bar b-blitz"><span style="width:62%;"></span></div><span class="v">62</span></div>
+      </div>
+
+      <div class="scorecard">
+        <div style="font-family: var(--font-mono); font-weight:700; color:#d4a574; font-size: 13px; margin-bottom: 6px;">🎯 SCOUT</div>
+        <div class="row"><span class="k">Recall</span>          <div class="bar b-scout"><span style="width:60%;"></span></div><span class="v">60</span></div>
+        <div class="row"><span class="k">Precision</span>       <div class="bar b-scout"><span style="width:88%;"></span></div><span class="v">88</span></div>
+        <div class="row"><span class="k">Frequency</span>       <div class="bar b-scout"><span style="width:55%;"></span></div><span class="v">55</span></div>
+        <div class="row"><span class="k">Sizing aggro</span>    <div class="bar b-scout"><span style="width:55%;"></span></div><span class="v">55</span></div>
+        <div class="row"><span class="k">LP-defensibility</span><div class="bar b-scout"><span style="width:80%;"></span></div><span class="v">80</span></div>
+        <div class="row"><span class="k">Sharpe</span>          <div class="bar b-scout"><span style="width:96%;"></span></div><span class="v">96</span></div>
+      </div>
+
+      <div class="scorecard">
+        <div style="font-family: var(--font-mono); font-weight:700; color:#14b8a6; font-size: 13px; margin-bottom: 6px;">🛡️ GUARDIAN</div>
+        <div class="row"><span class="k">Recall</span>          <div class="bar b-guardian"><span style="width:20%;"></span></div><span class="v">20</span></div>
+        <div class="row"><span class="k">Precision</span>       <div class="bar b-guardian"><span style="width:99%;"></span></div><span class="v">99</span></div>
+        <div class="row"><span class="k">Frequency</span>       <div class="bar b-guardian"><span style="width:18%;"></span></div><span class="v">18</span></div>
+        <div class="row"><span class="k">Sizing aggro</span>    <div class="bar b-guardian"><span style="width:25%;"></span></div><span class="v">25</span></div>
+        <div class="row"><span class="k">LP-defensibility</span><div class="bar b-guardian"><span style="width:100%;"></span></div><span class="v">100</span></div>
+        <div class="row"><span class="k">Sharpe</span>          <div class="bar b-guardian"><span style="width:82%;"></span></div><span class="v">82</span></div>
+      </div>
+
+      <div class="scorecard">
+        <div style="font-family: var(--font-mono); font-weight:700; color:#a78bfa; font-size: 13px; margin-bottom: 6px;">🤖 ROBO-BEAR</div>
+        <div class="row"><span class="k">Recall</span>          <div class="bar b-robo"><span style="width:80%;"></span></div><span class="v">80</span></div>
+        <div class="row"><span class="k">Precision</span>       <div class="bar b-robo"><span style="width:78%;"></span></div><span class="v">78</span></div>
+        <div class="row"><span class="k">Frequency</span>       <div class="bar b-robo"><span style="width:70%;"></span></div><span class="v">70</span></div>
+        <div class="row"><span class="k">Sizing aggro</span>    <div class="bar b-robo"><span style="width:65%;"></span></div><span class="v">65</span></div>
+        <div class="row"><span class="k">LP-defensibility</span><div class="bar b-robo"><span style="width:78%;"></span></div><span class="v">78</span></div>
+        <div class="row"><span class="k">Sharpe</span>          <div class="bar b-robo"><span style="width:91%;"></span></div><span class="v">91</span></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===================== STATE MACHINE ===================== -->
+  <section class="section" style="margin-top: 28px;">
+    <h2 class="section-title" style="font-size: 22px;">Bear-state machine (shared across all 4 bots)</h2>
+    <p class="section-intro">
+      The mascot's <em>face</em> is a downstream readout of the BSI engine's internal state, not a separate
+      model. Every bot transitions through the same six states; only the threshold crossings differ.
+    </p>
+    <div class="state-rail">
+      <div class="state-cell">
+        <img src="/static/bears/bear_dark_sleeping.png" alt="">
+        <div class="nm">SLEEPING</div>
+        <div class="lbl">|z| &lt; 0.5 · benign</div>
+      </div>
+      <div class="state-cell">
+        <img src="/static/bears/bear_dark_confused.png" alt="">
+        <div class="nm">CONFUSED</div>
+        <div class="lbl">pillars disagree</div>
+      </div>
+      <div class="state-cell">
+        <img src="/static/bears/bear_dark_thinking.png" alt="">
+        <div class="nm">THINKING</div>
+        <div class="lbl">|z| 0.5 – 1.5 · drift</div>
+      </div>
+      <div class="state-cell">
+        <img src="/static/bears/bear_dark_worried.png" alt="">
+        <div class="nm">WORRIED</div>
+        <div class="lbl">|z| 1.5 – 2.0 · watch</div>
+      </div>
+      <div class="state-cell">
+        <img src="/static/bears/bear_dark_angry.png" alt="">
+        <div class="nm">ANGRY</div>
+        <div class="lbl">|z| 2.0 – 2.5 · fire</div>
+      </div>
+      <div class="state-cell">
+        <img src="/static/bears/bear_dark_fired_up.png" alt="">
+        <div class="nm">FIRED-UP</div>
+        <div class="lbl">|z| ≥ 2.5 · scale</div>
+      </div>
+    </div>
+    <div style="font-size: 11px; color: var(--text-tertiary); margin-top: 10px; line-height: 1.5;">
+      <strong>BLITZ</strong> fires from WORRIED onward · <strong>SCOUT</strong> from ANGRY · <strong>GUARDIAN</strong> only from FIRED-UP ·
+      <strong>ROBO</strong> evaluates the state plus the feature vector before routing.
+    </div>
+  </section>
+
+  <!-- ===================== HEAD-TO-HEAD MATCHUPS ===================== -->
+  <section class="section" style="margin-top: 28px;">
+    <h2 class="section-title" style="font-size: 22px;">Head-to-head: when do the bots disagree?</h2>
+    <p class="section-intro">Edge cases pulled from the canonical 5-event backtest.</p>
+
+    <div class="h2h-grid">
+      <div class="h2h-card">
+        <div class="h2h-title" style="color:#d4a574;">SCOUT vs <span style="color:#ef4444;">BLITZ</span></div>
+        <div class="h2h-line"><strong>KLAR-pulse-2024:</strong> BLITZ fired on day −18 (z=1.7, only 2 pillars). SCOUT held — required SCP confirmation, which arrived on day −9. SCOUT entered later, deeper, exited cleaner. <span class="badge amber">SCOUT wins on PnL · BLITZ wins on time-to-signal</span></div>
+        <div class="h2h-line"><strong>BNPL-pulse-2024:</strong> BLITZ fired three times, SCOUT once. Two of BLITZ's fires were the same event re-firing inside the cooldown gap.</div>
+      </div>
+
+      <div class="h2h-card">
+        <div class="h2h-title" style="color:#14b8a6;">GUARDIAN vs <span style="color:#d4a574;">SCOUT</span></div>
+        <div class="h2h-line"><strong>AFRM-2022:</strong> SCOUT fired (z=2.1), GUARDIAN abstained (FDS gate failed — 8-K disclosure was late). The miss cost GUARDIAN −12% vs SCOUT, but GUARDIAN's mandate explicitly accepts that miss.</div>
+        <div class="h2h-line"><strong>CVNA-2022:</strong> Both fired. GUARDIAN's smaller size meant lower absolute return but a Sharpe nearly identical to SCOUT.</div>
+      </div>
+
+      <div class="h2h-card">
+        <div class="h2h-title" style="color:#a78bfa;">ROBO vs <span style="color:#d4a574;">SCOUT</span></div>
+        <div class="h2h-line"><strong>AFRM-2025-spread:</strong> SCOUT abstained — MOVE was elevated and the gate filter blocked. ROBO routed to its <em>GUARDIAN-subroutine</em> (low size, long hold), caught the spread widening, captured +14%. The routing log shows the macro-regime feature flipped the choice.</div>
+        <div class="h2h-line"><strong>Edge:</strong> ROBO's auditability is what makes this acceptable to LPs — the routing decision is logged with the feature vector, not produced by a black-box.</div>
+      </div>
+
+      <div class="h2h-card">
+        <div class="h2h-title" style="color:#ef4444;">BLITZ vs <span style="color:#14b8a6;">GUARDIAN</span></div>
+        <div class="h2h-line">
+          The widest behavioural gap in the squad. BLITZ fires ~10× more often, sizes ~6× larger, and accepts a ~22× higher FP rate.
+          <strong>The two bots are designed to coexist</strong> — a desk could plausibly run BLITZ as a watchlist and GUARDIAN as the execution layer, only acting on the intersection. That intersection caught 1/5 events with zero false positives in the backtest.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== ROBO ROUTING DETAIL ===================== -->
+  <section class="section" style="margin-top: 28px;">
+    <h2 class="section-title" style="font-size: 22px;">ROBO-BEAR · routing logic in detail</h2>
+    <p class="section-intro">
+      The routing function is a deterministic decision tree over five features; every choice is logged
+      next to the feature vector. There is no neural network in this layer.
+    </p>
+    <div class="routing">
+<pre>def route_robo(event, features) -&gt; SubroutineChoice:
+    """
+    features = {
+      "vol_z":          MOVE z-score over 60d,
+      "pillar_concord": fraction of alt-data pillars agreeing,
+      "macro_tail":     STLFSI4 / NFCI z-score,
+      "scp_clean":      bool — SCP gate passed cleanly,
+      "firm_known":     bool — name in BNPL universe (with EDGAR data),
+    }
+    """
+    if not features["firm_known"]:
+        return STAND_DOWN("unknown firm — no EDGAR / BSI history")
+
+    if features["pillar_concord"] &lt; 0.40:
+        return STAND_DOWN("pillars disagree — concord &lt; 40%")
+
+    # High vol + strong concordance → strike fast
+    if features["vol_z"] &gt; 1.5 and features["pillar_concord"] &gt;= 0.80:
+        return BLITZ_SUBROUTINE(size_pct=10, stop_pct=10)
+
+    # Macro tail risk on → stay defensive
+    if features["macro_tail"] &gt; 1.5:
+        return GUARDIAN_SUBROUTINE(size_pct=3, stop_pct=5)
+
+    # Default — published methodology
+    if features["scp_clean"]:
+        return SCOUT_SUBROUTINE(size_pct=5, stop_pct=7)
+
+    return STAND_DOWN("SCP gate dirty — no clean entry")
+</pre>
+    </div>
+    <div class="callout" style="margin-top: 12px;">
+      Every <code>STAND_DOWN</code>, every routing choice, and every feature vector is appended to the
+      ROBO routing log (<code>data/apollo.db :: robo_routes</code>). LPs who want to audit a single
+      decision can replay the exact feature vector that produced it.
+    </div>
+  </section>
+
+  <!-- ===================== ENGINE INVARIANTS ===================== -->
+  <section class="section" style="margin-top: 28px;">
+    <h2 class="section-title" style="font-size: 22px;">What stays identical across all 4 bots</h2>
+    <p class="section-intro">
+      The mascots are configurations, not forks. Switching one for another is a one-knob change.
+    </p>
+    <div class="grid-3" style="grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+      <div class="scorecard">
+        <div style="font-family: var(--font-mono); font-weight: 700; font-size: 12px; margin-bottom: 6px;">Engine</div>
+        <ul style="font-size: 11.5px; color: var(--text-secondary); padding-left: 16px; line-height: 1.7; margin: 0;">
+          <li>BSI v3 composite (8 pillars, paper §4)</li>
+          <li>5-gate trade architecture (G1–G5)</li>
+          <li>SCP component (paper §5.2)</li>
+          <li>Apollo Hermes 7-check risk engine</li>
+        </ul>
+      </div>
+      <div class="scorecard">
+        <div style="font-family: var(--font-mono); font-weight: 700; font-size: 12px; margin-bottom: 6px;">Data</div>
+        <ul style="font-size: 11.5px; color: var(--text-secondary); padding-left: 16px; line-height: 1.7; margin: 0;">
+          <li>DuckDB warehouse (BNPL_v9_FINAL)</li>
+          <li>CFPB · App-store · Reddit · Bluesky · Trends · ABS · 8-K</li>
+          <li>Bloomberg MIL & SYNCT EDGAR (when populated)</li>
+          <li>FRED macro panel (MOVE, STLFSI4, NFCI)</li>
+        </ul>
+      </div>
+      <div class="scorecard">
+        <div style="font-family: var(--font-mono); font-weight: 700; font-size: 12px; margin-bottom: 6px;">Methodology</div>
+        <ul style="font-size: 11.5px; color: var(--text-secondary); padding-left: 16px; line-height: 1.7; margin: 0;">
+          <li>Pre-registered configuration (paper §7)</li>
+          <li>Driscoll-Kraay SE (Phase 2A v2 / §10.15)</li>
+          <li>Block-bootstrap CI (Phase 2T)</li>
+          <li>Holm + BH-FDR multi-testing discipline</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== CTA ===================== -->
+  <section class="section" style="margin-top: 32px; text-align: center;">
+    <h2 class="section-title" style="font-size: 22px;">Try the squad live</h2>
+    <p class="section-intro" style="text-align: center;">
+      Pick a mascot in the nav, then fire any BNPL-universe name. The same event flows through the
+      same pipeline; only the verdict (APPROVE / SCALE / BLOCK) and recommended size differ.
+    </p>
+    <div style="display: inline-flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; justify-content: center;">
+      <a href="/live" class="btn-primary">Open the Live Pod →</a>
+      <a href="/survey" class="btn-secondary" style="border:1px solid var(--border); padding: 9px 16px; border-radius: 6px; color: var(--text-primary); text-decoration: none; font-family: var(--font-mono); font-size: 12px;">Take the mascot survey</a>
+      <a href="/methodology" class="btn-secondary" style="border:1px solid var(--border); padding: 9px 16px; border-radius: 6px; color: var(--text-primary); text-decoration: none; font-family: var(--font-mono); font-size: 12px;">Read the methodology</a>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer" style="text-align: center; font-size: 11px; color: var(--text-tertiary); padding: 30px 0 18px;">
+  <div>BearWatch × Apollo Hermes  ·  the Bear Squad  ·  v3.1</div>
+  <div style="font-family: var(--font-mono); margin-top: 4px;">Siddharth Verma  ·  UIUC FIN 580  ·  Spring 2026</div>
+</footer>
+</body>
+</html>

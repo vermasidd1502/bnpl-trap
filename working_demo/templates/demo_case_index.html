@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Demo Case Study Pod · BearWatch × Apollo Hermes</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='v2.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='pages.css') }}">
+<style>
+  .dc-page  { max-width: 1280px; margin: 0 auto; padding: 0 22px 60px; }
+  .dc-hero  { padding: 30px 0 18px; border-bottom: 1px solid var(--border); margin-bottom: 22px; }
+  .dc-kicker { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; color: #fbbf24; text-transform: uppercase; font-weight: 700; }
+  .dc-hero h1 { font-size: 38px; line-height: 1.15; margin: 6px 0 8px; font-weight: 700; }
+  .dc-hero .sub { color: var(--text-secondary); font-size: 13.5px; max-width: 920px; }
+
+  .dc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 16px; margin-top: 22px; }
+  .dc-card {
+    background: var(--bg-elevated); border: 1px solid var(--border);
+    border-radius: 12px; padding: 18px 20px; cursor: pointer;
+    transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+    text-decoration: none; color: inherit; display: block;
+    position: relative; overflow: hidden;
+  }
+  .dc-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+  .dc-card::before {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+    background: var(--accent-color, #fbbf24);
+  }
+  .dc-card .dc-meta { display:flex; justify-content:space-between; align-items:baseline; margin-bottom: 8px; }
+  .dc-card .dc-ticker { font-family: var(--font-mono); font-size: 18px; font-weight: 800; color: var(--accent-color, #fbbf24); }
+  .dc-card .dc-sector { font-family: var(--font-mono); font-size: 9.5px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; }
+  .dc-card .dc-name { font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
+  .dc-card .dc-summary { font-size: 12px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 14px; }
+
+  .dc-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; padding-top: 12px; border-top: 1px solid var(--border); }
+  .dc-stat { text-align: center; }
+  .dc-stat .k { font-family: var(--font-mono); font-size: 9px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; }
+  .dc-stat .v { font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: var(--text-primary); margin-top: 3px; }
+
+  .dc-launch { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
+  .dc-launch .dc-fire { font-family: var(--font-mono); font-size: 10px; color: var(--text-tertiary); }
+  .dc-launch .dc-arrow { font-family: var(--font-mono); font-size: 14px; color: var(--accent-color, #fbbf24); font-weight: 700; }
+
+  .dc-info {
+    margin-top: 22px; padding: 14px 18px;
+    background: rgba(251,191,36,0.06); border: 1px solid rgba(251,191,36,0.25); border-radius: 8px;
+    font-size: 12.5px; color: var(--text-secondary); line-height: 1.6;
+  }
+  .dc-info strong { color: var(--text-primary); }
+</style>
+</head>
+<body class="dark">
+{% include '_nav.html' %}
+
+<main class="dc-page">
+
+  <section class="dc-hero">
+    <div class="dc-kicker">📼 Demo Case Study Pod</div>
+    <h1>Pick a case. See how BSI worked in real-world conditions.</h1>
+    <p class="sub">
+      Each card is a date-locked replay of the live pod, frozen to the day BSI fired its trade signal on a real event.
+      Click into any case to walk through the 4-stage pipeline — signal, debate, execute, learn — exactly as it would
+      have looked the day the trade was triggered.
+    </p>
+  </section>
+
+  <div class="dc-grid">
+    {% for case_id, c in cases.items() %}
+    <a href="/demo-case/{{ c.id }}" class="dc-card" style="--accent-color: {{ c.color }};">
+      <div class="dc-meta">
+        <div class="dc-ticker">{{ c.ticker }}</div>
+        <div class="dc-sector">{{ c.sector }}</div>
+      </div>
+      <div class="dc-name">{{ c.name }}</div>
+      <div class="dc-summary">{{ c.summary }}</div>
+
+      <div class="dc-stats">
+        <div class="dc-stat">
+          <div class="k">BSI fire</div>
+          <div class="v">{{ c.fire_date }}</div>
+        </div>
+        <div class="dc-stat">
+          <div class="k">Lead time</div>
+          <div class="v" style="color: #4ade80;">{{ c.lead_days }} d</div>
+        </div>
+        <div class="dc-stat">
+          <div class="k">BSI z</div>
+          <div class="v" style="color: {{ c.color }};">{{ "%.2f"|format(c.bsi_z_at_fire) }}</div>
+        </div>
+        <div class="dc-stat">
+          <div class="k">Gates</div>
+          <div class="v">{{ c.gates_passed }}</div>
+        </div>
+      </div>
+
+      <div class="dc-launch">
+        <span class="dc-fire">→ {{ c.bear_state.replace('_', '-') }} · {{ c.side }}</span>
+        <span class="dc-arrow">replay →</span>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+
+  <div class="dc-info">
+    <strong>How this differs from the Live Pod:</strong> the Live Pod fires on TODAY's BSI snapshot for the firms in your universe.
+    The Demo Case Study Pod replays a HISTORICAL fire — every gate value, every BSI reading, every verdict is locked to the
+    actual day the signal fired. Use it to show the audience what an event looks like end-to-end.
+    <br><br>
+    <strong>How this differs from the Case Study deep-dive at <a href="/case-study" style="color:#fbbf24;">/case-study</a>:</strong>
+    that page is the analytical write-up (paper §6.10 + §6.13). This pod is the operational replay — the same UI as <a href="/live" style="color:#fbbf24;">/live</a>,
+    just rewound.
+  </div>
+
+</main>
+
+<footer class="footer" style="text-align: center; font-size: 11px; color: var(--text-tertiary); padding: 30px 0 18px;">
+  <div>BearWatch × Apollo Hermes  ·  Demo Case Study Pod</div>
+</footer>
+</body>
+</html>

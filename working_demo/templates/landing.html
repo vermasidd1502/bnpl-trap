@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BearWatch × Apollo Hermes — Credit-stress scanner + execution layer</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='v2.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='pages.css') }}">
+</head>
+<body>
+
+{% include '_nav.html' %}
+
+<main class="page">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-pill">
+      <span class="dot pulse-soft"></span>
+      <span>UIUC FIN 580 · Spring 2026</span>
+    </div>
+    <h1 class="hero-title">
+      The <span class="gradient-warm">consumer signals first.</span><br>
+      The <span class="gradient-cool">balance sheet</span> catches up later.
+    </h1>
+    <p class="hero-sub">
+      An eight-pillar Behavioural Stress Index for the alt-credit consumer-lender universe,
+      paired with a deterministic 4-gate execution architecture.
+      One scans. One acts. Together they trade.
+    </p>
+    <div class="hero-cta">
+      <a href="/demo" class="btn-primary">Open the live demo →</a>
+      <a href="/methodology" class="btn-secondary">How it works</a>
+    </div>
+
+    <!-- The 4 mascots — front and center -->
+    <div class="squad-row">
+      <div class="squad-mini" data-color="#dc2626">
+        <img src="/static/bears/bear_fired_up.png" alt="">
+        <div class="squad-label">BLITZ</div>
+        <div class="squad-tag">Aggressive</div>
+      </div>
+      <div class="squad-mini" data-color="#d4a574">
+        <img src="/static/bears/bear_thinking.png" alt="">
+        <div class="squad-label">SCOUT  ★</div>
+        <div class="squad-tag">Default</div>
+      </div>
+      <div class="squad-mini" data-color="#0f766e">
+        <img src="/static/bears/bear_confident.png" alt="">
+        <div class="squad-label">GUARDIAN</div>
+        <div class="squad-tag">Defensive</div>
+      </div>
+      <div class="squad-mini" data-color="#8b5cf6">
+        <img src="/static/bears/bear_confused.png" alt="">
+        <div class="squad-label">ROBO α</div>
+        <div class="squad-tag">Adaptive</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HEADLINE STATS -->
+  <section class="stats-strip">
+    <div class="stat-cell">
+      <div class="stat-num">25</div>
+      <div class="stat-lab">firms monitored</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-num">8</div>
+      <div class="stat-lab">data pillars</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-num">−45.7<span class="pct">%</span></div>
+      <div class="stat-lab">18-mo abret  (NW t = −5.41)</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-num">14<span class="pct">mo</span></div>
+      <div class="stat-lab">avg lead time</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-num">5</div>
+      <div class="stat-lab">stress sprints</div>
+    </div>
+  </section>
+
+  <!-- TWO SYSTEMS, ONE PIPELINE -->
+  <section class="block">
+    <div class="block-header">
+      <div class="kicker">Two-system architecture</div>
+      <h2 class="block-title">Behavioural data on one side. Risk discipline on the other.</h2>
+      <p class="block-sub">BearWatch reads the consumer-side signal — eight pillars of complaint, sentiment, and macro data — and converts it to a daily firm-level z-score. Apollo Hermes turns each signal into a sized, gated, journaled trade. Same pipeline, two layers, full audit trail.</p>
+    </div>
+    <div class="two-col">
+      <div class="card-warm">
+        <div class="card-icon"><img src="/static/bears/bear_fired_up.png" alt=""></div>
+        <div class="kicker-warm">Sensing layer</div>
+        <h3 class="card-title">BearWatch</h3>
+        <ul class="card-list">
+          <li>8-pillar Behavioural Stress Index</li>
+          <li>11-state deterministic bear engine</li>
+          <li>4-gate AND-rule (BSI · SCP · MOVE · CCD II)</li>
+          <li>5-of-6 historical hit rate, 14-mo lead</li>
+          <li>Cannot execute. Cannot size. Cannot enforce risk.</li>
+        </ul>
+      </div>
+      <div class="card-cool" style="border-color: rgba(139,92,246,0.4);">
+        <div class="card-icon"><img src="/static/apollo_hex.svg" alt="Apollo Hermes"></div>
+        <div class="kicker-cool" style="color: #a78bfa;">Acting layer</div>
+        <h3 class="card-title">Apollo Hermes</h3>
+        <ul class="card-list">
+          <li>7 pre-trade risk checks</li>
+          <li>Drawdown engine · cash floors · position caps</li>
+          <li>Live yfinance + Finnhub + Polymarket</li>
+          <li>Trade journal + Gemini post-mortem</li>
+          <li>Cannot generate alpha — needs upstream signal</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- THE PIPELINE -->
+  <section class="block alt">
+    <div class="block-header">
+      <div class="kicker">The 5-stage pipeline</div>
+      <h2 class="block-title">From CFPB complaint to realised P&amp;L — fully auditable.</h2>
+    </div>
+    <div class="pipeline">
+      <div class="pipeline-step">
+        <div class="pipeline-num">1</div>
+        <div class="pipeline-icon">📥</div>
+        <div class="pipeline-name">Ingest</div>
+        <div class="pipeline-desc">CFPB · Reddit · Bluesky · Macro</div>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">
+        <div class="pipeline-num">2</div>
+        <div class="pipeline-icon">🧮</div>
+        <div class="pipeline-name">BSI Compute</div>
+        <div class="pipeline-desc">8-pillar EWMA-z (exp.-weighted moving avg) · 11-state engine</div>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">
+        <div class="pipeline-num">3</div>
+        <div class="pipeline-icon">🔗</div>
+        <div class="pipeline-name">Webhook</div>
+        <div class="pipeline-desc">POST /api/bearwatch/ingest · HMAC</div>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">
+        <div class="pipeline-num">4</div>
+        <div class="pipeline-icon">🛡️</div>
+        <div class="pipeline-name">Risk Verdict</div>
+        <div class="pipeline-desc">7 checks · &lt;50ms · APPROVE / SCALE / BLOCK</div>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">
+        <div class="pipeline-num">5</div>
+        <div class="pipeline-icon">📓</div>
+        <div class="pipeline-name">Execute + Journal</div>
+        <div class="pipeline-desc">Trade · post-mortem · learn</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DATA SOURCES — the 8 pillars that feed BSI -->
+  <section class="block alt">
+    <div class="block-header">
+      <div class="kicker">Data sources</div>
+      <h2 class="block-title">Eight pillars. All public. All free.</h2>
+      <p class="block-sub">Every BSI z-score is a coverage-gated weighted average of these eight independent signals. No paid feeds. No alternative-data subscriptions. The whole thing runs on what's available to anyone.</p>
+    </div>
+
+    <div class="data-sources">
+      <div class="ds-card">
+        <div class="ds-logo" style="background: #002F6C;">
+          <span style="color: #fff; font-weight: 800; font-size: 11px; letter-spacing: 0.04em;">CFPB</span>
+        </div>
+        <div class="ds-name">CFPB Complaints</div>
+        <div class="ds-meta">structured · 30%</div>
+      </div>
+      <div class="ds-card">
+        <div class="ds-logo" style="background: #002F6C;">
+          <span style="color: #fff; font-weight: 800; font-size: 9px; letter-spacing: 0.02em;">CFPB·NLP</span>
+        </div>
+        <div class="ds-name">CFPB Narratives</div>
+        <div class="ds-meta">FinBERT · 10%</div>
+      </div>
+      <div class="ds-card">
+        <div class="ds-logo">
+          <img src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/reddit.svg" alt="" style="width:34px;height:34px;filter:invert(48%) sepia(76%) saturate(2483%) hue-rotate(0deg) brightness(101%) contrast(101%);">
+        </div>
+        <div class="ds-name">Reddit</div>
+        <div class="ds-meta">6 subs · FinBERT · 10%</div>
+      </div>
+      <div class="ds-card">
+        <div class="ds-logo">
+          <img src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/bluesky.svg" alt="" style="width:34px;height:34px;filter:invert(54%) sepia(84%) saturate(3019%) hue-rotate(192deg) brightness(102%) contrast(101%);">
+        </div>
+        <div class="ds-name">Bluesky</div>
+        <div class="ds-meta">consumer + expert · 15%</div>
+      </div>
+      <div class="ds-card">
+        <div class="ds-logo">
+          <img src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/arxiv.svg" alt="" style="width:38px;height:38px;filter:invert(20%) sepia(83%) saturate(3469%) hue-rotate(354deg) brightness(85%) contrast(90%);">
+        </div>
+        <div class="ds-name">arXiv + NBER</div>
+        <div class="ds-meta">expert search · 10%</div>
+      </div>
+      <div class="ds-card">
+        <div class="ds-logo" style="background: #1A1F36;">
+          <span style="color: #fff; font-weight: 700; font-size: 10px; letter-spacing: 0.04em;">FRED</span>
+        </div>
+        <div class="ds-name">FRED Macro</div>
+        <div class="ds-meta">5 series · 15%</div>
+      </div>
+      <div class="ds-card">
+        <div class="ds-logo" style="background: #C81F2F;">
+          <span style="color: #fff; font-weight: 800; font-size: 11px; letter-spacing: 0.06em;">MOVE</span>
+        </div>
+        <div class="ds-name">MOVE Index</div>
+        <div class="ds-meta">vol regime gate · 10%</div>
+      </div>
+      <div class="ds-card">
+        <div class="ds-logo">
+          <img src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/google.svg" alt="" style="width:32px;height:32px;">
+        </div>
+        <div class="ds-name">Tavily Search</div>
+        <div class="ds-meta">web context · in expert</div>
+      </div>
+    </div>
+
+    <p style="text-align: center; font-size: 11px; color: var(--text-tertiary); margin-top: 24px;">
+      Logos shown for identification only. CFPB, FRED, MOVE, Reddit, Bluesky, arXiv, NBER, Tavily are independent organisations.
+    </p>
+  </section>
+
+  <!-- WHAT TO LOOK AT -->
+  <section class="block">
+    <div class="block-header">
+      <div class="kicker">Where to start</div>
+      <h2 class="block-title">Pick your entry point.</h2>
+    </div>
+    <div class="grid-3">
+      <a href="/demo" class="entry-card">
+        <div class="entry-icon"><img src="/static/bears/bear_fired_up.png" alt=""></div>
+        <div class="entry-title">Live Demo</div>
+        <div class="entry-desc">Fire a BearWatch event through all 4 pods in real time. See the gate verdict in &lt;50ms.</div>
+        <div class="entry-cta">Open →</div>
+      </a>
+      <a href="/case-study" class="entry-card">
+        <div class="entry-icon"><img src="/static/bears/bear_thinking.png" alt=""></div>
+        <div class="entry-title">CVNA Case Study</div>
+        <div class="entry-desc">A textbook trade walkthrough — 578-day lead, +96% backtested return, every gate documented.</div>
+        <div class="entry-cta">Read →</div>
+      </a>
+      <a href="/stress-tests" class="entry-card">
+        <div class="entry-icon"><img src="/static/bears/bear_confident.png" alt=""></div>
+        <div class="entry-title">Stress Tests</div>
+        <div class="entry-desc">Five sprints across COVID, multi-event verification, and architectural redesign — every disclosure surfaced honestly.</div>
+        <div class="entry-cta">Read →</div>
+      </a>
+    </div>
+  </section>
+
+  <!-- HONEST FRAMING -->
+  <section class="block alt">
+    <div class="honesty">
+      <div class="kicker">★ Honest framing</div>
+      <h2 class="honesty-title">Backtested simulation. No live capital deployed.</h2>
+      <p class="honesty-body">
+        Every result on this site is a backtest applied retroactively to historical CFPB / Reddit / yfinance data. The methodology was built in 2026 and applied to 2018–2025 events. The 4-gate architecture has a documented partial-fail under macro shocks (Sprint 6.1) and a known data-ingest gap for marketplace-lender disclosures (Sprint 6.5a). Both fixes are queued. The deliverable's credibility comes from disclosing what doesn't work, not from claiming everything does.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div>BearWatch × Apollo Hermes  ·  Backtested simulation, no live capital deployed</div>
+  <div style="font-family: var(--font-mono);">Siddharth Verma  ·  UIUC FIN 580  ·  Spring 2026</div>
+</footer>
+
+</body>
+</html>

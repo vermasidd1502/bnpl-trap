@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>{{ case.ticker }} replay · Demo Case Study Pod</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='v2.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='pages.css') }}">
+<style>
+  .dcv-page { max-width: 1320px; margin: 0 auto; padding: 0 22px 60px; }
+  .dcv-hero { padding: 22px 0 18px; border-bottom: 1px solid var(--border); margin-bottom: 22px; display: flex; justify-content: space-between; align-items: center; gap: 24px; }
+  .dcv-back { font-family: var(--font-mono); font-size: 11px; color: var(--text-tertiary); text-decoration: none; }
+  .dcv-back:hover { color: var(--text-primary); }
+
+  .dcv-hero h1 { font-size: 30px; font-weight: 700; margin: 4px 0; }
+  .dcv-hero .ticker { font-family: var(--font-mono); font-weight: 800; color: {{ case.color }}; font-size: 32px; }
+  .dcv-hero .meta { color: var(--text-secondary); font-size: 12.5px; font-family: var(--font-mono); margin-top: 4px; }
+
+  .dcv-pill { display: inline-block; padding: 6px 12px; border-radius: 6px; font-family: var(--font-mono); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+  .dcv-pill.locked { background: rgba(251,191,36,0.15); color: #fbbf24; }
+  .dcv-pill.fired  { background: rgba(248,113,113,0.15); color: #f87171; }
+
+  .dcv-quickstrip { background: var(--bg-elevated); border: 1px solid var(--border); border-left: 4px solid {{ case.color }}; border-radius: 10px; padding: 16px 20px; margin-bottom: 22px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; }
+  .dcv-quickstrip .qs-stat { text-align: center; }
+  .dcv-quickstrip .k { font-family: var(--font-mono); font-size: 9.5px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; }
+  .dcv-quickstrip .v { font-family: var(--font-mono); font-size: 18px; font-weight: 800; color: var(--text-primary); margin-top: 4px; }
+
+  .dcv-stage {
+    background: var(--bg-elevated); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px 20px; margin-bottom: 14px;
+  }
+  .dcv-stage-head {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+    padding-bottom: 10px; border-bottom: 1px solid var(--border);
+  }
+  .dcv-stage-num {
+    background: {{ case.color }}; color: #0a0a0a; padding: 4px 10px;
+    border-radius: 4px; font-family: var(--font-mono); font-size: 11px; font-weight: 800; letter-spacing: 0.06em;
+  }
+  .dcv-stage-title { font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.05em; }
+  .dcv-stage-tag { font-family: var(--font-mono); font-size: 9.5px; color: var(--text-tertiary); margin-left: auto; }
+
+  .dcv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .dcv-block { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; }
+  .dcv-block .lab { font-family: var(--font-mono); font-size: 10px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; }
+  .dcv-block .val { font-family: var(--font-mono); font-size: 15px; font-weight: 700; color: var(--text-primary); margin-top: 4px; }
+  .dcv-block .sub { font-size: 11px; color: var(--text-secondary); margin-top: 4px; line-height: 1.5; }
+
+  .dcv-gates { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 8px; }
+  .dcv-gate { background: var(--bg-card); border: 1px solid var(--border); border-left: 3px solid #4ade80; border-radius: 4px; padding: 8px 10px; }
+  .dcv-gate .gn  { font-family: var(--font-mono); font-size: 9px; color: var(--text-tertiary); text-transform: uppercase; }
+  .dcv-gate .gv  { font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: #4ade80; margin-top: 2px; }
+  .dcv-gate .gd  { font-size: 9px; color: var(--text-tertiary); margin-top: 3px; }
+
+  .dcv-other { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+  .dcv-other a {
+    padding: 6px 12px; border: 1px solid var(--border); border-radius: 4px;
+    font-family: var(--font-mono); font-size: 10px; color: var(--text-secondary);
+    text-decoration: none;
+  }
+  .dcv-other a:hover { border-color: var(--accent-color, #fbbf24); color: var(--text-primary); }
+  .dcv-other a.current { background: rgba(251,191,36,0.10); color: #fbbf24; border-color: #fbbf24; }
+</style>
+</head>
+<body class="dark">
+{% include '_nav.html' %}
+
+<main class="dcv-page">
+
+  <!-- HERO -->
+  <section class="dcv-hero">
+    <div>
+      <a href="/demo-case" class="dcv-back">← All cases</a>
+      <h1><span class="ticker">{{ case.ticker }}</span>  ·  {{ case.name }}</h1>
+      <div class="meta">{{ case.sector }}  ·  fire date: {{ case.fire_date }}  ·  event date: {{ case.event_date }}  ·  lead {{ case.lead_days }}d</div>
+    </div>
+    <div style="text-align: right; display: flex; flex-direction: column; gap: 6px; align-items: flex-end;">
+      <span class="dcv-pill locked">📼 DATE-LOCKED REPLAY</span>
+      <span class="dcv-pill fired">{{ case.bear_state.replace('_','-') }}  ·  z = {{ "%.2f"|format(case.bsi_z_at_fire) }}</span>
+    </div>
+  </section>
+
+  <!-- QUICK STAT STRIP -->
+  <div class="dcv-quickstrip">
+    <div class="qs-stat"><div class="k">BSI z @ fire</div><div class="v" style="color: {{ case.color }};">{{ "%.2f"|format(case.bsi_z_at_fire) }}</div></div>
+    <div class="qs-stat"><div class="k">Bear state</div><div class="v">{{ case.bear_state.replace('_','-') }}</div></div>
+    <div class="qs-stat"><div class="k">Gates passed</div><div class="v" style="color: #4ade80;">{{ case.gates_passed }}</div></div>
+    <div class="qs-stat"><div class="k">Side</div><div class="v">{{ case.side }}</div></div>
+    <div class="qs-stat"><div class="k">Entry</div><div class="v">${{ "%.2f"|format(case.entry_price) if case.entry_price else "—" }}</div></div>
+    <div class="qs-stat"><div class="k">Lead time</div><div class="v" style="color: #4ade80;">{{ case.lead_days }} d</div></div>
+  </div>
+
+  <!-- STAGE 01 — SIGNAL -->
+  <div class="dcv-stage">
+    <div class="dcv-stage-head">
+      <span class="dcv-stage-num">01</span>
+      <span class="dcv-stage-title">SIGNAL</span>
+      <span class="dcv-stage-tag">date-locked to {{ case.fire_date }}</span>
+    </div>
+    <div class="dcv-grid">
+      <div class="dcv-block">
+        <div class="lab">Firm</div>
+        <div class="val">{{ case.ticker }}  ·  {{ case.sector }}</div>
+        <div class="sub">{{ case.summary }}</div>
+      </div>
+      <div class="dcv-block">
+        <div class="lab">BSI z-score on fire date</div>
+        <div class="val" style="color: {{ case.color }};">+{{ "%.2f"|format(case.bsi_z_at_fire) }}σ</div>
+        <div class="sub">Bear state: <strong style="color: {{ case.color }};">{{ case.bear_state.replace('_','-') }}</strong>  ·  cleared SCOUT threshold (z ≥ 2.0)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STAGE 02 — DEBATE / GATES -->
+  <div class="dcv-stage">
+    <div class="dcv-stage-head">
+      <span class="dcv-stage-num">02</span>
+      <span class="dcv-stage-title">5-GATE EVALUATION</span>
+      <span class="dcv-stage-tag">{{ case.gates_passed }} passed on fire date</span>
+    </div>
+    <div class="dcv-gates">
+      <div class="dcv-gate">
+        <div class="gn">G1 BSI</div><div class="gv">PASS</div>
+        <div class="gd">z {{ "%.2f"|format(case.bsi_z_at_fire) }} ≥ 2.0</div>
+      </div>
+      <div class="dcv-gate">
+        <div class="gn">G2 SCP</div><div class="gv">PASS</div>
+        <div class="gd">firm-specific stress</div>
+      </div>
+      <div class="dcv-gate">
+        <div class="gn">G3 MOVE</div><div class="gv">PASS</div>
+        <div class="gd">macro vol not extreme</div>
+      </div>
+      <div class="dcv-gate">
+        <div class="gn">G4 CCD</div><div class="gv">PASS</div>
+        <div class="gd">consumer-credit divergence</div>
+      </div>
+      <div class="dcv-gate" style="border-left-color: {{ '#4ade80' if case.gates_passed == '5/5' else '#fbbf24' }};">
+        <div class="gn">G5 FDS</div>
+        <div class="gv" style="color: {{ '#4ade80' if case.gates_passed == '5/5' else '#fbbf24' }};">{{ 'PASS' if case.gates_passed == '5/5' else 'SOFT' }}</div>
+        <div class="gd">fundamentals (EDGAR)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STAGE 03 — EXECUTE -->
+  <div class="dcv-stage">
+    <div class="dcv-stage-head">
+      <span class="dcv-stage-num">03</span>
+      <span class="dcv-stage-title">EXECUTE</span>
+      <span class="dcv-stage-tag">verdict: {% if case.realized_pnl_usd > 0 %}APPROVED — {{ case.side }}{% else %}APPROVED — {{ case.side }} (ABS-routed){% endif %}</span>
+    </div>
+    <div class="dcv-grid">
+      <div class="dcv-block">
+        <div class="lab">Entry · Exit</div>
+        <div class="val">${{ "%.2f"|format(case.entry_price) if case.entry_price else 'TRS' }}  →  ${{ "%.2f"|format(case.exit_price) if case.exit_price else 'TRS' }}</div>
+        <div class="sub">Side: {{ case.side }}  ·  Shares: {{ case.shares if case.shares else 'TRS notional' }}</div>
+      </div>
+      <div class="dcv-block">
+        <div class="lab">Realised P&L</div>
+        <div class="val" style="color: {% if case.realized_pnl_usd > 0 %}#4ade80{% elif case.realized_pnl_usd == 0 %}var(--text-tertiary){% else %}#f87171{% endif %};">
+          {% if case.realized_pnl_usd > 0 %}+${{ "{:,.0f}".format(case.realized_pnl_usd) }}{% elif case.realized_pnl_usd == 0 %}— (TRS, fixed-income){% else %}-${{ "{:,.0f}".format(case.realized_pnl_usd|abs) }}{% endif %}
+        </div>
+        <div class="sub">{% if case.realized_roi_pct %}ROI: {{ "%.1f"|format(case.realized_roi_pct) }}%  ·  {% endif %}{{ case.gates_passed }} production gates passed</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STAGE 04 — LEARN -->
+  <div class="dcv-stage">
+    <div class="dcv-stage-head">
+      <span class="dcv-stage-num">04</span>
+      <span class="dcv-stage-title">LEARN  ·  what BSI got right</span>
+      <span class="dcv-stage-tag">post-event review</span>
+    </div>
+    <div style="font-size: 12.5px; color: var(--text-secondary); line-height: 1.6; padding: 6px 4px;">
+      {{ case.summary }}
+      <br><br>
+      <strong style="color: var(--text-primary);">Lead time analysis:</strong>
+      BSI fired on <strong>{{ case.fire_date }}</strong>; the public stress event materialised on <strong>{{ case.event_date }}</strong> —
+      a <strong style="color: #4ade80;">{{ case.lead_days }}-day</strong> lead time on the equity / spread reaction.
+      This is the empirical signature of the leading-indicator chain (paper §5.2): soft signals at T+0 → hard accounting at T+1 → spreads at T+2 → equity at T+3.
+    </div>
+  </div>
+
+  <!-- Quick switcher to other cases -->
+  <div class="dcv-other">
+    <span style="font-family: var(--font-mono); font-size: 10px; color: var(--text-tertiary); align-self: center; margin-right: 8px;">JUMP TO:</span>
+    {% for cid, c in all_cases.items() %}
+    <a href="/demo-case/{{ cid }}" class="{{ 'current' if cid == case.id else '' }}">{{ c.ticker }} · {{ c.fire_date[:7] }}</a>
+    {% endfor %}
+    <span style="flex: 1;"></span>
+    <a href="/live" style="color: #4ade80; border-color: rgba(74,222,128,0.4);">→ go to LIVE pod</a>
+  </div>
+
+</main>
+
+<footer class="footer" style="text-align: center; font-size: 11px; color: var(--text-tertiary); padding: 30px 0 18px;">
+  <div>Demo Case Study Pod  ·  date-locked replay  ·  this is what the live pod looked like the day BSI fired</div>
+</footer>
+</body>
+</html>
