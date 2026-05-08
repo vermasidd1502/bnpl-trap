@@ -137,7 +137,7 @@ These data products are documented in the paper but require licensed access:
 - **Pre-curated Twitter / X snapshots** — Twitter API access changed in 2024; we used Internet Archive snapshots that are not redistributable in bulk.
 - **Pre-built DuckDB warehouse** (805 MB) — Available privately to graders via Dropbox to skip the ~90-minute rebuild.
 
-Contact `siddh@illinois.edu` for the private grader bundle.
+Contact `sverma24@illinois.edu` for the private grader bundle.
 
 ---
 

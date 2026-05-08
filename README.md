@@ -214,7 +214,7 @@ If you use this work in academic writing, please cite:
 **Siddharth Verma** · UIN 668601217
 MSF (Master of Science in Finance) Candidate
 Gies College of Business · University of Illinois Urbana-Champaign
-Correspondence: `siddh@illinois.edu`
+Correspondence: `sverma24@illinois.edu`
 
 ---
 
