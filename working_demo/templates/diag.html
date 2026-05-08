@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Troubleshooter · BearWatch × Apollo Hermes</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='v2.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='pages.css') }}">
+<style>
+  .diag-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 18px; margin-bottom: 8px;
+    display: grid; grid-template-columns: 28px 1fr auto; gap: 14px; align-items: center;
+  }
+  .diag-card.ok { border-color: rgba(34,197,94,0.3); }
+  .diag-card.fail { border-color: rgba(248,113,113,0.4); background: linear-gradient(180deg, rgba(248,113,113,0.04), transparent), var(--bg-card); }
+  .diag-icon { font-size: 18px; text-align: center; }
+  .diag-icon.ok { color: #4ade80; }
+  .diag-icon.fail { color: #f87171; }
+  .diag-name { font-weight: 600; color: var(--text); font-size: 13px; }
+  .diag-detail { font-size: 11px; color: var(--text-secondary); font-family: var(--font-mono); margin-top: 3px; }
+  .diag-fix {
+    margin-top: 10px; padding: 8px 12px;
+    background: rgba(248,113,113,0.06); border: 1px solid rgba(248,113,113,0.2);
+    border-radius: 6px;
+    font-size: 11px; color: var(--text-secondary); line-height: 1.5;
+    grid-column: 1 / -1;
+  }
+  .diag-fix code {
+    background: var(--bg-elevated); padding: 1px 5px; border-radius: 3px;
+    font-family: var(--font-mono); color: var(--accent-signal); font-size: 10.5px;
+  }
+  .diag-summary {
+    background: linear-gradient(180deg, rgba(34,197,94,0.06), transparent), var(--bg-card);
+    border: 1px solid rgba(34,197,94,0.3);
+    padding: 14px 18px; border-radius: 10px; margin-bottom: 18px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .diag-summary.degraded {
+    background: linear-gradient(180deg, rgba(250,204,21,0.06), transparent), var(--bg-card);
+    border-color: rgba(250,204,21,0.3);
+  }
+  .diag-summary.broken {
+    background: linear-gradient(180deg, rgba(248,113,113,0.06), transparent), var(--bg-card);
+    border-color: rgba(248,113,113,0.4);
+  }
+  .diag-summary .label {
+    font-family: var(--font-mono); font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .diag-summary .count { font-size: 28px; font-weight: 700; font-family: var(--font-mono); }
+  .diag-actions { display: flex; gap: 8px; }
+  .diag-actions button {
+    background: var(--bg-elevated); border: 1px solid var(--border-strong);
+    color: var(--text); padding: 7px 14px; border-radius: 5px;
+    font-size: 11px; font-weight: 600; cursor: pointer; font-family: var(--font-sans);
+  }
+  .diag-actions button:hover { border-color: var(--accent-signal); }
+  .diag-actions button.primary {
+    background: var(--accent-signal); color: #0a0a0a; border-color: var(--accent-signal);
+  }
+  .wait-table {
+    width: 100%; border-collapse: collapse; margin-top: 12px;
+    font-size: 12px;
+  }
+  .wait-table td, .wait-table th { padding: 7px 10px; border-bottom: 1px solid var(--border); }
+  .wait-table th {
+    font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--text-tertiary); font-weight: 600; text-align: left;
+  }
+  .wait-table td.num { text-align: right; font-family: var(--font-mono); color: var(--text); }
+</style>
+</head>
+<body>
+{% include '_nav.html' %}
+
+<main class="page" style="max-width: 980px;">
+  <section class="hero" style="padding: 24px 0 14px;">
+    <div class="kicker">Troubleshooter</div>
+    <h1 class="block-title" style="font-size: 32px;">System health · self-test</h1>
+    <p class="block-sub" style="margin: 4px 0 0; max-width: 760px;">
+      Runs every critical health check (warehouse, SQLite, pillar CSVs, yfinance, live pipeline, cache, background processes).
+      Each failure includes a one-line fix you can paste into PowerShell.
+    </p>
+  </section>
+
+  <div id="diag-summary" class="diag-summary">
+    <div>
+      <div class="label">overall status</div>
+      <div class="count" id="diag-count">— / —</div>
+    </div>
+    <div class="diag-actions">
+      <button onclick="runDiag()" class="primary">↻ Re-run checks</button>
+      <button onclick="clearCache()">Clear cache</button>
+      <button onclick="restartHint()">Restart Flask…</button>
+    </div>
+  </div>
+
+  <div id="diag-list">
+    <div style="text-align:center;color:var(--text-tertiary);padding:30px;font-size:12px;">running checks…</div>
+  </div>
+
+  <!-- ========= EXPECTED LATENCIES TABLE ========= -->
+  <section style="margin-top: 28px;">
+    <h2 class="section-title">Expected wait times</h2>
+    <p style="font-size: 11.5px; color: var(--text-secondary); margin: 0 0 8px; line-height: 1.55;">
+      The 4-stage live pod runs through the API in <strong>under 500 ms</strong>. The visible delays are deliberate UI staging so you can read each step. If something's slower than this, the troubleshooter above will flag it.
+    </p>
+    <table class="wait-table">
+      <thead><tr><th>What</th><th>Backend (real)</th><th>Front-end (with narration)</th></tr></thead>
+      <tbody>
+        <tr><td>Page load (/live)</td><td class="num">~80 ms</td><td class="num">~300 ms</td></tr>
+        <tr><td>BSI 90-day series fetch</td><td class="num">~40 ms (cached) · 250 ms (cold)</td><td class="num">renders inline</td></tr>
+        <tr><td>Per-firm CFPB query</td><td class="num">~80 ms (cold)</td><td class="num">renders inline</td></tr>
+        <tr><td><strong>🔥 Fire button → 4-stage pod</strong></td><td class="num"><strong>~400 ms</strong></td><td class="num"><strong>~3.5 s</strong> (staged reveal)</td></tr>
+        <tr><td>Stage 1 (Signal)</td><td class="num">~100 ms</td><td class="num">~1.2 s</td></tr>
+        <tr><td>Stage 2 (Debate · 5 archetypes)</td><td class="num">~5 ms (deterministic)</td><td class="num">~1.4 s</td></tr>
+        <tr><td>Stage 3 (Execute · 7 risk checks)</td><td class="num">~5 ms</td><td class="num">~1.2 s</td></tr>
+        <tr><td>Stage 4 (Learn)</td><td class="num">~1 ms</td><td class="num">~0.4 s</td></tr>
+        <tr><td>Execute trade → journal</td><td class="num">~50 ms (SQLite write)</td><td class="num">immediate</td></tr>
+      </tbody>
+    </table>
+    <p style="font-size: 10.5px; color: var(--text-tertiary); margin-top: 8px; line-height: 1.5;">
+      <strong>If the pod is hanging:</strong> open browser DevTools (F12) → Console tab → look for red errors. Most common cause: a python process holding a write-lock on the DuckDB warehouse (the troubleshooter above detects this in check #8).
+    </p>
+  </section>
+</main>
+
+<footer class="footer">
+  <div>BearWatch × Apollo Hermes  ·  Troubleshooter  ·  /diag</div>
+  <div style="font-family: var(--font-mono);">Siddharth Verma  ·  UIUC FIN 580  ·  Spring 2026</div>
+</footer>
+
+<script>
+  async function runDiag() {
+    document.getElementById('diag-list').innerHTML =
+      '<div style="text-align:center;color:var(--text-tertiary);padding:30px;font-size:12px;">running checks…</div>';
+    document.getElementById('diag-count').textContent = '… / …';
+    try {
+      const r = await fetch('/api/diag/health');
+      const d = await r.json();
+      const list = document.getElementById('diag-list');
+      list.innerHTML = d.checks.map(c => `
+        <div class="diag-card ${c.ok ? 'ok' : 'fail'}">
+          <div class="diag-icon ${c.ok ? 'ok' : 'fail'}">${c.ok ? '✓' : '✗'}</div>
+          <div>
+            <div class="diag-name">${c.name}</div>
+            <div class="diag-detail">${c.detail}</div>
+          </div>
+          <div style="font-size:9px;color:var(--text-tertiary);font-family:var(--font-mono);">${c.ok ? 'OK' : 'FAIL'}</div>
+          ${c.fix ? `<div class="diag-fix"><strong style="color:var(--warning);">Fix:</strong> ${c.fix.replace(/`([^`]+)`/g, '<code>$1</code>')}</div>` : ''}
+        </div>
+      `).join('');
+      document.getElementById('diag-count').textContent = d.summary;
+      const sum = document.getElementById('diag-summary');
+      sum.classList.remove('degraded', 'broken');
+      const pass = d.checks.filter(c => c.ok).length;
+      const total = d.checks.length;
+      if (pass === total) { /* default green */ }
+      else if (pass >= total - 2) sum.classList.add('degraded');
+      else sum.classList.add('broken');
+    } catch (e) {
+      document.getElementById('diag-list').innerHTML =
+        `<div class="diag-card fail">
+          <div class="diag-icon fail">✗</div>
+          <div><div class="diag-name">Diagnostic API unreachable</div>
+          <div class="diag-detail">${e.message}</div></div>
+          <div></div>
+          <div class="diag-fix"><strong style="color:var(--warning);">Fix:</strong> Flask isn't running. Start it: <code>cd working_demo && python app.py</code></div>
+        </div>`;
+    }
+  }
+
+  async function clearCache() {
+    // No server endpoint for this — recommend hard-refresh
+    alert("Browser cache: press Ctrl+Shift+R (or Cmd+Shift+R on Mac) to hard-refresh.\n\nServer cache: just runs out in 60s — or restart Flask to wipe immediately.");
+  }
+  function restartHint() {
+    alert("To restart Flask:\n\n1. PowerShell: Get-Process python | Where-Object { $_.CommandLine -match 'app.py' } | Stop-Process -Force\n2. cd C:\\Users\\siddh\\Desktop\\apollo-hermes\\working_demo\n3. python app.py");
+  }
+
+  runDiag();
+  setInterval(runDiag, 30000);  // re-check every 30s
+</script>
+</body>
+</html>

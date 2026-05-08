@@ -1,0 +1,2953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Live Pod · BearWatch × Apollo Hermes</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='v2.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='pages.css') }}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  .live-banner {
+    background: linear-gradient(180deg, rgba(34,197,94,0.08), transparent 80%), var(--bg-card);
+    border: 1px solid rgba(34,197,94,0.3);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-top: 18px;
+  }
+  .live-banner .row {
+    display: flex; gap: 18px; align-items: center; flex-wrap: wrap;
+    font-size: 12px; color: var(--text-secondary);
+  }
+  .live-banner strong { color: var(--text); }
+  .live-banner .pulse {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--success); font-family: var(--font-mono);
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .live-banner .pulse::before {
+    content: ''; width: 8px; height: 8px; border-radius: 50%;
+    background: var(--success); box-shadow: 0 0 6px var(--success);
+    animation: live-pulse 1.6s ease-in-out infinite;
+  }
+
+  .panels { display: grid; grid-template-columns: 1.6fr 1fr; gap: 18px; margin-top: 24px; }
+  @media (max-width: 1100px) { .panels { grid-template-columns: 1fr; } }
+
+  .panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+  }
+  .panel-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .panel-title { font-size: 14px; font-weight: 600; color: var(--text); }
+  .panel-asof { font-size: 10px; font-family: var(--font-mono); color: var(--text-tertiary); }
+
+  .latest-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .latest-cell {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+  }
+  .latest-cell .lbl { font-size: 9.5px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+  .latest-cell .val { font-family: var(--font-mono); font-size: 22px; font-weight: 700; margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .latest-cell .sub { font-size: 10px; color: var(--text-tertiary); margin-top: 2px; }
+
+  .pillar-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 12px; }
+  .pillar-cell {
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: 8px 10px; background: var(--bg-elevated);
+  }
+  .pillar-cell .nm { font-size: 9px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; }
+  .pillar-cell .vl { font-family: var(--font-mono); font-size: 14px; margin-top: 3px; font-variant-numeric: tabular-nums; }
+  .pillar-cell.empty { opacity: 0.4; }
+  .pillar-cell.empty .vl { color: var(--text-tertiary); font-size: 10px; }
+
+  .chart-wrap { height: 220px; position: relative; }
+
+  table.firms-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.firms-tbl th, table.firms-tbl td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+  table.firms-tbl th { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-tertiary); font-weight: 600; }
+  table.firms-tbl td.num { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  table.firms-tbl tr.tk-cvna td:first-child, table.firms-tbl tr.tk-cvna td:nth-child(2) { color: var(--accent-signal); font-weight: 600; }
+  .delta.pos { color: var(--danger); }   /* more complaints = bad for the firm */
+  .delta.neg { color: var(--success); }
+  .delta.flat { color: var(--text-tertiary); }
+
+  .freshness-tbl { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+  .freshness-tbl td { padding: 6px 8px; border-bottom: 1px solid var(--border); }
+  .freshness-tbl td.status { text-align: right; font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .badge {
+    padding: 2px 7px; border-radius: 999px; font-size: 9px; font-weight: 700;
+    letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  .badge.fresh      { background: rgba(34,197,94,0.12); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+  .badge.stale      { background: rgba(250,204,21,0.10); color: #fde047; border: 1px solid rgba(250,204,21,0.3); }
+  .badge.very_stale { background: rgba(248,113,113,0.10); color: #f87171; border: 1px solid rgba(248,113,113,0.3); }
+  .badge.missing    { background: var(--bg-elevated); color: var(--text-tertiary); border: 1px solid var(--border); }
+
+  .compare-strip {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+    margin-top: 28px;
+  }
+  .compare-card {
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px 18px; background: var(--bg-card);
+  }
+  .compare-card.live { border-color: rgba(34,197,94,0.35); }
+  .compare-card.demo { border-color: rgba(167,139,250,0.35); }
+  .compare-card .tag {
+    display: inline-block; font-size: 9px; padding: 2px 7px; border-radius: 3px;
+    text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; margin-bottom: 8px;
+  }
+  .compare-card.live .tag { background: rgba(34,197,94,0.15); color: #4ade80; }
+  .compare-card.demo .tag { background: rgba(167,139,250,0.15); color: #c4b5fd; }
+  .compare-card a { color: var(--accent-signal); font-size: 12px; text-decoration: none; }
+  .compare-card a:hover { text-decoration: underline; }
+
+  @keyframes live-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.35;transform:scale(0.85)} }
+</style>
+</head>
+<body>
+{% include '_nav.html' %}
+
+<main class="page" style="max-width: 1320px;">
+
+  <!-- USP HERO — plain-English statement of what BearWatch detects + verifiable examples -->
+  {% include '_usp_hero.html' %}
+
+  <section class="hero" style="padding: 24px 0 8px; text-align: left;">
+    <div class="kicker">Live Pod</div>
+    <h1 class="block-title" style="font-size: 36px; margin: 4px 0 10px;">Live as of last morning refresh.</h1>
+    <p class="block-sub" style="margin: 0; max-width: 860px;">
+      Every number on this page is a direct read from <code style="font-family:var(--font-mono);background:var(--bg-elevated);padding:1px 5px;border-radius:3px;color:var(--accent-signal);">bnpl-pod/data/warehouse.duckdb</code>.
+      The pod runs an overnight ingest cycle and freezes the day's BSI at the morning refresh — so today's view always shows the <strong>previous day's complete data</strong> (T-1 by design).
+      Anything unavailable is shown as missing — no fallback values, no extrapolation.
+    </p>
+  </section>
+
+  <div class="live-banner">
+    <div class="row">
+      <span class="pulse">Warehouse online</span>
+      <span>Pod date <strong id="bsi-asof">—</strong> · CFPB through <strong id="cfpb-asof">—</strong> <span style="color:var(--text-tertiary);font-family:var(--font-mono);font-size:10.5px;margin-left:4px;">(T-1)</span></span>
+      <span style="margin-left:auto; color: var(--text-tertiary); font-size:11px;">next refresh: tomorrow morning · cache TTL 60 s</span>
+    </div>
+    <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(34,197,94,0.2); font-size: 11px; color: var(--text-tertiary); line-height: 1.55;">
+      <strong style="color: var(--text-secondary);">Why T-1:</strong> CFPB's public API publishes complaints with a 1–3 day publication lag; FRED macro releases overnight; Reddit/app-store scrapers run overnight to avoid rate limits. The morning ingest cycle reconciles all sources and writes a frozen daily snapshot to the warehouse — that's the snapshot you see here.
+    </div>
+  </div>
+
+  <!-- =============== MARKET REGIME PILL (always visible) =============== -->
+  <div id="mkt-regime-pill" style="margin-top: 14px; padding: 12px 16px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; display: flex; flex-wrap: wrap; align-items: center; gap: 14px;">
+    <div style="font-size: 9px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; font-family: var(--font-mono);">📊 BROAD-MARKET REGIME</div>
+    <div id="mkt-regime-label" style="font-size: 13px; font-weight: 700; color: var(--text); font-family: var(--font-mono);">loading…</div>
+    <div style="font-size: 11px; color: var(--text-tertiary); display: flex; gap: 12px;">
+      <span>SPY: <strong id="mkt-spy-dist" style="color: var(--text); font-family: var(--font-mono);">—</strong> dist days</span>
+      <span>QQQ: <strong id="mkt-qqq-dist" style="color: var(--text); font-family: var(--font-mono);">—</strong> dist days</span>
+      <span>topping risk: <strong id="mkt-score" style="color: var(--text); font-family: var(--font-mono);">—</strong>/100</span>
+    </div>
+    <div id="mkt-interpretation" style="flex-basis: 100%; font-size: 11px; color: var(--text-secondary); margin-top: 6px; padding-top: 8px; border-top: 1px dashed var(--border); line-height: 1.55; font-style: italic;">—</div>
+  </div>
+
+  <!-- =============== TOP PANELS — BSI + Pillar Freshness =============== -->
+  <div class="panels">
+
+    <!-- LEFT — BSI live composite -->
+    <section class="panel">
+      <div class="panel-head">
+        <div class="panel-title">📈 BSI composite — last 90 days</div>
+        <div class="panel-asof">source: bsi_daily</div>
+      </div>
+
+      <div class="latest-grid">
+        <div class="latest-cell">
+          <div class="lbl">Latest BSI z</div>
+          <div class="val" id="bsi-z" style="color: var(--text);">—</div>
+          <div class="sub" id="bsi-z-sub">—</div>
+        </div>
+        <div class="latest-cell">
+          <div class="lbl">90-day percentile</div>
+          <div class="val" id="bsi-pct">—</div>
+          <div class="sub">where today sits in trailing window</div>
+        </div>
+      </div>
+
+      <div class="chart-wrap"><canvas id="bsi-chart"></canvas></div>
+
+      <div class="pillar-grid" id="pillar-grid"></div>
+    </section>
+
+    <!-- RIGHT — Pillar freshness audit -->
+    <section class="panel">
+      <div class="panel-head">
+        <div class="panel-title">🔍 Pillar freshness audit</div>
+        <div class="panel-asof">live read</div>
+      </div>
+      <table class="freshness-tbl">
+        <tbody id="freshness-tbody"><tr><td colspan="3" style="color:var(--text-tertiary);">loading…</td></tr></tbody>
+      </table>
+      <p style="font-size: 10.5px; color: var(--text-tertiary); margin-top: 10px; line-height: 1.5;">
+        <strong style="color:var(--success);">fresh</strong> ≤ 7 d ·
+        <strong style="color:#facc15;">stale</strong> ≤ 30 d ·
+        <strong style="color:var(--danger);">very stale</strong> > 30 d ·
+        <strong style="color:var(--text-tertiary);">missing</strong> = pillar never ingested
+      </p>
+    </section>
+  </div>
+
+  <!-- =============== PORTFOLIO ANALYTICS (always visible) =============== -->
+  <section class="panel" style="margin-top: 18px;">
+    <div class="panel-head">
+      <div class="panel-title">💼 Portfolio analytics</div>
+      <div class="panel-asof"><span id="port-asof-display">—</span></div>
+    </div>
+    <div id="port-grid" style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px;">
+      <div class="port-cell"><div class="lbl">Cash</div><div class="val" id="port-cash-v">—</div></div>
+      <div class="port-cell"><div class="lbl">Portfolio value</div><div class="val" id="port-value-v">—</div></div>
+      <div class="port-cell"><div class="lbl">Open positions</div><div class="val" id="port-open-v">—</div></div>
+      <div class="port-cell"><div class="lbl">Portfolio β</div><div class="val" id="port-beta-v">—</div></div>
+      <div class="port-cell"><div class="lbl">Drawdown mode</div><div class="val" id="port-mode-v">—</div></div>
+      <div class="port-cell"><div class="lbl">High-water mark</div><div class="val" id="port-hwm-v">—</div></div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 14px; margin-top: 14px;">
+      <div>
+        <div style="font-size: 10px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; margin-bottom: 8px;">Open positions</div>
+        <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+          <thead style="background: var(--bg-elevated);">
+            <tr>
+              <th style="text-align:left; padding: 8px 10px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-tertiary); font-weight: 600;">Ticker</th>
+              <th style="text-align:left; padding: 8px 10px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-tertiary); font-weight: 600;">Side</th>
+              <th style="text-align:right; padding: 8px 10px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-tertiary); font-weight: 600;">Shares</th>
+              <th style="text-align:right; padding: 8px 10px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-tertiary); font-weight: 600;">Avg entry</th>
+              <th style="text-align:right; padding: 8px 10px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-tertiary); font-weight: 600;">Notional</th>
+              <th style="text-align:right; padding: 8px 10px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-tertiary); font-weight: 600;">Weight</th>
+            </tr>
+          </thead>
+          <tbody id="port-positions-body" style="font-family: var(--font-mono);"><tr><td colspan="6" style="text-align:center; color: var(--text-tertiary); padding: 16px; font-size: 11px;">no open positions</td></tr></tbody>
+        </table>
+      </div>
+      <div>
+        <div style="font-size: 10px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; margin-bottom: 8px;">Risk capacity</div>
+        <div id="port-risk-summary" style="background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; font-size: 11px; color: var(--text-secondary); line-height: 1.65;">—</div>
+      </div>
+    </div>
+
+    <style>
+      .port-cell { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; }
+      .port-cell .lbl { font-size: 9px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+      .port-cell .val { font-family: var(--font-mono); font-size: 16px; color: var(--text); margin-top: 4px; font-variant-numeric: tabular-nums; font-weight: 600; }
+      @media (max-width: 1100px) { #port-grid { grid-template-columns: repeat(3, 1fr) !important; } }
+    </style>
+  </section>
+
+  <!-- =============== USER WATCHLIST (live, fed from /monitor) =============== -->
+  <section class="panel" style="margin-top: 18px;">
+    <div class="panel-head">
+      <div class="panel-title">⭐ Your watchlist <span style="font-size: 10px; color: var(--text-tertiary); font-family: var(--font-mono); margin-left: 8px;">add from <a href="/monitor" style="color: var(--accent-signal); text-decoration: none;">/monitor</a></span></div>
+      <div class="panel-asof" id="watch-asof">—</div>
+    </div>
+    <p style="font-size: 11.5px; color: var(--text-secondary); margin: 0 0 10px; line-height: 1.6;">
+      Watchlist auto-prioritized by live z-score. The 4-stage pod (below) auto-runs against the highest-live-z asset in this list — so when you add a new name from <a href="/monitor" style="color: var(--accent-signal);">/monitor</a> with strong CFPB acceleration, it becomes the new live trade candidate.
+    </p>
+    <table class="firms-tbl">
+      <thead>
+        <tr>
+          <th>Rank</th><th></th><th>Ticker · sector · price</th>
+          <th class="num">Live z</th><th class="num">CFPB Δ%</th><th>State</th><th>Source</th><th></th>
+        </tr>
+      </thead>
+      <tbody id="watch-tbody"><tr><td colspan="8" style="color:var(--text-tertiary);text-align:center;padding:18px;">loading…</td></tr></tbody>
+    </table>
+  </section>
+
+  <script>
+    async function removeFromLiveWatchlist(ticker) {
+      const r = await fetch(`/api/selections/${ticker}`, {method: 'DELETE'});
+      if (r.ok) { loadWatchlist(); loadPodRun(); }
+    }
+    // ====== Speed mode (Fast = instant, Cinematic = staged narration) ======
+    // Persists in localStorage so the user's choice survives reloads.
+    window.LIVE_POD_SPEED = localStorage.getItem('live_pod_speed') || 'fast';
+    window.setPodSpeed = function(mode) {
+      window.LIVE_POD_SPEED = mode;
+      localStorage.setItem('live_pod_speed', mode);
+      document.querySelectorAll('[data-speed-btn]').forEach(b => {
+        b.classList.toggle('active', b.dataset.speedBtn === mode);
+      });
+    };
+
+    // Copy trade strategy — pulls a pre-built plain-text plan from window scratch
+    // and copies it to clipboard. Works for both bull (long) and bear (short) sides.
+    window.copyTradeStrategy = async function(ticker, side) {
+      const key = (side === 'long' ? '_LONG_TRADE_TEXT_' : '_SHORT_TRADE_TEXT_') + ticker;
+      const text = window[key];
+      if (!text) {
+        alert('No trade plan to copy. Run the pod first.');
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(text);
+        const t = (window.term || function(){});
+        t(`📋 ${side.toUpperCase()} trade plan for ${ticker} copied to clipboard (${text.length} chars)`, 'ok');
+        // Brief visual confirmation on the clicked button
+        const btn = event && event.target;
+        if (btn) {
+          const old = btn.textContent;
+          btn.textContent = '✓ Copied';
+          setTimeout(() => { btn.textContent = old; }, 1400);
+        }
+      } catch (e) {
+        // Clipboard API may not be available over HTTP on some browsers — fall back
+        const ta = document.createElement('textarea');
+        ta.value = text; document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); } catch (_) {}
+        document.body.removeChild(ta);
+      }
+    };
+
+    // Fire 🔥 — fires the API immediately, then renders. In FAST mode all 4 stages
+    // pop in together (~200ms total). In CINEMATIC mode they stage with narration (~1.5s).
+    window.fireLivePod = async function(ticker) {
+      const asof = document.getElementById('pod-asof');
+      const _t = (window.term || function(){});
+      const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+      const cinematic = window.LIVE_POD_SPEED === 'cinematic';
+      // In FAST mode every "delay" is 0 — keeps the same code path but instant.
+      const d_short = cinematic ? 80  : 0;
+      const d_step  = cinematic ? 200 : 0;
+      const d_pre   = cinematic ? 150 : 0;
+
+      _t(`🔥 ${ticker} (${cinematic ? 'cinematic' : 'fast'} mode)`, 'fire');
+      // Auto-scroll to the 4-stage pod so the user sees the SIGNAL → DEBATE → EXECUTE → LEARN cards animate
+      document.getElementById('live-pod-grid')?.scrollIntoView({behavior: 'smooth', block: 'start'});
+      const pods = document.querySelectorAll('.live-pod');
+      pods.forEach(p => { p.classList.remove('done'); p.classList.add('computing'); });
+      ['pod1-firm','pod1-z','pod1-state','pod1-pillars','pod2-debate','pod2-verdict','pod3-checks','pod3-trade','pod4-learn'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = '<span style="color:var(--text-tertiary);font-size:11px;">computing…</span>';
+      });
+      if (asof) asof.innerHTML = `<span style="color:var(--danger);">🔥 firing ${ticker}…</span>`;
+
+      // === HIT API IMMEDIATELY (no pre-narration delay) ===
+      // The cache is pre-warmed on startup, so this returns in <50 ms.
+      const fetchStart = performance.now();
+      let r, d;
+      try {
+        r = await fetch(`/api/live/pod_run?ticker=${ticker}`);
+        if (!r.ok) {
+          const err = await r.json().catch(() => ({}));
+          _t(`✗ ${err.message || 'no live coverage for ' + ticker}`, 'err');
+          pods.forEach(p => p.classList.remove('computing'));
+          if (asof) asof.innerHTML = `<span style="color:var(--warning);">${err.message || 'no live firm available'}</span>`;
+          return;
+        }
+        d = await r.json();
+      } catch (e) {
+        _t(`✗ network error: ${e.message}`, 'err');
+        pods.forEach(p => p.classList.remove('computing'));
+        return;
+      }
+      const fetchMs = Math.round(performance.now() - fetchStart);
+      window._LIVE_POD_RUN = d;
+      _t(`api returned in ${fetchMs} ms · ${d.ticker} · ${d.stage3_execute.verdict}`, 'info');
+
+      // STAGE 1
+      if (cinematic) _t('stage 01 SIGNAL', 'stage');
+      await sleep(d_pre);
+      pods[0].classList.remove('computing'); pods[0].classList.add('done');
+      if (typeof _renderStage1 === 'function') _renderStage1(d);
+      const sig = d.stage1_signal;
+      _t(`  z=${sig.bsi_z.toFixed(2)} · CFPB Δ ${sig.delta_pct >= 0 ? '+' : ''}${sig.delta_pct}% · ${sig.bear_state}`, 'ok');
+      await sleep(d_step);
+
+      // STAGE 2
+      if (cinematic) _t('stage 02 DEBATE', 'stage');
+      await sleep(d_pre);
+      if (cinematic) {
+        for (const v of d.stage2_debate.votes) {
+          _t(`  ${v.icon} ${v.name.padEnd(13)} → ${v.vote}`, v.vote === 'SHORT' ? 'warn' : '');
+          await sleep(d_short);
+        }
+      } else {
+        const votesLine = d.stage2_debate.votes.map(v => `${v.icon}${v.vote[0]}`).join(' ');
+        _t(`  votes: ${votesLine} · ${d.stage2_debate.verdict}`, '');
+      }
+      pods[1].classList.remove('computing'); pods[1].classList.add('done');
+      if (typeof _renderStage2 === 'function') _renderStage2(d);
+      await sleep(d_step);
+
+      // STAGE 3
+      if (cinematic) _t('stage 03 EXECUTE', 'stage');
+      await sleep(d_pre);
+      if (cinematic) {
+        for (const c of d.stage3_execute.risk_checks) {
+          _t(`  [${c.status}] ${c.name}`, c.status === 'PASS' ? 'ok' : 'err');
+          await sleep(d_short);
+        }
+      } else {
+        const passN = d.stage3_execute.risk_checks.filter(c => c.status === 'PASS').length;
+        _t(`  ${passN}/7 risk checks passed`, passN === 7 ? 'ok' : 'warn');
+      }
+      pods[2].classList.remove('computing'); pods[2].classList.add('done');
+      if (typeof _renderStage3 === 'function') _renderStage3(d);
+      const verdictLevel = d.stage3_execute.verdict === 'APPROVED' ? 'ok' :
+                          (d.stage3_execute.verdict === 'BLOCKED' ? 'err' : 'warn');
+      _t(`  verdict: ${d.stage3_execute.verdict} · entry $${d.stage3_execute.entry.toFixed(2)} · R:R ${d.stage3_execute.rr}`, verdictLevel);
+      await sleep(d_step);
+
+      // STAGE 4
+      pods[3].classList.remove('computing'); pods[3].classList.add('done');
+      if (typeof _renderStage4 === 'function') _renderStage4(d);
+      _t(`✓ pipeline complete (api ${fetchMs} ms, total ${Math.round(performance.now() - fetchStart)} ms)`, 'fire');
+
+      if (asof) {
+        asof.innerHTML = `firm: ${d.ticker} · as of ${d.as_of} · <span style="color:var(--danger);">🔥 fired manually</span>`;
+      }
+
+      // ===== TECHNICAL CONTEXT (8 indicator families) — loaded async =====
+      loadTechnicalPanel(d.ticker);
+    };
+
+    // ====== 🐂 LONG-pod scan — runs the 5 long-thesis archetypes ======
+    window.scanLongPod = async function(ticker) {
+      const _t = (window.term || function(){});
+      _t(`🐂 LONG-pod scan started on ${ticker}`, 'fire');
+
+      // Also refresh the technical panel (Fibonacci / Quarters / Volume charts)
+      // so the user sees the same chart context whether they fired or bulled.
+      loadTechnicalPanel(ticker);
+
+      // Show the long-pod panel + scroll to it
+      const panel = document.getElementById('long-pod-panel');
+      if (!panel) return;
+      panel.style.display = 'block';
+      panel.scrollIntoView({behavior: 'smooth', block: 'start'});
+      const body = document.getElementById('long-pod-body');
+      body.innerHTML = '<div style="color:var(--text-tertiary);text-align:center;padding:30px;font-size:11px;">scanning post-stress recovery setup…</div>';
+
+      try {
+        const r = await fetch(`/api/live/pod_run_long?ticker=${ticker}`);
+        const d = await r.json();
+        if (d.error) {
+          body.innerHTML = `<div style="color:var(--warning);text-align:center;padding:24px;font-size:12px;">${d.message || d.error}</div>`;
+          _t(`✗ long-pod: ${d.message || d.error}`, 'err');
+          return;
+        }
+        _t(`  ↳ recovery test: ${d.recovery_test.n_conditions_met}/5 conditions met (score ${d.recovery_test.score})`, 'info');
+        _t(`  ↳ debate: ${d.debate.verdict} · conviction ${d.debate.conviction.toUpperCase()}`,
+           d.debate.long_approved ? 'ok' : 'warn');
+
+        const verdictColor = d.debate.long_approved ? '#4ade80' : '#f87171';
+        const condRows = Object.entries(d.recovery_test.conditions).map(([k, c]) => `
+          <div style="display:grid;grid-template-columns:18px 1fr auto auto;gap:10px;align-items:center;padding:6px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;font-size:11px;">
+            <div style="color:${c.pass ? '#4ade80' : '#f87171'};font-family:var(--font-mono);font-weight:700;">${c.pass ? '✓' : '✗'}</div>
+            <div>${c.label}</div>
+            <div style="font-family:var(--font-mono);color:var(--text);">${c.value}</div>
+            <div style="font-family:var(--font-mono);color:var(--text-tertiary);font-size:10px;">${c.threshold}</div>
+          </div>
+        `).join('');
+        const voteRows = d.debate.votes.map(v => `
+          <div onclick="openHedgeFundModal('${v.name}', { vote: '${v.vote}', rationale: '${v.rationale.replace(/'/g, "\\'")}', ticker: '${d.ticker}' })" style="display:grid;grid-template-columns:22px 1fr auto;gap:8px;align-items:center;padding:7px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;cursor:pointer;font-size:11.5px;" title="Click for ${v.name} deep-dive">
+            <div style="font-size:13px;">${v.icon}</div>
+            <div style="color:var(--text);font-weight:600;">${v.name}</div>
+            <div style="font-size:9px;font-family:var(--font-mono);font-weight:700;letter-spacing:0.05em;padding:2px 7px;border-radius:3px;background:${v.vote === 'LONG' ? 'rgba(74,222,128,0.15)' : 'rgba(161,161,170,0.10)'};color:${v.vote === 'LONG' ? '#4ade80' : 'var(--text-tertiary)'};">${v.vote}</div>
+          </div>
+        `).join('');
+        const tradeBlock = d.suggested_trade ? (() => {
+          const t = d.suggested_trade;
+          const entryRows = (t.entry_ladder || []).map(e => `
+            <div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;padding:6px 10px;background:var(--bg-elevated);border:1px solid rgba(74,222,128,0.18);border-radius:4px;font-size:11px;">
+              <div style="color:var(--text-secondary);">${e.level}</div>
+              <div style="font-family:var(--font-mono);color:var(--text);font-weight:600;">$${e.price}</div>
+              <div style="font-family:var(--font-mono);color:#4ade80;font-size:10px;">${e.tranche_pct}% size</div>
+            </div>`).join('');
+          const targetRows = (t.target_ladder || []).map(g => `
+            <div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;padding:6px 10px;background:var(--bg-elevated);border:1px solid rgba(74,222,128,0.18);border-radius:4px;font-size:11px;">
+              <div style="color:var(--text-secondary);">${g.level}</div>
+              <div style="font-family:var(--font-mono);color:#4ade80;font-weight:600;">$${g.price}</div>
+              <div style="font-family:var(--font-mono);color:var(--text-tertiary);font-size:10px;">${g.scale_out_pct}% out</div>
+            </div>`).join('');
+          // Build a copyable plain-text strategy block
+          const copyText = [
+            `BEARWATCH × APOLLO HERMES — LONG TRADE PLAN`,
+            `Ticker: ${d.ticker} · ${d.firm_name || ''}`.trim(),
+            `As of: ${d.as_of} · Verdict: ${d.debate.verdict} · Conviction: ${d.debate.conviction.toUpperCase()}`,
+            ``,
+            `Side: LONG`,
+            `Current price: $${t.current_price}`,
+            `Weighted entry: $${t.weighted_entry}`,
+            ``,
+            `ENTRY LADDER (Fibonacci retracements):`,
+            ...(t.entry_ladder || []).map(e => `  · ${e.level} @ $${e.price} — ${e.tranche_pct}% size`),
+            ``,
+            `STOP: $${t.stop}  (${t.stop_basis})`,
+            ``,
+            `TARGET LADDER (Fibonacci extensions):`,
+            ...(t.target_ladder || []).map(g => `  · ${g.level} @ $${g.price} — scale ${g.scale_out_pct}%`),
+            ``,
+            `R:R (weighted entry → first target): ${t.rr}:1`,
+            `Shares · Notional: ${t.shares} · $${Math.round(t.notional).toLocaleString()}`,
+            `Hold horizon: ${t.horizon_days} days`,
+            ``,
+            `PLAYBOOK: ${t.playbook}`,
+            ``,
+            `Fibonacci swing high: $${t.fib_swing_high} · swing low: $${t.fib_swing_low}`,
+            `5-condition recovery test: ${d.recovery_test.n_conditions_met}/5 met`,
+            `Source: BearWatch BSI + Apollo Hermes pod, /api/live/pod_run_long?ticker=${d.ticker}`,
+          ].join('\n');
+          // Stash on window so the inline button can grab it
+          window['_LONG_TRADE_TEXT_' + d.ticker] = copyText;
+          // Trade-status banner: APPROVED (green) vs INDICATIVE (amber)
+          const ts = d.trade_status || 'APPROVED';
+          const lva = (d.long_voting_archetypes || []).join(', ');
+          const isApproved = (ts === 'APPROVED');
+          const accent = isApproved ? '#4ade80' : '#fbbf24';
+          const accentBg = isApproved ? 'rgba(74,222,128,' : 'rgba(251,191,36,';
+          const statusLabel = isApproved
+            ? 'SUGGESTED LONG TRADE · APPROVED · FIBONACCI LADDER'
+            : (ts === 'INDICATIVE_BEAR_REGIME'
+                ? 'SUGGESTED LONG TRADE · INDICATIVE · bear-regime blocks formal approval'
+                : 'SUGGESTED LONG TRADE · INDICATIVE · single-archetype conviction (below approval bar)');
+          const statusSubLabel = isApproved
+            ? 'staged entries on retracement &middot; staged exits on extension &middot; stop below 78.6% level'
+            : `Voting LONG: <strong style="color:${accent};">${lva || '—'}</strong> &middot; trade plan shown for transparency; not formally approved &middot; user discretion`;
+          return `
+          ${!isApproved ? `<div style="margin-top:14px;padding:10px 14px;background:${accentBg}0.10);border:1px solid ${accentBg}0.4);border-left:3px solid ${accent};border-radius:6px;display:flex;gap:10px;align-items:center;">
+            <span style="font-size:18px;">⚠️</span>
+            <div style="flex:1;">
+              <div style="font-size:10px;color:${accent};font-weight:700;text-transform:uppercase;letter-spacing:0.05em;font-family:var(--font-mono);">INDICATIVE PLAN — NOT FORMALLY APPROVED</div>
+              <div style="font-size:11px;color:var(--text-secondary);margin-top:3px;">
+                ${ts === 'INDICATIVE_BEAR_REGIME' ? 'Macro bear regime blocks formal long approval (' + (d.long_voting_archetypes || []).length + ' archetype(s) voted LONG anyway)' : (d.long_voting_archetypes || []).length + ' archetype voted LONG (need ≥2 for formal APPROVED)'}.
+                Plan shown so you can see the exact entry/stop/target ladder the bullish archetype(s) would propose.
+              </div>
+            </div>
+          </div>` : ''}
+          <div style="margin-top:14px;padding:14px 16px;background:linear-gradient(180deg,${accentBg}0.08),transparent 60%),var(--bg-card);border:1px solid ${accentBg}0.4);border-radius:8px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+              <div>
+                <div style="font-size:10px;color:${accent};text-transform:uppercase;letter-spacing:0.06em;font-weight:700;font-family:var(--font-mono);">${statusLabel}</div>
+                <div style="font-size:10px;color:var(--text-tertiary);margin-top:2px;">${statusSubLabel}</div>
+              </div>
+              <button onclick="copyTradeStrategy('${d.ticker}', 'long')" style="background:rgba(74,222,128,0.12);border:1px solid rgba(74,222,128,0.4);color:#4ade80;padding:6px 12px;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.05em;">📋 Copy plan</button>
+            </div>
+
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;">
+              <div style="background:var(--bg-elevated);border:1px solid var(--border);border-radius:5px;padding:8px 10px;"><div style="font-size:8.5px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.06em;">Current price</div><div style="font-family:var(--font-mono);font-size:14px;color:var(--text);">$${t.current_price}</div></div>
+              <div style="background:var(--bg-elevated);border:1px solid var(--border);border-radius:5px;padding:8px 10px;"><div style="font-size:8.5px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.06em;">Weighted entry</div><div style="font-family:var(--font-mono);font-size:14px;color:#4ade80;font-weight:700;">$${t.weighted_entry}</div></div>
+              <div style="background:var(--bg-elevated);border:1px solid var(--border);border-radius:5px;padding:8px 10px;"><div style="font-size:8.5px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.06em;">Stop</div><div style="font-family:var(--font-mono);font-size:14px;color:var(--danger);">$${t.stop}</div></div>
+              <div style="background:var(--bg-elevated);border:1px solid var(--border);border-radius:5px;padding:8px 10px;"><div style="font-size:8.5px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.06em;">R:R · shares · notional</div><div style="font-family:var(--font-mono);font-size:13px;color:var(--text);">${t.rr}:1 · ${t.shares} · $${Math.round(t.notional).toLocaleString()}</div></div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+              <div>
+                <div style="font-size:9.5px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.06em;font-weight:700;margin-bottom:6px;font-family:var(--font-mono);">Entry ladder (scale in)</div>
+                <div style="display:flex;flex-direction:column;gap:5px;">${entryRows}</div>
+              </div>
+              <div>
+                <div style="font-size:9.5px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.06em;font-weight:700;margin-bottom:6px;font-family:var(--font-mono);">Target ladder (scale out)</div>
+                <div style="display:flex;flex-direction:column;gap:5px;">${targetRows}</div>
+              </div>
+            </div>
+
+            <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);font-size:10.5px;color:var(--text-secondary);line-height:1.55;">
+              <strong style="color:var(--text);">Playbook:</strong> ${t.playbook}
+              <br><span style="color:var(--text-tertiary);font-size:10px;">Stop basis: ${t.stop_basis}. Hold horizon ${t.horizon_days}d. Fib swing range: $${t.fib_swing_low} → $${t.fib_swing_high}.</span>
+            </div>
+            <!-- LONG-side override slider (mirror of SHORT) -->
+            <div style="margin-top:12px;padding:10px 12px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:6px;">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;font-family:var(--font-mono);font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.05em;">
+                <span>▶ Size override (long)</span>
+                <span>recommended: <strong style="color:var(--text);">${t.shares} sh</strong></span>
+              </div>
+              <input type="range" id="long-size-slider-${d.ticker}" min="0.25" max="2.0" step="0.05" value="1.0" style="width:100%;accent-color:#4ade80;" />
+              <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:10px;color:var(--text-tertiary);margin-top:6px;">
+                <span>0.25×</span><span>1.0×</span><span>2.0×</span>
+              </div>
+              <div id="long-size-readout-${d.ticker}" style="margin-top:6px;padding:6px 8px;background:var(--bg-card);border-radius:4px;font-family:var(--font-mono);font-size:11px;color:var(--text);text-align:center;">
+                <strong>1.0×</strong> · <span>${t.shares}</span> sh · $<span>${Math.round(t.notional).toLocaleString()}</span>
+              </div>
+            </div>
+            <button id="long-execute-btn-${d.ticker}" data-ticker="${d.ticker}" data-shares="${t.shares}" data-entry="${t.weighted_entry}" data-stop="${t.stop}" data-target="${t.first_target}" data-notional="${Math.round(t.notional)}" data-bsi-z="${d.current_bsi_z || 0}" data-peak-z="${d.peak_bsi_z_proxy || 0}"
+                    style="margin-top:12px;width:100%;background:#4ade80;border:0;color:#0a0a0a;padding:11px;border-radius:6px;font-size:13px;font-weight:700;letter-spacing:0.05em;cursor:pointer;text-transform:uppercase;font-family:var(--font-mono);">
+              Execute LONG (ensemble) → add to portfolio
+            </button>
+            ${(d.per_archetype_trades && d.per_archetype_trades.length) ? (() => {
+              // ── PER-HEDGE-FUND TRADE TABLE ────────────────────────────────
+              // Each LONG-voting archetype's distinct entry/stop/target/size,
+              // reflecting their published structural prior (Buffett deep-value
+              // wide-stop / Druckenmiller tight-stop tactical / etc.).
+              return `
+              <div style="margin-top:18px;padding:14px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;">
+                <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;">
+                  <div>
+                    <div style="font-size:10px;color:#a78bfa;text-transform:uppercase;letter-spacing:0.06em;font-weight:700;font-family:var(--font-mono);">PER-HEDGE-FUND TRADE PLANS</div>
+                    <div style="font-size:10px;color:var(--text-tertiary);margin-top:3px;">Each LONG-voting archetype's distinct entry / stop / target — different doctrines, different sizes</div>
+                  </div>
+                  <div style="font-size:10px;color:var(--text-tertiary);font-family:var(--font-mono);">${d.per_archetype_trades.length} fund(s) voting LONG</div>
+                </div>
+                <table style="width:100%;border-collapse:collapse;font-size:11px;font-family:var(--font-mono);">
+                  <thead>
+                    <tr style="background:var(--bg-elevated);">
+                      <th style="text-align:left;padding:7px 8px;font-size:9px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.05em;font-weight:700;">Fund</th>
+                      <th style="text-align:right;padding:7px 8px;font-size:9px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.05em;font-weight:700;">Entry</th>
+                      <th style="text-align:right;padding:7px 8px;font-size:9px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.05em;font-weight:700;">Stop</th>
+                      <th style="text-align:right;padding:7px 8px;font-size:9px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.05em;font-weight:700;">Target</th>
+                      <th style="text-align:right;padding:7px 8px;font-size:9px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.05em;font-weight:700;">R:R</th>
+                      <th style="text-align:right;padding:7px 8px;font-size:9px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.05em;font-weight:700;">Sh × Sz</th>
+                      <th style="text-align:right;padding:7px 8px;font-size:9px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.05em;font-weight:700;">Hold</th>
+                      <th style="text-align:center;padding:7px 8px;font-size:9px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.05em;font-weight:700;">Execute</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${d.per_archetype_trades.map((p, i) => `
+                      <tr style="border-top:1px solid var(--border);">
+                        <td style="padding:8px;">
+                          <div style="font-size:13px;">${p.icon} <strong style="color:var(--text);font-family:var(--font-display, sans-serif);">${p.name}</strong></div>
+                          <div style="font-size:9.5px;color:var(--text-tertiary);font-family:var(--font-display, sans-serif);font-style:italic;margin-top:2px;line-height:1.45;">${p.doctrine}</div>
+                        </td>
+                        <td style="padding:8px;text-align:right;">
+                          <div style="color:#4ade80;font-weight:700;">$${p.entry_price}</div>
+                          <div style="font-size:9px;color:var(--text-tertiary);">${p.entry_label}</div>
+                        </td>
+                        <td style="padding:8px;text-align:right;">
+                          <div style="color:#f87171;font-weight:700;">$${p.stop_price}</div>
+                          <div style="font-size:9px;color:var(--text-tertiary);">${p.stop_label}</div>
+                        </td>
+                        <td style="padding:8px;text-align:right;">
+                          <div style="color:#4ade80;font-weight:700;">$${p.target_price}</div>
+                          <div style="font-size:9px;color:var(--text-tertiary);">${p.target_label}</div>
+                        </td>
+                        <td style="padding:8px;text-align:right;color:#a78bfa;font-weight:700;">${p.rr}:1</td>
+                        <td style="padding:8px;text-align:right;">
+                          <div style="color:var(--text);">${p.shares} sh</div>
+                          <div style="font-size:9px;color:var(--text-tertiary);">${p.size_pct}% / $${Math.round(p.notional).toLocaleString()}</div>
+                        </td>
+                        <td style="padding:8px;text-align:right;color:var(--text-secondary);">${p.hold_days}d</td>
+                        <td style="padding:8px;text-align:center;">
+                          <button class="arch-exec-btn" data-ticker="${d.ticker}" data-fund="${p.name}"
+                                  data-shares="${p.shares}" data-entry="${p.entry_price}"
+                                  data-stop="${p.stop_price}" data-target="${p.target_price}"
+                                  data-notional="${Math.round(p.notional)}" data-rr="${p.rr}"
+                                  data-status="${d.trade_status}"
+                                  style="background:rgba(167,139,250,0.15);border:1px solid rgba(167,139,250,0.5);color:#a78bfa;padding:5px 10px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.04em;">
+                            Take ${p.name.split(' ')[0]}
+                          </button>
+                        </td>
+                      </tr>`).join('')}
+                  </tbody>
+                </table>
+                <div style="margin-top:10px;font-size:10px;color:var(--text-tertiary);font-style:italic;line-height:1.55;">
+                  Click "Take [Fund]" to execute that fund's specific plan into your portfolio with its own entry/stop/target. The ensemble button above uses the weighted Fibonacci-ladder average; per-fund buttons use that fund's exact doctrine.
+                </div>
+              </div>`;
+            })() : ''}
+          </div>`;
+        })() : `
+          <div style="margin-top:14px;padding:14px 16px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:8px;text-align:center;">
+            <div style="font-size:11px;color:var(--text-tertiary);">No LONG trade suggested. The long pod requires ≥2-of-5 archetype concurrence. Conviction is currently <strong style="color:var(--warning);">${d.debate.conviction.toUpperCase()}</strong>.</div>
+          </div>
+        `;
+
+        body.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+            <div>
+              <div style="font-size:18px;font-weight:700;color:var(--text);font-family:var(--font-mono);">${d.ticker} <span style="font-size:11px;color:var(--text-tertiary);font-weight:400;">· post-stress recovery scan</span></div>
+              <div style="font-size:11px;color:var(--text-tertiary);margin-top:4px;">as of ${d.as_of} · current BSI z = ${d.current_bsi_z} · prior peak ≈ ${d.peak_bsi_z_proxy}</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:9px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;">Long verdict</div>
+              <div style="font-family:var(--font-mono);font-size:18px;font-weight:700;color:${verdictColor};">${d.debate.verdict}</div>
+              <div style="font-size:10px;color:var(--text-tertiary);">conviction ${d.debate.conviction.toUpperCase()}</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div>
+              <div style="font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.06em;font-weight:700;margin-bottom:8px;font-family:var(--font-mono);">5-condition recovery test (${d.recovery_test.n_conditions_met}/5)</div>
+              <div style="display:flex;flex-direction:column;gap:6px;">${condRows}</div>
+            </div>
+            <div>
+              <div style="font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.06em;font-weight:700;margin-bottom:8px;font-family:var(--font-mono);">5 long-thesis archetypes <span style="font-size:9px;color:#4ade80;margin-left:6px;">click for deep-dive</span></div>
+              <div style="display:flex;flex-direction:column;gap:6px;">${voteRows}</div>
+            </div>
+          </div>
+          ${tradeBlock}
+          <div style="margin-top:12px;font-size:10.5px;color:var(--text-tertiary);font-style:italic;line-height:1.55;">
+            ${d.interpretation}
+          </div>
+        `;
+        _t(`✓ long-pod scan complete: ${d.debate.verdict}`, d.debate.long_approved ? 'ok' : 'warn');
+
+        // Wire the LONG-side override slider readout
+        const longSlider = document.getElementById(`long-size-slider-${d.ticker}`);
+        if (longSlider) {
+          longSlider.addEventListener('input', () => {
+            const mult = parseFloat(longSlider.value);
+            const recShares = parseFloat(document.getElementById(`long-execute-btn-${d.ticker}`).dataset.shares);
+            const recEntry = parseFloat(document.getElementById(`long-execute-btn-${d.ticker}`).dataset.entry);
+            const newShares = Math.max(1, Math.round(recShares * mult));
+            const newNotional = Math.round(newShares * recEntry);
+            const readout = document.getElementById(`long-size-readout-${d.ticker}`);
+            if (readout) {
+              const colour = mult < 0.5 ? '#fbbf24' : mult > 1.5 ? '#f87171' : '#4ade80';
+              readout.innerHTML = `<strong style="color:${colour};">${mult.toFixed(2)}×</strong> · <span style="color:${colour};">${newShares}</span> sh · $<span style="color:${colour};">${newNotional.toLocaleString()}</span>`;
+            }
+          });
+        }
+        // Wire the LONG execute button (if rendered)
+        const longBtn = document.getElementById(`long-execute-btn-${d.ticker}`);
+        if (longBtn) {
+          longBtn.addEventListener('click', async () => {
+            const tk = longBtn.dataset.ticker;
+            const recShares = parseFloat(longBtn.dataset.shares);
+            const en = parseFloat(longBtn.dataset.entry);
+            const st = parseFloat(longBtn.dataset.stop);
+            const tg = parseFloat(longBtn.dataset.target);
+            const recNotional = parseFloat(longBtn.dataset.notional);
+            const bsiZ = parseFloat(longBtn.dataset.bsiZ || '0');
+            const peakZ = parseFloat(longBtn.dataset.peakZ || '0');
+            const ts = d.trade_status || 'APPROVED';
+            // Read override slider
+            const mult = longSlider ? parseFloat(longSlider.value) : 1.0;
+            const sh = Math.max(1, Math.round(recShares * mult));
+            const no = Math.round(sh * en);
+            // Direction-conflict warning for LONG side
+            // LONG is contrarian if BSI z is currently HIGH (bear is angry/elevated)
+            // — long-pod expects bear to be DECAYING from a prior peak, not currently spiking
+            let directionWarning = '';
+            if (bsiZ >= 2.0) {
+              directionWarning = `\n\n⚠️ DIRECTION-CONFLICT WARNING:\nCurrent BSI z = ${bsiZ.toFixed(2)} (≥ 2.0).\nThe bear is ACTIVELY GROWLING on this firm right now.\nThe long-pod expects bear to be DECAYING from a prior peak — not actively elevated.\nA LONG here is contrarian to the live signal.`;
+            } else if (peakZ < 1.5) {
+              directionWarning = `\n\n📊 RECOVERY-SETUP NOTICE:\nPeak BSI z over the trailing window was only ${peakZ.toFixed(2)}.\nThe long-pod is built for post-stress recovery (prior z ≥ 2.0 then decaying).\nWithout a prior stress event there's nothing to "recover" from.`;
+            }
+            // Size-override warning
+            let sizeWarning = '';
+            if (mult >= 1.5) {
+              sizeWarning = `\n\n⚠️ SIZE OVERRIDE WARNING:\n${mult.toFixed(2)}× recommended size.\nFinal: ${sh} sh · $${no.toLocaleString()} notional (${(mult*100-100).toFixed(0)}% above recommendation).`;
+            } else if (mult <= 0.5) {
+              sizeWarning = `\n\n📉 SIZE-DOWN NOTICE:\nOnly ${mult.toFixed(2)}× recommended size (${(100-mult*100).toFixed(0)}% below).`;
+            }
+            const indicativeWarning = (ts !== 'APPROVED')
+              ? `\n\n⚠ INDICATIVE PLAN — ${ts === 'INDICATIVE_BEAR_REGIME'
+                  ? 'macro bear regime blocks formal approval'
+                  : 'only ' + (d.long_voting_archetypes||[]).length + ' archetype voted LONG (need ≥2 for formal APPROVED)'}.\nProceed at your own discretion.`
+              : '';
+            // Two-step confirm if any warning fired
+            const anyWarning = directionWarning || sizeWarning || indicativeWarning;
+            if (anyWarning) {
+              if (!confirm(`Execute LONG ${sh} ${tk} at weighted entry $${en}?\nStop $${st} · First target $${tg} · Notional $${no.toLocaleString()}${indicativeWarning}${directionWarning}${sizeWarning}\n\nClick OK to see one more confirmation, Cancel to abort.`)) {
+                _t('user cancelled long execute (warning rejected)', 'warn'); return;
+              }
+              if (!confirm(`FINAL CONFIRMATION — Are you certain you want to execute this LONG?\n\n${tk} LONG ${sh} sh @ $${en}${directionWarning ? '\n\n⚠ Going LONG against active bear (z=' + bsiZ.toFixed(2) + ')' : ''}${sizeWarning ? '\n\n⚠ Size override: ' + mult.toFixed(2) + '×' : ''}\n\nClick OK to journal. This is the LAST confirmation.`)) {
+                _t('user cancelled long execute (final confirmation declined)', 'warn'); return;
+              }
+            } else if (!confirm(`Execute LONG ${sh} ${tk} at weighted entry $${en}?\nStop $${st} · First target $${tg} · Notional $${no.toLocaleString()}\n\nThis will add to your portfolio.`)) {
+              _t('user cancelled long execute', 'warn'); return;
+            }
+            longBtn.disabled = true; longBtn.textContent = 'Journaling…';
+            const r = await fetch('/api/journal/log', {
+              method: 'POST', headers: {'Content-Type':'application/json'},
+              body: JSON.stringify({
+                ticker: tk, side: 'LONG', shares: sh, entry_price: en,
+                stop_price: st, target_price: tg, notional_usd: no,
+                event_id: 'long_' + Date.now(),
+                verdict: (mult !== 1.0 || directionWarning) ? `${ts}_OVERRIDE_${mult.toFixed(2)}x` : ts,
+                source: directionWarning ? 'long_pod_override_against_bear' : 'long_pod',
+              }),
+            });
+            if (r.ok) {
+              longBtn.textContent = '✓ Added to portfolio — view at /portfolio';
+              longBtn.style.background = '#22c55e';
+              _t(`✓ LONG trade journaled · ${tk} @ $${en}`, 'ok');
+            } else {
+              const err = await r.json().catch(()=>({}));
+              longBtn.textContent = err.error === 'not_logged_in' ? 'Sign in to execute →' : '✗ Failed';
+              longBtn.style.background = '#f87171';
+              _t(`✗ long execute failed: ${err.error || err.message || 'unknown'}`, 'err');
+            }
+
+        // ── PER-FUND execute buttons (one row per LONG-voting archetype) ──
+        document.querySelectorAll('.arch-exec-btn').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const tk = btn.dataset.ticker, fund = btn.dataset.fund;
+            const sh = parseFloat(btn.dataset.shares);
+            const en = parseFloat(btn.dataset.entry);
+            const st = parseFloat(btn.dataset.stop);
+            const tg = parseFloat(btn.dataset.target);
+            const no = parseFloat(btn.dataset.notional);
+            const rr = btn.dataset.rr;
+            const ts = btn.dataset.status || 'APPROVED';
+            const indicativeWarning = (ts !== 'APPROVED')
+              ? `\n\n⚠ INDICATIVE — formal pod approval not granted (${ts}). You're taking ${fund}'s specific plan at your own discretion.`
+              : '';
+            if (!confirm(`Take ${fund}'s LONG plan on ${tk}?\n\n${sh} sh @ $${en}\nStop $${st} · Target $${tg} · R:R ${rr}:1\nNotional $${Math.round(no).toLocaleString()}${indicativeWarning}`)) {
+              _t(`user cancelled ${fund} execute`, 'warn'); return;
+            }
+            btn.disabled = true; btn.textContent = '…';
+            const r = await fetch('/api/journal/log', {
+              method: 'POST', headers: {'Content-Type':'application/json'},
+              body: JSON.stringify({
+                ticker: tk, side: 'LONG', shares: sh, entry_price: en,
+                stop_price: st, target_price: tg, notional_usd: no,
+                event_id: `long_${fund.replace(/\s+/g,'_').toLowerCase()}_${Date.now()}`,
+                verdict: ts, source: `long_pod__${fund}`,
+              }),
+            });
+            if (r.ok) {
+              btn.textContent = `✓ ${fund.split(' ')[0]} taken`;
+              btn.style.background = 'rgba(74,222,128,0.25)';
+              btn.style.color = '#4ade80';
+              btn.style.borderColor = 'rgba(74,222,128,0.5)';
+              _t(`✓ ${fund} LONG plan journaled · ${tk} ${sh}sh @ $${en}`, 'ok');
+            } else {
+              const err = await r.json().catch(()=>({}));
+              btn.textContent = '✗ failed';
+              btn.style.background = 'rgba(248,113,113,0.15)';
+              btn.style.color = '#f87171';
+              _t(`✗ ${fund} execute failed: ${err.error || err.message || 'unknown'}`, 'err');
+            }
+          });
+        });
+          });
+        }
+      } catch (e) {
+        body.innerHTML = `<div style="color:var(--danger);text-align:center;padding:24px;font-size:12px;">scan failed: ${e.message}</div>`;
+        _t(`✗ long-pod fetch failed: ${e.message}`, 'err');
+      }
+    };
+
+    // Load + render the 8-indicator technical panel below the 4-stage grid
+    async function loadTechnicalPanel(ticker) {
+      const panel = document.getElementById('tech-panel');
+      const grid = document.getElementById('tech-grid');
+      if (!panel || !grid) return;
+      panel.style.display = 'block';
+      // Sync the ticker dropdown
+      const sel = document.getElementById('tech-ticker-select');
+      if (sel && sel.value !== ticker) {
+        // Add the option if it doesn't exist (e.g., when fired from a watchlist row)
+        if (!Array.from(sel.options).some(o => o.value === ticker)) {
+          const opt = document.createElement('option'); opt.value = ticker; opt.textContent = ticker; sel.appendChild(opt);
+        }
+        sel.value = ticker;
+      }
+      grid.innerHTML = '<div style="grid-column: 1 / -1; padding: 16px; text-align: center; color: var(--text-tertiary); font-size: 11px;">computing 8 indicator families…</div>';
+      document.getElementById('tech-ticker').textContent = ticker;
+      document.getElementById('tech-verdict').textContent = '—';
+      document.getElementById('tech-bias').textContent = '—';
+      try {
+        const r = await fetch(`/api/technical/${ticker}`);
+        const d = await r.json();
+        if (d.error) {
+          grid.innerHTML = `<div style="grid-column: 1 / -1; padding: 16px; text-align: center; color: var(--warning); font-size: 11px;">technical context unavailable: ${d.error}</div>`;
+          return;
+        }
+        const ind = d.indicators;
+        const verdictColor = {
+          STRONG_SHORT_OK: '#4ade80',
+          SHORT_OK:        '#a3e635',
+          NEUTRAL:         '#facc15',
+          AVOID_SHORT:     '#f87171',
+        }[d.tech_verdict] || 'var(--text)';
+        document.getElementById('tech-verdict').textContent = d.tech_verdict.replace('_', ' ');
+        document.getElementById('tech-verdict').style.color = verdictColor;
+        document.getElementById('tech-bias').textContent = d.tech_bias_score;
+
+        // 8 indicator cards
+        const cards = [
+          { title: '1 · ATR (adaptive vol)', body: `
+              <div class="ti-row"><span>14d ATR</span><span>$${ind.atr.atr_14}</span></div>
+              <div class="ti-row"><span>ATR % of price</span><span>${ind.atr.atr_pct_of_price}%</span></div>
+              <div class="ti-row hi"><span>Adaptive stop (2×ATR)</span><span style="color:#4ade80;">+${ind.atr.adaptive_stop_pct_short}%</span></div>
+              <div class="ti-row"><span>Stop price (SHORT)</span><span>$${ind.atr.adaptive_stop_price_short}</span></div>
+              <div class="ti-note">${ind.atr.interpretation}</div>` },
+          { title: '2 · 52w / Quarterly highs', body: `
+              <div class="ti-row"><span>52w high</span><span>$${ind.highs.high_52w}</span></div>
+              <div class="ti-row"><span>Quarterly high</span><span>$${ind.highs.high_qtr}</span></div>
+              <div class="ti-row hi"><span>Off 52w high</span><span style="color:${ind.highs.pct_off_52w_high < -10 ? '#4ade80' : '#facc15'};">${ind.highs.pct_off_52w_high}%</span></div>
+              <div class="ti-row"><span>Entry quality</span><span style="font-weight:700;">${ind.highs.entry_quality.replace('_',' ')}</span></div>
+              <div class="ti-note">${ind.highs.interpretation}</div>` },
+          { title: '3 · Volume profile', body: `
+              <div class="ti-row hi"><span>Point of Control</span><span>$${ind.volume_profile.point_of_control}</span></div>
+              <div class="ti-row"><span>POC vs current</span><span>${ind.volume_profile.poc_distance_pct >= 0 ? '+' : ''}${ind.volume_profile.poc_distance_pct}%</span></div>
+              <div class="ti-note">${ind.volume_profile.interpretation}</div>` },
+          { title: '4 · Fibonacci retracements', body: `
+              ${Object.entries(ind.fibonacci.levels).map(([k,v]) => `<div class="ti-row"><span>${k}%</span><span>$${v}</span></div>`).join('')}
+              <div class="ti-row hi"><span>Current sits at</span><span style="color:#60a5fa;">${ind.fibonacci.current_at_fib}</span></div>
+              <div class="ti-note">${ind.fibonacci.interpretation}</div>` },
+          { title: '4b · Gann eighths grid', body: `
+              ${Object.entries(ind.gann_eighths.levels).map(([k,v]) => `<div class="ti-row"><span>${k}</span><span>$${v}</span></div>`).join('')}
+              <div class="ti-note">${ind.gann_eighths.interpretation}</div>` },
+          { title: '5 · Moving averages + MACD', body: `
+              <div class="ti-row"><span>50-day SMA</span><span>$${ind.moving_averages.sma_50 || '—'}</span></div>
+              <div class="ti-row"><span>200-day SMA</span><span>$${ind.moving_averages.sma_200 || '—'}</span></div>
+              <div class="ti-row hi"><span>Death cross (50<200)</span><span style="color:${ind.moving_averages.death_cross ? '#4ade80' : 'var(--text-tertiary)'};">${ind.moving_averages.death_cross ? 'ACTIVE' : 'no'}</span></div>
+              <div class="ti-row"><span>MACD line</span><span>${ind.moving_averages.macd_line}</span></div>
+              <div class="ti-row"><span>MACD histogram</span><span style="color:${ind.moving_averages.macd_bearish ? '#4ade80' : '#f87171'};">${ind.moving_averages.macd_histogram}</span></div>
+              <div class="ti-note">${ind.moving_averages.interpretation}</div>` },
+          { title: '6 · RSI + Stochastic', body: `
+              <div class="ti-row hi"><span>RSI(14)</span><span style="color:${ind.rsi_stoch.rsi_14 >= 70 ? '#4ade80' : ind.rsi_stoch.rsi_14 <= 30 ? '#f87171' : 'var(--text)'};">${ind.rsi_stoch.rsi_14}</span></div>
+              <div class="ti-row"><span>Stochastic %K</span><span>${ind.rsi_stoch.stochastic_k}</span></div>
+              <div class="ti-row"><span>Zone</span><span style="font-weight:700;">${ind.rsi_stoch.rsi_zone}</span></div>
+              <div class="ti-note">${ind.rsi_stoch.interpretation}</div>` },
+          { title: '7 · Bollinger Bands (20, 2σ)', body: `
+              <div class="ti-row"><span>Upper band</span><span>$${ind.bollinger.upper}</span></div>
+              <div class="ti-row"><span>Lower band</span><span>$${ind.bollinger.lower}</span></div>
+              <div class="ti-row hi"><span>%B (position)</span><span>${ind.bollinger.pct_b}%</span></div>
+              <div class="ti-note">${ind.bollinger.interpretation}</div>` },
+          { title: '8 · VWAP (20-day)', body: `
+              <div class="ti-row hi"><span>VWAP-20</span><span>$${ind.vwap.vwap_20}</span></div>
+              <div class="ti-row"><span>Δ vs VWAP</span><span style="color:${ind.vwap.pct_above_vwap < 0 ? '#4ade80' : '#f87171'};">${ind.vwap.pct_above_vwap >= 0 ? '+' : ''}${ind.vwap.pct_above_vwap}%</span></div>
+              <div class="ti-note">${ind.vwap.interpretation}</div>` },
+          { title: '9 · Up/Down Volume + OBV', body: `
+              <div class="ti-row"><span>Up vol (20d)</span><span style="color:#4ade80;">${(ind.up_down_volume.up_volume_20d/1e6).toFixed(1)}M</span></div>
+              <div class="ti-row"><span>Down vol (20d)</span><span style="color:#f87171;">${(ind.up_down_volume.down_volume_20d/1e6).toFixed(1)}M</span></div>
+              <div class="ti-row hi"><span>U/D ratio (20d)</span><span style="color:${ind.up_down_volume.ud_ratio_20d > 1 ? '#4ade80' : '#f87171'}; font-weight:700;">${ind.up_down_volume.ud_ratio_20d ?? '∞'}</span></div>
+              <div class="ti-row"><span>OBV trend</span><span style="font-weight:700; color:${ind.up_down_volume.obv_trend === 'RISING' ? '#4ade80' : '#f87171'};">${ind.up_down_volume.obv_trend}</span></div>
+              <div class="ti-note">${ind.up_down_volume.interpretation}</div>` },
+        ];
+        grid.innerHTML = cards.map(c => `
+          <div class="ti-card">
+            <div class="ti-card-head">${c.title}</div>
+            ${c.body}
+          </div>
+        `).join('');
+
+        // Render the three charts
+        renderFibChart(d);
+        renderQuartersChart(d);
+        renderVolumeChart(d);
+      } catch (e) {
+        grid.innerHTML = `<div style="grid-column: 1 / -1; padding: 16px; text-align: center; color: var(--danger); font-size: 11px;">technical fetch failed: ${e.message}</div>`;
+      }
+    }
+
+    // ===== Fibonacci price chart =====
+    let _fibChart = null;
+    let _fibChartData = null;          // cached d.indicators for layer toggle
+    let _fibLayer = 'fib';              // 'fib' | 'gann' | 'both'
+
+    function toggleFibLayer(layer) {
+      _fibLayer = layer;
+      ['fib','gann','both'].forEach(k => {
+        const btn = document.getElementById('fib-btn-' + k);
+        if (btn) btn.classList.toggle('active', k === layer);
+      });
+      if (_fibChartData) renderFibChart(_fibChartData);
+    }
+
+    function renderFibChart(d) {
+      _fibChartData = d;
+      const series = d.price_series || [];
+      if (!series.length) return;
+      const ind = d.indicators;
+      const canvas = document.getElementById('fib-chart');
+      if (!canvas) return;
+
+      // Build datasets: main price line + horizontal Fib/Gann lines
+      const labels = series.map(p => p.date);
+      const prices = series.map(p => p.close);
+      const datasets = [
+        {
+          label: `${d.ticker} close`,
+          data: prices,
+          borderColor: '#e4e4e7', backgroundColor: 'rgba(228,228,231,0.05)',
+          borderWidth: 2.2, tension: 0.18, fill: true,
+          pointRadius: 0, pointHoverRadius: 4,
+        },
+      ];
+
+      // Fibonacci layer
+      if (_fibLayer === 'fib' || _fibLayer === 'both') {
+        const fibColors = {
+          '0.0':   '#f87171',
+          '23.6':  '#fb923c',
+          '38.2':  '#facc15',
+          '50.0':  '#a3e635',
+          '61.8':  '#4ade80',
+          '78.6':  '#22d3ee',
+          '100.0': '#60a5fa',
+        };
+        Object.entries(ind.fibonacci.levels).forEach(([k, v]) => {
+          datasets.push({
+            label: `Fib ${k}% · $${v}`,
+            data: new Array(labels.length).fill(v),
+            borderColor: fibColors[k] || '#a78bfa',
+            borderWidth: 1.2, borderDash: [6, 4],
+            pointRadius: 0, fill: false, tension: 0,
+          });
+        });
+      }
+
+      // Gann eighths layer
+      if (_fibLayer === 'gann' || _fibLayer === 'both') {
+        const gannColors = {
+          '1/8': '#7c3aed', '2/8': '#8b5cf6', '3/8': '#a78bfa',
+          '4/8': '#c4b5fd', '5/8': '#a78bfa', '6/8': '#8b5cf6', '7/8': '#7c3aed',
+        };
+        Object.entries(ind.gann_eighths.levels).forEach(([k, v]) => {
+          datasets.push({
+            label: `Gann ${k} · $${v}`,
+            data: new Array(labels.length).fill(v),
+            borderColor: gannColors[k] || '#a78bfa',
+            borderWidth: 0.9, borderDash: [3, 3],
+            pointRadius: 0, fill: false, tension: 0,
+          });
+        });
+      }
+
+      // Destroy previous chart instance to prevent leaking
+      if (_fibChart) { try { _fibChart.destroy(); } catch {} }
+
+      _fibChart = new Chart(canvas.getContext('2d'), {
+        type: 'line',
+        data: { labels, datasets },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: {
+                color: 'rgba(225,225,229,0.85)', font: { size: 9, family: 'monospace' },
+                boxWidth: 12, padding: 4,
+                filter: (item) => item.text.startsWith(d.ticker) || _fibLayer === 'both' || true,
+              },
+            },
+            tooltip: {
+              backgroundColor: '#0a0a0a', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
+              titleFont: { family: 'monospace', size: 10 },
+              bodyFont: { family: 'monospace', size: 10 },
+              padding: 8,
+              filter: (item) => item.dataset.label.startsWith(d.ticker),
+            },
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(255,255,255,0.04)' },
+              ticks: { color: 'rgba(161,161,170,0.7)', font: { size: 9 }, maxTicksLimit: 8 },
+            },
+            y: {
+              grid: { color: 'rgba(255,255,255,0.04)' },
+              ticks: {
+                color: 'rgba(161,161,170,0.7)', font: { size: 10, family: 'monospace' },
+                callback: (v) => '$' + v.toFixed(2),
+              },
+            },
+          },
+        },
+      });
+    }
+
+    // ===== Highest-High / Lowest-Low Quarters chart =====
+    let _qtrChart = null;
+    function renderQuartersChart(d) {
+      const series = d.price_series || [];
+      if (!series.length) return;
+      const ind = d.indicators;
+      const q = ind.highs.range_quarters;
+      const canvas = document.getElementById('qtr-chart');
+      if (!canvas) return;
+
+      // Update current-quarter label
+      const cqEl = document.getElementById('qtr-current-val');
+      if (cqEl) cqEl.textContent = ind.highs.current_quarter;
+
+      const labels = series.map(p => p.date);
+      const prices = series.map(p => p.close);
+      const N = labels.length;
+
+      // Build the 4 quarter band datasets — drawn as filled-area between consecutive horizontals.
+      // Trick: render a top and bottom line per quarter and let Chart.js fill between via 'fill: -1'.
+      // We'll render in order from bottom (Q1) to top (Q4) so each fills upward from previous.
+      const datasets = [
+        // Background quarter bands (semi-transparent)
+        // Q1 lower edge (52w low) - hidden
+        { label: '_q1_low', data: new Array(N).fill(q.q1_bottom),
+          borderWidth: 0, pointRadius: 0, fill: false, showLine: false },
+        // Q1 → upper edge of Q1 = Q2/Q1 split. Fill back to previous (Q1 low) = green (value)
+        { label: 'Q1 (0–25%) value zone', data: new Array(N).fill(q.q2_q1_split),
+          borderColor: 'rgba(74,222,128,0.4)', backgroundColor: 'rgba(74,222,128,0.10)',
+          borderWidth: 1, borderDash: [5,3], pointRadius: 0, fill: '-1', tension: 0 },
+        // Q2 upper edge → fill from Q1 top = yellow-green (lower-mid)
+        { label: 'Q2 (25–50%) lower-mid', data: new Array(N).fill(q.q3_q2_split),
+          borderColor: 'rgba(163,230,53,0.4)', backgroundColor: 'rgba(163,230,53,0.10)',
+          borderWidth: 1, borderDash: [5,3], pointRadius: 0, fill: '-1', tension: 0 },
+        // Q3 upper edge → fill from Q2 top = orange (upper-mid)
+        { label: 'Q3 (50–75%) upper-mid', data: new Array(N).fill(q.q4_q3_split),
+          borderColor: 'rgba(250,204,21,0.4)', backgroundColor: 'rgba(250,204,21,0.10)',
+          borderWidth: 1, borderDash: [5,3], pointRadius: 0, fill: '-1', tension: 0 },
+        // Q4 upper edge (52w high) → fill from Q3 top = red (distribution)
+        { label: 'Q4 (75–100%) distribution', data: new Array(N).fill(q.q4_top),
+          borderColor: 'rgba(248,113,113,0.4)', backgroundColor: 'rgba(248,113,113,0.10)',
+          borderWidth: 1, borderDash: [5,3], pointRadius: 0, fill: '-1', tension: 0 },
+        // Price line on top
+        { label: `${d.ticker} close`, data: prices,
+          borderColor: '#ffffff', backgroundColor: 'transparent',
+          borderWidth: 2.4, tension: 0.18, fill: false,
+          pointRadius: 0, pointHoverRadius: 4 },
+      ];
+
+      if (_qtrChart) { try { _qtrChart.destroy(); } catch {} }
+
+      _qtrChart = new Chart(canvas.getContext('2d'), {
+        type: 'line',
+        data: { labels, datasets },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: {
+                color: 'rgba(225,225,229,0.85)', font: { size: 9, family: 'monospace' },
+                boxWidth: 12, padding: 4,
+                filter: (item) => !item.text.startsWith('_'),  // hide the helper baseline dataset
+              },
+            },
+            tooltip: {
+              backgroundColor: '#0a0a0a', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
+              titleFont: { family: 'monospace', size: 10 },
+              bodyFont: { family: 'monospace', size: 10 },
+              padding: 8,
+              filter: (item) => item.dataset.label.startsWith(d.ticker),
+            },
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(255,255,255,0.04)' },
+              ticks: { color: 'rgba(161,161,170,0.7)', font: { size: 9 }, maxTicksLimit: 8 },
+            },
+            y: {
+              grid: { color: 'rgba(255,255,255,0.04)' },
+              ticks: {
+                color: 'rgba(161,161,170,0.7)', font: { size: 10, family: 'monospace' },
+                callback: (v) => '$' + v.toFixed(2),
+              },
+            },
+          },
+        },
+      });
+    }
+
+    // ===== Up/Down Volume + OBV chart =====
+    let _volChart = null;
+    function renderVolumeChart(d) {
+      const series = d.price_series || [];
+      if (!series.length) return;
+      const ind = d.indicators;
+      const canvas = document.getElementById('vol-chart');
+      if (!canvas) return;
+
+      // Update U/D ratio in header
+      const udEl = document.getElementById('vol-ud-val');
+      if (udEl) {
+        const ud = ind.up_down_volume.ud_ratio_20d;
+        udEl.textContent = ud != null ? ud.toFixed(2) : '∞';
+        udEl.style.color = (ud != null && ud > 1) ? '#4ade80' : '#f87171';
+      }
+
+      const labels = series.map(p => p.date);
+      // Up volume = positive bars (green), down volume = negative bars (red)
+      const upVols   = series.map(p => p.up_vol   / 1e6);  // millions
+      const downVols = series.map(p => -p.down_vol / 1e6); // negative for visual separation
+      const obv      = series.map(p => p.obv      / 1e6);
+
+      if (_volChart) { try { _volChart.destroy(); } catch {} }
+
+      _volChart = new Chart(canvas.getContext('2d'), {
+        data: {
+          labels,
+          datasets: [
+            {
+              type: 'bar', label: 'Up volume (M)', data: upVols,
+              backgroundColor: 'rgba(74,222,128,0.55)',
+              borderColor: 'rgba(74,222,128,0.8)', borderWidth: 0,
+              yAxisID: 'y',
+            },
+            {
+              type: 'bar', label: 'Down volume (M)', data: downVols,
+              backgroundColor: 'rgba(248,113,113,0.55)',
+              borderColor: 'rgba(248,113,113,0.8)', borderWidth: 0,
+              yAxisID: 'y',
+            },
+            {
+              type: 'line', label: 'OBV (M, cumulative)', data: obv,
+              borderColor: '#a78bfa', backgroundColor: 'transparent',
+              borderWidth: 2, tension: 0.18, fill: false,
+              pointRadius: 0, pointHoverRadius: 4,
+              yAxisID: 'y1',
+            },
+          ],
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: { color: 'rgba(225,225,229,0.85)', font: { size: 9, family: 'monospace' }, boxWidth: 12, padding: 4 },
+            },
+            tooltip: {
+              backgroundColor: '#0a0a0a', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
+              titleFont: { family: 'monospace', size: 10 },
+              bodyFont: { family: 'monospace', size: 10 },
+              padding: 8,
+            },
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(255,255,255,0.04)' },
+              ticks: { color: 'rgba(161,161,170,0.7)', font: { size: 9 }, maxTicksLimit: 8 },
+              stacked: true,
+            },
+            y: {
+              position: 'left', grid: { color: 'rgba(255,255,255,0.04)' },
+              ticks: {
+                color: 'rgba(161,161,170,0.7)', font: { size: 10, family: 'monospace' },
+                callback: (v) => v + 'M',
+              },
+              title: { display: true, text: 'Daily volume (M)', color: 'rgba(161,161,170,0.7)', font: { size: 9 } },
+            },
+            y1: {
+              position: 'right', grid: { display: false },
+              ticks: {
+                color: '#a78bfa', font: { size: 10, family: 'monospace' },
+                callback: (v) => v + 'M',
+              },
+              title: { display: true, text: 'OBV (M)', color: '#a78bfa', font: { size: 9 } },
+            },
+          },
+        },
+      });
+    }
+  </script>
+
+  <!-- =============== SOFT-SIGNAL PILLARS (Reddit, Bluesky, Search-expert) =============== -->
+  <section class="panel" style="margin-top: 18px;">
+    <div class="panel-head">
+      <div class="panel-title">📡 Soft-signal pillars — daily z-scores (last 90 d)</div>
+      <div class="panel-asof">source: pillar CSVs · refreshed by overnight scoring jobs</div>
+    </div>
+    <p style="font-size: 11.5px; color: var(--text-secondary); margin: 0 0 14px; line-height: 1.6;">
+      Three of the eight BSI pillars are sentiment-scored from social/web text. They feed the composite when their daily coverage gate passes. Numbers below are real, computed by the FinBERT scorer over real Reddit / Bluesky / web-content streams.
+    </p>
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+      <div class="latest-cell" style="padding: 14px 14px 8px;">
+        <div class="lbl">Reddit (consumer)</div>
+        <div class="val" id="reddit-latest" style="font-size: 18px;">—</div>
+        <div class="sub" id="reddit-asof">—</div>
+        <div style="height: 60px; margin-top: 6px;"><canvas id="reddit-spark"></canvas></div>
+      </div>
+      <div class="latest-cell" style="padding: 14px 14px 8px;">
+        <div class="lbl">Bluesky (consumer)</div>
+        <div class="val" id="bluesky-latest" style="font-size: 18px;">—</div>
+        <div class="sub" id="bluesky-asof">—</div>
+        <div style="height: 60px; margin-top: 6px;"><canvas id="bluesky-spark"></canvas></div>
+      </div>
+      <div class="latest-cell" style="padding: 14px 14px 8px;">
+        <div class="lbl">Search-expert</div>
+        <div class="val" id="search-latest" style="font-size: 18px;">—</div>
+        <div class="sub" id="search-asof">—</div>
+        <div style="height: 60px; margin-top: 6px;"><canvas id="search-spark"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =============== PER-FIRM CFPB SIGNAL =============== -->
+  <section class="panel" style="margin-top: 18px;">
+    <div class="panel-head">
+      <div class="panel-title">🏢 Per-firm CFPB complaint velocity (real, last 90 d vs prior 90 d)</div>
+      <div class="panel-asof" id="firms-asof">—</div>
+    </div>
+    <p style="font-size: 11.5px; color: var(--text-secondary); margin: 0 0 12px; line-height: 1.6;">
+      The only per-firm signal we can defensibly call <em>live</em> right now is CFPB complaint volume — direct count from
+      <code style="font-family:var(--font-mono);background:var(--bg-elevated);padding:1px 5px;border-radius:3px;color:var(--accent-signal);">cfpb_complaints</code>.
+      Per-firm BSI z-scores require firm-level decomposition (Phase B; deferred). Δ% = recent 90 d vs prior 90 d — positive Δ means complaint flow is accelerating.
+    </p>
+    <table class="firms-tbl">
+      <thead>
+        <tr>
+          <th>Ticker</th><th>Company (CFPB filing name)</th>
+          <th class="num">Last 90 d</th><th class="num">Prior 90 d</th><th class="num">Δ %</th>
+        </tr>
+      </thead>
+      <tbody id="firms-tbody"><tr><td colspan="5" style="color:var(--text-tertiary);text-align:center;padding:24px;">loading…</td></tr></tbody>
+    </table>
+  </section>
+
+  <!-- =============== LIVE 4-STAGE WALKTHROUGH (real signal -> debate -> execute) =============== -->
+  <section class="panel" style="margin-top: 18px; border-color: rgba(34,197,94,0.35);">
+    <div class="panel-head">
+      <div class="panel-title">⚡ Live 4-stage pod walkthrough <span style="font-size: 10px; color: var(--success); font-family: var(--font-mono); margin-left: 6px; text-transform: uppercase; letter-spacing: 0.06em;">REAL SIGNAL · DETERMINISTIC PIPELINE</span></div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="display:inline-flex;gap:0;border:1px solid var(--border);border-radius:5px;overflow:hidden;font-family:var(--font-mono);font-size:10px;">
+          <button data-speed-btn="fast" onclick="setPodSpeed('fast')" class="active" style="background:transparent;border:0;color:var(--text-secondary);padding:4px 9px;cursor:pointer;text-transform:uppercase;letter-spacing:0.05em;">⚡ fast</button>
+          <button data-speed-btn="cinematic" onclick="setPodSpeed('cinematic')" style="background:transparent;border:0;color:var(--text-secondary);padding:4px 9px;cursor:pointer;text-transform:uppercase;letter-spacing:0.05em;border-left:1px solid var(--border);">🎬 cinematic</button>
+        </div>
+        <div class="panel-asof" id="pod-asof">—</div>
+      </div>
+    </div>
+    <p style="font-size: 11.5px; color: var(--text-secondary); margin: 0 0 14px; line-height: 1.6;">
+      Same 4-stage pod as <a href="/demo" style="color: var(--accent-signal);">/demo</a>, but the SIGNAL inputs are real (warehouse-derived, not hardcoded). The debate verdict, risk-engine math, and execute decision are deterministic functions of those inputs — no LLM in the loop, fully auditable. Auto-runs against the highest-live-z firm.
+    </p>
+
+    <div class="live-pod-grid" id="live-pod-grid">
+
+      <!-- STAGE 00: ALPHA · ROBO profile + demo subpod -->
+      <div class="live-pod" style="background:linear-gradient(180deg,rgba(167,139,250,0.10),transparent 70%),var(--bg-card);border-left:3px solid #a78bfa;">
+        <div class="live-pod-head" style="display:flex;justify-content:space-between;align-items:center;">
+          <span><span class="live-pod-num" style="color:#a78bfa;">00</span> <span>ALPHA</span></span>
+          <span style="font-size:8px;color:#a78bfa;background:rgba(167,139,250,0.15);padding:2px 6px;border-radius:3px;font-family:var(--font-mono);font-weight:700;letter-spacing:0.05em;">PRIMARY</span>
+        </div>
+        <div style="text-align:center;padding:8px 4px 4px;">
+          <div style="font-size:42px;line-height:1;margin-bottom:4px;">🤖</div>
+          <div style="font-size:13px;font-weight:700;color:#a78bfa;font-family:var(--font-mono);letter-spacing:0.05em;">ROBO</div>
+          <div style="font-size:9px;color:var(--text-tertiary);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.05em;margin-top:3px;">algorithmic baseline</div>
+          <div style="font-size:10px;color:var(--text-secondary);margin-top:8px;line-height:1.45;">
+            Continuous-score archetype. Routes by weighted gate score (≥ 0.55 threshold). Cold-start synthetic prior; transitions to live user population at N≥500.
+          </div>
+        </div>
+        <div style="margin-top:auto;padding-top:10px;border-top:1px dashed var(--border);">
+          <div style="font-size:9px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.05em;font-weight:700;font-family:var(--font-mono);margin-bottom:6px;">▶ DEMO SUBPOD</div>
+          <button onclick="if(typeof scanLivePod==='function'){scanLivePod(true)}else{location.href='/empirical#sec-demo'}" style="width:100%;background:rgba(167,139,250,0.15);border:1px solid rgba(167,139,250,0.5);color:#a78bfa;padding:8px;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.04em;">
+            ▶ Run cinematic walkthrough
+          </button>
+          <a href="/empirical#sec-demo" style="display:block;text-align:center;margin-top:6px;font-size:9px;color:var(--text-tertiary);font-family:var(--font-mono);text-decoration:none;">or read 4-stage spec →</a>
+        </div>
+      </div>
+
+      <!-- STAGE 1: SIGNAL -->
+      <div class="live-pod">
+        <div class="live-pod-head"><span class="live-pod-num">01</span> <span>SIGNAL</span></div>
+        <div class="live-pod-firm" id="pod1-firm">—</div>
+        <div class="live-pod-z" id="pod1-z">—</div>
+        <div class="live-pod-state" id="pod1-state">—</div>
+        <div class="live-pod-pillars" id="pod1-pillars"></div>
+      </div>
+
+      <!-- STAGE 2: DEBATE -->
+      <div class="live-pod">
+        <div class="live-pod-head"><span class="live-pod-num">02</span> <span>DEBATE</span></div>
+        <div class="live-pod-debate" id="pod2-debate"></div>
+        <div class="live-pod-verdict" id="pod2-verdict">—</div>
+      </div>
+
+      <!-- STAGE 3: EXECUTE -->
+      <div class="live-pod">
+        <div class="live-pod-head"><span class="live-pod-num">03</span> <span>EXECUTE</span></div>
+        <div class="live-pod-checks" id="pod3-checks"></div>
+        <div class="live-pod-trade" id="pod3-trade"></div>
+      </div>
+
+      <!-- STAGE 3.5: HUMAN INTERVENTION LAYER (formerly Technical Override) -->
+      <div class="live-pod" id="tech-override-pod" style="border-color: rgba(167,139,250,0.35);">
+        <div class="live-pod-head" style="display:flex;justify-content:space-between;align-items:center;">
+          <div><span class="live-pod-num" style="color:#a78bfa;">03.5</span> <span>HUMAN INTERVENTION</span></div>
+          <span style="font-size:9px;font-family:var(--font-mono);color:#a78bfa;text-transform:uppercase;letter-spacing:0.06em;">analyst override on technical context · use when BSI is lag-blind but technicals scream</span>
+        </div>
+        <div id="tech-override-body" style="padding:12px 14px;color:var(--text-tertiary);font-family:var(--font-mono);font-size:11px;">
+          Fire a ticker above to load technical context.
+        </div>
+      </div>
+
+      <!-- STAGE 4: LEARN -->
+      <div class="live-pod">
+        <div class="live-pod-head"><span class="live-pod-num">04</span> <span>LEARN</span></div>
+        <div class="live-pod-learn" id="pod4-learn">—</div>
+      </div>
+
+    </div>
+
+    <!-- =============== 5-GATE ARCHETYPE FIRING (paper §10) =============== -->
+    <div id="archetype-gates-panel" style="margin-top:18px;padding:18px 20px;background:linear-gradient(180deg,rgba(244,114,182,0.04),transparent 80%),var(--bg-elevated);border:1px solid rgba(244,114,182,0.3);border-left:3px solid #f472b6;border-radius:8px;display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+        <div>
+          <div style="font-size:9px;color:#f472b6;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;font-family:var(--font-mono);">5-GATE ARCHETYPE FIRING · PAPER §10</div>
+          <div style="font-size:14px;font-weight:600;color:var(--text);margin-top:4px;">
+            <span id="arch-ticker">—</span> · <span id="arch-summary" style="font-family:var(--font-mono);">—</span>
+          </div>
+        </div>
+        <div style="font-size:10px;color:var(--text-tertiary);font-family:var(--font-mono);text-align:right;line-height:1.5;">
+          BLITZ <span style="color:#dc2626;">3/5</span> · SCOUT <span style="color:#d4a574;">4/5</span> · GUARDIAN <span style="color:#0f766e;">5/5</span> · ROBO <span style="color:#8b5cf6;">cont.</span>
+        </div>
+      </div>
+      <!-- Gate-state strip -->
+      <div id="arch-gate-strip" style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:12px;"></div>
+      <!-- Per-archetype cards -->
+      <div id="arch-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;"></div>
+      <!-- Decision-comparison strip — same data, three doctrines (link to /robo for full table) -->
+      <div id="arch-decision-cmp" style="margin-top:14px;padding:12px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;"></div>
+      <!-- Footer note (G5 pending warning) -->
+      <div id="arch-footer" style="margin-top:12px;font-size:10px;color:var(--text-tertiary);font-family:var(--font-mono);line-height:1.5;"></div>
+    </div>
+
+    <!-- =============== TECHNICAL CONTEXT (8 indicator families) =============== -->
+    <div id="tech-panel" style="display:block; margin-top: 18px; padding: 18px 20px; background: linear-gradient(180deg, rgba(96,165,250,0.04), transparent 80%), var(--bg-elevated); border: 1px solid rgba(96,165,250,0.3); border-left: 3px solid #60a5fa; border-radius: 8px;">
+      <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
+        <div>
+          <div style="font-size: 9px; color: #60a5fa; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; font-family: var(--font-mono);">TECHNICAL CONTEXT · 8 INDICATOR FAMILIES + 3 CHARTS</div>
+          <div style="font-size: 14px; font-weight: 600; color: var(--text); margin-top: 4px;">
+            <span id="tech-ticker">—</span> · <span id="tech-verdict" style="font-family: var(--font-mono);">—</span>
+            <span style="font-size: 10px; color: var(--text-tertiary); margin-left: 8px; font-family: var(--font-mono);">bias score: <span id="tech-bias">—</span></span>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <span style="font-size: 10px; color: var(--text-tertiary); font-family: var(--font-mono);">switch ticker:</span>
+          <select id="tech-ticker-select" onchange="loadTechnicalPanel(this.value)" style="background: var(--bg-card); color: var(--text); border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-family: var(--font-mono); font-size: 11px; cursor: pointer;">
+            <option value="AFRM">AFRM</option>
+            <option value="PYPL">PYPL</option>
+            <option value="UPST">UPST</option>
+            <option value="SOFI">SOFI</option>
+            <option value="SQ">SQ</option>
+            <option value="CVNA">CVNA</option>
+            <option value="CACC">CACC</option>
+            <option value="ENVA">ENVA</option>
+            <option value="OPFI">OPFI</option>
+            <option value="WRLD">WRLD</option>
+            <option value="SEZL">SEZL</option>
+          </select>
+          <span style="font-size: 10px; color: var(--text-tertiary); font-family: var(--font-mono);">· context only · does not gate Apollo</span>
+        </div>
+      </div>
+
+      <!-- Three charts: Fibonacci + Quarters + Up/Down Volume -->
+      <div id="charts-row" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+
+        <!-- Fibonacci price chart (price line + 7 horizontal Fib lines) -->
+        <div id="fib-chart-wrap" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; height: 320px; position: relative;">
+          <div style="position: absolute; top: 10px; left: 16px; font-size: 10px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; font-family: var(--font-mono); z-index: 2;">
+            📈 Fibonacci retracements · 120-day price + Fib + Gann
+          </div>
+          <div style="position: absolute; top: 10px; right: 16px; font-size: 10px; z-index: 2;">
+            <button onclick="toggleFibLayer('fib')" id="fib-btn-fib" class="fib-toggle active">Fib</button>
+            <button onclick="toggleFibLayer('gann')" id="fib-btn-gann" class="fib-toggle">Gann</button>
+            <button onclick="toggleFibLayer('both')" id="fib-btn-both" class="fib-toggle">Both</button>
+          </div>
+          <canvas id="fib-chart"></canvas>
+        </div>
+
+        <!-- Highest-High / Lowest-Low Quarters chart -->
+        <div id="qtr-chart-wrap" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; height: 320px; position: relative;">
+          <div style="position: absolute; top: 10px; left: 16px; font-size: 10px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; font-family: var(--font-mono); z-index: 2;">
+            📊 HH/LL Quarters · 52w range
+          </div>
+          <div id="qtr-current" style="position: absolute; top: 10px; right: 16px; font-size: 9px; color: var(--text-secondary); font-family: var(--font-mono); z-index: 2;">
+            <span id="qtr-current-val" style="color: var(--text); font-weight: 700;">—</span>
+          </div>
+          <canvas id="qtr-chart"></canvas>
+        </div>
+
+        <!-- Up/Down Volume chart -->
+        <div id="vol-chart-wrap" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; height: 320px; position: relative;">
+          <div style="position: absolute; top: 10px; left: 16px; font-size: 10px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; font-family: var(--font-mono); z-index: 2;">
+            📉 Up/Down Volume + OBV
+          </div>
+          <div style="position: absolute; top: 10px; right: 16px; font-size: 9px; color: var(--text-secondary); font-family: var(--font-mono); z-index: 2;">
+            U/D ratio: <span id="vol-ud-val" style="color: var(--text); font-weight: 700;">—</span>
+          </div>
+          <canvas id="vol-chart"></canvas>
+        </div>
+      </div>
+      <style>
+        @media (max-width: 1280px) { #charts-row { grid-template-columns: 1fr 1fr !important; } #vol-chart-wrap { grid-column: 1 / -1 !important; } }
+        @media (max-width: 800px)  { #charts-row { grid-template-columns: 1fr !important; } #vol-chart-wrap { grid-column: 1 !important; } }
+      </style>
+
+      <div id="tech-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+        <!-- 8 indicator cards inserted here by JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- =============== LONG-POD PANEL (post-stress recovery, 5 value archetypes) =============== -->
+  <section id="long-pod-panel" class="panel" style="display:none; margin-top: 18px; border-color: rgba(74,222,128,0.35); border-left: 3px solid #4ade80;">
+    <div class="panel-head">
+      <div class="panel-title">🐂 Long-pod scan <span style="font-size: 10px; color: #4ade80; font-family: var(--font-mono); margin-left: 6px; text-transform: uppercase; letter-spacing: 0.06em;">POST-STRESS RECOVERY · 5 VALUE ARCHETYPES</span></div>
+      <div style="font-size: 10px; color: var(--text-tertiary); font-family: var(--font-mono);">click 🐂 on any LIVE row to scan</div>
+    </div>
+    <p style="font-size: 11.5px; color: var(--text-secondary); margin: 0 0 14px; line-height: 1.6;">
+      Five long-bias archetypes (Buffett, Pabrai, Howard Marks, Klarman, Greenblatt) evaluate post-stress recovery setups using a 5-condition deterministic test: (1) prior BSI z peak ≥ 2.0, (2) decay ≥ 1.5σ from peak, (3) price within 3% of a Fibonacci support, (4) U/D vol ratio &gt; 1.2, (5) no fresh stress flare in 30d. ≥ 3-of-5 archetypes voting LONG approves a contrarian-recovery trade.
+    </p>
+    <div id="long-pod-body">
+      <div style="color: var(--text-tertiary); text-align: center; padding: 30px; font-size: 11px;">click 🐂 on any LIVE watchlist row to scan</div>
+    </div>
+  </section>
+
+  <style>
+    [data-speed-btn].active { background: var(--accent-signal) !important; color: #0a0a0a !important; font-weight: 700; }
+    /* Fibonacci chart toggles */
+    .fib-toggle {
+      background: transparent; border: 1px solid var(--border); color: var(--text-secondary);
+      padding: 3px 8px; font-size: 9px; cursor: pointer; border-radius: 3px;
+      font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.05em;
+      margin-left: 4px;
+    }
+    .fib-toggle.active { background: #60a5fa; color: #0a0a0a; border-color: #60a5fa; font-weight: 700; }
+    .fib-toggle:hover { border-color: #60a5fa; color: var(--text); }
+    /* Technical-context cards */
+    .ti-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 6px; padding: 10px 12px;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .ti-card-head {
+      font-size: 9.5px; color: var(--accent-signal);
+      text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700;
+      margin-bottom: 4px; padding-bottom: 4px; border-bottom: 1px dashed var(--border);
+      font-family: var(--font-mono);
+    }
+    .ti-row {
+      display: flex; justify-content: space-between; align-items: baseline;
+      font-size: 10.5px; padding: 1px 0; font-family: var(--font-mono);
+      color: var(--text-secondary);
+    }
+    .ti-row span:last-child { color: var(--text); font-variant-numeric: tabular-nums; }
+    .ti-row.hi { padding: 3px 0; border-top: 1px dashed rgba(255,255,255,0.05); margin-top: 2px; }
+    .ti-row.hi span { font-weight: 600; }
+    .ti-note { font-size: 9.5px; color: var(--text-tertiary); line-height: 1.45; margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--border); font-style: italic; }
+    @media (max-width: 1100px) { #tech-grid { grid-template-columns: repeat(2, 1fr) !important; } }
+    .live-pod-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; gap: 10px; }
+    @media (max-width: 1100px) { .live-pod-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 1100px) { .live-pod-grid { grid-template-columns: 1fr 1fr; } }
+    .live-pod {
+      background: var(--bg-elevated); border: 1px solid var(--border);
+      border-radius: 8px; padding: 12px;
+      display: flex; flex-direction: column; gap: 8px;
+      min-height: 280px;
+    }
+    .live-pod-head {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 10px; color: var(--text-tertiary);
+      text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600;
+    }
+    .live-pod-num {
+      background: var(--bg-card); border: 1px solid var(--border);
+      padding: 2px 7px; border-radius: 3px; font-family: var(--font-mono); font-size: 9px;
+    }
+    .live-pod-firm { font-family: var(--font-mono); font-size: 16px; font-weight: 700; color: var(--text); }
+    .live-pod-z { font-family: var(--font-mono); font-size: 26px; font-weight: 700; }
+    .live-pod-state {
+      display: inline-block; align-self: flex-start;
+      font-size: 10px; padding: 3px 8px; border-radius: 999px;
+      text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600;
+      background: var(--bg-card); border: 1px solid var(--border);
+    }
+    .live-pod-pillars { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: auto; }
+    .live-pod-pillar {
+      display: flex; justify-content: space-between;
+      font-size: 10.5px; padding: 3px 6px; border-radius: 3px;
+      background: var(--bg-card); border: 1px solid var(--border);
+    }
+    .live-pod-pillar .nm { color: var(--text-tertiary); }
+    .live-pod-pillar .vl { font-family: var(--font-mono); color: var(--text); font-variant-numeric: tabular-nums; }
+
+    .live-pod-debate { display: flex; flex-direction: column; gap: 4px; }
+    .live-pod-debate-row {
+      display: grid; grid-template-columns: 18px 1fr auto; gap: 6px; align-items: center;
+      padding: 4px 6px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px;
+    }
+    .live-pod-debate-row .icon { font-size: 12px; }
+    .live-pod-debate-row .name { font-size: 10.5px; color: var(--text); font-weight: 500; }
+    .live-pod-debate-row .vote {
+      font-size: 9px; padding: 1px 6px; border-radius: 3px;
+      font-family: var(--font-mono); font-weight: 700; letter-spacing: 0.05em;
+    }
+    .live-pod-debate-row .vote.SHORT { background: rgba(248,113,113,0.12); color: #f87171; }
+    .live-pod-debate-row.live-pod-our-fund {
+      background: linear-gradient(90deg, rgba(167,139,250,0.10), rgba(167,139,250,0.02));
+      border-color: rgba(167,139,250,0.4);
+      position: relative;
+    }
+    .live-pod-debate-row.live-pod-our-fund::before {
+      content: '★'; position: absolute; left: -12px; top: 50%;
+      transform: translateY(-50%); color: #a78bfa; font-size: 10px;
+    }
+    .live-pod-debate-row.live-pod-our-fund .name { color: #c4b5fd; font-weight: 700; }
+    .live-pod-debate-row .vote.PASS  { background: rgba(161,161,170,0.12); color: var(--text-tertiary); }
+    .live-pod-verdict {
+      margin-top: auto; padding: 8px 10px;
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px;
+      font-family: var(--font-mono); font-size: 11px; text-align: center;
+    }
+
+    .live-pod-checks { display: flex; flex-direction: column; gap: 3px; }
+    .live-pod-check {
+      display: grid; grid-template-columns: 14px 1fr; gap: 6px; align-items: center;
+      padding: 3px 6px; font-size: 10px;
+    }
+    .live-pod-check .icon { font-family: var(--font-mono); font-size: 11px; font-weight: 700; }
+    .live-pod-check.PASS .icon { color: var(--success); }
+    .live-pod-check.FAIL .icon { color: var(--danger); }
+    .live-pod-check .nm { color: var(--text); }
+    .live-pod-trade {
+      margin-top: auto; padding: 8px 10px;
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px;
+    }
+    .live-pod-trade .verdict-pill {
+      display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 3px;
+      font-weight: 700; letter-spacing: 0.05em;
+    }
+    .live-pod-trade .verdict-pill.APPROVED    { background: rgba(34,197,94,0.15); color: #4ade80; }
+    .live-pod-trade .verdict-pill.SCALED_DOWN { background: rgba(250,204,21,0.15); color: #fde047; }
+    .live-pod-trade .verdict-pill.BLOCKED     { background: rgba(248,113,113,0.15); color: #f87171; }
+    .live-pod-trade .row {
+      display: flex; justify-content: space-between; font-size: 10.5px; margin-top: 4px;
+      font-family: var(--font-mono);
+    }
+    .live-pod-trade .row .lbl { color: var(--text-tertiary); }
+    .live-pod-trade .row .val { color: var(--text); }
+
+    .live-pod-learn { font-size: 11px; color: var(--text-secondary); line-height: 1.55; }
+    .live-pod-learn .ticker-link {
+      color: var(--accent-signal); text-decoration: none; font-weight: 600;
+    }
+  </style>
+
+  <!-- =============== LIVE vs DEMO comparison strip =============== -->
+  <section class="compare-strip">
+    <div class="compare-card live">
+      <div class="tag">Live (this page)</div>
+      <div style="font-size:13px;color:var(--text);font-weight:600;margin-bottom:6px;">What you're looking at</div>
+      <div style="font-size:11.5px;color:var(--text-secondary);line-height:1.6;">
+        Real BSI series + real per-firm CFPB volumes from <code style="font-family:var(--font-mono);font-size:10.5px;">warehouse.duckdb</code>.
+        Stale where stale (e.g. BSI through 2026-04-17 because Reddit/vitality pillars have never been ingested and FinBERT scoring is paused).
+        No per-firm z-scores yet — Phase B work.
+      </div>
+    </div>
+    <div class="compare-card demo">
+      <div class="tag">Scripted demo</div>
+      <div style="font-size:13px;color:var(--text);font-weight:600;margin-bottom:6px;">For storytelling: <a href="/demo">/demo</a> + <a href="/case-study">/case-study</a></div>
+      <div style="font-size:11.5px;color:var(--text-secondary);line-height:1.6;">
+        Per-firm z-scores are <strong>hardcoded</strong> from the 2025-09-12 Tricolor Chapter 7 event window so the 4-pod flow
+        (Signal → Debate → Execute → Learn) shows the textbook trade end-to-end. Live yfinance prices ✓, scripted z-scores 🎭.
+        Use those pages for the narrative; use <em>this</em> page for the empirical claim.
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div>BearWatch × Apollo Hermes  ·  Live Pod  ·  warehouse-anchored, honest where stale</div>
+  <div style="font-family: var(--font-mono);">Siddharth Verma  ·  UIUC FIN 580  ·  Spring 2026</div>
+</footer>
+
+<script>
+  // =============== Live data fetch + render ===============
+  const fmtNum = (n, d=2) => (n === null || n === undefined) ? '—' : Number(n).toFixed(d);
+  const fmtInt = (n) => (n === null || n === undefined) ? '—' : Number(n).toLocaleString();
+
+  function classifyDelta(d) {
+    if (d === null || d === undefined) return 'flat';
+    if (d > 5)  return 'pos';
+    if (d < -5) return 'neg';
+    return 'flat';
+  }
+
+  function fmtDelta(d) {
+    if (d === null || d === undefined) return '—';
+    const sign = d >= 0 ? '+' : '';
+    return `${sign}${d.toFixed(1)}%`;
+  }
+
+  async function loadBSI() {
+    const r = await fetch('/api/live/bsi');
+    if (!r.ok) {
+      document.getElementById('bsi-z').textContent = 'warehouse offline';
+      return;
+    }
+    const data = await r.json();
+    const series = data.series || [];
+    if (!series.length) return;
+
+    const latest = data.latest;
+    document.getElementById('bsi-asof').textContent = data.as_of || '—';
+    document.getElementById('bsi-z').textContent = fmtNum(latest.z_bsi);
+    // Color code by sign
+    const z = latest.z_bsi;
+    let zColor = 'var(--text)', zSub = 'composite stress (4-pillar)';
+    if (z >= 2)        { zColor = 'var(--danger)';  zSub = 'elevated stress · gate would fire'; }
+    else if (z >= 1)   { zColor = 'var(--warning)'; zSub = 'mildly elevated'; }
+    else if (z <= -1)  { zColor = 'var(--success)'; zSub = 'consumer-credit calm'; }
+    document.getElementById('bsi-z').style.color = zColor;
+    document.getElementById('bsi-z-sub').textContent = zSub;
+
+    // Percentile of latest within trailing window
+    const zs = series.map(s => s.z_bsi).filter(x => x !== null && x !== undefined);
+    const lo = zs.filter(x => x <= z).length;
+    const pct = Math.round(100 * lo / zs.length);
+    document.getElementById('bsi-pct').textContent = `${pct}th`;
+
+    // Pillar grid (latest-day contributions)
+    const pillars = [
+      ['c_cfpb', 'CFPB'], ['c_move', 'MOVE'], ['c_macro', 'Macro'],
+      ['c_trends', 'Trends'], ['c_reddit', 'Reddit'], ['c_appstore', 'App-store'],
+    ];
+    const pg = document.getElementById('pillar-grid');
+    pg.innerHTML = pillars.map(([k, label]) => {
+      const v = latest[k];
+      const empty = (v === null || v === undefined);
+      return `<div class="pillar-cell ${empty ? 'empty' : ''}">
+        <div class="nm">${label}</div>
+        <div class="vl">${empty ? 'no coverage' : fmtNum(v)}</div>
+      </div>`;
+    }).join('');
+
+    // Chart
+    const ctx = document.getElementById('bsi-chart').getContext('2d');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: series.map(s => s.observed_at),
+        datasets: [{
+          label: 'BSI z', data: series.map(s => s.z_bsi),
+          borderColor: 'rgba(212,165,116,1)', backgroundColor: 'rgba(212,165,116,0.10)',
+          borderWidth: 2, tension: 0.25, fill: true, pointRadius: 0, pointHoverRadius: 4,
+        }],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: {mode: 'index', intersect: false},
+        plugins: {
+          legend: {display: false},
+          tooltip: {
+            backgroundColor: '#0a0a0a', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
+            titleFont: {family: 'monospace'}, bodyFont: {family: 'monospace'}, padding: 10,
+          },
+        },
+        scales: {
+          x: {grid: {color: 'rgba(255,255,255,0.05)'}, ticks: {color: 'rgba(161,161,170,0.7)', font: {size: 9}, maxTicksLimit: 8}},
+          y: {grid: {color: 'rgba(255,255,255,0.05)'}, ticks: {color: 'rgba(161,161,170,0.7)', font: {size: 10, family: 'monospace'}}},
+        },
+      },
+    });
+  }
+
+  async function loadFirms() {
+    const r = await fetch('/api/live/firms');
+    if (!r.ok) { document.getElementById('firms-tbody').innerHTML = '<tr><td colspan="5" style="color:var(--danger);">warehouse unavailable</td></tr>'; return; }
+    const data = await r.json();
+    document.getElementById('firms-asof').textContent = `CFPB through ${data.as_of} · 90-day window`;
+    document.getElementById('cfpb-asof').textContent = data.as_of || '—';
+    const firms = data.firms || [];
+    if (!firms.length) {
+      document.getElementById('firms-tbody').innerHTML = '<tr><td colspan="5" style="color:var(--text-tertiary);text-align:center;padding:18px;">no matching firms in last 90 days</td></tr>';
+      return;
+    }
+    document.getElementById('firms-tbody').innerHTML = firms.map(f => {
+      const cls = classifyDelta(f.delta_pct);
+      const tag = (f.status === 'private' || f.status === 'delisted')
+        ? `<span style="font-size:8px;background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-tertiary);padding:1px 5px;border-radius:3px;margin-left:6px;text-transform:uppercase;letter-spacing:0.05em;">${f.status}</span>`
+        : '';
+      return `<tr class="tk-${f.ticker.toLowerCase()}">
+        <td><strong>${f.ticker}</strong>${tag}</td>
+        <td>${f.company}</td>
+        <td class="num">${fmtInt(f.n_recent_90d)}</td>
+        <td class="num" style="color:var(--text-tertiary);">${fmtInt(f.n_prior_90d)}</td>
+        <td class="num delta ${cls}">${fmtDelta(f.delta_pct)}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  async function loadFreshness() {
+    const r = await fetch('/api/live/freshness');
+    if (!r.ok) { return; }
+    const data = await r.json();
+    document.getElementById('freshness-tbody').innerHTML = (data.pillars || []).map(p => `
+      <tr>
+        <td>${p.pillar}</td>
+        <td style="color:var(--text-tertiary);font-family:var(--font-mono);font-size:10.5px;">
+          ${p.rows === null ? '—' : Number(p.rows).toLocaleString()} rows
+          ${p.last_update ? '· ' + p.last_update : ''}
+          ${p.days_stale !== null ? '· ' + p.days_stale + ' d' : ''}
+        </td>
+        <td class="status"><span class="badge ${p.status}">${p.status.replace('_',' ')}</span></td>
+      </tr>`).join('');
+  }
+
+  function makeSpark(canvasId, series, color) {
+    if (!series || !series.length) return;
+    const ctx = document.getElementById(canvasId).getContext('2d');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: series.map(s => s.date),
+        datasets: [{
+          data: series.map(s => s.value),
+          borderColor: color, backgroundColor: color.replace(',1)', ',0.10)'),
+          borderWidth: 1.5, fill: true, tension: 0.3, pointRadius: 0,
+        }],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: {
+          backgroundColor: '#0a0a0a', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
+          titleFont: {family: 'monospace', size: 10}, bodyFont: {family: 'monospace', size: 11}, padding: 6,
+        }},
+        scales: { x: { display: false }, y: { display: false } },
+        elements: { point: { hoverRadius: 4 } },
+      },
+    });
+  }
+
+  async function loadPillars() {
+    const r = await fetch('/api/live/pillars');
+    if (!r.ok) return;
+    const data = await r.json();
+    [
+      ['reddit',  'reddit-latest',  'reddit-asof',  'reddit-spark',  'rgba(248,113,113,1)'],
+      ['bluesky', 'bluesky-latest', 'bluesky-asof', 'bluesky-spark', 'rgba(96,165,250,1)'],
+      ['search_expert', 'search-latest', 'search-asof', 'search-spark', 'rgba(167,139,250,1)'],
+    ].forEach(([key, latestId, asofId, sparkId, color]) => {
+      const series = data[key] || [];
+      if (!series.length) {
+        document.getElementById(latestId).textContent = 'no coverage';
+        document.getElementById(latestId).style.color = 'var(--text-tertiary)';
+        document.getElementById(latestId).style.fontSize = '12px';
+        return;
+      }
+      const last = series[series.length - 1];
+      document.getElementById(latestId).textContent = fmtNum(last.value);
+      // Color by sign: positive = stress, negative = calm
+      const v = last.value;
+      let col = 'var(--text)';
+      if (v >= 1)       col = 'var(--danger)';
+      else if (v >= 0.3) col = 'var(--warning)';
+      else if (v <= -0.3) col = 'var(--success)';
+      document.getElementById(latestId).style.color = col;
+      document.getElementById(asofId).textContent = `${series.length}-d window · last: ${last.date}`;
+      makeSpark(sparkId, series, color);
+    });
+  }
+
+  function fmtMoney(n) {
+    if (n === null || n === undefined) return '—';
+    return '$' + Math.round(n).toLocaleString();
+  }
+
+  async function loadPodRun() {
+    // Honor a forced ticker if user clicked 🔥 on a watchlist row
+    const forced = window._FORCED_LIVE_TICKER ? `?ticker=${window._FORCED_LIVE_TICKER}` : '';
+    const r = await fetch('/api/live/pod_run' + forced);
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({}));
+      document.getElementById('pod-asof').innerHTML =
+        err.message ? `<span style="color:var(--warning);">${err.message}</span>` : 'no live firm available';
+      window._FORCED_LIVE_TICKER = null;
+      return;
+    }
+    const d = await r.json();
+    let provenance = '';
+    if (d.fired_explicitly) {
+      provenance = ' · <span style="color:var(--danger);">🔥 fired manually</span>';
+    } else if (d.from_watchlist) {
+      provenance = ' · <span style="color:var(--accent-signal);">from your watchlist ★</span>';
+    } else {
+      provenance = ' · top live z (no watchlist match)';
+    }
+    document.getElementById('pod-asof').innerHTML = `firm: ${d.ticker} · as of ${d.as_of}${provenance}`;
+    // Stash the latest pod result so Execute can use it
+    window._LIVE_POD_RUN = d;
+
+    // ---- STAGE 1 ----
+    const sig = d.stage1_signal;
+    document.getElementById('pod1-firm').textContent = `${d.ticker} · ${d.firm_name}`;
+    const z = sig.bsi_z;
+    document.getElementById('pod1-z').textContent = z.toFixed(2);
+    let zCol = 'var(--text)';
+    if (z >= 2.0) zCol = 'var(--danger)';
+    else if (z >= 1.5) zCol = 'var(--warning)';
+    document.getElementById('pod1-z').style.color = zCol;
+    const stateEl = document.getElementById('pod1-state');
+    stateEl.textContent = sig.bear_state.replace('_', ' ');
+    if (sig.bear_state === 'FIRED_UP' || sig.bear_state === 'ANGRY') {
+      stateEl.style.color = 'var(--danger)';
+      stateEl.style.borderColor = 'rgba(248,113,113,0.4)';
+    } else if (sig.bear_state === 'WORRIED') {
+      stateEl.style.color = 'var(--warning)';
+      stateEl.style.borderColor = 'rgba(250,204,21,0.4)';
+    }
+    const pg = document.getElementById('pod1-pillars');
+    pg.innerHTML = Object.entries(sig.pillars).map(([k, v]) => `
+      <div class="live-pod-pillar">
+        <span class="nm">${k.replace(/_/g, ' ')}</span>
+        <span class="vl">${v === null ? '—' : v.toFixed(2)}</span>
+      </div>
+    `).join('');
+
+    // ---- STAGE 2 ----
+    const deb = d.stage2_debate;
+    document.getElementById('pod2-debate').innerHTML = deb.votes.map(v => `
+      <div class="live-pod-debate-row ${v.is_our_fund ? 'live-pod-our-fund' : ''}" data-fund="${v.name}" data-vote="${v.vote}" data-rationale="${v.rationale.replace(/"/g,'&quot;')}" style="cursor:pointer;" title="${v.is_our_fund ? '★ Our fund — click for deep-dive' : 'Click for deep-dive on ' + v.name}">
+        <div class="icon">${v.icon}</div>
+        <div class="name">${v.name}</div>
+        <div class="vote ${v.vote}">${v.vote}</div>
+      </div>
+    `).join('');
+    // Wire deep-dive click
+    document.querySelectorAll('#pod2-debate .live-pod-debate-row').forEach(row => {
+      row.addEventListener('click', () => {
+        openHedgeFundModal(row.dataset.fund, {
+          vote: row.dataset.vote,
+          rationale: row.dataset.rationale,
+          ticker: d.ticker,
+          entryPrice: d.stage3_execute.entry,
+          bsiZ: d.stage1_signal.bsi_z,
+        });
+      });
+    });
+    const convCol = deb.conviction === 'high' ? 'var(--danger)' : deb.conviction === 'medium' ? 'var(--warning)' : 'var(--text-tertiary)';
+    document.getElementById('pod2-verdict').innerHTML =
+      `<div style="color:var(--text-tertiary);font-size:9px;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;">Verdict</div>
+       <div style="font-weight:700;color:${convCol};">${deb.verdict} · ${deb.conviction.toUpperCase()}</div>`;
+
+    // ---- STAGE 3 ----
+    const exe = d.stage3_execute;
+    document.getElementById('pod3-checks').innerHTML = exe.risk_checks.map(c => `
+      <div class="live-pod-check ${c.status}">
+        <div class="icon">${c.status === 'PASS' ? '✓' : '✗'}</div>
+        <div class="nm" title="${c.detail.replace(/"/g,'&quot;')}">${c.name}</div>
+      </div>
+    `).join('');
+    const tradeMount = document.getElementById('pod3-trade');
+    const proxyTag = exe.entry_is_proxy ? ' <span style="font-size:9px;color:var(--text-tertiary);">(ABS-junior proxy)</span>' : '';
+    const executeBtn = exe.verdict === 'BLOCKED'
+      ? `<button disabled style="margin-top:10px;width:100%;background:var(--bg-card);border:1px solid var(--border);color:var(--text-tertiary);padding:8px;border-radius:5px;font-size:11px;font-weight:700;letter-spacing:0.05em;cursor:not-allowed;text-transform:uppercase;">Apollo blocked — cannot execute</button>`
+      : `<button id="live-execute-btn" style="margin-top:10px;width:100%;background:var(--danger);border:0;color:#0a0a0a;padding:9px;border-radius:5px;font-size:12px;font-weight:700;letter-spacing:0.05em;cursor:pointer;text-transform:uppercase;">Execute trade →</button>`;
+    tradeMount.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span class="verdict-pill ${exe.verdict}">${exe.verdict}</span>
+        <span style="font-size:10px;color:var(--text-tertiary);font-family:var(--font-mono);">SHORT · ${exe.horizon_days}d</span>
+      </div>
+      <div class="row"><span class="lbl">Entry${proxyTag}</span><span class="val">$${exe.entry.toFixed(2)}</span></div>
+      <div class="row"><span class="lbl">Stop</span><span class="val">$${exe.stop.toFixed(2)}</span></div>
+      <div class="row"><span class="lbl">Target</span><span class="val">$${exe.target.toFixed(2)}</span></div>
+      <div class="row"><span class="lbl">Shares · notional</span><span class="val">${exe.shares} · ${fmtMoney(exe.notional)}</span></div>
+      <div class="row"><span class="lbl">R : R</span><span class="val">${exe.rr} : 1</span></div>
+      ${executeBtn}
+    `;
+    // Wire Execute (journals via /api/journal)
+    const eb = document.getElementById('live-execute-btn');
+    if (eb) {
+      eb.addEventListener('click', async () => {
+        const pod = window._LIVE_POD_RUN;
+        if (!pod) return;
+        const ex = pod.stage3_execute;
+        if (!confirm(`Execute SHORT ${ex.shares} ${pod.ticker} @ $${ex.entry.toFixed(2)} ?\nStop $${ex.stop.toFixed(2)} · Target $${ex.target.toFixed(2)} · Hold ${ex.horizon_days}d`)) return;
+        eb.disabled = true; eb.textContent = 'Journaling…';
+        const r = await fetch('/api/journal', {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            ticker: pod.ticker, side: 'SHORT', shares: ex.shares,
+            entry_price: ex.entry, stop_price: ex.stop, target_price: ex.target,
+            event_id: 'live_' + Date.now(),
+            verdict: ex.verdict, source: 'live_pod',
+          }),
+        });
+        if (r.ok) {
+          eb.textContent = '✓ Trade journaled — see /demo Pod 4';
+          eb.style.background = 'var(--success)';
+        } else {
+          const err = await r.json().catch(() => ({}));
+          eb.textContent = err.error === 'not_logged_in' ? 'Sign in to execute →' : '✗ Failed';
+          eb.disabled = false;
+        }
+      });
+    }
+
+    // ---- STAGE 4 ----
+    document.getElementById('pod4-learn').innerHTML = `
+      <div style="font-size:11px;color:var(--text-secondary);line-height:1.6;">${d.stage4_learn.note}</div>
+      <div style="margin-top:10px;padding-top:8px;border-top:1px dashed var(--border);font-size:10px;color:var(--text-tertiary);">
+        Open the 7-step audit → <a href="/case-study" class="ticker-link">/case-study</a><br>
+        Add ${d.ticker} to a watchlist → <a href="/monitor" class="ticker-link">/monitor</a>
+      </div>
+    `;
+  }
+
+  async function loadWatchlist() {
+    const tbody = document.getElementById('watch-tbody');
+    try {
+      const [selR, monR] = await Promise.all([fetch('/api/selections'), fetch('/api/monitor/firms')]);
+      let sel = [];
+      if (selR.ok) {
+        const d = await selR.json();
+        sel = (d.selected || []).map(s => s.ticker);
+      }
+      const mon = await monR.json();
+      // Build enriched watchlist rows from monitor data filtered to user's selections
+      const enriched = (mon.firms || []).filter(f => sel.includes(f.ticker));
+      // Sort by live z (highest first)
+      enriched.sort((a, b) => b.bsi_z - a.bsi_z);
+      document.getElementById('watch-asof').textContent =
+        sel.length === 0 ? 'no assets selected — add from /monitor'
+                         : `${enriched.length} of ${sel.length} selected · sorted by live z`;
+      if (sel.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="color:var(--text-tertiary);text-align:center;padding:18px;">Your watchlist is empty. <a href="/monitor" style="color:var(--accent-signal);">Add assets from /monitor →</a></td></tr>';
+        return;
+      }
+      if (enriched.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="color:var(--text-tertiary);text-align:center;padding:18px;">selected tickers not in current monitor universe</td></tr>';
+        return;
+      }
+      const STATE_BEAR = {
+        FIRED_UP: 'bear_fired_up.png', ANGRY: 'bear_angry.png',
+        WORRIED:  'bear_worried.png',  THINKING: 'bear_thinking.png',
+        CONFUSED: 'bear_confused.png', SLEEPING: 'bear_sleeping.png',
+      };
+      const STATE_PILL_COL = {
+        FIRED_UP: 'var(--danger)', ANGRY: 'var(--danger)',
+        WORRIED: 'var(--warning)', THINKING: 'var(--accent-signal)',
+        CONFUSED: 'var(--text-secondary)', SLEEPING: 'var(--text-tertiary)',
+      };
+      tbody.innerHTML = enriched.map((f, i) => {
+        // Two-state source pill (market-proxy tier removed in 2026-05 after full CFPB ingest):
+        //   live     → CFPB-derived z from warehouse  (default for every firm)
+        //   scripted → only delisted-private firms with no CFPB record (e.g. Tricolor)
+        const srcTag = f.data_source === 'live'
+          ? '<span style="font-size:8px;background:rgba(34,197,94,0.12);color:#4ade80;border:1px solid rgba(34,197,94,0.35);padding:1px 5px;border-radius:3px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;" title="CFPB-derived live z from warehouse">live · cfpb</span>'
+          : '<span style="font-size:8px;background:rgba(167,139,250,0.10);color:#a78bfa;border:1px solid rgba(167,139,250,0.35);padding:1px 5px;border-radius:3px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;" title="No CFPB record (delisted/private)">scripted</span>';
+        const zCol = f.bsi_z >= 2.0 ? 'var(--danger)' : f.bsi_z >= 1.5 ? 'var(--warning)' : 'var(--text)';
+        const delta = f.live_delta_pct;
+        const dCls = classifyDelta(delta);
+        const bearPng = STATE_BEAR[f.bear_state] || 'bear_sleeping.png';
+        const stateCol = STATE_PILL_COL[f.bear_state] || 'var(--text-secondary)';
+        const tagPills = (f.private ? '<span style="font-size:8px;color:var(--text-tertiary);background:var(--bg-elevated);border:1px solid var(--border);padding:1px 5px;border-radius:3px;margin-left:4px;text-transform:uppercase;">private</span>' : '')
+                     + (f.delisted ? '<span style="font-size:8px;color:var(--text-tertiary);background:var(--bg-elevated);border:1px solid var(--border);padding:1px 5px;border-radius:3px;margin-left:4px;text-transform:uppercase;">delisted</span>' : '');
+        const px = (f.price !== null && f.price !== undefined) ? `$${Number(f.price).toFixed(2)}` : '—';
+        return `<tr>
+          <td><strong>#${i+1}</strong></td>
+          <td><img src="/static/bears/${bearPng}" alt="" style="width:36px;height:36px;object-fit:contain;border-radius:6px;vertical-align:middle;"></td>
+          <td><strong>${f.ticker}</strong>${tagPills}<div style="font-size:10px;color:var(--text-tertiary);margin-top:2px;">${f.sector_label || f.sector} · <span style="color:var(--text-secondary);font-family:var(--font-mono);">${px}</span></div></td>
+          <td class="num" style="color:${zCol};font-weight:700;">${f.bsi_z.toFixed(2)}</td>
+          <td class="num delta ${dCls}">${delta === null || delta === undefined ? '—' : fmtDelta(delta)}</td>
+          <td><span style="font-size:10px;padding:3px 9px;border-radius:999px;background:var(--bg-elevated);border:1px solid var(--border);text-transform:uppercase;letter-spacing:0.05em;font-weight:600;color:${stateCol};">${f.bear_state.replace('_',' ')}</span></td>
+          <td>${srcTag}</td>
+          <td style="text-align:right;white-space:nowrap;">
+            ${f.data_source === 'live'
+              ? `<button onclick="fireLivePod('${f.ticker}')" title="🔥 SHORT pod — run 4-stage short-distress war room against ${f.ticker}" style="background:rgba(248,113,113,0.12);border:1px solid rgba(248,113,113,0.4);color:#f87171;padding:4px 10px;border-radius:4px;font-size:13px;cursor:pointer;margin-right:4px;">🔥</button>
+                 <button onclick="scanLongPod('${f.ticker}')" title="🐂 LONG pod — scan ${f.ticker} for post-stress recovery setup (Fibonacci ladder · 5 value archetypes)" style="background:rgba(74,222,128,0.12);border:1px solid rgba(74,222,128,0.4);color:#4ade80;padding:4px 10px;border-radius:4px;font-size:13px;cursor:pointer;margin-right:4px;">🐂</button>`
+              : `<button disabled title="No CFPB warehouse coverage" style="background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-tertiary);padding:4px 10px;border-radius:4px;font-size:13px;opacity:0.4;cursor:not-allowed;margin-right:4px;">🔥</button>
+                 <button disabled title="No CFPB warehouse coverage" style="background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-tertiary);padding:4px 10px;border-radius:4px;font-size:13px;opacity:0.4;cursor:not-allowed;margin-right:4px;">🐂</button>`
+            }
+            <button onclick="removeFromLiveWatchlist('${f.ticker}')" title="Remove" style="background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-tertiary);padding:4px 9px;border-radius:4px;font-size:11px;cursor:pointer;">×</button>
+          </td>
+        </tr>`;
+      }).join('');
+    } catch (e) {
+      tbody.innerHTML = '<tr><td colspan="7" style="color:var(--text-tertiary);text-align:center;padding:18px;">Sign in to see your watchlist · <a href="/login" style="color:var(--accent-signal);">Sign in →</a></td></tr>';
+    }
+  }
+
+  // Sync the speed-toggle UI to the saved preference
+  setTimeout(() => {
+    const saved = window.LIVE_POD_SPEED || 'fast';
+    document.querySelectorAll('[data-speed-btn]').forEach(b => {
+      b.classList.toggle('active', b.dataset.speedBtn === saved);
+    });
+  }, 0);
+
+  // Market-regime pill — always visible
+  async function loadMarketRegime() {
+    try {
+      const r = await fetch('/api/market_regime');
+      const d = await r.json();
+      if (d.error) return;
+      const c = d.composite || {};
+      const spy = (d.indices || {}).SPY || {};
+      const qqq = (d.indices || {}).QQQ || {};
+      const labelEl = document.getElementById('mkt-regime-label');
+      if (labelEl) {
+        labelEl.textContent = c.regime || 'unknown';
+        const colorMap = {
+          BULL_REGIME:           '#4ade80',
+          HEALTHY_PULLBACK:      '#a3e635',
+          CAUTION:               '#facc15',
+          TOPPING_PATTERN:       '#fb923c',
+          BEAR_REGIME_CONFIRMED: '#f87171',
+        };
+        labelEl.style.color = colorMap[c.regime] || 'var(--text)';
+      }
+      const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val ?? '—'; };
+      set('mkt-spy-dist', spy.distribution_days_25);
+      set('mkt-qqq-dist', qqq.distribution_days_25);
+      set('mkt-score', c.topping_risk_score);
+      set('mkt-interpretation', c.interpretation || '—');
+    } catch (e) { /* silent */ }
+  }
+  loadMarketRegime();
+  setInterval(loadMarketRegime, 5 * 60 * 1000);  // refresh every 5 min
+
+  // Portfolio analytics — load and render every 30s
+  async function loadPortfolio() {
+    try {
+      const r = await fetch('/api/portfolio');
+      if (!r.ok) return;
+      const d = await r.json();
+      const fmtMoney = n => '$' + Math.round(n || 0).toLocaleString();
+      const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+      set('port-cash-v', fmtMoney(d.cash));
+      set('port-value-v', fmtMoney(d.portfolio_value));
+      set('port-open-v', d.open_count);
+      const beta = d.portfolio_beta;
+      const betaEl = document.getElementById('port-beta-v');
+      if (betaEl) {
+        betaEl.textContent = (beta >= 0 ? '+' : '') + beta.toFixed(2);
+        betaEl.style.color = Math.abs(beta) > 0.6 ? 'var(--warning)' : 'var(--text)';
+      }
+      const modeEl = document.getElementById('port-mode-v');
+      if (modeEl) {
+        modeEl.textContent = d.drawdown_mode;
+        modeEl.style.color = d.drawdown_mode === 'NORMAL' ? '#4ade80' : (d.drawdown_mode === 'CAUTION' ? '#facc15' : '#f87171');
+      }
+      set('port-hwm-v', fmtMoney(d.hwm));
+      set('port-asof-display', d.username || 'guest session');
+
+      // Positions table
+      const tbody = document.getElementById('port-positions-body');
+      if (tbody) {
+        if (!d.positions || d.positions.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color: var(--text-tertiary); padding: 16px; font-size: 11px;">no open positions</td></tr>';
+        } else {
+          const totalNotional = d.positions.reduce((s, p) => s + Math.abs(p.notional || 0), 0);
+          tbody.innerHTML = d.positions.map(p => {
+            const wt = totalNotional > 0 ? Math.abs(p.notional / totalNotional * 100) : 0;
+            const sideColor = p.side === 'SHORT' ? '#f87171' : '#4ade80';
+            return `<tr style="border-top: 1px solid var(--border);">
+              <td style="padding: 8px 10px;"><strong>${p.ticker}</strong></td>
+              <td style="padding: 8px 10px;"><span style="color: ${sideColor}; font-weight: 700; font-size: 10px; padding: 2px 6px; background: ${p.side === 'SHORT' ? 'rgba(248,113,113,0.12)' : 'rgba(74,222,128,0.12)'}; border-radius: 3px;">${p.side}</span></td>
+              <td style="text-align: right; padding: 8px 10px;">${Math.round(p.shares)}</td>
+              <td style="text-align: right; padding: 8px 10px;">$${(p.avg_entry || 0).toFixed(2)}</td>
+              <td style="text-align: right; padding: 8px 10px;">${fmtMoney(p.notional)}</td>
+              <td style="text-align: right; padding: 8px 10px;">${wt.toFixed(1)}%</td>
+            </tr>`;
+          }).join('');
+        }
+      }
+
+      // Risk capacity summary
+      const cashUtil = (1 - d.cash / d.starting_capital) * 100;
+      const drawdown = (d.hwm - d.portfolio_value) / d.hwm * 100;
+      const riskEl = document.getElementById('port-risk-summary');
+      if (riskEl) {
+        riskEl.innerHTML = `
+          <div style="display: flex; justify-content: space-between; margin-bottom: 6px;"><span>Cash utilization</span><strong style="color: var(--text); font-family: var(--font-mono);">${cashUtil.toFixed(1)}%</strong></div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 6px;"><span>Drawdown from HWM</span><strong style="color: ${drawdown > 0 ? '#f87171' : 'var(--text)'}; font-family: var(--font-mono);">${drawdown.toFixed(2)}%</strong></div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 6px;"><span>Concentration cap</span><strong style="color: var(--text); font-family: var(--font-mono);">5%/pos · 30%/sector</strong></div>
+          <div style="display: flex; justify-content: space-between;"><span>β tolerance</span><strong style="color: var(--text); font-family: var(--font-mono);">±0.6</strong></div>
+        `;
+      }
+    } catch (e) { /* silent */ }
+  }
+  loadPortfolio();
+  setInterval(loadPortfolio, 30 * 1000);
+
+  loadBSI();
+  loadFirms();
+  loadFreshness();
+  loadPillars();
+  loadPodRun();
+  loadWatchlist();
+
+  // Auto-load the technical panel with AFRM by default so the Fibonacci charts
+  // are visible immediately on page load (without requiring the user to fire first).
+  // The panel updates when 🔥 is clicked on any watchlist row.
+  setTimeout(() => { loadTechnicalPanel('AFRM'); }, 800);
+  // refresh every 60s (matches server cache TTL)
+  setInterval(() => { loadBSI(); loadFirms(); loadFreshness(); loadPillars(); loadPodRun(); loadWatchlist(); }, 60000);
+</script>
+
+{% include '_hf_modal.html' %}
+<script src="{{ url_for('static', filename='hedge_fund_profiles.js') }}"></script>
+
+<!-- =============== TERMINAL PANEL (live activity stream) =============== -->
+<div id="term-panel" class="term-panel">
+  <div class="term-head">
+    <div class="term-title">
+      <span class="term-dot term-r"></span><span class="term-dot term-y"></span><span class="term-dot term-g"></span>
+      <span>apollo://pod_runner — live activity</span>
+    </div>
+    <div class="term-controls">
+      <button onclick="termClear()" title="Clear log">clear</button>
+      <button onclick="termToggle()" id="term-toggle-btn" title="Collapse">─</button>
+    </div>
+  </div>
+  <div id="term-body" class="term-body">
+    <div class="term-line term-ok"><span class="ts">--:--:--</span><span class="msg">apollo runner ready · waiting for fire signal</span></div>
+  </div>
+</div>
+
+<style>
+  .term-panel {
+    position: fixed; left: 14px; right: 14px; bottom: 14px;
+    background: #0a0a0a; border: 1px solid #2a2a2a; border-radius: 8px;
+    box-shadow: 0 14px 40px rgba(0,0,0,0.5);
+    font-family: 'JetBrains Mono', Menlo, monospace; font-size: 11px;
+    z-index: 50; max-height: 240px; transition: max-height 200ms ease;
+  }
+  .term-panel.collapsed { max-height: 32px; }
+  .term-panel.collapsed .term-body { display: none; }
+  .term-head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 12px; background: #141414; border-bottom: 1px solid #2a2a2a;
+    border-radius: 8px 8px 0 0;
+    font-size: 10px; color: #71717a; user-select: none;
+  }
+  .term-title { display: flex; align-items: center; gap: 6px; }
+  .term-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .term-r { background: #ef4444; } .term-y { background: #f59e0b; } .term-g { background: #22c55e; margin-right: 8px; }
+  .term-controls button {
+    background: transparent; border: 1px solid #2a2a2a; color: #71717a;
+    padding: 2px 8px; border-radius: 3px; font-size: 10px; cursor: pointer;
+    margin-left: 4px; font-family: inherit;
+  }
+  .term-controls button:hover { color: #e4e4e7; border-color: #3a3a3a; }
+  .term-body {
+    max-height: 200px; overflow-y: auto; padding: 6px 12px;
+    font-variant-numeric: tabular-nums; line-height: 1.55;
+  }
+  .term-line { display: flex; gap: 10px; }
+  .term-line .ts { color: #52525b; flex-shrink: 0; }
+  .term-line .msg { color: #d4d4d8; }
+  .term-line.term-ok    .msg { color: #4ade80; }
+  .term-line.term-info  .msg { color: #93c5fd; }
+  .term-line.term-warn  .msg { color: #fde047; }
+  .term-line.term-err   .msg { color: #f87171; }
+  .term-line.term-stage .msg { color: #c4b5fd; font-weight: 600; }
+  .term-line.term-fire  .msg { color: #f87171; font-weight: 700; }
+  .term-line .msg::before { content: '$ '; opacity: 0.4; }
+  .term-line.term-stage .msg::before { content: '▶ '; opacity: 0.7; }
+  .term-line.term-fire  .msg::before { content: '🔥 '; }
+
+  /* spinner shown over a pod stage while it's "computing" */
+  .live-pod.computing { position: relative; opacity: 0.6; }
+  .live-pod.computing::after {
+    content: ''; position: absolute; top: 12px; right: 12px;
+    width: 14px; height: 14px; border: 2px solid var(--border);
+    border-top-color: var(--accent-signal);
+    border-radius: 50%; animation: spin 700ms linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .live-pod.done {
+    transition: opacity 200ms ease;
+    animation: pop 300ms ease;
+  }
+  @keyframes pop { 0% { opacity: 0.4; transform: scale(0.99); } 100% { opacity: 1; transform: scale(1); } }
+
+  /* leave room for the terminal at the bottom */
+  body { padding-bottom: 280px; }
+</style>
+
+<script>
+  // ====== Terminal helpers ======
+  const _termBody = document.getElementById('term-body');
+  function _ts() {
+    const d = new Date();
+    return String(d.getHours()).padStart(2,'0') + ':' +
+           String(d.getMinutes()).padStart(2,'0') + ':' +
+           String(d.getSeconds()).padStart(2,'0');
+  }
+  window.term = function(msg, level) {
+    if (!_termBody) return;
+    const div = document.createElement('div');
+    div.className = 'term-line term-' + (level || 'ok');
+    div.innerHTML = `<span class="ts">${_ts()}</span><span class="msg">${msg}</span>`;
+    _termBody.appendChild(div);
+    _termBody.scrollTop = _termBody.scrollHeight;
+    // Trim if log grows very long (>500 lines)
+    while (_termBody.children.length > 500) _termBody.removeChild(_termBody.firstChild);
+  };
+  window.termClear = function() { _termBody.innerHTML = ''; term('cleared', 'info'); };
+  window.termToggle = function() {
+    document.getElementById('term-panel').classList.toggle('collapsed');
+    const b = document.getElementById('term-toggle-btn');
+    b.textContent = document.getElementById('term-panel').classList.contains('collapsed') ? '▢' : '─';
+  };
+  const _sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+  // ====== Stage-by-stage reveal during fire ======
+  // (The actual fire flow lives in fireLivePod above — this wrapper is now a NO-OP
+  //  retained only to expose helper renderers below for the fire flow to call.)
+  const _origLoadPodRun = window.loadPodRun;
+  window._WrappedLoadPodRunDisabled = async function() {
+    const isForced = !!window._FORCED_LIVE_TICKER;
+    const ticker = window._FORCED_LIVE_TICKER || 'auto';
+
+    if (!isForced) { return _origLoadPodRun(); }
+
+    // ===== Fire flow with terminal narration =====
+    term(`fire signal received → ${ticker}`, 'fire');
+    term('apollo://pod_runner: initialising 4-stage pipeline', 'info');
+
+    // Dim all 4 pods + spinner
+    const pods = document.querySelectorAll('.live-pod');
+    pods.forEach(p => { p.classList.remove('done'); p.classList.add('computing'); });
+
+    // STAGE 1
+    term('stage 01 SIGNAL  · pulling CFPB warehouse + soft pillars…', 'stage');
+    await _sleep(450);
+    term(`  ↳ CFPB complaint window: last 90d vs prior 90d`, '');
+    await _sleep(250);
+    term(`  ↳ querying duckdb: warehouse.duckdb (read-only)`, '');
+    await _sleep(300);
+    term(`  ↳ joining reddit / bluesky / search-expert pillar CSVs`, '');
+    await _sleep(200);
+
+    // Hit the API
+    const forced = window._FORCED_LIVE_TICKER ? `?ticker=${window._FORCED_LIVE_TICKER}` : '';
+    const r = await fetch('/api/live/pod_run' + forced);
+
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({}));
+      term(`stage 01 FAILED · ${err.message || 'no live coverage'}`, 'err');
+      pods.forEach(p => p.classList.remove('computing'));
+      document.getElementById('pod-asof').innerHTML =
+        err.message ? `<span style="color:var(--warning);">${err.message}</span>` : 'no live firm available';
+      window._FORCED_LIVE_TICKER = null;
+      return;
+    }
+    const d = await r.json();
+    window._LIVE_POD_RUN = d;
+
+    // Reveal Stage 1
+    pods[0].classList.remove('computing'); pods[0].classList.add('done');
+    _renderStage1(d);
+    const sig = d.stage1_signal;
+    term(`  ↳ live z = ${sig.bsi_z.toFixed(2)} · CFPB Δ ${sig.delta_pct >= 0 ? '+' : ''}${sig.delta_pct}% · state ${sig.bear_state}`, 'ok');
+    await _sleep(500);
+
+    // STAGE 2
+    term('stage 02 DEBATE  · convening 5 hedge-fund archetypes…', 'stage');
+    await _sleep(400);
+    const votes = d.stage2_debate.votes;
+    for (const v of votes) {
+      term(`  ↳ ${v.icon} ${v.name.padEnd(13)} → ${v.vote}`, v.vote === 'SHORT' ? 'warn' : '');
+      await _sleep(180);
+    }
+    pods[1].classList.remove('computing'); pods[1].classList.add('done');
+    _renderStage2(d);
+    term(`  ↳ verdict: ${d.stage2_debate.verdict} · conviction ${d.stage2_debate.conviction.toUpperCase()}`,
+         d.stage2_debate.conviction === 'high' ? 'ok' : 'info');
+    await _sleep(450);
+
+    // STAGE 3
+    term('stage 03 EXECUTE · apollo risk engine — running 7 checks…', 'stage');
+    await _sleep(350);
+    for (const c of d.stage3_execute.risk_checks) {
+      term(`  ↳ [${c.status}] ${c.name.padEnd(22)} ${c.detail || ''}`, c.status === 'PASS' ? 'ok' : 'err');
+      await _sleep(120);
+    }
+    pods[2].classList.remove('computing'); pods[2].classList.add('done');
+    _renderStage3(d);
+    _renderArchetypeGates(d);   // 5-gate per-archetype panel — paper §10
+    _renderTechOverride(d);     // 03.5 technical-override layer (BSI-lag complement)
+    const verdictLevel = d.stage3_execute.verdict === 'APPROVED' ? 'ok' :
+                        (d.stage3_execute.verdict === 'BLOCKED' ? 'err' : 'warn');
+    term(`  ↳ verdict: ${d.stage3_execute.verdict} · entry $${d.stage3_execute.entry.toFixed(2)} · ${d.stage3_execute.shares} sh · R:R ${d.stage3_execute.rr}`, verdictLevel);
+    if (d.archetype_gates && d.archetype_gates.summary) {
+      const fa = d.archetype_gates.summary.firing_archetypes || [];
+      term(`  ↳ archetype gates: ${fa.length ? fa.join(', ') + ' fire' : 'none fire'}`,
+           fa.length ? 'ok' : 'warn');
+    }
+    await _sleep(400);
+
+    // STAGE 4
+    term('stage 04 LEARN   · booking provenance + journal hook…', 'stage');
+    await _sleep(300);
+    pods[3].classList.remove('computing'); pods[3].classList.add('done');
+    _renderStage4(d);
+    term(`  ↳ event_id: live_${Date.now()} · ready for journal on Execute`, '');
+    term(`pipeline complete in ~3s wall · ${d.ticker} · ${d.stage3_execute.verdict}`, 'fire');
+
+    // Header line
+    let provenance = ' · <span style="color:var(--danger);">🔥 fired manually</span>';
+    document.getElementById('pod-asof').innerHTML = `firm: ${d.ticker} · as of ${d.as_of}${provenance}`;
+
+    // Reset forced flag so next auto-poll uses default
+    window._FORCED_LIVE_TICKER = null;
+  };
+
+  // ====== Stage renderers (split out so the fire flow can call them sequentially) ======
+  // These mirror the inline code in the original loadPodRun; refactored into named fns.
+  function _renderStage1(d) {
+    const sig = d.stage1_signal;
+    document.getElementById('pod1-firm').textContent = `${d.ticker} · ${d.firm_name}`;
+    const z = sig.bsi_z;
+    document.getElementById('pod1-z').textContent = z.toFixed(2);
+    let zCol = 'var(--text)';
+    if (z >= 2.0) zCol = 'var(--danger)';
+    else if (z >= 1.5) zCol = 'var(--warning)';
+    document.getElementById('pod1-z').style.color = zCol;
+    const stateEl = document.getElementById('pod1-state');
+    stateEl.textContent = sig.bear_state.replace('_', ' ');
+    if (sig.bear_state === 'FIRED_UP' || sig.bear_state === 'ANGRY') {
+      stateEl.style.color = 'var(--danger)';
+      stateEl.style.borderColor = 'rgba(248,113,113,0.4)';
+    } else if (sig.bear_state === 'WORRIED') {
+      stateEl.style.color = 'var(--warning)';
+      stateEl.style.borderColor = 'rgba(250,204,21,0.4)';
+    } else {
+      stateEl.style.color = '';
+      stateEl.style.borderColor = '';
+    }
+    document.getElementById('pod1-pillars').innerHTML = Object.entries(sig.pillars).map(([k, v]) => `
+      <div class="live-pod-pillar">
+        <span class="nm">${k.replace(/_/g, ' ')}</span>
+        <span class="vl">${v === null ? '—' : v.toFixed(2)}</span>
+      </div>`).join('');
+  }
+  function _renderStage2(d) {
+    const deb = d.stage2_debate;
+    document.getElementById('pod2-debate').innerHTML = deb.votes.map(v => `
+      <div class="live-pod-debate-row ${v.is_our_fund ? 'live-pod-our-fund' : ''}" data-fund="${v.name}" data-vote="${v.vote}" data-rationale="${v.rationale.replace(/"/g,'&quot;')}" style="cursor:pointer;" title="${v.is_our_fund ? '★ Our fund — click for deep-dive' : 'Click for deep-dive on ' + v.name}">
+        <div class="icon">${v.icon}</div>
+        <div class="name">${v.name}</div>
+        <div class="vote ${v.vote}">${v.vote}</div>
+      </div>`).join('');
+    document.querySelectorAll('#pod2-debate .live-pod-debate-row').forEach(row => {
+      row.addEventListener('click', () => openHedgeFundModal(row.dataset.fund, {
+        vote: row.dataset.vote, rationale: row.dataset.rationale,
+        ticker: d.ticker, entryPrice: d.stage3_execute.entry, bsiZ: d.stage1_signal.bsi_z,
+      }));
+    });
+    const convCol = deb.conviction === 'high' ? 'var(--danger)' : deb.conviction === 'medium' ? 'var(--warning)' : 'var(--text-tertiary)';
+    document.getElementById('pod2-verdict').innerHTML =
+      `<div style="color:var(--text-tertiary);font-size:9px;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;">Verdict</div>
+       <div style="font-weight:700;color:${convCol};">${deb.verdict} · ${deb.conviction.toUpperCase()}</div>`;
+  }
+  function _renderStage3(d) {
+    const exe = d.stage3_execute;
+    const dg  = d.denominator_gate;
+    const fi  = d.fixed_income_alternative;
+
+    // Build a copyable plain-text SHORT plan, stash on window for the copy button
+    const shortText = [
+      `BEARWATCH × APOLLO HERMES — SHORT TRADE PLAN`,
+      `Ticker: ${d.ticker} · ${d.firm_name || ''}`.trim(),
+      `As of: ${d.as_of} · Verdict: ${exe.verdict.replace(/_/g,' ')}`,
+      `Stage 2 Debate: ${d.stage2_debate.verdict} · Conviction: ${d.stage2_debate.conviction.toUpperCase()}`,
+      ``,
+      `Side: SHORT`,
+      `Entry: $${exe.entry.toFixed(2)}${exe.entry_is_proxy ? '  (ABS-junior proxy)' : ''}`,
+      `Stop:  $${exe.stop.toFixed(2)}  (+${(((exe.stop/exe.entry)-1)*100).toFixed(1)}%)`,
+      `Target: $${exe.target.toFixed(2)}  (${(((exe.target/exe.entry)-1)*100).toFixed(1)}%)`,
+      `Shares · Notional: ${exe.shares} · $${Math.round(exe.notional).toLocaleString()}`,
+      `R:R: ${exe.rr}:1 · Hold horizon: ${exe.horizon_days}d`,
+      ``,
+      `RISK CHECKS:`,
+      ...exe.risk_checks.map(c => `  [${c.status}] ${c.name} — ${c.detail}`),
+      ``,
+      `STAGE 1 SIGNAL: BSI z=${d.stage1_signal.bsi_z}, bear-state ${d.stage1_signal.bear_state}, CFPB Δ ${d.stage1_signal.delta_pct >= 0 ? '+' : ''}${d.stage1_signal.delta_pct}%`,
+      ``,
+      ...(fi ? [
+        `--- FIXED-INCOME ALTERNATIVE (paper §9.1) ---`,
+        `Instrument: ${fi.instrument}`,
+        `Identifier: ${fi.ticker_or_id || '—'}`,
+        `Side: ${fi.side}`,
+        `Tenor: ${fi.tenor || '—'}`,
+        `Execution: ${fi.execution || '—'}`,
+        `Expected lead: ${fi.expected_lead || '—'}`,
+        `Loss profile: ${fi.loss_profile || '—'}`,
+        `Why: ${fi.rationale}`,
+        ``,
+      ] : []),
+      `Source: BearWatch BSI + Apollo Hermes pod, /api/live/pod_run?ticker=${d.ticker}`,
+    ].join('\n');
+    window['_SHORT_TRADE_TEXT_' + d.ticker] = shortText;
+    document.getElementById('pod3-checks').innerHTML = exe.risk_checks.map(c => `
+      <div class="live-pod-check ${c.status}">
+        <div class="icon">${c.status === 'PASS' ? '✓' : (c.status === 'WARN' ? '!' : '✗')}</div>
+        <div class="nm" title="${c.detail.replace(/"/g,'&quot;')}">${c.name}</div>
+      </div>`).join('');
+    const tradeMount = document.getElementById('pod3-trade');
+    const proxyTag = exe.entry_is_proxy ? ' <span style="font-size:9px;color:var(--text-tertiary);">(ABS-junior proxy)</span>' : '';
+    const fmtMoney = n => '$' + Math.round(n).toLocaleString();
+    const isBlockedFI = exe.verdict === 'BLOCKED_DENOMINATOR_FI_ROUTE';
+    // === Override size slider — multiplier 0.25x – 2.0x of recommended size ===
+    const sizeOverrideStrip = (exe.verdict === 'BLOCKED' || isBlockedFI) ? '' : `
+      <div style="margin-top:12px;padding:10px 12px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:6px;">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;font-family:var(--font-mono);font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.05em;">
+          <span>▶ Size override</span>
+          <span>recommended: <strong style="color:var(--text);">${exe.shares} sh</strong></span>
+        </div>
+        <input type="range" id="size-override-slider" min="0.25" max="2.0" step="0.05" value="1.0" style="width:100%;accent-color:var(--danger);" />
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;font-family:var(--font-mono);font-size:10px;">
+          <span style="color:var(--text-tertiary);">0.25×</span>
+          <span style="color:var(--text-tertiary);">1.0×</span>
+          <span style="color:var(--text-tertiary);">2.0×</span>
+        </div>
+        <div id="size-override-readout" style="margin-top:6px;padding:6px 8px;background:var(--bg-card);border-radius:4px;font-family:var(--font-mono);font-size:11px;color:var(--text);text-align:center;">
+          <strong>1.0×</strong> · <span id="override-shares">${exe.shares}</span> sh · $<span id="override-notional">${Math.round(exe.notional).toLocaleString()}</span>
+        </div>
+      </div>`;
+    const executeBtn = (exe.verdict === 'BLOCKED' || isBlockedFI)
+      ? `<button disabled style="margin-top:10px;width:100%;background:var(--bg-card);border:1px solid var(--border);color:var(--text-tertiary);padding:8px;border-radius:5px;font-size:11px;font-weight:700;letter-spacing:0.05em;cursor:not-allowed;text-transform:uppercase;">${isBlockedFI ? 'Equity blocked — see fixed-income route below' : 'Apollo blocked — cannot execute'}</button>`
+      : sizeOverrideStrip + `<button id="live-execute-btn" style="margin-top:10px;width:100%;background:var(--danger);border:0;color:#0a0a0a;padding:9px;border-radius:5px;font-size:12px;font-weight:700;letter-spacing:0.05em;cursor:pointer;text-transform:uppercase;">Execute trade →</button>`;
+
+    // Build fixed-income panel if the denominator gate routed
+    const fiPanel = fi ? `
+      <div style="margin-top:14px;padding:14px 16px;background:linear-gradient(180deg,rgba(34,211,238,0.08),transparent 60%),var(--bg-card);border:1px solid rgba(34,211,238,0.45);border-radius:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <div>
+            <div style="font-size:9px;color:#22d3ee;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;">Fixed-Income Alternative · paper §9.1</div>
+            <div style="font-size:14px;font-weight:700;color:var(--text);margin-top:2px;">${fi.instrument}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:9px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.06em;">Side</div>
+            <div style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:#22d3ee;">${fi.side}</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;font-size:11px;margin-bottom:10px;">
+          <div><span style="color:var(--text-tertiary);">Instrument ID:</span> <span style="font-family:var(--font-mono);color:var(--text);">${fi.ticker_or_id || '—'}</span></div>
+          <div><span style="color:var(--text-tertiary);">Tenor:</span> <span style="color:var(--text);">${fi.tenor || '—'}</span></div>
+          <div style="grid-column:1/-1;"><span style="color:var(--text-tertiary);">Execution:</span> <span style="color:var(--text);">${fi.execution || '—'}</span></div>
+          <div style="grid-column:1/-1;"><span style="color:var(--text-tertiary);">Expected lead:</span> <span style="color:var(--text);">${fi.expected_lead || '—'}</span></div>
+          <div style="grid-column:1/-1;"><span style="color:var(--text-tertiary);">Loss profile:</span> <span style="color:var(--text);">${fi.loss_profile || '—'}</span></div>
+        </div>
+        <div style="font-size:11px;line-height:1.5;color:var(--text-secondary);padding-top:10px;border-top:1px solid var(--border);">
+          <strong style="color:var(--text);">Why this routing:</strong> ${fi.rationale}
+        </div>
+      </div>
+    ` : '';
+
+    // Denominator-gate detail strip (only if gate was invoked, i.e. raw fires)
+    const dgPanel = (dg && dg.verdict !== 'NO_FIRE') ? `
+      <div style="margin-top:10px;padding:10px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;font-size:11px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+          <span style="font-size:9px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.06em;font-weight:700;">Denominator gate · paper §7.3</span>
+          <span style="font-family:var(--font-mono);font-size:10px;font-weight:700;color:${
+            dg.verdict === 'BLOCK_EQUITY_ROUTE_FIXED_INCOME' ? '#22d3ee' :
+            dg.verdict === 'EQUITY_SCALED_DENOMINATOR_FLAG'  ? '#fbbf24' : '#4ade80'
+          };">${dg.verdict.replace(/_/g,' ')}</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-family:var(--font-mono);font-size:10.5px;margin-bottom:6px;">
+          <div><span style="color:var(--text-tertiary);">raw z:</span> <span style="color:var(--text);">${dg.raw_bsi_z}</span></div>
+          <div><span style="color:var(--text-tertiary);">normalised z:</span> <span style="color:var(--text);">${dg.normalised_bsi_z}</span></div>
+          <div><span style="color:var(--text-tertiary);">drag:</span> <span style="color:var(--text);">${dg.growth_drag_z}σ</span></div>
+        </div>
+        <div style="color:var(--text-secondary);line-height:1.5;font-size:10.5px;">${dg.explanation}</div>
+      </div>
+    ` : '';
+
+    tradeMount.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:6px;">
+        <span class="verdict-pill ${exe.verdict}">${exe.verdict.replace(/_/g,' ')}</span>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <button onclick="copyTradeStrategy('${d.ticker}', 'short')" title="Copy SHORT trade plan to clipboard"
+            style="background:rgba(248,113,113,0.10);border:1px solid rgba(248,113,113,0.4);color:#f87171;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.05em;">📋 Copy</button>
+          <span style="font-size:10px;color:var(--text-tertiary);font-family:var(--font-mono);">SHORT · ${exe.horizon_days}d</span>
+        </div>
+      </div>
+      <div class="row"><span class="lbl">Entry${proxyTag}</span><span class="val">$${exe.entry.toFixed(2)}</span></div>
+      <div class="row"><span class="lbl">Stop</span><span class="val">$${exe.stop.toFixed(2)}</span></div>
+      <div class="row"><span class="lbl">Target</span><span class="val">$${exe.target.toFixed(2)}</span></div>
+      <div class="row"><span class="lbl">Shares · notional</span><span class="val">${exe.shares} · ${fmtMoney(exe.notional)}</span></div>
+      <div class="row"><span class="lbl">R : R</span><span class="val">${exe.rr} : 1</span></div>
+      ${executeBtn}
+      ${dgPanel}
+      ${fiPanel}
+    `;
+    // === Wire up override-size slider live readout ===
+    const slider = document.getElementById('size-override-slider');
+    if (slider) {
+      slider.addEventListener('input', () => {
+        const mult = parseFloat(slider.value);
+        const newShares = Math.max(1, Math.round(exe.shares * mult));
+        const newNotional = Math.round(newShares * exe.entry);
+        const readout = document.getElementById('size-override-readout');
+        if (readout) {
+          const colour = mult < 0.5 ? '#fbbf24' : mult > 1.5 ? '#f87171' : '#4ade80';
+          readout.innerHTML = `<strong style="color:${colour};">${mult.toFixed(2)}×</strong> · <span style="color:${colour};">${newShares}</span> sh · $<span style="color:${colour};">${newNotional.toLocaleString()}</span>`;
+        }
+      });
+    }
+    const eb = document.getElementById('live-execute-btn');
+    if (eb) eb.addEventListener('click', async () => {
+      const pod = window._LIVE_POD_RUN;
+      if (!pod) return;
+      const ex = pod.stage3_execute;
+      const sig = pod.stage1_signal || {};
+      const bearState = sig.bear_state || 'UNKNOWN';
+      const bsiZ = sig.bsi_z || 0;
+      // ===== Read size override =====
+      const mult = slider ? parseFloat(slider.value) : 1.0;
+      const finalShares   = Math.max(1, Math.round(ex.shares * mult));
+      const finalNotional = Math.round(finalShares * ex.entry);
+      // ===== Direction-conflict warning (SHORT side) =====
+      // SHORT is the natural direction when bear is WORRIED/ANGRY/FIRED_UP (z >= 2.0)
+      // Warn if bear is SLEEPING/CONFUSED/THINKING (z < 2.0) — we're shorting without distress signal
+      const bearIsCalm = ['SLEEPING','CONFUSED','THINKING'].includes(bearState);
+      let directionWarning = '';
+      if (bearIsCalm) {
+        directionWarning = `\n\n⚠️ DIRECTION-CONFLICT WARNING:\nBear state is ${bearState} (BSI z = ${bsiZ.toFixed(2)} < 2.0).\nBSI does NOT show distress on this firm right now.\nA SHORT here is contrarian to the framework's signal.\nProceed only if you have an independent thesis.`;
+      }
+      // ===== Size-override warning =====
+      let sizeWarning = '';
+      if (mult >= 1.5) {
+        sizeWarning = `\n\n⚠️ SIZE OVERRIDE WARNING:\nYou're sizing ${mult.toFixed(2)}× the recommended ${ex.shares} shares.\nThis means ${finalShares} shares · $${finalNotional.toLocaleString()} notional — ${(mult*100-100).toFixed(0)}% above the system recommendation.\nApollo Hermes risk caps may be exceeded.`;
+      } else if (mult <= 0.5) {
+        sizeWarning = `\n\n📉 SIZE-DOWN NOTICE:\nYou're sizing only ${mult.toFixed(2)}× the recommended ${ex.shares} shares.\nThis means ${finalShares} shares · $${finalNotional.toLocaleString()} — ${(100-mult*100).toFixed(0)}% below the system recommendation.\nIf you're unsure, consider not trading at all.`;
+      }
+      term(`user clicked Execute · awaiting confirm dialog`, 'info');
+      // Two-step confirm if EITHER warning is present
+      if (directionWarning || sizeWarning) {
+        if (!confirm(`Execute SHORT ${finalShares} ${pod.ticker} @ $${ex.entry.toFixed(2)} ?\nStop $${ex.stop.toFixed(2)} · Target $${ex.target.toFixed(2)} · Hold ${ex.horizon_days}d${directionWarning}${sizeWarning}\n\nClick OK to see one more confirmation, Cancel to abort.`)) {
+          term('user cancelled execute (warning rejected)', 'warn');
+          return;
+        }
+        // Second confirm — explicit acknowledgement
+        if (!confirm(`FINAL CONFIRMATION — Are you certain you want to execute this trade?\n\n${pod.ticker} SHORT ${finalShares} sh @ $${ex.entry.toFixed(2)}${directionWarning ? '\n\n⚠️ Bear is ' + bearState + ' (calm). System does not endorse this short.' : ''}${sizeWarning ? '\n\n⚠️ Size override: ' + mult.toFixed(2) + '×' : ''}\n\nClick OK to journal the trade. This is the LAST confirmation.`)) {
+          term('user cancelled execute (final confirmation declined)', 'warn');
+          return;
+        }
+      } else if (!confirm(`Execute SHORT ${finalShares} ${pod.ticker} @ $${ex.entry.toFixed(2)} ?\nStop $${ex.stop.toFixed(2)} · Target $${ex.target.toFixed(2)} · Hold ${ex.horizon_days}d`)) {
+        term('user cancelled execute', 'warn');
+        return;
+      }
+      eb.disabled = true; eb.textContent = 'Journaling…';
+      term(`POST /api/journal · ${pod.ticker} · ${finalShares} sh @ $${ex.entry.toFixed(2)} (${mult.toFixed(2)}× override)`, 'info');
+      const r = await fetch('/api/journal', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          ticker: pod.ticker, side: 'SHORT', shares: finalShares,
+          entry_price: ex.entry, stop_price: ex.stop, target_price: ex.target,
+          event_id: 'live_' + Date.now(),
+          verdict: (mult !== 1.0 || directionWarning) ? `${ex.verdict}_OVERRIDE_${mult.toFixed(2)}x` : ex.verdict,
+          source: directionWarning ? 'live_pod_override_against_bear' : 'live_pod',
+        }),
+      });
+      if (r.ok) {
+        eb.textContent = '✓ Trade journaled' + (mult !== 1.0 ? ` (${mult.toFixed(2)}× override)` : '');
+        eb.style.background = 'var(--success)';
+        term(`✓ trade journaled · provenance: live_pod${directionWarning ? ' (against-bear override)' : ''}`, 'ok');
+      } else {
+        const err = await r.json().catch(() => ({}));
+        eb.textContent = err.error === 'not_logged_in' ? 'Sign in to execute →' : '✗ Failed';
+        eb.disabled = false;
+        term(`✗ journal failed: ${err.error || 'unknown'}`, 'err');
+      }
+    });
+  }
+
+  // ===== 03.5 TECHNICAL OVERRIDE LAYER =====
+  // Pulls /api/technical/<ticker>, shows tech bias even when BSI is sleeping,
+  // and lets the user force-fire SHORT or LONG with a tagged "tech_override" provenance.
+  async function _renderTechOverride(d) {
+    const mount = document.getElementById('tech-override-body');
+    if (!mount) return;
+    const ticker = d.ticker;
+    const bsiZ = (d.stage1_signal && d.stage1_signal.bsi_z) || 0;
+    const bearState = (d.stage1_signal && d.stage1_signal.bear_state) || 'UNKNOWN';
+    const bsiSleeping = ['SLEEPING','CONFUSED','THINKING'].includes(bearState);
+
+    mount.innerHTML = `<div style="text-align:center;padding:14px 0;color:var(--text-tertiary);font-family:var(--font-mono);font-size:11px;">Loading technical context for ${ticker}…</div>`;
+
+    try {
+      const r = await fetch(`/api/technical/${encodeURIComponent(ticker)}`);
+      const tech = await r.json();
+      if (tech.error) {
+        mount.innerHTML = `<div style="color:#f87171;font-family:var(--font-mono);font-size:11px;padding:8px 0;">Technical fetch failed: ${tech.error}</div>`;
+        return;
+      }
+
+      const ind   = tech.indicators || {};
+      const bias  = tech.tech_bias_score ?? 0;
+      const rsi   = ind.rsi_stoch?.rsi_14 ?? 50;
+      const stoch = ind.rsi_stoch?.stochastic_k ?? 50;
+      const pctB  = ind.bollinger?.pct_b ?? 50;
+      const ud    = ind.up_down_volume?.ud_ratio_20d ?? 1.0;
+      const obv   = ind.up_down_volume?.obv_trend || 'FLAT';
+      const off52 = ind.highs?.pct_off_52w_high ?? 0;
+      const atrPct = ind.atr?.atr_pct_of_price ?? 2;
+      const lastPx = tech.latest_close ?? 0;
+
+      // Compute tech vote — same logic as the equity-monitor 6-archetype voter, simplified to one direction
+      // SHORT bias: bias <= -2 OR (RSI>70 AND high vol) OR (pctB>70 AND OBV falling) OR off52 within 5% with low vol
+      // LONG  bias: bias >= +2 OR (RSI<30 AND low vol) OR (pctB<30 AND OBV rising)
+      const shortReasons = [];
+      const longReasons  = [];
+      if (bias <= -2)                       shortReasons.push(`tech bias ${bias} (clear distribution)`);
+      if (bias >= 2)                        longReasons.push(`tech bias +${bias} (clear accumulation)`);
+      if (rsi > 70)                         shortReasons.push(`RSI ${rsi.toFixed(0)} overbought`);
+      if (rsi < 30)                         longReasons.push(`RSI ${rsi.toFixed(0)} oversold`);
+      if (pctB > 70)                        shortReasons.push(`%B ${pctB.toFixed(0)}% upper-band`);
+      if (pctB < 30)                        longReasons.push(`%B ${pctB.toFixed(0)}% lower-band`);
+      if (stoch > 80)                       shortReasons.push(`Stoch K ${stoch.toFixed(0)} overbought`);
+      if (stoch < 20)                       longReasons.push(`Stoch K ${stoch.toFixed(0)} oversold`);
+      if (obv === 'FALLING' && bias <= -1)  shortReasons.push(`OBV falling + bearish bias`);
+      if (obv === 'RISING'  && bias >= 1)   longReasons.push(`OBV rising + bullish bias`);
+      if (off52 > -5 && atrPct < 5)         shortReasons.push(`within 5% of 52w high, low vol`);
+      if (off52 < -30)                      longReasons.push(`${off52.toFixed(0)}% off 52w high — value zone`);
+
+      const shortStrength = shortReasons.length;
+      const longStrength  = longReasons.length;
+      const techDirection = shortStrength > longStrength + 1 ? 'SHORT' :
+                            longStrength  > shortStrength + 1 ? 'LONG' : 'NEUTRAL';
+      const techStrength  = Math.max(shortStrength, longStrength);
+      const techStrengthLabel = techStrength >= 4 ? 'STRONG' : techStrength >= 2 ? 'MODERATE' : 'WEAK';
+
+      // Discrepancy detection
+      const discrepancy = bsiSleeping && techDirection !== 'NEUTRAL' && techStrength >= 2;
+
+      mount.innerHTML = `
+        ${discrepancy ? `
+          <div style="padding:10px 14px;background:rgba(167,139,250,0.06);border-left:3px solid #a78bfa;border-radius:6px;margin-bottom:14px;">
+            <div style="font-family:var(--font-mono);font-size:10px;color:#a78bfa;font-weight:700;letter-spacing:0.06em;">DISCREPANCY DETECTED</div>
+            <div style="font-size:12px;color:var(--text);margin-top:6px;line-height:1.5;">
+              BSI says <strong style="color:var(--text-tertiary);">${bearState}</strong> (z = ${bsiZ.toFixed(2)}) — but technicals show <strong style="color:${techDirection==='SHORT'?'#f87171':'#4ade80'};">${techStrengthLabel} ${techDirection}</strong> setup. This is consistent with BSI's structural lag — CFPB publication lag is ~30–90 days, so consumer-side stress that began this month will not appear in BSI for weeks. The technical layer is real-time and may be leading the alt-data signal.
+            </div>
+          </div>
+        ` : ''}
+
+        <!-- Tech context grid -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(110px, 1fr));gap:8px;margin-bottom:12px;">
+          <div style="background:var(--bg-card);padding:8px 10px;border-radius:6px;">
+            <div style="font-family:var(--font-mono);font-size:9px;color:var(--text-tertiary);text-transform:uppercase;">price</div>
+            <div style="font-family:var(--font-mono);font-size:14px;font-weight:700;color:var(--text);margin-top:2px;">$${lastPx.toFixed(2)}</div>
+          </div>
+          <div style="background:var(--bg-card);padding:8px 10px;border-radius:6px;">
+            <div style="font-family:var(--font-mono);font-size:9px;color:var(--text-tertiary);text-transform:uppercase;">tech bias</div>
+            <div style="font-family:var(--font-mono);font-size:14px;font-weight:700;color:${bias<=-2?'#f87171':bias>=2?'#4ade80':'var(--text)'};margin-top:2px;">${bias>0?'+':''}${bias}</div>
+          </div>
+          <div style="background:var(--bg-card);padding:8px 10px;border-radius:6px;">
+            <div style="font-family:var(--font-mono);font-size:9px;color:var(--text-tertiary);text-transform:uppercase;">RSI</div>
+            <div style="font-family:var(--font-mono);font-size:14px;font-weight:700;color:${rsi>70?'#f87171':rsi<30?'#4ade80':'var(--text)'};margin-top:2px;">${rsi.toFixed(0)}</div>
+          </div>
+          <div style="background:var(--bg-card);padding:8px 10px;border-radius:6px;">
+            <div style="font-family:var(--font-mono);font-size:9px;color:var(--text-tertiary);text-transform:uppercase;">%B</div>
+            <div style="font-family:var(--font-mono);font-size:14px;font-weight:700;color:${pctB>70?'#f87171':pctB<30?'#4ade80':'var(--text)'};margin-top:2px;">${pctB.toFixed(0)}%</div>
+          </div>
+          <div style="background:var(--bg-card);padding:8px 10px;border-radius:6px;">
+            <div style="font-family:var(--font-mono);font-size:9px;color:var(--text-tertiary);text-transform:uppercase;">Stoch K</div>
+            <div style="font-family:var(--font-mono);font-size:14px;font-weight:700;color:${stoch>80?'#f87171':stoch<20?'#4ade80':'var(--text)'};margin-top:2px;">${stoch.toFixed(0)}</div>
+          </div>
+          <div style="background:var(--bg-card);padding:8px 10px;border-radius:6px;">
+            <div style="font-family:var(--font-mono);font-size:9px;color:var(--text-tertiary);text-transform:uppercase;">U/D 20d</div>
+            <div style="font-family:var(--font-mono);font-size:14px;font-weight:700;color:${ud<0.8?'#f87171':ud>1.5?'#4ade80':'var(--text)'};margin-top:2px;">${ud.toFixed(2)}</div>
+          </div>
+          <div style="background:var(--bg-card);padding:8px 10px;border-radius:6px;">
+            <div style="font-family:var(--font-mono);font-size:9px;color:var(--text-tertiary);text-transform:uppercase;">off 52w hi</div>
+            <div style="font-family:var(--font-mono);font-size:14px;font-weight:700;color:${off52>-5?'#f87171':off52<-30?'#4ade80':'var(--text)'};margin-top:2px;">${off52.toFixed(1)}%</div>
+          </div>
+        </div>
+
+        <!-- Two-column reason breakdown -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+          <div style="background:var(--bg-card);padding:10px 12px;border-radius:6px;border-left:3px solid #f87171;">
+            <div style="font-family:var(--font-mono);font-size:10px;color:#f87171;font-weight:700;letter-spacing:0.06em;">SHORT signal · ${shortStrength} reasons</div>
+            ${shortReasons.length ? shortReasons.map(r => `<div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">· ${r}</div>`).join('') : '<div style="font-size:11px;color:var(--text-tertiary);margin-top:4px;font-style:italic;">no short signals fire</div>'}
+          </div>
+          <div style="background:var(--bg-card);padding:10px 12px;border-radius:6px;border-left:3px solid #4ade80;">
+            <div style="font-family:var(--font-mono);font-size:10px;color:#4ade80;font-weight:700;letter-spacing:0.06em;">LONG signal · ${longStrength} reasons</div>
+            ${longReasons.length ? longReasons.map(r => `<div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">· ${r}</div>`).join('') : '<div style="font-size:11px;color:var(--text-tertiary);margin-top:4px;font-style:italic;">no long signals fire</div>'}
+          </div>
+        </div>
+
+        <!-- Action buttons -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <button onclick="_techOverride('${ticker}', 'SHORT', ${lastPx}, ${bsiZ}, '${bearState}', ${shortStrength})" ${shortStrength === 0 ? 'disabled' : ''} style="background:${shortStrength>0?'rgba(248,113,113,0.18)':'var(--bg-card)'};border:1px solid ${shortStrength>0?'#f87171':'var(--border)'};color:${shortStrength>0?'#f87171':'var(--text-tertiary)'};padding:10px;border-radius:5px;font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:0.05em;cursor:${shortStrength>0?'pointer':'not-allowed'};text-transform:uppercase;">
+            ▼ Human Intervention · SHORT
+          </button>
+          <button onclick="_techOverride('${ticker}', 'LONG', ${lastPx}, ${bsiZ}, '${bearState}', ${longStrength})" ${longStrength === 0 ? 'disabled' : ''} style="background:${longStrength>0?'rgba(74,222,128,0.18)':'var(--bg-card)'};border:1px solid ${longStrength>0?'#4ade80':'var(--border)'};color:${longStrength>0?'#4ade80':'var(--text-tertiary)'};padding:10px;border-radius:5px;font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:0.05em;cursor:${longStrength>0?'pointer':'not-allowed'};text-transform:uppercase;">
+            ▲ Human Intervention · LONG
+          </button>
+        </div>
+
+        <div style="margin-top:10px;font-size:10px;color:var(--text-tertiary);text-align:center;font-style:italic;">
+          human-intervention trades are journaled with provenance "human_intervention" — separate from BSI-fired and AUTO-trade fires for clean P&amp;L attribution
+        </div>
+      `;
+    } catch (e) {
+      mount.innerHTML = `<div style="color:#f87171;font-family:var(--font-mono);font-size:11px;">Failed: ${e.message}</div>`;
+    }
+  }
+
+  // Tech override action
+  async function _techOverride(ticker, side, lastPx, bsiZ, bearState, strength) {
+    const sideColor = side === 'SHORT' ? 'red' : 'green';
+    const bsiCalm = ['SLEEPING','CONFUSED','THINKING'].includes(bearState);
+    const stopMult   = side === 'SHORT' ? 1.07 : 0.93;
+    const targetMult = side === 'SHORT' ? 0.85 : 1.15;
+    const stop   = +(lastPx * stopMult).toFixed(2);
+    const target = +(lastPx * targetMult).toFixed(2);
+    const shares = Math.max(1, Math.round(2500 / lastPx));   // ~$2.5k notional default
+
+    const warning = bsiCalm
+      ? `\n\nBSI is ${bearState} (z = ${bsiZ.toFixed(2)}) — alt-data signal does NOT confirm this direction.\nThis is HUMAN INTERVENTION based on ${strength} technical signal(s).\nProvenance will be tagged "human_intervention" for clean P&L attribution.`
+      : `\n\nBSI bear state: ${bearState} (z = ${bsiZ.toFixed(2)}). Technical layer aligns with BSI signal.`;
+
+    if (!confirm(`Tech-Override ${side} ${shares} ${ticker} @ $${lastPx.toFixed(2)}?\nStop $${stop} · Target $${target}${warning}\n\nClick OK to journal.`)) return;
+
+    const r = await fetch('/api/journal', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        ticker, side, shares,
+        entry_price: lastPx, stop_price: stop, target_price: target,
+        event_id: 'techoverride_' + Date.now(),
+        verdict: bsiCalm ? 'HUMAN_INTERVENTION_BSI_SLEEPING' : 'HUMAN_INTERVENTION_BSI_ALIGNED',
+        source: 'human_intervention',
+      }),
+    });
+    if (r.ok) {
+      alert(`✓ Human-intervention ${side} journaled · ${shares} ${ticker} @ $${lastPx.toFixed(2)}\nProvenance: human_intervention${bsiCalm ? ' (BSI sleeping)' : ' (BSI aligned)'}`);
+    } else {
+      const err = await r.json().catch(() => ({}));
+      alert(`✗ Failed: ${err.error || 'unknown'}\n${err.error === 'not_logged_in' ? 'Sign in to execute.' : ''}`);
+    }
+  }
+
+  // ===== 5-GATE ARCHETYPE PANEL (paper §10) =====
+  function _renderArchetypeGates(d) {
+    const panel = document.getElementById('archetype-gates-panel');
+    if (!panel || !d.archetype_gates) { if (panel) panel.style.display = 'none'; return; }
+    const A = d.archetype_gates;
+    if (A.error) {
+      panel.style.display = 'block';
+      document.getElementById('arch-gate-strip').innerHTML = '';
+      document.getElementById('arch-cards').innerHTML =
+        `<div style="color:var(--warning);font-family:var(--font-mono);font-size:11px;">gate eval error: ${A.error}</div>`;
+      return;
+    }
+    panel.style.display = 'block';
+    document.getElementById('arch-ticker').textContent  = d.ticker;
+    const fa = (A.summary && A.summary.firing_archetypes) || [];
+    document.getElementById('arch-summary').innerHTML =
+      `<span style="color:${fa.length ? '#4ade80' : '#f87171'};">${fa.length}/4 archetypes fire</span>` +
+      (fa.length ? ` · <span style="color:var(--text-tertiary);">${fa.join(' · ')}</span>` : '');
+
+    // Gate-state strip — 5 colored chips
+    const GATE_LABELS = {
+      G1_BSI:   {label:'G1 BSI',  desc:'consumer-distress sentiment'},
+      G2_SCP:   {label:'G2 SCP',  desc:'firm-specific market stress'},
+      G3_MOVE:  {label:'G3 MOVE', desc:'macro rates-vol regime'},
+      G4_CCD:   {label:'G4 CCD',  desc:'cross-firm contagion'},
+      G5_FDS:   {label:'G5 FDS',  desc:'fundamentals distress (PENDING)'},
+    };
+    const STATE_COL = {PASS:'#4ade80', FAIL:'#f87171', UNKNOWN:'#a1a1aa'};
+    document.getElementById('arch-gate-strip').innerHTML =
+      Object.keys(GATE_LABELS).map(g => {
+        const s = (A.gate_states || {})[g] || 'UNKNOWN';
+        const col = STATE_COL[s];
+        return `<div style="padding:8px 10px;background:var(--bg-card);border:1px solid var(--border);border-left:3px solid ${col};border-radius:4px;">
+                  <div style="font-size:9px;color:var(--text-tertiary);font-family:var(--font-mono);text-transform:uppercase;">${GATE_LABELS[g].label}</div>
+                  <div style="font-size:13px;font-weight:700;color:${col};font-family:var(--font-mono);margin-top:2px;">${s}</div>
+                  <div style="font-size:9px;color:var(--text-tertiary);margin-top:3px;">${GATE_LABELS[g].desc}</div>
+                </div>`;
+      }).join('');
+
+    // Per-archetype cards
+    const ARCH_COL = {BLITZ:'#dc2626', SCOUT:'#d4a574', GUARDIAN:'#0f766e', ROBO:'#8b5cf6'};
+    const ARCH_BEAR = {BLITZ:'BLITZ 🔥', SCOUT:'SCOUT 🔍', GUARDIAN:'GUARDIAN 🛡️', ROBO:'ROBO 🤖'};
+    const results = A.results || {};
+    document.getElementById('arch-cards').innerHTML =
+      ['BLITZ','SCOUT','GUARDIAN','ROBO'].map(a => {
+        const r = results[a]; if (!r) return '';
+        const col = ARCH_COL[a];
+        const fireBadge = r.fires
+          ? `<span style="background:${col};color:#fff;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:700;font-family:var(--font-mono);">FIRES</span>`
+          : `<span style="background:#3a3a3a;color:#a1a1aa;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:700;font-family:var(--font-mono);">BLOCKED</span>`;
+        const sizeStr = r.fires
+          ? `${(r.position_size_pct*100).toFixed(2)}% of equity · ${(r.stop_loss_pct*100).toFixed(0)}% stop`
+          : '—';
+        const missing = (r.missing_required && r.missing_required.length)
+          ? `<div style="font-size:10px;color:#f87171;margin-top:6px;font-family:var(--font-mono);">missing mandatory: ${r.missing_required.join(', ')}</div>`
+          : '';
+        const score = (r.robo_score != null)
+          ? `<div style="font-size:10px;color:var(--text-tertiary);margin-top:4px;font-family:var(--font-mono);">score ${r.robo_score} / threshold 0.55</div>`
+          : '';
+        return `<div style="padding:12px;background:var(--bg-card);border:1px solid var(--border);border-top:3px solid ${col};border-radius:4px;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                    <div style="font-size:12px;font-weight:700;color:${col};">${ARCH_BEAR[a]}</div>
+                    ${fireBadge}
+                  </div>
+                  <div style="font-size:11px;color:var(--text-secondary);font-family:var(--font-mono);">${r.n_passing}/5 gates pass · need ${r.n_required || 'score'}</div>
+                  <div style="font-size:11px;color:${r.fires ? '#4ade80' : 'var(--text-tertiary)'};margin-top:4px;font-family:var(--font-mono);">${sizeStr}</div>
+                  ${score}
+                  ${missing}
+                  <div style="font-size:10px;color:var(--text-tertiary);margin-top:8px;line-height:1.45;">${r.rationale || ''}</div>
+                </div>`;
+      }).join('');
+
+    // Footer note
+    const foot = document.getElementById('arch-footer');
+    const notes = [];
+    if (A.summary && A.summary.g5_fds_pending) notes.push('⚠ ' + (A.summary.note_g5 || ''));
+    notes.push('Pre-registered thresholds in signals/gates.py · gate_required_count[] + gate_mandatory[] · paper §10 Table 10.1.');
+    foot.innerHTML = notes.map(n => `<div style="margin-top:4px;">${n}</div>`).join('');
+
+    // ── DECISION COMPARISON STRIP — three doctrines, side by side ────────
+    const cmpDiv = document.getElementById('arch-decision-cmp');
+    if (cmpDiv) {
+      const ARCH_META = {
+        BLITZ:    {col:'#dc2626', icon:'🔥', g5:'NO — leap of faith',
+                   doctrine:'BSI fires hard — fundamentals will catch up. Move now, size small.',
+                   trade:'Active trader · early entry · accepts more false positives',
+                   gates:'3/5 (G1 mandatory)', size:'0.5%', stop:'15% tight'},
+        SCOUT:    {col:'#d4a574', icon:'🔍', g5:'YES — mandatory',
+                   doctrine:'I want sentiment AND accounting agreeing. Wait for confirmation.',
+                   trade:'Disciplined trader · balanced precision/recall',
+                   gates:'4/5 (G1 + G5 mandatory)', size:'1.0%', stop:'20% normal'},
+        GUARDIAN: {col:'#0f766e', icon:'🛡️', g5:'YES — mandatory',
+                   doctrine:'All five gates must align. Move only on rock-solid confluence.',
+                   trade:'PM · concentrated bets only · loses most opportunities',
+                   gates:'5/5 (all mandatory)', size:'2.0%', stop:'25% wide'},
+      };
+      const tk = d.ticker || '';
+      cmpDiv.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;">
+          <div>
+            <div style="font-size:10px;color:#4ade80;text-transform:uppercase;letter-spacing:0.06em;font-weight:700;font-family:var(--font-mono);">DECISION COMPARISON · same data, three doctrines</div>
+            <div style="font-size:10px;color:var(--text-tertiary);margin-top:3px;">How each archetype responds to <strong>${tk}</strong> right now → <a href="/robo" style="color:#a78bfa;">see full table on /robo</a></div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+          ${['BLITZ','SCOUT','GUARDIAN'].map(a => {
+            const m = ARCH_META[a];
+            const r = (A.results || {})[a] || {};
+            const fires = r.fires;
+            const verdict = fires
+              ? `<span style="background:${m.col};color:#fff;padding:2px 7px;border-radius:3px;font-size:9px;font-weight:700;font-family:var(--font-mono);">FIRES on ${tk}</span>`
+              : `<span style="background:#3a3a3a;color:#a1a1aa;padding:2px 7px;border-radius:3px;font-size:9px;font-weight:700;font-family:var(--font-mono);">BLOCKS ${tk}</span>`;
+            const why = fires
+              ? `<span style="color:#4ade80;font-family:var(--font-mono);font-size:10px;">${r.n_passing}/5 pass · ${m.size} size · ${m.stop}</span>`
+              : `<span style="color:#f87171;font-family:var(--font-mono);font-size:10px;">missing: ${(r.missing_required || []).join(', ') || '—'}</span>`;
+            return `<div style="padding:10px 12px;background:var(--bg-elevated);border:1px solid var(--border);border-top:3px solid ${m.col};border-radius:5px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                <div style="font-size:13px;font-weight:700;color:${m.col};font-family:var(--font-mono);">${m.icon} ${a}</div>
+                ${verdict}
+              </div>
+              <div style="font-size:10.5px;color:var(--text-secondary);font-style:italic;line-height:1.5;margin-bottom:6px;">"${m.doctrine}"</div>
+              <div style="font-size:9.5px;color:var(--text-tertiary);font-family:var(--font-mono);margin-bottom:4px;">G5 accounting: ${m.g5}</div>
+              <div style="font-size:9.5px;color:var(--text-tertiary);margin-bottom:6px;">Best for: ${m.trade}</div>
+              <div style="padding-top:6px;border-top:1px dashed var(--border);">${why}</div>
+            </div>`;
+          }).join('')}
+        </div>`;
+    }
+  }
+
+  function _renderStage4(d) {
+    document.getElementById('pod4-learn').innerHTML = `
+      <div style="font-size:11px;color:var(--text-secondary);line-height:1.6;">${d.stage4_learn.note}</div>
+      <div style="margin-top:10px;padding-top:8px;border-top:1px dashed var(--border);font-size:10px;color:var(--text-tertiary);">
+        Open the 7-step audit → <a href="/case-study" class="ticker-link">/case-study</a><br>
+        Add ${d.ticker} to a watchlist → <a href="/monitor" class="ticker-link">/monitor</a>
+      </div>`;
+  }
+  // Also wire fireLivePod terminal feedback
+  const _origFire = window.fireLivePod;
+  window.fireLivePod = function(ticker) {
+    term(`user clicked 🔥 on ${ticker}`, 'fire');
+    return _origFire(ticker);
+  };
+  // Initial boot message
+  term('warehouse: bnpl-experimental/data/warehouse.duckdb (read-only) · 8 pillars cached 60s', 'info');
+  term('🔥 click any LIVE row to fire the 4-stage pod against it', '');
+</script>
+</body>
+</html>

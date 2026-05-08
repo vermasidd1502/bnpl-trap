@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Equity Monitor · Apollo Hermes Edition</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/v2.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.2.1/dist/chartjs-chart-financial.min.js"></script>
+  <style>
+    /* Purple tribute to Apollo Hermes original */
+    :root {
+      --apollo-purple:       #a78bfa;
+      --apollo-purple-deep:  #7c3aed;
+      --apollo-purple-soft:  rgba(167,139,250,0.10);
+      --apollo-purple-line:  rgba(167,139,250,0.4);
+    }
+    .em-hero {
+      background: linear-gradient(135deg, rgba(167,139,250,0.18) 0%, rgba(124,58,237,0.10) 50%, transparent 100%), var(--bg-elevated);
+      border: 1px solid var(--apollo-purple-line); border-left: 4px solid var(--apollo-purple);
+      border-radius: 12px; padding: 24px 28px; margin-bottom: 18px;
+    }
+    .em-headline { font-family: var(--font-display, sans-serif); font-size: 26px; font-weight: 700; color: var(--text); margin: 0; }
+    .em-tribute { font-size: 11px; color: var(--apollo-purple); font-style: italic; margin-top: 4px; font-family: var(--font-mono); letter-spacing: 0.04em; }
+    .em-sub { font-size: 13px; color: var(--text-secondary); margin-top: 6px; line-height: 1.55; max-width: 720px; }
+
+    .em-section { background: var(--bg-card); border: 1px solid var(--border);
+      border-left: 3px solid var(--apollo-purple); border-radius: 8px;
+      padding: 20px 24px; margin-bottom: 16px; scroll-margin-top: 80px; }
+    .em-section-num { font-family: var(--font-mono); font-size: 10px; color: var(--apollo-purple); text-transform: uppercase;
+      letter-spacing: 0.08em; font-weight: 700; }
+    .em-section-title { font-size: 18px; font-weight: 700; color: var(--text); margin: 0 0 6px;
+      font-family: var(--font-display, sans-serif); }
+
+    .em-search-bar { display: flex; gap: 10px; align-items: center; margin-top: 14px; position: relative; }
+    .em-search-bar .em-input-wrap { flex: 1; position: relative; }
+    .em-search-bar input {
+      width: 100%; padding: 12px 16px; font-size: 16px; font-family: var(--font-mono);
+      background: var(--bg-card); color: var(--text);
+      border: 2px solid var(--apollo-purple-line); border-radius: 8px;
+      letter-spacing: 0.05em; box-sizing: border-box;
+    }
+    .em-search-bar input:focus { outline: none; border-color: var(--apollo-purple); box-shadow: 0 0 0 3px rgba(167,139,250,0.15); }
+    .em-search-bar button {
+      padding: 12px 22px; font-size: 13px; font-weight: 700; cursor: pointer;
+      background: linear-gradient(135deg, var(--apollo-purple) 0%, var(--apollo-purple-deep) 100%);
+      color: #fff; border: 0; border-radius: 8px;
+      font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.06em;
+    }
+    .em-search-bar button:hover { filter: brightness(1.1); }
+
+    /* Autocomplete dropdown */
+    .em-suggest {
+      position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 100;
+      background: var(--bg-card); border: 1px solid var(--apollo-purple);
+      border-radius: 8px; max-height: 360px; overflow-y: auto; display: none;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(167,139,250,0.2);
+    }
+    .em-suggest.open { display: block; }
+    .em-suggest-item {
+      display: grid; grid-template-columns: 80px 1fr auto auto; gap: 12px; align-items: center;
+      padding: 10px 14px; cursor: pointer; border-bottom: 1px solid var(--border);
+      transition: background 0.1s;
+    }
+    .em-suggest-item:last-child { border-bottom: none; }
+    .em-suggest-item:hover, .em-suggest-item.highlight { background: rgba(167,139,250,0.10); }
+    .em-suggest-item .sym { font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: var(--apollo-purple); }
+    .em-suggest-item .nm  { font-size: 12px; color: var(--text); }
+    .em-suggest-item .exch { font-family: var(--font-mono); font-size: 9px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; }
+    .em-suggest-item .qt  { font-family: var(--font-mono); font-size: 8px; color: var(--apollo-purple); background: rgba(167,139,250,0.12); padding: 2px 5px; border-radius: 3px; font-weight: 700; letter-spacing: 0.04em; }
+    .em-suggest-loading, .em-suggest-empty {
+      padding: 16px; text-align: center; font-size: 11px; color: var(--text-tertiary);
+      font-family: var(--font-mono); font-style: italic;
+    }
+
+    .em-quick-tickers { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+    .em-quick-tickers button {
+      padding: 6px 12px; font-size: 11px; font-family: var(--font-mono);
+      background: var(--apollo-purple-soft); color: var(--apollo-purple);
+      border: 1px solid var(--apollo-purple-line); border-radius: 5px; cursor: pointer;
+      font-weight: 700; letter-spacing: 0.04em;
+    }
+    .em-quick-tickers button:hover { background: rgba(167,139,250,0.22); }
+
+    .stat-tile { background: var(--bg-elevated); border: 1px solid var(--border);
+      border-left: 3px solid var(--apollo-purple); border-radius: 6px; padding: 14px 16px; }
+    .stat-tile .lbl { font-size: 9px; color: var(--text-tertiary); text-transform: uppercase;
+      letter-spacing: 0.06em; font-weight: 700; font-family: var(--font-mono); }
+    .stat-tile .val { font-family: var(--font-mono); font-size: 22px; font-weight: 700;
+      color: var(--text); margin-top: 4px; line-height: 1.15; }
+    .stat-tile .val.green { color: #4ade80; }
+    .stat-tile .val.red { color: #f87171; }
+    .stat-tile .val.purple { color: var(--apollo-purple); }
+    .stat-tile .sub { font-size: 10px; color: var(--text-tertiary); margin-top: 4px; }
+
+    /* Fibonacci ladder visualization */
+    .fib-ladder { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 6px; padding: 14px; }
+    .fib-row { display: flex; justify-content: space-between; align-items: center;
+      padding: 6px 0; font-family: var(--font-mono); font-size: 11px; border-bottom: 1px dashed rgba(255,255,255,0.05); }
+    .fib-row:last-child { border-bottom: none; }
+    .fib-row .label { color: var(--text-secondary); }
+    .fib-row .price { color: var(--text); font-weight: 700; }
+    .fib-row.current { background: rgba(167,139,250,0.08); border-left: 3px solid var(--apollo-purple); padding-left: 10px; margin: 0 -14px; padding-right: 14px; }
+    .fib-row.current .label { color: var(--apollo-purple); font-weight: 700; }
+    .fib-row.current::after { content: '◀ current'; color: var(--apollo-purple); font-size: 9px; margin-left: 8px; font-weight: 700; }
+
+    /* U/D ratio gauge */
+    .ud-gauge { padding: 14px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 6px; }
+    .ud-gauge .gauge-bar { height: 10px; background: linear-gradient(90deg, #f87171 0%, #f87171 25%, #fbbf24 35%, #4ade80 50%, #4ade80 100%);
+      border-radius: 5px; position: relative; margin: 14px 0 6px; }
+    .ud-gauge .gauge-marker { position: absolute; top: -4px; width: 4px; height: 18px; background: var(--text); border-radius: 2px;
+      box-shadow: 0 0 0 2px var(--bg-elevated); transition: left 0.4s ease; }
+    .ud-gauge .gauge-labels { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 9px; color: var(--text-tertiary); }
+
+    /* Hedge fund vote chips */
+    .hf-vote { display: grid; grid-template-columns: 22px 1fr auto; gap: 10px; align-items: center;
+      padding: 8px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 5px; margin-bottom: 6px;
+      font-size: 11.5px; }
+    .hf-vote .icon { font-size: 14px; }
+    .hf-vote .name { color: var(--text); font-weight: 600; }
+    .hf-vote .vote-pill { font-family: var(--font-mono); font-size: 9px; padding: 3px 9px; border-radius: 3px; font-weight: 700; letter-spacing: 0.05em; }
+    .hf-vote .vote-pill.SHORT { background: rgba(248,113,113,0.15); color: #f87171; border: 1px solid rgba(248,113,113,0.4); }
+    .hf-vote .vote-pill.LONG  { background: rgba(74,222,128,0.15); color: #4ade80; border: 1px solid rgba(74,222,128,0.4); }
+    .hf-vote .vote-pill.PASS  { background: rgba(161,161,170,0.10); color: var(--text-tertiary); border: 1px solid var(--border); }
+
+    .em-trade-form { padding: 18px; background: var(--bg-elevated); border: 1px solid var(--apollo-purple-line); border-radius: 8px; }
+    .em-trade-form .em-side-toggle { display: flex; gap: 8px; margin-bottom: 14px; }
+    .em-trade-form .em-side-toggle button { flex: 1; padding: 10px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-secondary);
+      cursor: pointer; font-family: var(--font-mono); font-size: 12px; font-weight: 700; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .em-trade-form .em-side-toggle button.active.short { background: rgba(248,113,113,0.18); color: #f87171; border-color: rgba(248,113,113,0.5); }
+    .em-trade-form .em-side-toggle button.active.long  { background: rgba(74,222,128,0.18); color: #4ade80; border-color: rgba(74,222,128,0.5); }
+    .em-trade-form .em-input { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .em-trade-form .em-input label { display: block; font-size: 10px; color: var(--text-tertiary); text-transform: uppercase;
+      letter-spacing: 0.05em; font-weight: 700; font-family: var(--font-mono); margin-bottom: 4px; }
+    .em-trade-form .em-input input { width: 100%; padding: 8px 10px; font-family: var(--font-mono); font-size: 12px;
+      background: var(--bg-card); color: var(--text); border: 1px solid var(--border); border-radius: 5px; }
+    .em-trade-form .em-fire-btn { width: 100%; padding: 12px; font-size: 13px; font-weight: 700; cursor: pointer;
+      background: linear-gradient(135deg, var(--apollo-purple) 0%, var(--apollo-purple-deep) 100%);
+      color: #fff; border: 0; border-radius: 8px; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 10px; }
+    .em-trade-form .em-fire-btn:hover { filter: brightness(1.1); }
+    .em-trade-form .em-fire-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .em-warn-banner { background: rgba(251,191,36,0.10); border: 1px solid rgba(251,191,36,0.4); border-left: 3px solid #fbbf24;
+      border-radius: 6px; padding: 10px 12px; margin: 10px 0; font-size: 11px; color: var(--text-secondary); line-height: 1.5; }
+
+    .news-item { padding: 10px 0; border-bottom: 1px solid var(--border); }
+    .news-item:last-child { border-bottom: none; }
+    .news-item .src { font-size: 9px; color: var(--apollo-purple); text-transform: uppercase; letter-spacing: 0.05em; font-family: var(--font-mono); }
+    .news-item .title { font-size: 12px; color: var(--text); margin-top: 3px; line-height: 1.45; }
+    .news-item .title a { color: inherit; text-decoration: none; }
+    .news-item .title a:hover { color: var(--apollo-purple); }
+    .news-item .meta { font-size: 10px; color: var(--text-tertiary); margin-top: 3px; font-family: var(--font-mono); }
+
+    .em-empty { text-align: center; padding: 50px 20px; color: var(--text-tertiary); font-style: italic; font-size: 13px; }
+
+    .em-tf-pill {
+      padding: 6px 12px; font-size: 10px; font-family: var(--font-mono); font-weight: 700;
+      background: var(--bg-card); color: var(--text-secondary);
+      border: 1px solid var(--border); border-radius: 5px; cursor: pointer;
+      letter-spacing: 0.05em;
+    }
+    .em-tf-pill:hover { background: var(--bg-elevated); color: var(--text); }
+    .em-tf-pill.active { background: linear-gradient(135deg, var(--apollo-purple), var(--apollo-purple-deep));
+      color: #fff; border-color: var(--apollo-purple); }
+    .em-swing-tile { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 5px;
+      padding: 8px 10px; font-family: var(--font-mono); font-size: 10px; }
+    .em-swing-tile .lbl { color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; font-size: 9px; }
+    .em-swing-tile .val { color: var(--text); margin-top: 2px; font-weight: 700; }
+    .em-swing-tile.green { border-left: 3px solid #4ade80; }
+    .em-swing-tile.red   { border-left: 3px solid #f87171; }
+    .em-swing-tile.purple { border-left: 3px solid var(--apollo-purple); }
+
+    .verdict-pill {
+      font-family: var(--font-mono); font-size: 10px; padding: 4px 10px; border-radius: 4px; font-weight: 700;
+      letter-spacing: 0.05em; text-transform: uppercase; display: inline-block;
+    }
+    .verdict-pill.SHORT { background: rgba(248,113,113,0.18); color: #f87171; }
+    .verdict-pill.LONG  { background: rgba(74,222,128,0.18); color: #4ade80; }
+    .verdict-pill.PASS  { background: rgba(161,161,170,0.18); color: var(--text-tertiary); }
+  </style>
+</head>
+<body class="dark">
+
+{% include '_nav.html' %}
+
+<main class="container" style="max-width: 1300px; padding: 18px;">
+
+  <!-- ============= HERO + SEARCH ============= -->
+  <div class="em-hero">
+    <div style="display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap;">
+      <div style="font-size:60px;line-height:1;">🔮</div>
+      <div style="flex:1;min-width:280px;">
+        <h1 class="em-headline">Equity Monitor — open-universe scanner</h1>
+        <div class="em-tribute">in remembrance of Apollo Hermes · the original purple pod ◇</div>
+        <div class="em-sub">
+          Scan ANY public equity (not just our 25-firm BNPL universe). Get live quote + news + 8-family technical analysis (Fibonacci ladder + U/D volume gate)
+          + 6-archetype hedge-fund debate + execute long-or-short with size override and direction-conflict warnings.
+          <strong style="color:var(--apollo-purple);">Purple-themed in tribute to the original Apollo Hermes pod that started it all.</strong>
+        </div>
+      </div>
+    </div>
+    <div class="em-search-bar">
+      <div class="em-input-wrap">
+        <input id="em-search-input" type="text" placeholder="ticker OR company name — e.g. NVDA, tesla, bank of america, bofa..." autocomplete="off" spellcheck="false">
+        <div id="em-suggest" class="em-suggest"></div>
+      </div>
+      <button id="em-search-btn" onclick="scanEquity()">▶ Scan</button>
+    </div>
+    <div class="em-quick-tickers">
+      <span style="font-size:10px;color:var(--text-tertiary);margin-right:6px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.05em;">quick scan:</span>
+      <button onclick="scanEquity('NVDA')">NVDA</button>
+      <button onclick="scanEquity('TSLA')">TSLA</button>
+      <button onclick="scanEquity('AMC')">AMC</button>
+      <button onclick="scanEquity('GME')">GME</button>
+      <button onclick="scanEquity('AAPL')">AAPL</button>
+      <button onclick="scanEquity('MSFT')">MSFT</button>
+      <button onclick="scanEquity('META')">META</button>
+      <button onclick="scanEquity('AMZN')">AMZN</button>
+      <button onclick="scanEquity('GOOGL')">GOOGL</button>
+      <button onclick="scanEquity('SPY')">SPY</button>
+      <button onclick="scanEquity('QQQ')">QQQ</button>
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  <div id="em-empty-state" class="em-section" style="text-align:center;padding:60px 30px;">
+    <div style="font-size:48px;margin-bottom:14px;opacity:0.6;">🔍</div>
+    <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:6px;">Enter a ticker above to scan</div>
+    <div style="font-size:12px;color:var(--text-tertiary);">Live quote · technicals · Fibonacci · U/D ratio · 6-archetype debate · trade execution</div>
+  </div>
+
+  <!-- Loading state -->
+  <div id="em-loading" class="em-section" style="text-align:center;padding:50px;display:none;">
+    <div style="font-size:36px;animation:spin 1s linear infinite;display:inline-block;">🔮</div>
+    <div style="font-size:14px;color:var(--text-secondary);margin-top:14px;font-family:var(--font-mono);">scanning <span id="em-loading-ticker">—</span>...</div>
+    <style>@keyframes spin { from{transform:rotate(0deg);}to{transform:rotate(360deg);} }</style>
+  </div>
+
+  <!-- Results section (hidden until scan completes) -->
+  <div id="em-results" style="display:none;">
+
+    <!-- ============= STAT TILES ============= -->
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:16px;" id="em-tiles"></div>
+
+    <!-- ============= CANDLESTICK CHART + TIMEFRAME SELECTOR ============= -->
+    <div class="em-section" style="padding:20px 24px;">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;flex-wrap:wrap;gap:12px;">
+        <div>
+          <div class="em-section-num">SECTION 01</div>
+          <h2 class="em-section-title">Candlestick chart + auto Fibonacci</h2>
+          <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">
+            Auto-detected swing high & swing low for the selected timeframe — Fibonacci retracement levels recompute on each switch.
+          </div>
+        </div>
+        <div id="em-tf-pills" style="display:flex;gap:4px;flex-wrap:wrap;">
+          <button class="em-tf-pill" data-period="1mo">1M</button>
+          <button class="em-tf-pill" data-period="3mo">3M</button>
+          <button class="em-tf-pill" data-period="6mo">6M</button>
+          <button class="em-tf-pill active" data-period="1y">1Y</button>
+          <button class="em-tf-pill" data-period="2y">2Y</button>
+          <button class="em-tf-pill" data-period="5y">5Y</button>
+          <button class="em-tf-pill" data-period="max">MAX</button>
+        </div>
+      </div>
+      <div id="em-swing-strip" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;"></div>
+      <div style="position:relative;height:380px;"><canvas id="em-price-chart"></canvas></div>
+      <div id="em-chart-asof" style="font-family:var(--font-mono);font-size:10px;color:var(--text-tertiary);text-align:center;margin-top:6px;">—</div>
+    </div>
+
+    <!-- Two-column main: technicals + hedge fund -->
+    <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:16px;">
+
+      <!-- ============= LEFT: TECHNICAL ANALYSIS ============= -->
+      <div>
+        <div class="em-section">
+          <div class="em-section-num">SECTION 02</div>
+          <h2 class="em-section-title">Technical analysis · 8-family verdict</h2>
+          <div style="font-size:11.5px;color:var(--text-secondary);margin-bottom:14px;">
+            Wozniak / CMT framework. <strong>U/D Volume Ratio</strong> = accumulation vs distribution proxy. <strong>Fibonacci retracement</strong> = mean-reversion support/resistance levels.
+            Bias score combines: U/D ratio, OBV trend, RSI, MACD, Bollinger position, Fibonacci proximity.
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div>
+              <div style="font-size:10px;color:var(--apollo-purple);text-transform:uppercase;letter-spacing:0.06em;font-weight:700;font-family:var(--font-mono);margin-bottom:8px;">▶ FIBONACCI LADDER (52w high → low)</div>
+              <div id="em-fib-ladder" class="fib-ladder">—</div>
+            </div>
+            <div>
+              <div style="font-size:10px;color:var(--apollo-purple);text-transform:uppercase;letter-spacing:0.06em;font-weight:700;font-family:var(--font-mono);margin-bottom:8px;">▶ U/D VOLUME RATIO (20d)</div>
+              <div id="em-ud-gauge" class="ud-gauge">—</div>
+              <div style="font-size:10px;color:var(--apollo-purple);text-transform:uppercase;letter-spacing:0.06em;font-weight:700;font-family:var(--font-mono);margin-top:14px;margin-bottom:8px;">▶ OTHER GATES</div>
+              <div id="em-tech-gates" style="font-family:var(--font-mono);font-size:11px;line-height:1.7;color:var(--text-secondary);">—</div>
+            </div>
+          </div>
+          <div style="margin-top:14px;padding:12px 14px;background:var(--bg-elevated);border:1px solid var(--border);border-left:3px solid var(--apollo-purple);border-radius:6px;display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-size:9px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.06em;font-weight:700;font-family:var(--font-mono);">TECHNICAL VERDICT</div>
+              <div id="em-tech-verdict" style="font-size:18px;font-weight:700;color:var(--apollo-purple);font-family:var(--font-mono);margin-top:4px;">—</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:9px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.06em;font-weight:700;font-family:var(--font-mono);">BIAS SCORE</div>
+              <div id="em-bias-score" style="font-family:var(--font-mono);font-size:24px;font-weight:700;color:var(--text);margin-top:4px;">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============= RIGHT: HEDGE FUND DEBATE LAYER ============= -->
+      <div>
+        <div class="em-section">
+          <div class="em-section-num">SECTION 03</div>
+          <h2 class="em-section-title">Hedge-fund layer · 6-archetype debate</h2>
+          <div style="font-size:11.5px;color:var(--text-secondary);margin-bottom:14px;">
+            Each archetype votes SHORT / LONG / PASS based on its published structural prior.
+            Renaissance (pattern), Bridgewater (macro), Two Sigma (multi-pillar concordance), Millennium (vol),
+            Citadel (execution-clean), BearWatch (proprietary BSI gate).
+          </div>
+          <div id="em-hf-votes">—</div>
+          <div style="margin-top:12px;padding:10px 12px;background:var(--bg-elevated);border:1px solid var(--border);border-left:3px solid var(--apollo-purple);border-radius:6px;display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.06em;font-weight:700;font-family:var(--font-mono);">CONSENSUS</span>
+            <span id="em-hf-consensus" style="font-family:var(--font-mono);font-size:13px;font-weight:700;">—</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============= TRADE EXECUTION + NEWS GRID ============= -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <!-- LEFT: TRADE EXECUTION -->
+      <div class="em-section">
+        <div class="em-section-num">SECTION 04</div>
+        <h2 class="em-section-title">Trade execution · long or short</h2>
+        <div style="font-size:11.5px;color:var(--text-secondary);margin-bottom:14px;">
+          Adjust size, stop, target, then fire. Direction-conflict warning fires if the technical/hedge-fund consensus opposes your side.
+          All trades are paper-traded to your portfolio.
+        </div>
+        <div class="em-trade-form">
+          <div class="em-side-toggle">
+            <button id="em-toggle-short" class="active short" onclick="setSide('SHORT')">🔥 SHORT</button>
+            <button id="em-toggle-long" onclick="setSide('LONG')">🐂 LONG</button>
+          </div>
+          <div class="em-input">
+            <div>
+              <label>Shares</label>
+              <input id="em-shares" type="number" min="1" value="100">
+            </div>
+            <div>
+              <label>Entry price</label>
+              <input id="em-entry" type="number" step="0.01" value="0">
+            </div>
+            <div>
+              <label>Stop-loss</label>
+              <input id="em-stop" type="number" step="0.01" value="0">
+            </div>
+            <div>
+              <label>Target</label>
+              <input id="em-target" type="number" step="0.01" value="0">
+            </div>
+          </div>
+          <div style="margin-top:10px;padding:8px 10px;background:var(--bg-card);border-radius:5px;font-family:var(--font-mono);font-size:11px;color:var(--text-secondary);text-align:center;">
+            Notional: <span id="em-notional" style="color:var(--text);font-weight:700;">$0</span> · R:R = <span id="em-rr" style="color:var(--apollo-purple);font-weight:700;">—</span>
+          </div>
+          <div id="em-direction-warning" style="display:none;" class="em-warn-banner"></div>
+          <button class="em-fire-btn" id="em-fire-btn" onclick="fireTrade()">▶ Fire trade</button>
+        </div>
+      </div>
+
+      <!-- RIGHT: NEWS PANEL -->
+      <div class="em-section">
+        <div class="em-section-num">SECTION 05</div>
+        <h2 class="em-section-title">Recent news · Google News RSS</h2>
+        <div style="font-size:11.5px;color:var(--text-secondary);margin-bottom:14px;">
+          Top headlines for the firm. Useful for context check before firing — confirms whether technical / hedge-fund signal lines up
+          with current narrative.
+        </div>
+        <div id="em-news" style="max-height:400px;overflow-y:auto;">—</div>
+      </div>
+    </div>
+
+  </div>
+
+</main>
+
+<script>
+let _CURRENT_TICKER = null;
+let _CURRENT_QUOTE  = null;
+let _CURRENT_TECH   = null;
+let _CURRENT_POD    = null;
+let _CURRENT_SIDE   = 'SHORT';
+
+const fmtUSD  = v => '$' + Math.abs(v).toLocaleString(undefined, {maximumFractionDigits:2});
+const fmtPctSigned = v => (v >= 0 ? '+' : '') + v.toFixed(2) + '%';
+
+// ===== AUTOCOMPLETE =====
+const _searchInput = document.getElementById('em-search-input');
+const _suggestBox  = document.getElementById('em-suggest');
+let _suggestDebounce = null;
+let _suggestItems = [];
+let _suggestHighlight = -1;
+
+function closeSuggest() {
+  _suggestBox.classList.remove('open');
+  _suggestHighlight = -1;
+}
+
+function renderSuggest(items, query) {
+  _suggestItems = items;
+  _suggestHighlight = -1;
+  if (!items.length) {
+    _suggestBox.innerHTML = `<div class="em-suggest-empty">No matches for "${query}". Try a ticker or company name.</div>`;
+    _suggestBox.classList.add('open');
+    return;
+  }
+  _suggestBox.innerHTML = items.map((q, i) => `
+    <div class="em-suggest-item" data-idx="${i}" onclick="selectSuggest(${i})">
+      <div class="sym">${q.symbol}</div>
+      <div class="nm">${q.name}</div>
+      <div class="exch">${q.exchange || ''}</div>
+      <div class="qt">${q.type}</div>
+    </div>`).join('');
+  _suggestBox.classList.add('open');
+}
+
+function selectSuggest(idx) {
+  if (idx < 0 || idx >= _suggestItems.length) return;
+  const sym = _suggestItems[idx].symbol;
+  _searchInput.value = sym;
+  closeSuggest();
+  scanEquity(sym);
+}
+
+async function fetchSuggestions(q) {
+  if (!q || q.length < 1) { closeSuggest(); return; }
+  _suggestBox.innerHTML = `<div class="em-suggest-loading">searching "${q}"...</div>`;
+  _suggestBox.classList.add('open');
+  try {
+    const r = await fetch(`/api/equity/search?q=${encodeURIComponent(q)}`);
+    const d = await r.json();
+    renderSuggest(d.quotes || [], q);
+  } catch (e) {
+    _suggestBox.innerHTML = `<div class="em-suggest-empty">Search failed: ${e.message}</div>`;
+  }
+}
+
+_searchInput.addEventListener('input', e => {
+  const q = e.target.value.trim();
+  clearTimeout(_suggestDebounce);
+  if (q.length < 1) { closeSuggest(); return; }
+  _suggestDebounce = setTimeout(() => fetchSuggestions(q), 280);
+});
+
+_searchInput.addEventListener('keydown', e => {
+  const open = _suggestBox.classList.contains('open');
+  if (e.key === 'ArrowDown' && open) {
+    e.preventDefault();
+    _suggestHighlight = Math.min(_suggestHighlight + 1, _suggestItems.length - 1);
+    updateHighlight();
+  } else if (e.key === 'ArrowUp' && open) {
+    e.preventDefault();
+    _suggestHighlight = Math.max(_suggestHighlight - 1, 0);
+    updateHighlight();
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    if (open && _suggestHighlight >= 0) {
+      selectSuggest(_suggestHighlight);
+    } else {
+      closeSuggest();
+      scanEquity();
+    }
+  } else if (e.key === 'Escape') {
+    closeSuggest();
+  }
+});
+
+function updateHighlight() {
+  document.querySelectorAll('.em-suggest-item').forEach((el, i) => {
+    el.classList.toggle('highlight', i === _suggestHighlight);
+  });
+  // Scroll into view
+  const sel = document.querySelector('.em-suggest-item.highlight');
+  if (sel) sel.scrollIntoView({ block: 'nearest' });
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', e => {
+  if (!e.target.closest('.em-search-bar')) closeSuggest();
+});
+
+async function scanEquity(forced) {
+  const input = document.getElementById('em-search-input');
+  const ticker = (forced || input.value || '').trim().toUpperCase();
+  if (!ticker) { input.focus(); return; }
+  input.value = ticker;
+  _CURRENT_TICKER = ticker;
+
+  document.getElementById('em-empty-state').style.display = 'none';
+  document.getElementById('em-results').style.display = 'none';
+  document.getElementById('em-loading').style.display = 'block';
+  document.getElementById('em-loading-ticker').textContent = ticker;
+
+  try {
+    // Parallel fetch of quote + technical + news + (try) live pod
+    const [quoteR, techR, newsR, podR] = await Promise.all([
+      fetch(`/api/quote/${ticker}`).catch(() => null),
+      fetch(`/api/technical/${ticker}`).catch(() => null),
+      fetch(`/api/firm/${ticker}/news`).catch(() => null),
+      fetch(`/api/live/pod_run?ticker=${ticker}`).catch(() => null),
+    ]);
+    const quote = quoteR && quoteR.ok ? await quoteR.json() : null;
+    const tech  = techR  && techR.ok  ? await techR.json()  : null;
+    const news  = newsR  && newsR.ok  ? await newsR.json()  : null;
+    const pod   = podR   && podR.ok   ? await podR.json()   : null;
+    _CURRENT_QUOTE = quote; _CURRENT_TECH = tech; _CURRENT_POD = pod;
+
+    document.getElementById('em-loading').style.display = 'none';
+    document.getElementById('em-results').style.display = 'block';
+
+    renderTiles(ticker, quote, tech, pod);
+    renderPriceChart(ticker, tech);
+    renderTechnicals(tech);
+    renderHedgeFund(pod);
+    renderNews(news);
+
+    // Pre-fill trade form with quote + technical defaults
+    const px = (quote && quote.price) || (tech && tech.latest_close) || 0;
+    document.getElementById('em-entry').value  = px.toFixed(2);
+    document.getElementById('em-stop').value   = (px * 1.08).toFixed(2);   // 8% stop default for SHORT
+    document.getElementById('em-target').value = (px * 0.85).toFixed(2);   // 15% target default for SHORT
+    updateNotional();
+    checkDirectionConflict();
+  } catch (e) {
+    console.error(e);
+    document.getElementById('em-loading').innerHTML = `<div style="color:#f87171;">Scan failed: ${e.message}</div>`;
+  }
+}
+
+function renderTiles(ticker, quote, tech, pod) {
+  const px = (quote && quote.price) || (tech && tech.latest_close) || 0;
+  // Day delta: if quote.change_pct missing, compute from price_series last 2 closes
+  let chg = quote && quote.change_pct;
+  if (chg === null || chg === undefined) {
+    const ps = tech && tech.price_series;
+    if (ps && ps.length >= 2) {
+      const prev = ps[ps.length - 2].close;
+      chg = ((px / prev) - 1) * 100;
+    } else { chg = 0; }
+  }
+  const chgClass = chg >= 0 ? 'green' : 'red';
+  const sector = (pod && pod.firm_name) ? pod.firm_name : 'open-universe equity';
+  const bsiZ = pod && pod.stage1_signal ? pod.stage1_signal.bsi_z : null;
+  const bsiClass = bsiZ === null ? 'purple' : (Math.abs(bsiZ) >= 2 ? (bsiZ > 0 ? 'red' : 'green') : 'purple');
+  const high52 = tech?.indicators?.highs?.high_52w;
+  const off52 = tech?.indicators?.highs?.pct_off_52w_high;
+  const tilesHtml = `
+    <div class="stat-tile"><div class="lbl">Ticker</div><div class="val purple">${ticker}</div><div class="sub">${sector.slice(0, 35)}</div></div>
+    <div class="stat-tile"><div class="lbl">Live price</div><div class="val">$${px.toFixed(2)}</div><div class="sub">${(quote && quote.source) || 'yfinance'}</div></div>
+    <div class="stat-tile"><div class="lbl">Day Δ</div><div class="val ${chgClass}">${fmtPctSigned(chg)}</div><div class="sub">vs prev close</div></div>
+    <div class="stat-tile"><div class="lbl">52w high</div><div class="val">$${high52 ? high52.toFixed(2) : '—'}</div><div class="sub">${off52 !== undefined ? off52.toFixed(1) + '% off' : '—'}</div></div>
+    <div class="stat-tile"><div class="lbl">BSI z (firm)</div><div class="val ${bsiClass}">${bsiZ === null ? 'n/a' : (bsiZ >= 0 ? '+' : '') + bsiZ.toFixed(2)}</div><div class="sub">${bsiZ === null ? 'open-universe' : ((pod && pod.stage1_signal && pod.stage1_signal.bear_state) || '—')}</div></div>
+    <div class="stat-tile"><div class="lbl">Tech verdict</div><div class="val purple" style="font-size:13px;line-height:1.2;">${(tech && tech.tech_verdict) || '—'}</div><div class="sub">bias = ${(tech && tech.tech_bias_score) ?? '—'}</div></div>
+  `;
+  document.getElementById('em-tiles').innerHTML = tilesHtml;
+}
+
+let _PRICE_CHART = null;
+let _CURRENT_PERIOD = '1y';
+
+// Render candlestick chart from /api/equity/ohlc with auto Fibonacci overlays
+async function renderPriceChart(ticker /*, tech (unused now) */) {
+  const ctx = document.getElementById('em-price-chart');
+  if (!ctx) return;
+  if (_PRICE_CHART) { _PRICE_CHART.destroy(); _PRICE_CHART = null; }
+  // Show loading
+  document.getElementById('em-chart-asof').textContent = `loading ${ticker} · ${_CURRENT_PERIOD}...`;
+  try {
+    const r = await fetch(`/api/equity/ohlc?ticker=${ticker}&period=${_CURRENT_PERIOD}`);
+    const d = await r.json();
+    if (d.error) {
+      document.getElementById('em-chart-asof').textContent = `Error: ${d.error}`;
+      ctx.parentElement.innerHTML = `<div class="em-empty" style="padding:60px;">${d.error}</div>`;
+      return;
+    }
+    drawCandlestick(ticker, d);
+    drawSwingStrip(d);
+  } catch (e) {
+    document.getElementById('em-chart-asof').textContent = `Error: ${e.message}`;
+  }
+}
+
+function drawSwingStrip(d) {
+  const sh = d.swing_high || {}; const sl = d.swing_low || {};
+  document.getElementById('em-swing-strip').innerHTML = `
+    <div class="em-swing-tile green">
+      <div class="lbl">▲ Swing high (auto)</div>
+      <div class="val">$${sh.price ? sh.price.toFixed(2) : '—'}</div>
+      <div style="color:var(--text-tertiary);">${sh.date ? sh.date.slice(0,10) : '—'}</div>
+    </div>
+    <div class="em-swing-tile red">
+      <div class="lbl">▼ Swing low (auto)</div>
+      <div class="val">$${sl.price ? sl.price.toFixed(2) : '—'}</div>
+      <div style="color:var(--text-tertiary);">${sl.date ? sl.date.slice(0,10) : '—'}</div>
+    </div>
+    <div class="em-swing-tile purple">
+      <div class="lbl">Trend / range</div>
+      <div class="val" style="text-transform:uppercase;color:${d.trend === 'uptrend' ? '#4ade80' : '#f87171'};">${d.trend}</div>
+      <div style="color:var(--text-tertiary);">${d.pct_swing_range}% of swing</div>
+    </div>
+    <div class="em-swing-tile purple">
+      <div class="lbl">Nearest Fib level</div>
+      <div class="val" style="color:var(--apollo-purple);">${d.nearest_fib_level}% · $${d.nearest_fib_price.toFixed(2)}</div>
+      <div style="color:var(--text-tertiary);">last $${d.last_close.toFixed(2)}</div>
+    </div>
+  `;
+}
+
+function drawCandlestick(ticker, d) {
+  const ctx = document.getElementById('em-price-chart');
+  // Convert bars to chart.js financial format: {x: Date, o, h, l, c}
+  const data = d.bars.map(b => ({
+    x: new Date(b.t).getTime(),
+    o: b.o, h: b.h, l: b.l, c: b.c,
+  }));
+  // Fibonacci horizontal-line annotations using a custom plugin
+  const fib = d.fibonacci || {};
+  const fibColors = {
+    '0.0':   '#4ade80', '23.6': '#a78bfa', '38.2': '#a78bfa',
+    '50.0':  '#fbbf24', '61.8': '#a78bfa', '78.6': '#a78bfa',
+    '100.0': '#f87171',
+  };
+  const fibLabels = {
+    '0.0':   '0% · swing high',
+    '23.6':  '23.6%',
+    '38.2':  '38.2%',
+    '50.0':  '50% · midpoint',
+    '61.8':  '61.8% · golden ratio',
+    '78.6':  '78.6% · deep',
+    '100.0': '100% · swing low',
+  };
+  // Custom afterDraw plugin to render Fibonacci horizontal lines + labels
+  const fibPlugin = {
+    id: 'fibLines',
+    afterDatasetsDraw(chart) {
+      const { ctx, chartArea, scales } = chart;
+      ctx.save();
+      ctx.font = '10px monospace';
+      Object.entries(fib).forEach(([level, price]) => {
+        const y = scales.y.getPixelForValue(price);
+        if (y < chartArea.top || y > chartArea.bottom) return;
+        const colour = fibColors[level] || '#a78bfa';
+        ctx.strokeStyle = colour;
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(chartArea.left, y);
+        ctx.lineTo(chartArea.right, y);
+        ctx.stroke();
+        // Label on right side
+        ctx.fillStyle = colour;
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        const label = `${fibLabels[level]} · $${price.toFixed(2)}`;
+        const padding = 6;
+        const w = ctx.measureText(label).width + padding * 2;
+        ctx.fillStyle = 'rgba(15, 15, 23, 0.85)';
+        ctx.fillRect(chartArea.right - w - 2, y - 7, w, 14);
+        ctx.fillStyle = colour;
+        ctx.fillText(label, chartArea.right - padding - 2, y);
+      });
+      // Mark swing high + swing low
+      const sh = d.swing_high; const sl = d.swing_low;
+      if (sh) {
+        const x = scales.x.getPixelForValue(new Date(sh.date).getTime());
+        const y = scales.y.getPixelForValue(sh.price);
+        ctx.fillStyle = '#4ade80';
+        ctx.beginPath();
+        ctx.arc(x, y, 5, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.fillStyle = '#4ade80';
+        ctx.font = 'bold 10px monospace';
+        ctx.textAlign = 'left';
+        ctx.fillText('▲ HIGH', x + 8, y);
+      }
+      if (sl) {
+        const x = scales.x.getPixelForValue(new Date(sl.date).getTime());
+        const y = scales.y.getPixelForValue(sl.price);
+        ctx.fillStyle = '#f87171';
+        ctx.beginPath();
+        ctx.arc(x, y, 5, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.fillStyle = '#f87171';
+        ctx.font = 'bold 10px monospace';
+        ctx.textAlign = 'left';
+        ctx.fillText('▼ LOW', x + 8, y);
+      }
+      ctx.restore();
+    },
+  };
+  // === ICHIMOKU lines + cloud ===
+  const ichi = d.ichimoku || [];
+  const tenkanData  = ichi.map(r => ({ x: new Date(r.t).getTime(), y: r.tenkan ?? null }));
+  const kijunData   = ichi.map(r => ({ x: new Date(r.t).getTime(), y: r.kijun  ?? null }));
+  const senkouAData = ichi.map(r => ({ x: new Date(r.t).getTime(), y: r.senkou_a ?? null }));
+  const senkouBData = ichi.map(r => ({ x: new Date(r.t).getTime(), y: r.senkou_b ?? null }));
+  const chikouData  = ichi.map(r => ({ x: new Date(r.t).getTime(), y: r.chikou ?? null }));
+
+  _PRICE_CHART = new Chart(ctx, {
+    type: 'candlestick',
+    data: {
+      datasets: [
+        {
+          type: 'candlestick',
+          label: ticker,
+          data: data,
+          color: { up: '#4ade80', down: '#f87171', unchanged: '#a78bfa' },
+          borderColor: { up: '#22c55e', down: '#ef4444', unchanged: '#7c3aed' },
+          order: 0,
+        },
+        // Ichimoku Cloud — Senkou A (filled to Senkou B)
+        {
+          type: 'line', label: 'Senkou A',
+          data: senkouAData, borderColor: 'rgba(74,222,128,0.55)', backgroundColor: 'rgba(74,222,128,0.10)',
+          borderWidth: 1, pointRadius: 0, fill: '+1', order: 5, tension: 0.1, spanGaps: true,
+        },
+        {
+          type: 'line', label: 'Senkou B',
+          data: senkouBData, borderColor: 'rgba(248,113,113,0.55)', backgroundColor: 'rgba(248,113,113,0.10)',
+          borderWidth: 1, pointRadius: 0, fill: false, order: 5, tension: 0.1, spanGaps: true,
+        },
+        {
+          type: 'line', label: 'Tenkan (9)',
+          data: tenkanData, borderColor: '#3b82f6', borderWidth: 1.5, pointRadius: 0,
+          fill: false, order: 4, tension: 0.1, spanGaps: true,
+        },
+        {
+          type: 'line', label: 'Kijun (26)',
+          data: kijunData, borderColor: '#a78bfa', borderWidth: 1.5, pointRadius: 0,
+          fill: false, order: 4, tension: 0.1, spanGaps: true, borderDash: [3,3],
+        },
+        {
+          type: 'line', label: 'Chikou (-26)',
+          data: chikouData, borderColor: 'rgba(251,191,36,0.6)', borderWidth: 1, pointRadius: 0,
+          fill: false, order: 4, tension: 0.1, spanGaps: true,
+        },
+      ],
+    },
+    options: {
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: true, position: 'bottom',
+          labels: { color: '#a1a1aa', font: { family: 'monospace', size: 9 }, boxWidth: 12, padding: 8,
+                    filter: (item) => item.text !== ticker },   // hide candle dataset from legend
+        },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              if (ctx.dataset.type === 'candlestick') {
+                const o = ctx.parsed.o, h = ctx.parsed.h, l = ctx.parsed.l, c = ctx.parsed.c;
+                return [`O: $${o.toFixed(2)}`, `H: $${h.toFixed(2)}`, `L: $${l.toFixed(2)}`, `C: $${c.toFixed(2)}`];
+              }
+              return `${ctx.dataset.label}: $${(ctx.parsed.y ?? 0).toFixed(2)}`;
+            },
+          },
+        },
+      },
+      scales: {
+        x: { type: 'time',
+             time: { unit: d.period === 'max' || d.period === '5y' ? 'year' : (d.period === '2y' ? 'quarter' : 'month') },
+             ticks: { color: '#737373', font: { family: 'monospace', size: 10 } },
+             grid: { display: false } },
+        y: { position: 'right',
+             ticks: { color: '#737373', callback: v => '$' + v.toFixed(2), font: { family: 'monospace', size: 10 } },
+             grid: { color: 'rgba(255,255,255,0.04)' } },
+      },
+    },
+    plugins: [fibPlugin],
+  });
+  document.getElementById('em-chart-asof').innerHTML =
+    `${ticker} · ${d.n_bars} bars · ${d.interval} · ${d.period.toUpperCase()} window · trend: <strong style="color:${d.trend === 'uptrend' ? '#4ade80' : '#f87171'};">${d.trend}</strong> · last $${d.last_close.toFixed(2)}<br>` +
+    `<span style="color:var(--apollo-purple);">Ichimoku:</span> ${d.ichimoku_signal || '—'} · ${d.ichimoku_tk_cross || '—'}`;
+}
+
+// Wire timeframe pills
+document.querySelectorAll('.em-tf-pill').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.em-tf-pill').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    _CURRENT_PERIOD = b.dataset.period;
+    if (_CURRENT_TICKER) renderPriceChart(_CURRENT_TICKER);
+  });
+});
+
+function renderTechnicals(tech) {
+  if (!tech || !tech.indicators) {
+    document.getElementById('em-fib-ladder').innerHTML = '<div class="em-empty" style="padding:14px;">No technical data</div>';
+    document.getElementById('em-ud-gauge').innerHTML = '<div class="em-empty" style="padding:14px;">No volume data</div>';
+    return;
+  }
+  const ind = tech.indicators;
+  const cur = tech.latest_close || 0;
+  // ── Fibonacci ladder ──
+  const fib = (ind.fibonacci && ind.fibonacci.levels) || {};
+  const order = ['0.0', '23.6', '38.2', '50.0', '61.8', '78.6', '100.0'];
+  const fibLabels = { '0.0':'0% (52w high)', '23.6':'23.6%', '38.2':'38.2%', '50.0':'50.0% (mid)', '61.8':'61.8% (golden)', '78.6':'78.6% (deep)', '100.0':'100% (52w low)' };
+  // Find nearest fib level to current price
+  let nearest = null, nearestDist = Infinity;
+  for (const k of order) {
+    if (fib[k] === undefined) continue;
+    const d = Math.abs(fib[k] - cur);
+    if (d < nearestDist) { nearestDist = d; nearest = k; }
+  }
+  const fibHtml = order.map(k => {
+    if (fib[k] === undefined) return '';
+    const isCur = k === nearest;
+    return `<div class="fib-row${isCur ? ' current' : ''}">
+      <span class="label">${fibLabels[k]}</span>
+      <span class="price">$${fib[k].toFixed(2)}</span>
+    </div>`;
+  }).join('');
+  document.getElementById('em-fib-ladder').innerHTML = fibHtml || '<div class="em-empty" style="padding:14px;">No Fib data</div>';
+
+  // ── U/D ratio gauge ──
+  const udObj = ind.up_down_volume || {};
+  const ud = udObj.ud_ratio_20d || 0;
+  const udPct = Math.min(100, Math.max(0, (ud / 2.0) * 100));
+  const verdict = ud >= 1.5 ? 'STRONG ACCUMULATION' :
+                  ud >= 1.2 ? 'mild accumulation' :
+                  ud >= 0.8 ? 'neutral' :
+                  ud >= 0.5 ? 'mild distribution' : 'STRONG DISTRIBUTION';
+  const verdictColor = ud >= 1.5 ? '#4ade80' : ud >= 1.2 ? '#86efac' : ud >= 0.8 ? '#fbbf24' : ud >= 0.5 ? '#fb923c' : '#f87171';
+  document.getElementById('em-ud-gauge').innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:baseline;">
+      <span style="font-family:var(--font-mono);font-size:22px;font-weight:700;color:${verdictColor};">${ud.toFixed(2)}</span>
+      <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-tertiary);">${verdict}</span>
+    </div>
+    <div class="gauge-bar">
+      <div class="gauge-marker" style="left:${udPct}%;"></div>
+    </div>
+    <div class="gauge-labels">
+      <span>0.5</span><span>1.0</span><span>1.5</span><span>2.0+</span>
+    </div>
+    <div style="margin-top:6px;font-size:10px;color:var(--text-tertiary);font-style:italic;line-height:1.5;">${udObj.interpretation || ''}</div>
+  `;
+
+  // ── Other gates ──
+  const rsi = ind.rsi_stoch || {};
+  const boll = ind.bollinger || {};
+  const atr = ind.atr || {};
+  const highs = ind.highs || {};
+  document.getElementById('em-tech-gates').innerHTML = `
+    OBV trend:    <strong style="color:${udObj.obv_trend === 'RISING' ? '#4ade80' : '#f87171'};">${udObj.obv_trend || '—'}</strong><br>
+    RSI (14):     <strong style="color:var(--text);">${rsi.rsi_14 ? rsi.rsi_14.toFixed(1) : '—'} (${rsi.rsi_zone || '—'})</strong><br>
+    Stochastic K: <strong style="color:var(--text);">${rsi.stochastic_k ? rsi.stochastic_k.toFixed(1) : '—'}</strong><br>
+    Bollinger %B: <strong style="color:var(--text);">${boll.pct_b ? boll.pct_b.toFixed(1) + '%' : '—'}</strong><br>
+    ATR (14):     <strong style="color:var(--text);">${atr.atr_14 ? '$' + atr.atr_14.toFixed(2) : '—'} (${atr.atr_pct_of_price ? atr.atr_pct_of_price.toFixed(1) + '% of px' : '—'})</strong><br>
+    52w high:     <strong style="color:var(--text);">$${highs.high_52w ? highs.high_52w.toFixed(2) : '—'}</strong> (${highs.entry_quality || '—'})
+  `;
+
+  document.getElementById('em-tech-verdict').textContent = tech.tech_verdict || '—';
+  const bias = tech.tech_bias_score ?? 0;
+  document.getElementById('em-bias-score').textContent = (bias >= 0 ? '+' : '') + bias;
+  document.getElementById('em-bias-score').style.color = bias >= 2 ? '#4ade80' : bias <= -2 ? '#f87171' : 'var(--text)';
+}
+
+function renderHedgeFund(pod) {
+  const votesEl = document.getElementById('em-hf-votes');
+  // If BNPL-universe ticker → use the real Apollo debate
+  if (pod && pod.stage2_debate && pod.stage2_debate.votes) {
+    const votes = pod.stage2_debate.votes;
+    votesEl.innerHTML = votes.map(v => `
+      <div class="hf-vote">
+        <span class="icon">${v.icon}</span>
+        <span class="name">${v.name}<div style="font-size:9px;color:var(--text-tertiary);font-style:italic;margin-top:2px;">${(v.rationale || '').slice(0,60)}${(v.rationale||'').length>60?'…':''}</div></span>
+        <span class="vote-pill ${v.vote}">${v.vote}</span>
+      </div>`).join('');
+    document.getElementById('em-hf-consensus').innerHTML =
+      `<span style="color:${pod.stage2_debate.conviction === 'high' ? '#4ade80' : pod.stage2_debate.conviction === 'medium' ? '#fbbf24' : 'var(--text-secondary)'};">${pod.stage2_debate.verdict} · ${pod.stage2_debate.conviction.toUpperCase()}</span>
+       <div style="font-size:9px;color:var(--text-tertiary);margin-top:3px;">BNPL universe · BSI-anchored vote</div>`;
+    return;
+  }
+  // OTHERWISE → generic technical-based archetype voter (any ticker)
+  const tech = _CURRENT_TECH;
+  if (!tech || !tech.indicators) {
+    votesEl.innerHTML = '<div class="em-empty" style="padding:30px 14px;">No technical data available — cannot vote.</div>';
+    document.getElementById('em-hf-consensus').textContent = '—';
+    return;
+  }
+  const votes = computeGenericArchetypeVotes(tech);
+  votesEl.innerHTML = votes.map(v => `
+    <div class="hf-vote">
+      <span class="icon">${v.icon}</span>
+      <span class="name">${v.name}<div style="font-size:9px;color:var(--text-tertiary);font-style:italic;margin-top:2px;">${v.rationale}</div></span>
+      <span class="vote-pill ${v.vote}">${v.vote}</span>
+    </div>`).join('');
+  // Consensus
+  const shorts = votes.filter(v => v.vote === 'SHORT').length;
+  const longs  = votes.filter(v => v.vote === 'LONG').length;
+  const consensus = shorts > longs ? `${shorts}-of-${votes.length} SHORT` :
+                    longs > shorts ? `${longs}-of-${votes.length} LONG` :
+                                     'SPLIT (no consensus)';
+  const conviction = Math.max(shorts, longs) >= 4 ? 'HIGH' : Math.max(shorts, longs) >= 3 ? 'MEDIUM' : 'LOW';
+  const colour = conviction === 'HIGH' ? '#4ade80' : conviction === 'MEDIUM' ? '#fbbf24' : 'var(--text-secondary)';
+  document.getElementById('em-hf-consensus').innerHTML =
+    `<span style="color:${colour};">${consensus} · ${conviction}</span>
+     <div style="font-size:9px;color:var(--text-tertiary);margin-top:3px;">open-universe · technical-based vote</div>`;
+}
+
+// Generic technical-based 6-archetype voter for any ticker
+function computeGenericArchetypeVotes(tech) {
+  const ind = tech.indicators || {};
+  const bias = tech.tech_bias_score ?? 0;
+  const ud   = ind.up_down_volume?.ud_ratio_20d ?? 1.0;
+  const obv  = ind.up_down_volume?.obv_trend || 'FLAT';
+  const rsi  = ind.rsi_stoch?.rsi_14 ?? 50;
+  const stoch = ind.rsi_stoch?.stochastic_k ?? 50;
+  const pctB = ind.bollinger?.pct_b ?? 50;
+  const off52 = ind.highs?.pct_off_52w_high ?? 0;
+  const atrPct = ind.atr?.atr_pct_of_price ?? 2;
+  const eq   = ind.highs?.entry_quality || '';
+
+  return [
+    {
+      name: 'Renaissance', icon: '🧠',
+      vote: bias <= -2 ? 'SHORT' : bias >= 2 ? 'LONG' : 'PASS',
+      rationale: `Pattern: bias=${bias} (${bias <= -2 ? 'clear distribution' : bias >= 2 ? 'clear accumulation' : 'no clean pattern'})`,
+    },
+    {
+      name: 'Bridgewater', icon: '🌍',
+      vote: (rsi > 70 && atrPct > 4) ? 'SHORT' : (rsi < 30 && atrPct < 3) ? 'LONG' : 'PASS',
+      rationale: `Macro vol regime: RSI=${rsi.toFixed(0)}, ATR=${atrPct.toFixed(1)}% (${rsi > 70 ? 'overbought + elevated vol' : rsi < 30 ? 'oversold + tight vol' : 'no extreme'})`,
+    },
+    {
+      name: 'Two Sigma', icon: '🎯',
+      vote: (bias <= -1 && obv === 'FALLING') ? 'SHORT' : (bias >= 1 && obv === 'RISING') ? 'LONG' : 'PASS',
+      rationale: `Multi-pillar: bias=${bias}, OBV=${obv} (${(bias <= -1 && obv === 'FALLING') ? 'bearish concordance' : (bias >= 1 && obv === 'RISING') ? 'bullish concordance' : 'mixed signals'})`,
+    },
+    {
+      name: 'Millennium', icon: '⚡',
+      // Mean-reversion: vote when EITHER Bollinger %B OR Stochastic K hits an extreme.
+      // Loosened from 80/20 → 70/30 because true >80/<20 prints in only ~10% of bars.
+      vote: (pctB > 70 || stoch > 80) ? 'SHORT' : (pctB < 30 || stoch < 20) ? 'LONG' : 'PASS',
+      rationale: `Mean-reversion: %B=${pctB.toFixed(0)}%, Stoch=${stoch.toFixed(0)} (${(pctB > 70 || stoch > 80) ? 'upper-band / overbought — fade' : (pctB < 30 || stoch < 20) ? 'lower-band / oversold — fade' : 'mid-band, no edge'})`,
+    },
+    {
+      name: 'Citadel', icon: '💼',
+      vote: (off52 > -5 && atrPct < 5) ? 'SHORT' : (off52 < -30 && atrPct < 5) ? 'LONG' : 'PASS',
+      rationale: `Execution-clean: ${off52.toFixed(1)}% off 52w high, ATR ${atrPct.toFixed(1)}% (${eq})`,
+    },
+    {
+      name: 'BearWatch', icon: '🐻',
+      vote: (bias <= -2 && ud < 0.8) ? 'SHORT' : (bias >= 2 && ud > 1.5) ? 'LONG' : 'PASS',
+      rationale: `Distress proxy: bias=${bias}, U/D=${ud.toFixed(2)} (open-universe — no firm-specific BSI; uses tech distribution as proxy)`,
+    },
+  ];
+}
+
+function renderNews(news) {
+  const el = document.getElementById('em-news');
+  if (!news || !news.items || !news.items.length) {
+    el.innerHTML = '<div class="em-empty" style="padding:20px 0;">' +
+      (news && news.error === 'unknown_ticker' ? 'News API requires the ticker to be in the BNPL universe (firm-specific Google News query). Open-universe equities (NVDA, AAPL, etc.) don\'t have a curated firm-name mapping. Use Google News search directly.' : 'No recent news.') +
+      '</div>';
+    return;
+  }
+  el.innerHTML = news.items.slice(0, 12).map(n => `
+    <div class="news-item">
+      <div class="src">${n.source || n.publisher || 'Google News'}</div>
+      <div class="title"><a href="${n.url || n.link || '#'}" target="_blank" rel="noopener">${n.title || n.headline || '—'}</a></div>
+      <div class="meta">${n.published_at || n.published || n.pub_date || ''}</div>
+    </div>
+  `).join('');
+}
+
+// === Trade form ===
+function setSide(side) {
+  _CURRENT_SIDE = side;
+  document.getElementById('em-toggle-short').classList.toggle('active', side === 'SHORT');
+  document.getElementById('em-toggle-long').classList.toggle('active', side === 'LONG');
+  // Flip stop/target for new side
+  const px = parseFloat(document.getElementById('em-entry').value || '0');
+  if (side === 'SHORT') {
+    document.getElementById('em-stop').value   = (px * 1.08).toFixed(2);
+    document.getElementById('em-target').value = (px * 0.85).toFixed(2);
+  } else {
+    document.getElementById('em-stop').value   = (px * 0.92).toFixed(2);
+    document.getElementById('em-target').value = (px * 1.20).toFixed(2);
+  }
+  updateNotional();
+  checkDirectionConflict();
+}
+
+function updateNotional() {
+  const sh = parseFloat(document.getElementById('em-shares').value || '0');
+  const en = parseFloat(document.getElementById('em-entry').value || '0');
+  const st = parseFloat(document.getElementById('em-stop').value || '0');
+  const tg = parseFloat(document.getElementById('em-target').value || '0');
+  const notional = sh * en;
+  document.getElementById('em-notional').textContent = '$' + notional.toLocaleString(undefined, {maximumFractionDigits:0});
+  const reward = Math.abs(tg - en);
+  const risk   = Math.abs(en - st);
+  const rr = risk > 0 ? (reward / risk).toFixed(2) + ':1' : '—';
+  document.getElementById('em-rr').textContent = rr;
+}
+['em-shares', 'em-entry', 'em-stop', 'em-target'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', updateNotional);
+});
+
+function checkDirectionConflict() {
+  const wEl = document.getElementById('em-direction-warning');
+  const tech = _CURRENT_TECH;
+  const pod = _CURRENT_POD;
+  const side = _CURRENT_SIDE;
+  if (!tech) { wEl.style.display = 'none'; return; }
+  let warn = '';
+  // Tech-side conflict
+  const bias = tech.tech_bias_score ?? 0;
+  if (side === 'SHORT' && bias >= 2) {
+    warn = `⚠ TECHNICAL CONFLICT: bias score is ${bias} (bullish accumulation). Going SHORT contradicts the U/D + OBV signal.`;
+  } else if (side === 'LONG' && bias <= -2) {
+    warn = `⚠ TECHNICAL CONFLICT: bias score is ${bias} (bearish distribution). Going LONG contradicts the U/D + OBV signal.`;
+  }
+  // BSI / hedge-fund-side conflict (only if firm is in BNPL universe)
+  if (pod && pod.stage1_signal && pod.stage1_signal.bsi_z !== undefined) {
+    const z = pod.stage1_signal.bsi_z;
+    const state = pod.stage1_signal.bear_state;
+    if (side === 'SHORT' && z < 1.0) {
+      warn += (warn ? '\n\n' : '') + `⚠ BSI CONFLICT: bear is ${state} (z = ${z.toFixed(2)}). BSI shows no consumer-credit distress on this firm — SHORT is contrarian to the framework.`;
+    } else if (side === 'LONG' && z >= 2.0) {
+      warn += (warn ? '\n\n' : '') + `⚠ BSI CONFLICT: bear is ${state} (z = ${z.toFixed(2)}). BSI shows active consumer-credit distress — LONG is contrarian.`;
+    }
+  }
+  if (warn) {
+    wEl.style.display = 'block';
+    wEl.innerHTML = warn.replace(/\n/g, '<br>');
+  } else {
+    wEl.style.display = 'none';
+  }
+}
+
+async function fireTrade() {
+  const sh = parseFloat(document.getElementById('em-shares').value || '0');
+  const en = parseFloat(document.getElementById('em-entry').value || '0');
+  const st = parseFloat(document.getElementById('em-stop').value || '0');
+  const tg = parseFloat(document.getElementById('em-target').value || '0');
+  if (!sh || !en) { alert('Set shares + entry first'); return; }
+  if (!_CURRENT_TICKER) { alert('Scan a ticker first'); return; }
+
+  const wEl = document.getElementById('em-direction-warning');
+  const hasWarning = wEl.style.display === 'block';
+
+  const summary = `${_CURRENT_SIDE} ${sh} ${_CURRENT_TICKER} @ $${en}\nStop $${st} · Target $${tg}\nNotional $${(sh*en).toLocaleString(undefined,{maximumFractionDigits:0})}`;
+  const warningText = hasWarning ? '\n\n' + wEl.textContent : '';
+  if (!confirm(`Execute trade?\n\n${summary}${warningText}`)) {
+    return;
+  }
+  if (hasWarning) {
+    if (!confirm(`FINAL CONFIRMATION — proceed despite the conflict warning?\n\n${summary}\n\nClick OK to journal the trade.`)) {
+      return;
+    }
+  }
+
+  const btn = document.getElementById('em-fire-btn');
+  btn.disabled = true; btn.textContent = 'Journaling…';
+  try {
+    const r = await fetch('/api/journal/log', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        ticker: _CURRENT_TICKER, side: _CURRENT_SIDE, shares: sh,
+        entry_price: en, stop_price: st, target_price: tg,
+        notional_usd: sh * en,
+        event_id: 'equity_monitor_' + Date.now(),
+        verdict: hasWarning ? 'OVERRIDE_AGAINST_CONSENSUS' : 'EQUITY_MONITOR',
+        source: 'equity_monitor' + (hasWarning ? '_with_warning' : ''),
+      }),
+    });
+    if (r.ok) {
+      btn.textContent = '✓ Trade journaled — see /portfolio';
+      btn.style.background = 'linear-gradient(135deg, #4ade80, #16a34a)';
+    } else {
+      const err = await r.json().catch(() => ({}));
+      btn.textContent = err.error === 'not_logged_in' ? 'Sign in to execute →' : '✗ ' + (err.message || 'failed');
+      btn.disabled = false;
+    }
+  } catch (e) {
+    btn.textContent = '✗ ' + e.message;
+    btn.disabled = false;
+  }
+}
+
+// Recheck conflict whenever side changes
+['em-shares', 'em-entry'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', checkDirectionConflict);
+});
+</script>
+
+</body>
+</html>

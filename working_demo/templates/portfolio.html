@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Portfolio · BearWatch × Apollo Hermes</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/v2.css">
+  <style>
+    .pf-hero { background: linear-gradient(135deg, rgba(96,165,250,0.10), rgba(74,222,128,0.06) 60%, transparent 100%), var(--bg-elevated);
+      border: 1px solid rgba(96,165,250,0.35); border-left: 4px solid #60a5fa;
+      border-radius: 12px; padding: 24px 28px; margin-bottom: 18px; }
+    .pf-headline { font-family: var(--font-display, sans-serif); font-size: 26px; font-weight: 700; color: var(--text); margin: 0; }
+    .pf-sub { font-size: 13px; color: var(--text-secondary); margin-top: 6px; line-height: 1.55; }
+
+    .section { background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 8px; padding: 22px 26px; margin-bottom: 18px; scroll-margin-top: 80px; }
+    .section-num { font-family: var(--font-mono); font-size: 10px; color: #60a5fa; text-transform: uppercase;
+      letter-spacing: 0.08em; font-weight: 700; }
+    .section-title { font-size: 18px; font-weight: 700; color: var(--text); margin: 0 0 6px;
+      font-family: var(--font-display, sans-serif); display: flex; gap: 12px; align-items: baseline; }
+    .section-title .ct { font-family: var(--font-mono); font-size: 11px; color: var(--text-tertiary); font-weight: 500; }
+    .section-sub { font-size: 12px; color: var(--text-secondary); line-height: 1.55; margin-bottom: 16px; }
+
+    .stat-tile { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 6px; padding: 14px 16px; }
+    .stat-tile.green { border-left: 3px solid #4ade80; }
+    .stat-tile.red   { border-left: 3px solid #f87171; }
+    .stat-tile.purple { border-left: 3px solid #a78bfa; }
+    .stat-tile.amber { border-left: 3px solid #fbbf24; }
+    .stat-tile.blue  { border-left: 3px solid #60a5fa; }
+    .stat-tile .lbl { font-size: 9px; color: var(--text-tertiary); text-transform: uppercase;
+      letter-spacing: 0.06em; font-weight: 700; font-family: var(--font-mono); }
+    .stat-tile .val { font-family: var(--font-mono); font-size: 22px; font-weight: 700;
+      color: var(--text); margin-top: 4px; line-height: 1.15; }
+    .stat-tile .val.green { color: #4ade80; }
+    .stat-tile .val.red   { color: #f87171; }
+    .stat-tile .val.amber { color: #fbbf24; }
+    .stat-tile .val.blue  { color: #60a5fa; }
+    .stat-tile .sub { font-size: 10px; color: var(--text-tertiary); margin-top: 4px; }
+
+    table.dx { width: 100%; border-collapse: collapse; font-size: 11px; font-family: var(--font-mono); }
+    table.dx th, table.dx td { padding: 8px 10px; border-bottom: 1px solid var(--border); }
+    table.dx th { background: var(--bg-elevated); text-align: left; font-size: 9px; color: var(--text-tertiary);
+      text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; }
+    table.dx td.num { text-align: right; }
+    table.dx td.center { text-align: center; }
+    table.dx td.green { color: #4ade80; font-weight: 600; }
+    table.dx td.red   { color: #f87171; font-weight: 600; }
+    table.dx td.dim   { color: var(--text-tertiary); }
+    table.dx tr:hover { background: rgba(255,255,255,0.02); }
+
+    .side-pill {
+      font-family: var(--font-mono); font-size: 9px; padding: 2px 7px; border-radius: 3px;
+      font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+    }
+    .side-pill.long  { background: rgba(74,222,128,0.15); color: #4ade80; border: 1px solid rgba(74,222,128,0.4); }
+    .side-pill.short { background: rgba(248,113,113,0.15); color: #f87171; border: 1px solid rgba(248,113,113,0.4); }
+
+    .close-btn {
+      background: rgba(248,113,113,0.10); color: #f87171; border: 1px solid rgba(248,113,113,0.4);
+      padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: 700;
+      font-family: var(--font-mono); cursor: pointer; text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .close-btn:hover { background: rgba(248,113,113,0.22); }
+
+    .kv { display: flex; justify-content: space-between; padding: 7px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 11.5px; }
+    .kv:last-child { border-bottom: none; }
+    .kv .k { color: var(--text-secondary); }
+    .kv .v { font-family: var(--font-mono); color: var(--text); font-weight: 600; }
+    .kv .v.green { color: #4ade80; }
+    .kv .v.red   { color: #f87171; }
+    .kv .v.amber { color: #fbbf24; }
+    .kv .v.blue  { color: #60a5fa; }
+
+    .sector-bar { margin: 10px 0; }
+    .sector-bar .row { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px;
+      color: var(--text); font-family: var(--font-mono); }
+    .sector-bar .bar { height: 6px; background: var(--bg-elevated); border-radius: 3px; overflow: hidden; }
+    .sector-bar .bar > div { height: 100%; background: linear-gradient(90deg, #60a5fa, #4ade80); border-radius: 3px;
+      transition: width 0.4s ease; }
+
+    .risk-card { padding: 12px 14px; border-radius: 6px; margin-bottom: 8px;
+      display: flex; justify-content: space-between; align-items: center; font-size: 11.5px;
+      background: var(--bg-elevated); }
+    .risk-card.ok    { border-left: 3px solid #4ade80; }
+    .risk-card.warn  { border-left: 3px solid #fbbf24; }
+    .risk-card.bad   { border-left: 3px solid #f87171; }
+    .risk-card .name { color: var(--text); font-weight: 600; }
+    .risk-card .val  { font-family: var(--font-mono); }
+    .risk-card.ok   .val { color: #4ade80; }
+    .risk-card.warn .val { color: #fbbf24; }
+    .risk-card.bad  .val { color: #f87171; }
+
+    .empty { text-align: center; padding: 40px 20px; color: var(--text-tertiary); font-style: italic;
+      font-size: 13px; }
+    .refresh-btn {
+      background: rgba(96,165,250,0.12); color: #60a5fa; border: 1px solid rgba(96,165,250,0.4);
+      padding: 8px 16px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;
+      font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .refresh-btn:hover { background: rgba(96,165,250,0.22); }
+  </style>
+</head>
+<body class="dark">
+
+{% include '_nav.html' %}
+
+<main class="container" style="max-width: 1280px; padding: 18px;">
+
+  <!-- ============= HERO ============= -->
+  <div class="pf-hero">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:18px;flex-wrap:wrap;">
+      <div style="display:flex;gap:18px;align-items:center;flex:1;min-width:280px;">
+        <div style="font-size:60px;">💼</div>
+        <div>
+          <h1 class="pf-headline">Portfolio · Apollo Hermes Analytics</h1>
+          <div class="pf-sub">
+            Live MTM on long + short positions, beta exposure, sector concentration, drawdown discipline,
+            and the 7-check Apollo Hermes risk engine. Auto-refresh every 30s.
+          </div>
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <button class="refresh-btn" onclick="loadPortfolio()">↻ refresh</button>
+        <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-tertiary);margin-top:8px;" id="pf-asof">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============= 6-TILE HEADLINE STRIP ============= -->
+  <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:18px;">
+    <div class="stat-tile blue"><div class="lbl">Total equity</div><div class="val" id="pf-equity">—</div><div class="sub" id="pf-equity-sub">—</div></div>
+    <div class="stat-tile" id="pf-pnl-tile"><div class="lbl">Total P&L</div><div class="val" id="pf-pnl">—</div><div class="sub" id="pf-pnl-sub">—</div></div>
+    <div class="stat-tile" id="pf-mtm-tile"><div class="lbl">Open MTM</div><div class="val" id="pf-mtm">—</div><div class="sub" id="pf-mtm-sub">—</div></div>
+    <div class="stat-tile" id="pf-realised-tile"><div class="lbl">Realised P&L</div><div class="val" id="pf-realised">—</div><div class="sub" id="pf-realised-sub">—</div></div>
+    <div class="stat-tile purple"><div class="lbl">Open positions</div><div class="val" id="pf-open-count">—</div><div class="sub" id="pf-open-sub">—</div></div>
+    <div class="stat-tile amber"><div class="lbl">Cash</div><div class="val" id="pf-cash">—</div><div class="sub" id="pf-cash-sub">—</div></div>
+  </div>
+
+  <!-- ============= SECTION 00 — P&L HISTORY CHART ============= -->
+  <div class="section" style="border-left: 4px solid #fbbf24;">
+    <div class="section-num">SECTION 00</div>
+    <h2 class="section-title">P&amp;L history <span class="ct" id="pnl-summary">—</span></h2>
+    <div class="section-sub">
+      Cumulative profit / loss across all journaled trades, daily-aggregated. Open positions are
+      marked-to-market at today's live price; closed positions use the realised exit P&amp;L.
+    </div>
+    <div style="background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-top: 12px;">
+      <canvas id="pnl-chart" style="width: 100%; height: 260px; display: block;"></canvas>
+      <div id="pnl-empty" style="display:none; text-align:center; padding: 30px 0; color: var(--text-tertiary); font-family: var(--font-mono); font-size: 11px;">
+        No trades journaled yet — fire a trade from the Live Pod to see history populate.
+      </div>
+    </div>
+  </div>
+
+  <!-- ============= SECTION 01 — OPEN POSITIONS ============= -->
+  <div class="section" style="border-left: 4px solid #4ade80;">
+    <div class="section-num">SECTION 01</div>
+    <h2 class="section-title">Open positions <span class="ct" id="open-count">0 positions</span></h2>
+    <div class="section-sub">
+      Live mark-to-market via yfinance. Long shows green pill; short shows red pill. Click "close" to mark a position
+      as exited at the current live price (realised P&amp;L is journaled).
+    </div>
+    <div style="overflow-x:auto;">
+      <div id="open-table"><div class="empty">No open positions yet · execute a trade from the live pod.</div></div>
+    </div>
+  </div>
+
+  <!-- ============= SECTION 02 — CLOSED POSITIONS ============= -->
+  <div class="section" style="border-left: 4px solid #60a5fa;">
+    <div class="section-num">SECTION 02</div>
+    <h2 class="section-title">Closed positions (most recent 20) <span class="ct" id="closed-count">0 closed</span></h2>
+    <div class="section-sub">
+      Realised trades with entry / exit / P&amp;L. Closed positions feed into win-rate and avg-winner / avg-loser
+      stats in §04 below.
+    </div>
+    <div style="overflow-x:auto;">
+      <div id="closed-table"><div class="empty">No closed positions yet.</div></div>
+    </div>
+  </div>
+
+  <!-- ============= SECTION 03 — EXPOSURE + BETA + RISK ============= -->
+  <div class="section" style="border-left: 4px solid #a78bfa;">
+    <div class="section-num">SECTION 03</div>
+    <h2 class="section-title">Exposure, beta &amp; risk caps</h2>
+    <div class="section-sub">
+      Long vs short notional, gross / net exposure, dollar &amp; normalised portfolio beta, drawdown mode, and
+      single-position concentration limits. All fields tracked vs Apollo Hermes pre-registered caps.
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
+      <div>
+        <div style="font-size:10px;color:#a78bfa;text-transform:uppercase;letter-spacing:0.05em;font-weight:700;font-family:var(--font-mono);margin-bottom:8px;">▶ EXPOSURE</div>
+        <div class="kv"><span class="k">Long notional</span><span class="v green" id="pf-long-not">—</span></div>
+        <div class="kv"><span class="k">Short notional</span><span class="v red" id="pf-short-not">—</span></div>
+        <div class="kv"><span class="k">Gross exposure (L + S)</span><span class="v" id="pf-gross">—</span></div>
+        <div class="kv"><span class="k">Net exposure (L − S)</span><span class="v" id="pf-net">—</span></div>
+        <div class="kv"><span class="k">Long / short count</span><span class="v" id="pf-counts">—</span></div>
+      </div>
+      <div>
+        <div style="font-size:10px;color:#a78bfa;text-transform:uppercase;letter-spacing:0.05em;font-weight:700;font-family:var(--font-mono);margin-bottom:8px;">▶ BETA &amp; DRAWDOWN</div>
+        <div class="kv"><span class="k">Portfolio β (dollar)</span><span class="v" id="pf-beta-dol">—</span></div>
+        <div class="kv"><span class="k">Portfolio β (normalised)</span><span class="v" id="pf-beta-norm">—</span></div>
+        <div class="kv"><span class="k">Beta cap</span><span class="v" id="pf-beta-cap">—</span></div>
+        <div class="kv"><span class="k">Drawdown</span><span class="v" id="pf-dd">—</span></div>
+        <div class="kv"><span class="k">Drawdown mode</span><span class="v" id="pf-dd-mode">—</span></div>
+        <div class="kv"><span class="k">Largest position</span><span class="v" id="pf-largest">—</span></div>
+        <div class="kv"><span class="k">Single-position cap</span><span class="v" id="pf-single-cap">—</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============= SECTION 04 — REALISED STATS + SECTOR CONCENTRATION ============= -->
+  <div class="section" style="border-left: 4px solid #fbbf24;">
+    <div class="section-num">SECTION 04</div>
+    <h2 class="section-title">Realised stats &amp; sector concentration</h2>
+    <div class="section-sub">
+      Win rate, average winner / loser, best &amp; worst trades — all computed from closed positions only.
+      Sector concentration tracks gross exposure across BNPL / Subprime auto / Marketplace lending / etc.
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
+      <div>
+        <div style="font-size:10px;color:#fbbf24;text-transform:uppercase;letter-spacing:0.05em;font-weight:700;font-family:var(--font-mono);margin-bottom:8px;">▶ REALISED (CLOSED-ONLY)</div>
+        <div class="kv"><span class="k">Win rate</span><span class="v" id="pf-winrate">—</span></div>
+        <div class="kv"><span class="k">Closed positions</span><span class="v" id="pf-nclosed">—</span></div>
+        <div class="kv"><span class="k">Avg winner</span><span class="v green" id="pf-avgwin">—</span></div>
+        <div class="kv"><span class="k">Avg loser</span><span class="v red" id="pf-avglos">—</span></div>
+        <div class="kv"><span class="k">Best trade</span><span class="v green" id="pf-bestwin">—</span></div>
+        <div class="kv"><span class="k">Worst trade</span><span class="v red" id="pf-worstlos">—</span></div>
+      </div>
+      <div>
+        <div style="font-size:10px;color:#fbbf24;text-transform:uppercase;letter-spacing:0.05em;font-weight:700;font-family:var(--font-mono);margin-bottom:8px;">▶ SECTOR CONCENTRATION</div>
+        <div id="pf-sector-bars"><div class="empty" style="padding:14px 0;">No exposure yet.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============= SECTION 05 — RISK ENGINE STATUS ============= -->
+  <div class="section" style="border-left: 4px solid #f87171;">
+    <div class="section-num">SECTION 05</div>
+    <h2 class="section-title">Apollo Hermes risk engine</h2>
+    <div class="section-sub">
+      4 of the 7 deterministic risk checks tracked live (beta load, single-position cap, drawdown mode, cash floor).
+      Each check returns OK / WARN / BAD vs pre-registered Apollo Hermes thresholds. Multiple BAD checks block new trades.
+    </div>
+    <div id="pf-risk-cards"></div>
+  </div>
+
+</main>
+
+<script>
+const fmtUSD = v => (v >= 0 ? '+$' : '−$') + Math.abs(v).toLocaleString(undefined, {maximumFractionDigits:0});
+const fmtPctSigned = v => (v >= 0 ? '+' : '') + v.toFixed(2) + '%';
+const fmtMoney = v => '$' + Math.round(v).toLocaleString();
+
+async function loadPortfolio() {
+  try {
+    const r = await fetch('/api/portfolio/positions');
+    const d = await r.json();
+    if (!r.ok) {
+      document.getElementById('open-table').innerHTML = `<div class="empty" style="color:#f87171;">${d.error || 'failed to load'}</div>`;
+      return;
+    }
+    document.getElementById('pf-asof').textContent = 'as of ' + new Date().toLocaleTimeString();
+
+    // ---- 6-tile headline strip ----
+    document.getElementById('pf-equity').textContent = fmtMoney(d.total_equity);
+    document.getElementById('pf-equity-sub').textContent = `start ${fmtMoney(d.starting_capital)}`;
+
+    const pnlTile = document.getElementById('pf-pnl-tile');
+    const pnlEl = document.getElementById('pf-pnl');
+    pnlEl.textContent = fmtUSD(d.total_pnl);
+    pnlEl.className = 'val ' + (d.total_pnl >= 0 ? 'green' : 'red');
+    pnlTile.className = 'stat-tile ' + (d.total_pnl >= 0 ? 'green' : 'red');
+    document.getElementById('pf-pnl-sub').textContent = fmtPctSigned(d.total_pnl_pct);
+
+    const mtmTile = document.getElementById('pf-mtm-tile');
+    const mtmEl = document.getElementById('pf-mtm');
+    mtmEl.textContent = fmtUSD(d.open_mtm_pnl);
+    mtmEl.className = 'val ' + (d.open_mtm_pnl >= 0 ? 'green' : 'red');
+    mtmTile.className = 'stat-tile ' + (d.open_mtm_pnl >= 0 ? 'green' : 'red');
+    document.getElementById('pf-mtm-sub').textContent = `${d.open_count} open · live MTM`;
+
+    const realTile = document.getElementById('pf-realised-tile');
+    const realEl = document.getElementById('pf-realised');
+    realEl.textContent = fmtUSD(d.realised_pnl_total);
+    realEl.className = 'val ' + (d.realised_pnl_total >= 0 ? 'green' : 'red');
+    realTile.className = 'stat-tile ' + (d.realised_pnl_total >= 0 ? 'green' : 'red');
+    document.getElementById('pf-realised-sub').textContent = `${d.closed_count} closed · realised`;
+
+    document.getElementById('pf-open-count').textContent = d.open_count;
+    document.getElementById('pf-open-sub').textContent = `${d.long_count} long · ${d.short_count} short`;
+    document.getElementById('pf-cash').textContent = fmtMoney(d.cash);
+    document.getElementById('pf-cash-sub').textContent = `${(d.cash / d.starting_capital * 100).toFixed(1)}% of start`;
+
+    // ---- §01 Open positions ----
+    const opens = d.open_positions;
+    if (opens.length) {
+      document.getElementById('open-table').innerHTML = `
+        <table class="dx">
+          <thead><tr>
+            <th class="center">Side</th><th>Ticker</th><th class="num">Sh</th>
+            <th class="num">Entry</th><th class="num">Live</th><th class="num">Stop</th><th class="num">Target</th>
+            <th class="num">Notional</th><th class="num">MTM $</th><th class="num">MTM %</th>
+            <th>Sector</th><th class="num">β</th><th class="center"></th>
+          </tr></thead>
+          <tbody>${opens.map(p => `
+            <tr>
+              <td class="center"><span class="side-pill ${p.side.toLowerCase()}">${p.side}</span></td>
+              <td><strong>${p.ticker}</strong></td>
+              <td class="num">${p.shares}</td>
+              <td class="num">$${p.entry_price.toFixed(2)}</td>
+              <td class="num">$${p.live_price.toFixed(2)}</td>
+              <td class="num dim">$${p.stop_price ? Number(p.stop_price).toFixed(2) : '—'}</td>
+              <td class="num dim">$${p.target_price ? Number(p.target_price).toFixed(2) : '—'}</td>
+              <td class="num">$${Math.round(p.current_notional).toLocaleString()}</td>
+              <td class="num ${p.mtm_pnl_usd >= 0 ? 'green' : 'red'}">${fmtUSD(p.mtm_pnl_usd)}</td>
+              <td class="num ${p.mtm_pnl_pct >= 0 ? 'green' : 'red'}">${fmtPctSigned(p.mtm_pnl_pct)}</td>
+              <td class="dim" style="font-size:10px;">${p.sector}</td>
+              <td class="num dim">${p.beta.toFixed(2)}</td>
+              <td class="center"><button class="close-btn" onclick="closePosition(${p.id}, '${p.ticker}')">close</button></td>
+            </tr>`).join('')}
+          </tbody>
+        </table>`;
+    } else {
+      document.getElementById('open-table').innerHTML = '<div class="empty">No open positions yet · execute a trade from the live pod.</div>';
+    }
+    document.getElementById('open-count').textContent = `${opens.length} positions · ${fmtMoney(d.gross_exposure)} gross`;
+
+    // ---- §02 Closed positions ----
+    const closed = d.closed_positions;
+    if (closed.length) {
+      document.getElementById('closed-table').innerHTML = `
+        <table class="dx">
+          <thead><tr>
+            <th class="center">Side</th><th>Ticker</th>
+            <th class="num">Entry</th><th class="num">Exit</th><th class="num">Sh</th>
+            <th class="num">Notional</th><th class="num">P&L $</th><th class="num">P&L %</th><th>Closed</th>
+          </tr></thead>
+          <tbody>${closed.map(p => `
+            <tr>
+              <td class="center"><span class="side-pill ${p.side.toLowerCase()}">${p.side}</span></td>
+              <td><strong>${p.ticker}</strong></td>
+              <td class="num">$${p.entry_price.toFixed(2)}</td>
+              <td class="num">$${p.exit_price.toFixed(2)}</td>
+              <td class="num">${p.shares}</td>
+              <td class="num">$${Math.round(p.notional_usd).toLocaleString()}</td>
+              <td class="num ${p.pnl_usd >= 0 ? 'green' : 'red'}">${fmtUSD(p.pnl_usd)}</td>
+              <td class="num ${p.pnl_pct >= 0 ? 'green' : 'red'}">${fmtPctSigned(p.pnl_pct)}</td>
+              <td class="dim" style="font-size:10px;">${p.exit_ts ? p.exit_ts.slice(0,10) : '—'}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>`;
+    }
+    document.getElementById('closed-count').textContent = `${d.closed_count} closed · ${fmtUSD(d.realised_pnl_total)} realised`;
+
+    // ---- §03 Exposure + Beta ----
+    document.getElementById('pf-long-not').textContent  = fmtMoney(d.long_notional);
+    document.getElementById('pf-short-not').textContent = fmtMoney(d.short_notional);
+    document.getElementById('pf-gross').textContent     = fmtMoney(d.gross_exposure);
+    const netEl = document.getElementById('pf-net');
+    netEl.textContent = fmtUSD(d.net_exposure);
+    netEl.className = 'v ' + (d.net_exposure >= 0 ? 'green' : 'red');
+    document.getElementById('pf-counts').textContent = `${d.long_count} L · ${d.short_count} S`;
+
+    document.getElementById('pf-beta-dol').textContent  = fmtUSD(d.portfolio_beta_dollar);
+    document.getElementById('pf-beta-norm').textContent = d.portfolio_beta_normalised.toFixed(3);
+    const betaCapEl = document.getElementById('pf-beta-cap');
+    betaCapEl.textContent = `${d.beta_load_cap}× · ${d.beta_load_status}`;
+    betaCapEl.className = 'v ' + (d.beta_load_status === 'OK' ? 'green' : 'red');
+
+    const ddEl = document.getElementById('pf-dd');
+    ddEl.textContent = fmtPctSigned(d.drawdown_pct);
+    ddEl.className = 'v ' + (d.drawdown_pct >= -5 ? 'green' : (d.drawdown_pct >= -10 ? 'amber' : 'red'));
+    const ddModeEl = document.getElementById('pf-dd-mode');
+    ddModeEl.textContent = d.drawdown_mode;
+    ddModeEl.className = 'v ' + ({NORMAL:'green', CAUTIOUS:'amber', DEFENSIVE:'amber', EMERGENCY:'red'}[d.drawdown_mode] || '');
+    document.getElementById('pf-largest').textContent = d.largest_position_pct.toFixed(2) + '%';
+    const singleCapEl = document.getElementById('pf-single-cap');
+    singleCapEl.textContent = `${d.single_position_cap_pct}% · ${d.single_position_status}`;
+    singleCapEl.className = 'v ' + (d.single_position_status === 'OK' ? 'green' : 'red');
+
+    // ---- §04 Realised stats ----
+    document.getElementById('pf-winrate').textContent  = d.win_rate_pct !== null ? d.win_rate_pct + '%' : '—';
+    document.getElementById('pf-nclosed').textContent  = d.n_closed;
+    document.getElementById('pf-avgwin').textContent   = d.avg_winner_usd !== null ? fmtUSD(d.avg_winner_usd) : '—';
+    document.getElementById('pf-avglos').textContent   = d.avg_loser_usd !== null ? fmtUSD(d.avg_loser_usd) : '—';
+    document.getElementById('pf-bestwin').textContent  = d.max_winner_usd !== null ? fmtUSD(d.max_winner_usd) : '—';
+    document.getElementById('pf-worstlos').textContent = d.max_loser_usd !== null ? fmtUSD(d.max_loser_usd) : '—';
+
+    // ---- §04 Sector breakdown ----
+    const sectorEl = document.getElementById('pf-sector-bars');
+    if (d.sector_breakdown.length) {
+      sectorEl.innerHTML = d.sector_breakdown.map(s => `
+        <div class="sector-bar">
+          <div class="row"><span>${s.sector}</span><span>${fmtMoney(s.notional)} · ${s.pct_gross.toFixed(1)}%</span></div>
+          <div class="bar"><div style="width:${Math.min(100, s.pct_gross)}%;"></div></div>
+        </div>`).join('');
+    }
+
+    // ---- §05 Risk engine ----
+    const riskEl = document.getElementById('pf-risk-cards');
+    const riskItems = [
+      {name: 'Beta load',           status: d.beta_load_status === 'OK' ? 'ok' : 'bad',
+       val: `${d.portfolio_beta_normalised.toFixed(2)} / ${d.beta_load_cap}× cap`},
+      {name: 'Single-position cap', status: d.single_position_status === 'OK' ? 'ok' : 'bad',
+       val: `${d.largest_position_pct.toFixed(1)}% / ${d.single_position_cap_pct}% cap`},
+      {name: 'Drawdown mode',       status: d.drawdown_mode === 'NORMAL' ? 'ok' : (d.drawdown_mode === 'EMERGENCY' ? 'bad' : 'warn'),
+       val: d.drawdown_mode + ` (DD ${fmtPctSigned(d.drawdown_pct)})`},
+      {name: 'Cash floor (10% min)', status: (d.cash / d.starting_capital * 100) >= 10 ? 'ok' : 'bad',
+       val: `${(d.cash / d.starting_capital * 100).toFixed(1)}% / 10% min`},
+    ];
+    riskEl.innerHTML = riskItems.map(r => `
+      <div class="risk-card ${r.status}">
+        <span class="name">${r.name}</span>
+        <span class="val">${r.val}</span>
+      </div>`).join('');
+
+  } catch (e) {
+    console.error(e);
+    document.getElementById('open-table').innerHTML = `<div class="empty" style="color:#f87171;">Load failed: ${e.message}</div>`;
+  }
+}
+
+async function closePosition(positionId, ticker) {
+  if (!confirm(`Close position #${positionId} (${ticker}) at current live price?`)) return;
+  const r = await fetch('/api/portfolio/close', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({position_id: positionId}),
+  });
+  if (r.ok) {
+    const d = await r.json();
+    alert(`Closed ${ticker} at $${d.exit_price.toFixed(2)} · realised P&L $${d.realised_pnl_usd.toFixed(2)}`);
+    loadPortfolio();
+  } else {
+    const err = await r.json().catch(()=>({}));
+    alert('Close failed: ' + (err.error || 'unknown'));
+  }
+}
+
+loadPortfolio();
+setInterval(loadPortfolio, 30000);
+
+// ============= P&L HISTORY CHART =============
+async function loadPnlHistory() {
+  const canvas = document.getElementById('pnl-chart');
+  const empty  = document.getElementById('pnl-empty');
+  if (!canvas) return;
+  let data;
+  try {
+    const r = await fetch('/api/portfolio/pnl_history');
+    if (r.status === 401) {
+      empty.textContent = 'Sign in to see P&L history.';
+      empty.style.display = 'block';
+      canvas.style.display = 'none';
+      return;
+    }
+    data = await r.json();
+  } catch (e) {
+    empty.textContent = 'Failed to load P&L history.';
+    empty.style.display = 'block'; canvas.style.display = 'none';
+    return;
+  }
+  if (!data.days || data.days.length === 0) {
+    empty.style.display = 'block';
+    canvas.style.display = 'none';
+    document.getElementById('pnl-summary').textContent = '0 trades';
+    return;
+  }
+  empty.style.display = 'none';
+  canvas.style.display = 'block';
+
+  // Render summary in the count chip
+  const final = data.cumulative_pnl[data.cumulative_pnl.length - 1] || 0;
+  const sign = final >= 0 ? '+' : '';
+  const color = final >= 0 ? '#4ade80' : '#f87171';
+  document.getElementById('pnl-summary').innerHTML =
+    `<span style="color:${color};font-weight:700;">${sign}$${Math.abs(final).toLocaleString()}</span> · ${data.total_trades} trades`;
+
+  // Hand-rolled canvas line chart (no chart.js dependency)
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  canvas.width = w * dpr; canvas.height = h * dpr; ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, w, h);
+
+  const pad = {l: 60, r: 20, t: 20, b: 32};
+  const xs = data.days;
+  const ys = data.cumulative_pnl;
+  const ymin = Math.min(0, ...ys) * 1.05;
+  const ymax = Math.max(0, ...ys) * 1.05;
+  const yrange = (ymax - ymin) || 1;
+  const sx = i => pad.l + (i / Math.max(xs.length - 1, 1)) * (w - pad.l - pad.r);
+  const sy = v => h - pad.b - ((v - ymin) / yrange) * (h - pad.t - pad.b);
+
+  // Gridlines
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+  ctx.lineWidth = 1;
+  ctx.font = '10px monospace';
+  ctx.fillStyle = '#666';
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.t + i * (h - pad.t - pad.b) / 4;
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(w - pad.r, y); ctx.stroke();
+    const yv = ymax - i * yrange / 4;
+    ctx.textAlign = 'right';
+    const sign = yv >= 0 ? '+' : '';
+    ctx.fillText(`${sign}$${Math.round(yv).toLocaleString()}`, pad.l - 6, y + 3);
+  }
+
+  // Zero baseline
+  if (ymin < 0 && ymax > 0) {
+    ctx.strokeStyle = 'rgba(255,255,255,0.20)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(pad.l, sy(0)); ctx.lineTo(w - pad.r, sy(0)); ctx.stroke();
+  }
+
+  // X labels (show first, middle, last)
+  ctx.textAlign = 'center';
+  const labelIdx = [0, Math.floor(xs.length / 2), xs.length - 1];
+  labelIdx.forEach(i => {
+    if (i < xs.length) ctx.fillText(xs[i], sx(i), h - pad.b + 18);
+  });
+
+  // Filled area
+  ctx.beginPath();
+  ctx.moveTo(sx(0), sy(0));
+  ys.forEach((v, i) => ctx.lineTo(sx(i), sy(v)));
+  ctx.lineTo(sx(ys.length - 1), sy(0));
+  ctx.closePath();
+  ctx.fillStyle = final >= 0 ? 'rgba(74,222,128,0.15)' : 'rgba(248,113,113,0.15)';
+  ctx.fill();
+
+  // Cumulative line
+  ctx.beginPath();
+  ctx.strokeStyle = final >= 0 ? '#4ade80' : '#f87171';
+  ctx.lineWidth = 2.5;
+  ys.forEach((v, i) => {
+    if (i === 0) ctx.moveTo(sx(i), sy(v));
+    else ctx.lineTo(sx(i), sy(v));
+  });
+  ctx.stroke();
+
+  // Endpoint dot
+  ctx.fillStyle = final >= 0 ? '#4ade80' : '#f87171';
+  ctx.beginPath();
+  ctx.arc(sx(ys.length - 1), sy(final), 5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#0a0a0a';
+  ctx.font = '11px monospace';
+  ctx.textAlign = 'left';
+  const labelText = `${final >= 0 ? '+' : ''}$${Math.abs(final).toLocaleString()}`;
+  // Background bubble for the label
+  const tw = ctx.measureText(labelText).width;
+  ctx.fillStyle = final >= 0 ? '#4ade80' : '#f87171';
+  ctx.fillRect(sx(ys.length - 1) - tw - 16, sy(final) - 18, tw + 12, 16);
+  ctx.fillStyle = '#0a0a0a';
+  ctx.fillText(labelText, sx(ys.length - 1) - tw - 10, sy(final) - 6);
+}
+
+loadPnlHistory();
+setInterval(loadPnlHistory, 60000);  // refresh every minute
+</script>
+
+</body>
+</html>

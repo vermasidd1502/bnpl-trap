@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Risk Profile Survey · BearWatch × Apollo Hermes</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='v2.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='pages.css') }}">
+</head>
+<body>
+{% include '_nav.html' %}
+
+<main class="page">
+  <section class="hero" style="padding: 32px 0 16px;">
+    <div class="kicker">Onboarding</div>
+    <h1 class="block-title" style="font-size: 38px;">Welcome, <span style="color: var(--accent-signal);">{{ user.username }}</span>.</h1>
+    <p class="hero-sub">Ten quick questions so the pod can recommend a mascot that matches your style. No right answers — just be honest.</p>
+  </section>
+
+  <form method="POST" action="/survey" style="max-width: 760px; margin: 0 auto;">
+    {% for q in survey %}
+    <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 22px; margin-bottom: 14px;">
+      <div style="display: flex; gap: 14px; align-items: baseline; margin-bottom: 6px;">
+        <div style="font-family: var(--font-mono); font-size: 12px; color: var(--accent-signal); font-weight: 600;">{{ "%02d"|format(loop.index) }}</div>
+        <div style="font-size: 15px; font-weight: 600; color: var(--text-primary);">{{ q.q }}</div>
+      </div>
+      {% if q.help %}
+      <div style="font-size: 12px; color: var(--text-tertiary); line-height: 1.5; margin: 4px 0 14px 32px; padding-left: 10px; border-left: 2px solid var(--border-strong); font-style: italic;">
+        {{ q.help }}
+      </div>
+      {% endif %}
+      <div style="display: grid; gap: 8px;">
+        {% for opt_label, _ in q.options %}
+        <label style="display: flex; align-items: center; gap: 12px; padding: 11px 14px; background: var(--bg-base); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: all 120ms; font-size: 13px; color: var(--text-secondary);"
+               onmouseover="this.style.borderColor='var(--border-accent)'; this.style.color='var(--text-primary)'"
+               onmouseout="this.style.borderColor='var(--border)'; this.style.color='var(--text-secondary)'">
+          <input type="radio" name="{{ q.id }}" value="{{ loop.index0 }}" required
+                 style="accent-color: var(--accent-signal);">
+          <span>{{ opt_label }}</span>
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+
+    <div style="text-align: center; margin: 32px 0;">
+      <button type="submit" class="btn-primary" style="font-size: 14px; padding: 13px 28px; cursor: pointer;">
+        Generate my profile →
+      </button>
+      <div style="font-size: 11px; color: var(--text-tertiary); margin-top: 12px;">
+        Answers are stored against your username. Re-takeable at any time.
+      </div>
+    </div>
+  </form>
+</main>
+
+<footer class="footer">
+  <div>BearWatch × Apollo Hermes  ·  risk profile assessment</div>
+  <div style="font-family: var(--font-mono);">{{ user.username }}  ·  onboarding</div>
+</footer>
+</body>
+</html>

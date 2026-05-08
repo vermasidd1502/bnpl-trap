@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>📅 BNPL Event Study · BearWatch</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/v2.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+  <style>
+    .ev-hero { background: linear-gradient(135deg, rgba(74,222,128,0.10), transparent 60%), var(--bg-elevated);
+      border: 1px solid rgba(74,222,128,0.35); border-left: 4px solid #4ade80;
+      border-radius: 12px; padding: 24px 28px; margin-bottom: 18px; }
+    .ev-headline { font-family: var(--font-display, sans-serif); font-size: 26px; font-weight: 700; color: var(--text); margin: 0; }
+    .ev-sub { font-size: 13px; color: var(--text-secondary); margin-top: 6px; line-height: 1.55; }
+    .ev-stat-tile { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 14px; }
+    .ev-stat-tile .lbl { font-size: 9px; color: var(--text-tertiary); text-transform: uppercase;
+      letter-spacing: 0.06em; font-weight: 700; font-family: var(--font-mono); }
+    .ev-stat-tile .val { font-family: var(--font-mono); font-size: 26px; font-weight: 700; margin-top: 4px; }
+    .ev-stat-tile .sub { font-size: 10px; color: var(--text-tertiary); margin-top: 4px; }
+    .ev-card { background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 8px; padding: 16px 18px; margin-bottom: 14px; }
+    .ev-meta { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
+    .ev-name { font-size: 15px; font-weight: 700; color: var(--text); }
+    .ev-id   { font-family: var(--font-mono); font-size: 10px; color: var(--text-tertiary); margin-top: 3px; }
+    .ev-pillars { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin: 10px 0; }
+    .ev-pillar-tile { padding: 10px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 5px; }
+    .ev-pillar-tile .plbl { font-size: 9px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; font-family: var(--font-mono); }
+    .ev-pillar-tile .pval { font-family: var(--font-mono); font-size: 14px; font-weight: 700; margin-top: 2px; }
+    .ev-fired { background: rgba(74,222,128,0.15); color: #4ade80; padding: 2px 7px; border-radius: 3px; font-size: 9px; font-weight: 700; font-family: var(--font-mono); }
+    .ev-na    { background: #2a2a2a; color: #737373; padding: 2px 7px; border-radius: 3px; font-size: 9px; font-weight: 700; font-family: var(--font-mono); }
+    .chart-box { position: relative; height: 200px; margin-top: 10px; }
+    .ev-honest {
+      background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.4);
+      border-left: 3px solid #fbbf24; border-radius: 6px;
+      padding: 12px 14px; margin: 14px 0; font-size: 11px; color: var(--text-secondary); line-height: 1.6;
+    }
+  </style>
+</head>
+<body class="dark">
+
+{% include '_nav.html' %}
+
+<main class="container" style="max-width: 1200px; padding: 18px;">
+
+  <!-- HERO -->
+  <div class="ev-hero">
+    <div style="display:flex; gap:18px; align-items:center;">
+      <div style="font-size:60px;">📅</div>
+      <div style="flex:1;">
+        <h1 class="ev-headline">BNPL Event Study · pre-event BSI lead times</h1>
+        <div class="ev-sub">
+          Six publicly-verifiable BNPL distress events. For each, BSI pillars in the trailing 90 days are reconstructed from the
+          warehouse and the lead time (peak BSI z to event date) is computed. <strong>This is the audience-friendly visual
+          companion to the Phase 2A panel regression and the Phase 2C archetype backtest.</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HEADLINE TILES -->
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:18px;">
+    <div class="ev-stat-tile"><div class="lbl">Events analysed</div><div class="val" id="t-n-events" style="color:var(--text);">—</div><div class="sub">publicly verifiable</div></div>
+    <div class="ev-stat-tile"><div class="lbl">Fire rate</div><div class="val" id="t-fire-rate" style="color:#4ade80;">—</div><div class="sub">z≥1.5 for ≥7d before</div></div>
+    <div class="ev-stat-tile"><div class="lbl">Mean lead time</div><div class="val" id="t-mean-lead" style="color:#4ade80;">—</div><div class="sub">days BSI peak → event</div></div>
+    <div class="ev-stat-tile"><div class="lbl">Median lead time</div><div class="val" id="t-median-lead" style="color:#4ade80;">—</div><div class="sub">days</div></div>
+    <div class="ev-stat-tile"><div class="lbl">Mean composite peak z</div><div class="val" id="t-mean-z" style="color:var(--text);">—</div><div class="sub">|z| at peak</div></div>
+  </div>
+
+  <!-- HONEST FRAMING -->
+  <div class="ev-honest">
+    <strong style="color:#fbbf24;">Honest framing — selection bias acknowledged.</strong>
+    These events were chosen because they are publicly known distress episodes. This evidence is therefore <em>corroborative</em>, not
+    prospectively predictive. The formal statistical evidence sits in §6.4 (Phase 2A panel regression, p&lt;0.001) and §6.13 (Phase 2C
+    archetype backtest); this event study is the audience-friendly visual companion. We report 100% fire rate honestly while flagging
+    that the same metric on a randomly-sampled non-event window would NOT be 0% — that comparison requires the prospective backtest.
+  </div>
+
+  <!-- EVENT CARDS -->
+  <div id="event-cards">loading…</div>
+
+  <!-- INFRASTRUCTURE ROADMAP -->
+  <div class="ev-card" style="border-left: 3px solid #a78bfa; background: rgba(167,139,250,0.04);">
+    <div style="font-size:10px;color:#a78bfa;text-transform:uppercase;letter-spacing:0.06em;font-weight:700;font-family:var(--font-mono);margin-bottom:10px;">▶ INFRASTRUCTURE ROADMAP · why R² is negative + what would fix it</div>
+    <div style="font-size:12px;color:var(--text-secondary);line-height:1.65;margin-bottom:12px;">
+      The event-study evidence above is strong (6/6 fire rate, mean 26.5d lead). The Phase 2E/2F regression evidence is honestly weak
+      (negative OOS R²). Both are true simultaneously — the BSI is a composite event detector, not a continuous spread regressor at
+      daily frequency on the populated panel. <strong style="color:#a78bfa;">Three concrete data investments would shift the regression evidence
+      from corroborative to predictive.</strong>
+    </div>
+    <table class="cmp" style="width:100%;border-collapse:collapse;font-size:11px;">
+      <thead><tr style="background:var(--bg-elevated);">
+        <th style="text-align:left;padding:7px 9px;font-size:9px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.05em;font-weight:700;">Investment</th>
+        <th style="text-align:left;padding:7px 9px;font-size:9px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.05em;font-weight:700;">Cost</th>
+        <th style="text-align:left;padding:7px 9px;font-size:9px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.05em;font-weight:700;">Expected R² lift</th>
+        <th style="text-align:left;padding:7px 9px;font-size:9px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.05em;font-weight:700;">Status</th>
+      </tr></thead>
+      <tbody>
+        <tr style="border-top:1px solid var(--border);">
+          <td style="padding:8px 9px;"><strong style="color:var(--text);">Per-firm bond spreads</strong> (Markit / TRACE Enhanced)<br><span style="color:var(--text-tertiary);font-size:10px;">Replaces HY OAS aggregate target with firm-specific spread; CFPB consumer signal becomes mappable to firm credit response</span></td>
+          <td style="padding:8px 9px;color:#fbbf24;font-family:var(--font-mono);">$20–40k/yr enterprise<br>(WRDS via university)</td>
+          <td style="padding:8px 9px;color:#4ade80;font-family:var(--font-mono);">−0.23 → +0.15 to +0.30<br>(estimated)</td>
+          <td style="padding:8px 9px;color:var(--text-tertiary);font-size:10.5px;">Largest single lift. Would also enable §1.6 LHS validation directly.</td>
+        </tr>
+        <tr style="border-top:1px solid var(--border);">
+          <td style="padding:8px 9px;"><strong style="color:var(--text);">Reddit ingest via PRAW</strong><br><span style="color:var(--text-tertiary);font-size:10px;">Free Reddit API; daily firm-mention z-score</span></td>
+          <td style="padding:8px 9px;color:#4ade80;font-family:var(--font-mono);">$0 (PRAW free tier)<br>~1 week engineering</td>
+          <td style="padding:8px 9px;color:#4ade80;font-family:var(--font-mono);">marginal<br>(+0.02 to +0.05)</td>
+          <td style="padding:8px 9px;color:var(--text-tertiary);font-size:10.5px;">Closes the missing-pillar gap; supports CFPB at firm grain</td>
+        </tr>
+        <tr style="border-top:1px solid var(--border);">
+          <td style="padding:8px 9px;"><strong style="color:var(--text);">SEC 10-K headcount via EDGAR XBRL</strong><br><span style="color:var(--text-tertiary);font-size:10px;">Annual cadence; replaces firm vitality pillar legally and free</span></td>
+          <td style="padding:8px 9px;color:#4ade80;font-family:var(--font-mono);">$0 (EDGAR free)<br>~2 hours engineering</td>
+          <td style="padding:8px 9px;color:#fbbf24;font-family:var(--font-mono);">small<br>(+0.01 to +0.03)</td>
+          <td style="padding:8px 9px;color:var(--text-tertiary);font-size:10.5px;">Rejected Glassdoor scraper (TOS + legal risk); EDGAR is the legal alternative</td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="margin-top:12px;padding-top:10px;border-top:1px dashed var(--border);font-size:10.5px;color:var(--text-tertiary);font-style:italic;line-height:1.6;">
+      The honest pitch to a prospective funder, peer reviewer, or institutional buyer: <strong style="color:#a78bfa;">"The architecture and event-detection
+      evidence are validated; per-firm spread feed and missing-pillar back-fill are the data investments that would convert event-study
+      lead times into publication-grade R² on continuous spread prediction."</strong>
+    </div>
+  </div>
+
+</main>
+
+<script>
+async function loadEvents() {
+  const r = await fetch('/api/bnpl/event_study');
+  if (!r.ok) {
+    document.getElementById('event-cards').innerHTML =
+      '<div style="padding:24px;color:#f87171;">Phase 2H not yet run. Execute run_phase2h_event_study.py first.</div>';
+    return;
+  }
+  const d = await r.json();
+  if (d.error) {
+    document.getElementById('event-cards').innerHTML = `<div style="padding:24px;color:#f87171;">${d.message}</div>`;
+    return;
+  }
+
+  // Headline tiles
+  document.getElementById('t-n-events').textContent       = d.n_events;
+  document.getElementById('t-fire-rate').textContent      = (d.fire_rate * 100).toFixed(0) + '%';
+  document.getElementById('t-mean-lead').textContent      = d.mean_lead_time_days + 'd';
+  document.getElementById('t-median-lead').textContent    = d.median_lead_time_days + 'd';
+  document.getElementById('t-mean-z').textContent         = (d.mean_composite_peak_z >= 0 ? '+' : '') + d.mean_composite_peak_z;
+
+  // Per-event cards
+  const cardsHtml = d.events.map((ev, i) => {
+    const pTiles = ['cfpb', 'trends', 'move'].map(pname => {
+      const p = ev.pillars[pname];
+      if (!p.available) {
+        return `<div class="ev-pillar-tile">
+          <div class="plbl">${pname.toUpperCase()}</div>
+          <div class="pval" style="color:#737373;">—</div>
+          <div style="font-size:10px;color:var(--text-tertiary);margin-top:4px;">no data</div>
+        </div>`;
+      }
+      const fired = p.fired ? '<span class="ev-fired">FIRED</span>' : '<span class="ev-na">—</span>';
+      const sign = p.peak_z >= 0 ? '+' : '';
+      const colour = Math.abs(p.peak_z) >= 2 ? '#4ade80' : (Math.abs(p.peak_z) >= 1.5 ? '#fbbf24' : 'var(--text)');
+      return `<div class="ev-pillar-tile">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div class="plbl">${pname.toUpperCase()}</div>${fired}
+        </div>
+        <div class="pval" style="color:${colour};">${sign}${p.peak_z}</div>
+        <div style="font-size:10px;color:var(--text-tertiary);margin-top:4px;">peak ${p.days_before_event}d before · ${p.max_consecutive_elevated_days}d sustained</div>
+      </div>`;
+    }).join('');
+    const compZ = ev.composite.peak_z;
+    const compColour = compZ === null ? '#737373' : (Math.abs(compZ) >= 2 ? '#4ade80' : '#fbbf24');
+    return `<div class="ev-card">
+      <div class="ev-meta">
+        <div>
+          <div class="ev-name">${ev.name}</div>
+          <div class="ev-id">${ev.id} · ${ev.ticker} · event date: ${ev.event_date} · type: ${ev.type}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:9px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.06em;font-weight:700;font-family:var(--font-mono);">Composite peak</div>
+          <div style="font-family:var(--font-mono);font-size:18px;font-weight:700;color:${compColour};">${compZ === null ? '—' : (compZ >= 0 ? '+' : '') + compZ}</div>
+          <div style="font-size:10px;color:var(--text-tertiary);">${ev.composite.days_before_event === null ? '' : ev.composite.days_before_event + 'd before'}</div>
+        </div>
+      </div>
+      <div class="ev-pillars">${pTiles}</div>
+      <div class="chart-box"><canvas id="chart-${i}"></canvas></div>
+      <div style="margin-top:8px;font-size:10px;color:var(--text-tertiary);font-style:italic;">Source: ${ev.source}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('event-cards').innerHTML = cardsHtml;
+
+  // Render charts
+  d.events.forEach((ev, i) => {
+    const ctx = document.getElementById('chart-' + i);
+    if (!ctx) return;
+    const datasets = [];
+    const colours = { cfpb: '#4ade80', trends: '#a78bfa', move: '#60a5fa' };
+    ['cfpb', 'trends', 'move'].forEach(pname => {
+      const p = ev.pillars[pname];
+      if (!p.available || !p.values) return;
+      datasets.push({
+        label: pname.toUpperCase(),
+        data: p.values.map(v => ({ x: v.dt, y: v.z })),
+        borderColor: colours[pname], backgroundColor: colours[pname] + '22',
+        borderWidth: 2, tension: 0.2, pointRadius: 0, fill: false,
+      });
+    });
+    if (ev.composite.values && ev.composite.values.length) {
+      datasets.push({
+        label: 'COMPOSITE',
+        data: ev.composite.values.map(v => ({ x: v.dt, y: v.z })),
+        borderColor: '#fbbf24', backgroundColor: '#fbbf24',
+        borderWidth: 3, tension: 0.2, pointRadius: 0, borderDash: [5, 5], fill: false,
+      });
+    }
+    new Chart(ctx, {
+      type: 'line',
+      data: { datasets },
+      options: {
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: { color: '#a1a1aa', font: { family: 'monospace', size: 9 }, boxWidth: 12 } },
+          annotation: undefined,
+          tooltip: { mode: 'index' },
+        },
+        scales: {
+          x: { type: 'time', time: { unit: 'week' }, ticks: { color: '#737373', font: { family: 'monospace', size: 9 } }, grid: { display: false } },
+          y: {
+            ticks: { color: '#737373', font: { family: 'monospace', size: 9 } },
+            grid: { color: 'rgba(255,255,255,0.04)' },
+            title: { display: true, text: 'pillar z-score', color: '#737373', font: { size: 10 } },
+          },
+        },
+      },
+    });
+  });
+}
+loadEvents();
+</script>
+
+</body>
+</html>

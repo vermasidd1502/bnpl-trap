@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Monitor · BearWatch × Apollo Hermes</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='v2.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='pages.css') }}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+{% include '_nav.html' %}
+
+<main class="page" style="max-width: 1320px;">
+
+  <section class="hero" style="padding: 24px 0 18px; text-align: left;">
+    <div class="kicker">Universe Monitor · BNPL + Subprime Credit</div>
+    <h1 class="block-title" style="font-size: 36px; margin: 4px 0 10px;">25-firm validation universe.</h1>
+    <p class="block-sub" style="margin: 0; max-width: 820px;">
+      The pre-registered BSI validation universe (BNPL + subprime auto + marketplace lending + subprime consumer + credit cards). Click any firm for a full company profile.
+      Use ⊕ to add to your <a href="/live" style="color: var(--success); text-decoration: none;">Live Pod</a> watchlist — the 4-stage pod auto-runs against your highest-live-z asset.
+      For <strong style="color:#a78bfa;">open-universe equities</strong> (any ticker, not just our 25), see <a href="/equity-monitor" style="color:#a78bfa;text-decoration:none;">🔮 Equity Monitor</a>.
+    </p>
+
+    <!-- LIVE STATUS BAR — T-1 morning-refresh framing -->
+    <div style="margin-top: 16px; padding: 12px 16px; background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.25); border-radius: 8px; max-width: 920px;">
+      <div style="display: flex; gap: 14px; align-items: center; flex-wrap: wrap;">
+        <div style="display:flex;align-items:center;gap:6px;font-size:11px;font-family:var(--font-mono);color:var(--success);text-transform:uppercase;letter-spacing:0.06em;">
+          <span style="width:8px;height:8px;border-radius:50%;background:var(--success);box-shadow:0 0 6px var(--success);animation:pulse 1.6s ease-in-out infinite;"></span>
+          LIVE · T-1
+        </div>
+        <div style="font-size: 12px; color: var(--text-secondary);">
+          Pod date <strong id="mon-asof" style="color:var(--text);font-family:var(--font-mono);">—</strong> · prices stream from yfinance · z-scores derived from CFPB complaint velocity in the warehouse
+        </div>
+        <div style="margin-left:auto;font-size:11px;color:var(--text-tertiary);font-family:var(--font-mono);">
+          <span id="mon-livecount">—</span>/25 live · rest scripted
+        </div>
+      </div>
+      <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(34,197,94,0.2); font-size: 11px; color: var(--text-tertiary); line-height: 1.55;">
+        Each morning the pod ingests overnight CFPB / FRED / scraper data and freezes a daily snapshot. Today's view shows the previous day's complete data (T-1 by design — CFPB has 1-3 d publication lag). Names without warehouse coverage fall back to a scripted z-score (tagged <code style="font-family:var(--font-mono);background:var(--bg-elevated);padding:1px 5px;border-radius:3px;font-size:10px;">scripted</code> in the row).
+      </div>
+    </div>
+  </section>
+  <style>@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}</style>
+
+  <!-- TOP RECOMMENDATIONS — BLOCK STYLE -->
+  <section class="section" style="margin-top: 24px;">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;">
+      <h2 class="section-title" style="margin:0;">⭐ Top recommendations</h2>
+      <div style="font-size:11px;color:var(--text-tertiary);font-family:var(--font-mono);" id="top-count">— firms above threshold</div>
+    </div>
+    <div id="top-recs-grid" class="recs-grid"></div>
+  </section>
+
+  <!-- FILTER BAR -->
+  <section style="margin: 32px 0 12px;">
+    <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
+      <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-tertiary);font-weight:600;margin-right:12px;">Filter sector:</span>
+      <button class="filter-chip active" data-sector="all">All</button>
+      {% for key, label in sectors.items() %}
+      <button class="filter-chip" data-sector="{{ key }}">{{ label }}</button>
+      {% endfor %}
+      <div style="flex:1;"></div>
+      <span style="font-size:11px;color:var(--text-tertiary);font-family:var(--font-mono);" id="universe-stats">— firms shown</span>
+    </div>
+  </section>
+
+  <!-- UNIVERSE GRID -->
+  <section style="margin-bottom:80px;">
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+      <div class="firm-tile-head">
+        <div></div>
+        <div>Ticker</div>
+        <div>Firm</div>
+        <div>Sector</div>
+        <div style="text-align:right;">BSI z</div>
+        <div>State</div>
+        <div style="text-align:right;">Price</div>
+        <div>Last fire</div>
+        <div style="text-align:right;">Action</div>
+      </div>
+      <div id="universe-grid"></div>
+    </div>
+  </section>
+
+</main>
+
+<!-- =============== POPUP MODAL — Full firm profile =============== -->
+<div id="firm-modal" class="modal-overlay" style="display:none;">
+  <div class="modal-shell">
+    <button class="modal-close" onclick="closeFirmModal()">×</button>
+    <div class="modal-body" id="modal-body">loading…</div>
+  </div>
+</div>
+
+<div id="toast-stack"></div>
+
+<style>
+.filter-chip {
+  background: var(--bg-card); border: 1px solid var(--border-strong);
+  color: var(--text-secondary); padding: 6px 12px; border-radius: 999px;
+  font-size: 12px; font-weight: 500; cursor: pointer; font-family: var(--font-sans);
+  transition: all 120ms ease;
+}
+.filter-chip:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+.filter-chip.active { background: var(--accent-signal); color: var(--bg-base); border-color: var(--accent-signal); }
+
+/* =========== Block-style top recommendations =========== */
+.recs-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+.rec-block {
+  background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-base) 100%);
+  border: 1px solid var(--border-strong);
+  border-radius: 14px;
+  padding: 18px;
+  position: relative;
+  transition: all 200ms ease;
+  cursor: pointer;
+  overflow: hidden;
+}
+.rec-block:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent-signal);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+.rec-block::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: var(--accent-signal);
+}
+.rec-block .rec-bear {
+  width: 84px; height: 84px; object-fit: contain; margin-bottom: 8px;
+}
+.rec-block .rec-row1 { display: flex; align-items: baseline; gap: 8px; }
+.rec-block .rec-ticker {
+  font-family: var(--font-mono); font-weight: 700; font-size: 22px;
+  color: var(--text-primary); letter-spacing: -0.02em;
+}
+.rec-block .rec-state {
+  font-size: 9px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.06em; padding: 3px 8px; border-radius: 4px;
+}
+.rec-block .rec-name {
+  font-size: 12px; color: var(--text-tertiary); margin-top: 2px;
+}
+.rec-block .rec-z {
+  font-family: var(--font-mono); font-weight: 700; font-size: 28px;
+  color: var(--danger); margin-top: 10px; line-height: 1;
+}
+.rec-block .rec-z-lbl { font-size: 10px; color: var(--text-tertiary); }
+.rec-block .rec-meta {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);
+}
+.rec-block .rec-price {
+  font-family: var(--font-mono); font-size: 13px; color: var(--text-primary);
+}
+.rec-block .rec-add {
+  background: var(--accent-signal); color: var(--bg-base);
+  border: none; padding: 5px 10px; border-radius: 5px;
+  font-weight: 600; font-size: 11px; cursor: pointer;
+  font-family: var(--font-sans);
+  transition: all 120ms ease;
+}
+.rec-block .rec-add:hover { filter: brightness(1.1); }
+.rec-block .rec-add.in-watchlist {
+  background: var(--bg-elevated); color: var(--success); border: 1px solid var(--success);
+}
+
+/* =========== Universe grid rows =========== */
+.firm-tile-head, .firm-tile {
+  display: grid;
+  grid-template-columns: 32px 80px 1fr 1.4fr 70px 1fr 90px 110px 130px;
+  gap: 14px;
+  padding: 12px 18px;
+  align-items: center;
+  font-size: 13px;
+}
+.firm-tile-head {
+  border-bottom: 1px solid var(--border-strong);
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--text-tertiary); font-weight: 600;
+}
+.firm-tile {
+  border-bottom: 1px solid var(--border);
+  transition: background 120ms ease;
+  cursor: pointer;
+}
+.firm-tile:last-child { border-bottom: none; }
+.firm-tile:hover { background: var(--bg-card-hover); }
+.firm-tile.dim { opacity: 0.5; }
+.firm-tile .firm-bear-img { width: 32px; height: 32px; object-fit: contain; }
+.firm-tile .firm-ticker { font-weight: 700; font-family: var(--font-mono); color: var(--text-primary); }
+.firm-tile .firm-name { color: var(--text-secondary); }
+.firm-tile .firm-sector { color: var(--text-tertiary); font-size: 12px; }
+.firm-tile .firm-z {
+  text-align: right; font-family: var(--font-mono); font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.firm-tile .firm-z.high { color: var(--danger); }
+.firm-tile .firm-z.med  { color: var(--warning); }
+.firm-tile .firm-z.low  { color: var(--success); }
+.src-tag {
+  display: inline-block; font-size: 8px; padding: 1px 5px; border-radius: 3px;
+  font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  margin-left: 6px; vertical-align: middle; cursor: help;
+  font-family: var(--font-mono);
+}
+.src-tag.live     { background: rgba(34,197,94,0.12);  color: #4ade80; border: 1px solid rgba(34,197,94,0.35); }
+.src-tag.market   { background: rgba(96,165,250,0.12); color: #60a5fa; border: 1px solid rgba(96,165,250,0.35); }
+.src-tag.scripted { background: rgba(167,139,250,0.10); color: #a78bfa; border: 1px solid rgba(167,139,250,0.35); }
+.firm-tile .firm-state {
+  font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em;
+  padding: 3px 9px; border-radius: 999px; display: inline-block;
+}
+.firm-tile .firm-price { text-align: right; font-family: var(--font-mono); font-size: 12px; }
+.firm-tile .firm-last { font-size: 11px; color: var(--text-tertiary); font-family: var(--font-mono); }
+.firm-tile .firm-actions { display: flex; gap: 4px; justify-content: flex-end; }
+.firm-tile .firm-actions button {
+  background: var(--bg-elevated); border: 1px solid var(--border-strong);
+  color: var(--text-primary); padding: 5px 8px; border-radius: 5px;
+  font-size: 11px; font-weight: 600; cursor: pointer; font-family: var(--font-sans);
+}
+.firm-tile .firm-actions button:hover:not(:disabled) {
+  border-color: var(--accent-signal); background: var(--bg-card);
+}
+.firm-tile .firm-actions button:disabled { opacity: 0.3; cursor: not-allowed; }
+.firm-tile .firm-actions .btn-add { color: var(--accent-signal); border-color: var(--accent-signal); }
+.firm-tile .firm-actions .btn-add.in-watchlist { color: var(--success); border-color: var(--success); background: rgba(74,222,128,0.06); }
+
+.tag {
+  display: inline-block; font-size: 9px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  padding: 2px 6px; border-radius: 4px; margin-left: 4px; vertical-align: middle;
+}
+.tag.private  { background: rgba(161,161,170,0.15); color: var(--text-tertiary); }
+.tag.delisted { background: rgba(248,113,113,0.12); color: var(--danger); }
+
+.bear-FIRED_UP { color: var(--danger); background: rgba(248,113,113,0.10); }
+.bear-ANGRY    { color: var(--danger); background: rgba(248,113,113,0.08); }
+.bear-WORRIED  { color: var(--warning); background: rgba(250,204,21,0.10); }
+.bear-THINKING { color: var(--accent-signal); background: rgba(212,165,116,0.10); }
+.bear-CONFUSED { color: var(--text-secondary); background: var(--bg-elevated); }
+.bear-SLEEPING { color: var(--text-tertiary); background: var(--bg-elevated); }
+
+/* =========== Modal =========== */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 999;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(6px);
+  display: grid; place-items: center;
+  padding: 32px 16px;
+  animation: fade 200ms ease;
+}
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+.modal-shell {
+  background: var(--bg-base);
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+  width: 100%; max-width: 1080px; height: calc(100vh - 64px);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+  animation: slide 250ms ease;
+  display: flex; flex-direction: column;
+}
+@keyframes slide { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.modal-close {
+  position: absolute; top: 14px; right: 14px; z-index: 10;
+  background: var(--bg-card); border: 1px solid var(--border-strong);
+  color: var(--text-primary); width: 36px; height: 36px;
+  border-radius: 50%; cursor: pointer; font-size: 20px; line-height: 1;
+  transition: all 120ms ease;
+}
+.modal-close:hover { background: var(--bg-card-hover); border-color: var(--accent-signal); }
+.modal-body {
+  flex: 1; overflow-y: auto; padding: 36px;
+}
+
+.m-hero {
+  display: grid; grid-template-columns: auto 1fr auto; gap: 24px;
+  align-items: center; padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+.m-hero-bear { width: 96px; height: 96px; object-fit: contain; }
+.m-hero-ticker { font-family: var(--font-mono); font-size: 36px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.03em; }
+.m-hero-name { font-size: 14px; color: var(--text-tertiary); margin-top: 2px; }
+.m-hero-state {
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+  padding: 4px 10px; border-radius: 999px; display: inline-block; margin-top: 8px;
+}
+.m-hero-z {
+  text-align: right; font-family: var(--font-mono);
+  font-size: 48px; font-weight: 800; line-height: 1; color: var(--danger);
+}
+.m-hero-z-lbl { font-size: 10px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; text-align: right; }
+
+.m-section { margin: 28px 0; }
+.m-section h3 {
+  font-size: 14px; font-weight: 600; color: var(--text-primary);
+  margin: 0 0 12px; letter-spacing: -0.01em;
+  display: flex; align-items: center; gap: 8px;
+}
+.m-section h3::before {
+  content: ""; width: 3px; height: 14px; background: var(--accent-signal);
+  border-radius: 2px;
+}
+.m-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.m-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.m-stat {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px 14px;
+}
+.m-stat .lbl {
+  font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--text-tertiary); font-weight: 600;
+}
+.m-stat .val {
+  font-family: var(--font-mono); font-size: 16px; font-weight: 700;
+  color: var(--text-primary); margin-top: 4px; font-variant-numeric: tabular-nums;
+}
+
+.chart-wrap {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 8px; padding: 14px; height: 240px;
+}
+
+/* Star rating */
+.stars { display: inline-flex; gap: 2px; }
+.star { color: var(--text-quat); font-size: 18px; }
+.star.filled { color: var(--accent-signal); }
+
+.rating-row {
+  display: grid; grid-template-columns: 60px 1fr 80px;
+  gap: 12px; padding: 10px 14px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 8px; margin-bottom: 6px;
+  align-items: center;
+}
+.rating-row .agency { font-size: 11px; color: var(--text-tertiary); font-weight: 600; }
+.rating-row .grade {
+  font-family: var(--font-mono); font-weight: 700;
+  font-size: 14px; text-align: right;
+}
+.rating-row .grade.ig    { color: var(--success); }
+.rating-row .grade.subig { color: var(--warning); }
+.rating-row .grade.junk  { color: var(--danger); }
+.rating-row .grade.na    { color: var(--text-quat); }
+
+.news-item {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+.news-item:last-child { border-bottom: none; }
+.news-item .news-date { font-family: var(--font-mono); font-size: 10px; color: var(--text-tertiary); }
+.news-item .news-title { color: var(--text-primary); margin-top: 3px; }
+.news-item .news-src { font-size: 10px; color: var(--text-tertiary); margin-top: 2px; }
+
+.pillar-bar {
+  display: grid; grid-template-columns: 130px 1fr 50px;
+  gap: 10px; padding: 5px 0; align-items: center;
+  font-size: 11px;
+}
+.pillar-bar .lbl { color: var(--text-secondary); }
+.pillar-bar .track { background: var(--bg-elevated); height: 6px; border-radius: 3px; overflow: hidden; }
+.pillar-bar .fill { height: 100%; background: linear-gradient(90deg, var(--accent-signal), var(--danger)); }
+.pillar-bar .val { font-family: var(--font-mono); text-align: right; font-weight: 600; color: var(--text-primary); }
+</style>
+
+<script>
+const STATE_BEAR_IMG = {
+  FIRED_UP: "bear_fired_up.png", ANGRY: "bear_angry.png",
+  WORRIED:  "bear_worried.png",  THINKING: "bear_thinking.png",
+  CONFUSED: "bear_confused.png", SLEEPING: "bear_sleeping.png",
+};
+
+let UNIVERSE = [];
+let CURRENT_FILTER = "all";
+let WATCHLIST_TICKERS = new Set();
+let CURRENT_CHART = null;
+
+function fmtPrice(p) { return p == null ? "—" : "$" + Number(p).toFixed(2); }
+function fmtBn(v) { return v == null ? "—" : (v < 0 ? "−" : "") + "$" + Math.abs(v).toFixed(2) + "B"; }
+
+function toast(msg, kind="info") {
+  const el = document.createElement("div");
+  el.className = `toast ${kind}`;
+  el.innerHTML = `<div class="toast-dot"></div><div>${msg}</div>`;
+  document.getElementById("toast-stack").appendChild(el);
+  setTimeout(() => { el.style.opacity = "0"; }, 3500);
+  setTimeout(() => el.remove(), 4000);
+}
+
+async function refreshWatchlistState() {
+  try {
+    const r = await fetch("/api/selections");
+    if (!r.ok) { WATCHLIST_TICKERS = new Set(); return; }
+    const data = await r.json();
+    WATCHLIST_TICKERS = new Set((data.selected || []).map(s => s.ticker));
+  } catch { WATCHLIST_TICKERS = new Set(); }
+}
+
+async function addToWatchlist(ticker) {
+  const r = await fetch("/api/selections", {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({ticker})
+  });
+  if (r.ok) {
+    WATCHLIST_TICKERS.add(ticker);
+    toast(`${ticker} added · open Live Pod →`, "ok");
+    renderTopRecs();
+    renderGrid();
+  } else {
+    const d = await r.json();
+    if (d.error === "watchlist_full") {
+      toast(`Watchlist is full (${d.max} max). Remove a name first.`, "err");
+    } else if (d.error === "not_logged_in") {
+      toast(`Sign in to save your watchlist.`, "err");
+    } else {
+      toast(`Could not add: ${d.error || "error"}`, "err");
+    }
+  }
+}
+async function removeFromWatchlist(ticker) {
+  await fetch(`/api/selections/${ticker}`, {method:"DELETE"});
+  WATCHLIST_TICKERS.delete(ticker);
+  toast(`${ticker} removed from watchlist`, "info");
+  renderTopRecs();
+  renderGrid();
+}
+
+function renderTopRecs() {
+  const recs = UNIVERSE.filter(f => f.bsi_z >= 2.0 && f.tradeable).slice(0, 4);
+  document.getElementById("top-count").textContent =
+    `${recs.length} firm${recs.length===1?"":"s"} above z = 2.0`;
+  const mount = document.getElementById("top-recs-grid");
+  if (!recs.length) {
+    mount.innerHTML = `<div style="grid-column:1/-1;padding:22px;background:var(--bg-card);border:1px dashed var(--border);border-radius:12px;text-align:center;color:var(--text-tertiary);font-size:13px;">
+      No firms currently above the SCOUT threshold (z ≥ 2.0). The bear is sleeping.</div>`;
+    return;
+  }
+  mount.innerHTML = recs.map(r => {
+    const inWatch = WATCHLIST_TICKERS.has(r.ticker);
+    return `
+    <div class="rec-block" onclick="openFirmModal('${r.ticker}')">
+      <img class="rec-bear" src="/static/bears/${STATE_BEAR_IMG[r.bear_state]||'bear_thinking.png'}" alt="">
+      <div class="rec-row1">
+        <div class="rec-ticker">${r.ticker}</div>
+        <span class="rec-state bear-${r.bear_state}">${r.bear_state.replace('_',' ')}</span>
+      </div>
+      <div class="rec-name">${r.name} · ${r.sector_label}</div>
+      <div class="rec-z">z = ${r.bsi_z.toFixed(2)}</div>
+      <div class="rec-z-lbl">BSI z-score · current</div>
+      <div class="rec-meta">
+        <div class="rec-price">${fmtPrice(r.price)}</div>
+        <button class="rec-add ${inWatch?'in-watchlist':''}"
+                onclick="event.stopPropagation(); ${inWatch?`removeFromWatchlist('${r.ticker}')`:`addToWatchlist('${r.ticker}')`}">
+          ${inWatch ? '✓ in watchlist' : '⊕ add to demo'}
+        </button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function renderGrid() {
+  const filtered = CURRENT_FILTER === "all"
+    ? UNIVERSE : UNIVERSE.filter(r => r.sector === CURRENT_FILTER);
+  document.getElementById("universe-stats").textContent =
+    `${filtered.length} of ${UNIVERSE.length} firms shown`;
+  const mount = document.getElementById("universe-grid");
+  mount.innerHTML = filtered.map(r => {
+    const zClass = r.bsi_z >= 2.0 ? "high" : r.bsi_z >= 1.5 ? "med" : "low";
+    const dim = r.delisted || r.private ? "dim" : "";
+    const inWatch = WATCHLIST_TICKERS.has(r.ticker);
+    let actBtns = "";
+    if (r.delisted) {
+      actBtns = `<button disabled>delisted</button>`;
+    } else if (r.private) {
+      actBtns = `<button disabled>private</button>`;
+    } else {
+      actBtns = `<button class="btn-add ${inWatch?'in-watchlist':''}"
+                         onclick="event.stopPropagation(); ${inWatch?`removeFromWatchlist('${r.ticker}')`:`addToWatchlist('${r.ticker}')`}"
+                         title="${inWatch?'Remove from':'Add to'} watchlist">
+                   ${inWatch?'✓':'⊕'}
+                 </button>
+                 <button onclick="event.stopPropagation(); openFirmModal('${r.ticker}')"
+                         title="Full company profile">View</button>`;
+    }
+    let tags = "";
+    if (r.private)  tags += `<span class="tag private">private</span>`;
+    if (r.delisted) tags += `<span class="tag delisted">delisted</span>`;
+    // Data-source tag — three tiers:
+    //   live:    CFPB-derived z (highest quality)
+    //   market:  yfinance price/volume-derived z (live but from market data only)
+    //   scripted: hardcoded z (only for delisted/private with no live data)
+    let srcTag = '';
+    if (r.data_source === "live") {
+      srcTag = `<span class="src-tag live" title="LIVE: z derived from CFPB complaint velocity (Δ=${r.live_delta_pct ?? '—'}%)">live</span>`;
+    } else if (r.data_source === "market") {
+      srcTag = `<span class="src-tag market" title="LIVE-MARKET: z derived from yfinance price-momentum + volume (no CFPB coverage but real market data)">market</span>`;
+    } else {
+      srcTag = `<span class="src-tag scripted" title="z hardcoded — no live data available for this name">scripted</span>`;
+    }
+    return `
+      <div class="firm-tile ${dim}" onclick="openFirmModal('${r.ticker}')">
+        <img class="firm-bear-img" src="/static/bears/${STATE_BEAR_IMG[r.bear_state]||'bear_sleeping.png'}" alt="">
+        <div class="firm-ticker">${r.ticker}</div>
+        <div class="firm-name">${r.name}${tags}</div>
+        <div class="firm-sector">${r.sector_label}</div>
+        <div class="firm-z ${zClass}" style="position:relative;">${r.bsi_z.toFixed(2)} ${srcTag}</div>
+        <div><span class="firm-state bear-${r.bear_state}">${r.bear_state.replace('_',' ')}</span></div>
+        <div class="firm-price">${fmtPrice(r.price)}</div>
+        <div class="firm-last">${r.last_fire || "—"}</div>
+        <div class="firm-actions">${actBtns}</div>
+      </div>`;
+  }).join("");
+}
+
+document.querySelectorAll(".filter-chip").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".filter-chip").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    CURRENT_FILTER = btn.dataset.sector;
+    renderGrid();
+  });
+});
+
+// =============== POPUP MODAL ===============
+function ratingClass(g) {
+  if (!g || g === "—") return "na";
+  const ig = ["AAA","AA+","AA","AA-","A+","A","A-","BBB+","BBB","BBB-",
+              "Aaa","Aa1","Aa2","Aa3","A1","A2","A3","Baa1","Baa2","Baa3"];
+  const subig = ["BB+","BB","BB-","B+","B","B-","Ba1","Ba2","Ba3","B1","B2","B3"];
+  if (ig.includes(g)) return "ig";
+  if (subig.includes(g)) return "subig";
+  return "junk";
+}
+
+function renderStars(n) {
+  const full = Math.floor(n), half = (n - full) >= 0.5;
+  let html = "";
+  for (let i = 0; i < 5; i++) {
+    const filled = i < full || (i === full && half);
+    html += `<span class="star ${filled?'filled':''}">${filled?'★':'☆'}</span>`;
+  }
+  return html;
+}
+
+async function openFirmModal(ticker) {
+  document.getElementById("firm-modal").style.display = "grid";
+  document.getElementById("modal-body").innerHTML =
+    `<div style="padding:60px;text-align:center;color:var(--text-tertiary);">Loading ${ticker}…</div>`;
+  document.body.style.overflow = "hidden";
+
+  const r = await fetch(`/api/firm/${ticker}`);
+  if (!r.ok) {
+    document.getElementById("modal-body").innerHTML =
+      `<div style="padding:60px;text-align:center;color:var(--danger);">Could not load ${ticker}.</div>`;
+    return;
+  }
+  const f = await r.json();
+  const inWatch = WATCHLIST_TICKERS.has(f.ticker);
+  const fin = f.financials || {};
+  const rat = f.ratings || {};
+  const pillars = f.pillars || {};
+
+  document.getElementById("modal-body").innerHTML = `
+    <div class="m-hero">
+      <div style="display:flex;align-items:center;gap:14px;">
+        <img class="m-hero-bear" src="/static/bears/${STATE_BEAR_IMG[f.bear_state]||'bear_sleeping.png'}" alt="">
+        ${f.logo_url ? `<img src="${f.logo_url}" alt="${f.ticker} logo" style="width:64px;height:64px;border-radius:12px;object-fit:contain;background:#fff;padding:6px;border:1px solid var(--border-strong);" onerror="this.style.display='none';">` : ''}
+      </div>
+      <div>
+        <div class="m-hero-ticker">${f.ticker}</div>
+        <div class="m-hero-name">${f.name} · ${f.sector_label}</div>
+        <span class="m-hero-state bear-${f.bear_state}">${f.bear_state.replace('_',' ')}</span>
+      </div>
+      <div>
+        <div class="m-hero-z">${f.bsi_z.toFixed(2)}</div>
+        <div class="m-hero-z-lbl">BSI z-score</div>
+        <div style="margin-top:14px;text-align:right;">
+          <button class="rec-add ${inWatch?'in-watchlist':''}"
+                  onclick="${inWatch?`removeFromWatchlist('${f.ticker}'); closeFirmModal();`:`addToWatchlist('${f.ticker}')`}"
+                  style="padding:8px 14px;font-size:12px;">
+            ${inWatch ? '✓ in watchlist' : '⊕ add to live demo'}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Company overview -->
+    <div class="m-section">
+      <h3>Company overview</h3>
+      <div class="m-grid-3">
+        <div class="m-stat"><div class="lbl">Revenue (FY)</div><div class="val">${fmtBn(fin.revenue_b)}</div></div>
+        <div class="m-stat"><div class="lbl">Net income</div><div class="val" style="color:${fin.net_income_b>=0?'var(--success)':'var(--danger)'};">${fmtBn(fin.net_income_b)}</div></div>
+        <div class="m-stat"><div class="lbl">Free cash flow</div><div class="val" style="color:${fin.fcf_b>=0?'var(--success)':'var(--danger)'};">${fmtBn(fin.fcf_b)}</div></div>
+        <div class="m-stat"><div class="lbl">Total debt</div><div class="val">${fmtBn(fin.total_debt_b)}</div></div>
+        <div class="m-stat"><div class="lbl">Cash</div><div class="val">${fmtBn(fin.cash_b)}</div></div>
+        <div class="m-stat"><div class="lbl">Employees</div><div class="val">${(fin.employees||0).toLocaleString()}</div></div>
+      </div>
+    </div>
+
+    <!-- Historical BSI z-score chart -->
+    <div class="m-section">
+      <h3>📊 Historical BSI z-score  <span style="font-size:10px; color: var(--text-tertiary); font-weight:400; margin-left:8px;">— CFPB-pillar reduced form, last 365 days</span></h3>
+      <div id="bsi-history-meta" style="font-size: 11px; color: var(--text-tertiary); font-family: var(--font-mono); margin-bottom: 8px;">loading…</div>
+      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 14px; height: 240px; position: relative;">
+        <canvas id="bsi-history-chart" style="width: 100%; height: 100%;"></canvas>
+      </div>
+      <div id="bsi-history-stats" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 10px; font-family: var(--font-mono); font-size: 11px;"></div>
+    </div>
+
+    <!-- Price chart -->
+    <div class="m-section">
+      <h3>52-week price (weekly close)</h3>
+      <div class="chart-wrap"><canvas id="price-chart"></canvas></div>
+    </div>
+
+    <!-- Technical analysis · Fibonacci + Quarters + Up/Down Volume -->
+    <div class="m-section">
+      <h3>Technical analysis  ·  3 charts <span style="font-size:10px; color: var(--text-tertiary); font-weight:400; margin-left:8px;">— same charts as Live Pod, scoped to this firm</span></h3>
+      <div id="m-tech-meta" style="font-size: 11px; color: var(--text-tertiary); font-family: var(--font-mono); margin-bottom: 12px;">loading technical context…</div>
+      <div id="m-charts-row" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+        <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; height: 280px; position: relative;">
+          <div style="position: absolute; top: 8px; left: 12px; font-size: 9px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; font-family: var(--font-mono); z-index: 2;">📈 Fibonacci retracements</div>
+          <canvas id="m-fib-chart"></canvas>
+        </div>
+        <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; height: 280px; position: relative;">
+          <div style="position: absolute; top: 8px; left: 12px; font-size: 9px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; font-family: var(--font-mono); z-index: 2;">📊 HH/LL Quarters</div>
+          <div id="m-qtr-current" style="position: absolute; top: 8px; right: 12px; font-size: 9px; color: var(--text-secondary); font-family: var(--font-mono); z-index: 2;"></div>
+          <canvas id="m-qtr-chart"></canvas>
+        </div>
+        <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; height: 280px; position: relative;">
+          <div style="position: absolute; top: 8px; left: 12px; font-size: 9px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; font-family: var(--font-mono); z-index: 2;">📉 U/D Volume + OBV</div>
+          <canvas id="m-vol-chart"></canvas>
+        </div>
+      </div>
+      <style>
+        @media (max-width: 1100px) { #m-charts-row { grid-template-columns: 1fr !important; } }
+      </style>
+      <div id="m-tech-cards" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; font-size: 11px;"></div>
+    </div>
+
+    <!-- Pod-specific overview -->
+    <div class="m-section">
+      <h3>BearWatch pod analysis · 8-pillar BSI breakdown</h3>
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;">
+        ${Object.entries(pillars).map(([k, v]) => `
+          <div class="pillar-bar">
+            <div class="lbl">${k.replace(/_/g, ' ')}</div>
+            <div class="track"><div class="fill" style="width:${Math.min(100, v*30)}%"></div></div>
+            <div class="val">${v.toFixed(2)}</div>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+
+    <!-- ABS securitization (if firm has a shelf) -->
+    ${f.abs ? `
+    <div class="m-section">
+      <h3>ABS securitization · ${f.abs.shelf}</h3>
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:18px;">
+        <div class="m-grid-3" style="margin-bottom:14px;">
+          <div class="m-stat"><div class="lbl">Tranche</div><div class="val" style="font-size:13px;">${f.abs.tranche}</div></div>
+          <div class="m-stat"><div class="lbl">Avg deal size</div><div class="val">${fmtBn(f.abs.size_b)}</div></div>
+          <div class="m-stat"><div class="lbl">Weighted-avg life</div><div class="val">${f.abs.wal_yr} yr</div></div>
+          <div class="m-stat"><div class="lbl">Net charge-off rate</div><div class="val" style="color:${f.abs.ncl_pct >= 8 ? 'var(--danger)' : f.abs.ncl_pct >= 4 ? 'var(--warning)' : 'var(--success)'};">${f.abs.ncl_pct}%</div></div>
+          ${f.abs.defaulted ? `<div class="m-stat"><div class="lbl">Status</div><div class="val" style="color:var(--danger);">DEFAULTED</div></div>` : ''}
+        </div>
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-tertiary);font-weight:600;margin-bottom:8px;">Tranche ratings</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+          <div class="rating-row" style="margin:0;"><div class="agency">S&P</div><div class="grade ${ratingClass(f.abs.ratings.sp)}">${f.abs.ratings.sp}</div><div></div></div>
+          <div class="rating-row" style="margin:0;"><div class="agency">Moody's</div><div class="grade ${ratingClass(f.abs.ratings.moodys)}">${f.abs.ratings.moodys}</div><div></div></div>
+          <div class="rating-row" style="margin:0;"><div class="agency">Fitch</div><div class="grade ${ratingClass(f.abs.ratings.fitch)}">${f.abs.ratings.fitch}</div><div></div></div>
+        </div>
+      </div>
+    </div>` : ''}
+
+    <!-- Latest news — live Google News RSS (works for private + delisted) -->
+    <div class="m-section">
+      <h3>Latest news <span style="font-size:9px;color:var(--text-quat);font-weight:400;text-transform:uppercase;letter-spacing:0.06em;margin-left:6px;" id="news-source-tag">live · Google News</span></h3>
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:0 14px;" id="news-mount">
+        <div class="news-item"><div class="news-title" style="color:var(--text-tertiary);font-style:italic;">Loading latest news for ${f.ticker}…</div></div>
+      </div>
+    </div>
+
+    <!-- Official ratings -->
+    <div class="m-section">
+      <h3>Official ratings & pod stars</h3>
+      <div class="m-grid-2">
+        <div>
+          <div class="rating-row">
+            <div class="agency">S&P</div>
+            <div class="grade ${ratingClass(rat.sp)}">${rat.sp}</div>
+            <div style="font-size:10px;color:var(--text-tertiary);text-align:right;">${ratingClass(rat.sp)==='ig'?'investment grade':ratingClass(rat.sp)==='subig'?'sub-IG':ratingClass(rat.sp)==='junk'?'distressed':'unrated'}</div>
+          </div>
+          <div class="rating-row">
+            <div class="agency">Moody's</div>
+            <div class="grade ${ratingClass(rat.moodys)}">${rat.moodys}</div>
+            <div style="font-size:10px;color:var(--text-tertiary);text-align:right;">${ratingClass(rat.moodys)==='ig'?'investment grade':ratingClass(rat.moodys)==='subig'?'sub-IG':ratingClass(rat.moodys)==='junk'?'distressed':'unrated'}</div>
+          </div>
+          <div class="rating-row">
+            <div class="agency">Fitch</div>
+            <div class="grade ${ratingClass(rat.fitch)}">${rat.fitch}</div>
+            <div style="font-size:10px;color:var(--text-tertiary);text-align:right;">${ratingClass(rat.fitch)==='ig'?'investment grade':ratingClass(rat.fitch)==='subig'?'sub-IG':ratingClass(rat.fitch)==='junk'?'distressed':'unrated'}</div>
+          </div>
+        </div>
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:18px;text-align:center;">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-tertiary);font-weight:600;">Pod stars</div>
+          <div class="stars" style="margin:10px 0;">${renderStars(rat.stars)}</div>
+          <div style="font-family:var(--font-mono);font-size:13px;color:var(--text-primary);">${rat.stars.toFixed(1)} / 5</div>
+          <div style="font-size:11px;color:var(--text-tertiary);margin-top:4px;">Internal score · inverse of BSI z + financial-quality blend</div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Fetch live news (works for private + delisted firms via name-based search)
+  fetch(`/api/firm/${f.ticker}/news`).then(r => r.json()).then(nd => {
+    const items = nd.items || [];
+    const mount = document.getElementById("news-mount");
+    const tag   = document.getElementById("news-source-tag");
+    if (!mount) return;
+    if (!items.length) {
+      // Fallback to curated demo news if RSS empty
+      mount.innerHTML = getDemoNews(f.ticker).map(n => `
+        <div class="news-item">
+          <div class="news-date">${n.date}</div>
+          <div class="news-title">${n.title}</div>
+          <div class="news-src">${n.source}</div>
+        </div>
+      `).join("");
+      if (tag) tag.textContent = "illustrative · curated";
+      return;
+    }
+    mount.innerHTML = items.map(n => `
+      <div class="news-item">
+        <div class="news-date">${n.date}</div>
+        <div class="news-title"><a href="${n.url}" target="_blank" rel="noopener" style="color:var(--text-primary);text-decoration:none;">${n.title}</a></div>
+        <div class="news-src">${n.source}</div>
+      </div>
+    `).join("");
+  }).catch(() => {
+    const mount = document.getElementById("news-mount");
+    const tag   = document.getElementById("news-source-tag");
+    if (mount) mount.innerHTML = getDemoNews(f.ticker).map(n => `
+      <div class="news-item">
+        <div class="news-date">${n.date}</div>
+        <div class="news-title">${n.title}</div>
+        <div class="news-src">${n.source}</div>
+      </div>
+    `).join("");
+    if (tag) tag.textContent = "illustrative · curated";
+  });
+
+  // Render price chart if we have data
+  if (f.price_history && f.price_history.length) {
+    const ctx = document.getElementById("price-chart");
+    if (CURRENT_CHART) { try { CURRENT_CHART.destroy(); } catch {} }
+    CURRENT_CHART = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: f.price_history.map(d => d.date),
+        datasets: [{
+          label: f.ticker, data: f.price_history.map(d => d.close),
+          borderColor: "#d4a574", backgroundColor: "rgba(212,165,116,0.1)",
+          tension: 0.2, fill: true, pointRadius: 0, borderWidth: 2,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: "#71717a", font: { size: 10 } }, grid: { color: "rgba(255,255,255,0.04)" } },
+          y: { ticks: { color: "#71717a", font: { size: 10 } }, grid: { color: "rgba(255,255,255,0.04)" } }
+        }
+      }
+    });
+  }
+
+  // Load technical context (Fibonacci + Quarters + U/D Volume) for this firm
+  loadModalTechnical(f.ticker);
+
+  // Load historical BSI z-score series (CFPB-pillar reduced form)
+  loadModalBsiHistory(f.ticker);
+}
+
+// =================== Modal historical BSI chart (per-firm) ===================
+async function loadModalBsiHistory(ticker) {
+  const meta = document.getElementById("bsi-history-meta");
+  const statsEl = document.getElementById("bsi-history-stats");
+  const canvas = document.getElementById("bsi-history-chart");
+  if (!canvas || !meta) return;
+
+  meta.textContent = "loading BSI history for " + ticker + "…";
+  try {
+    const r = await fetch(`/api/firm/${ticker}/bsi_history`);
+    const d = await r.json();
+    if (d.error) {
+      meta.innerHTML = `<span style="color:var(--warning);">no BSI history: ${d.error}${d.hint ? ' — ' + d.hint : ''}</span>`;
+      return;
+    }
+    if (!d.dates || !d.dates.length) {
+      meta.innerHTML = `<span style="color:var(--text-tertiary);">no data</span>`;
+      return;
+    }
+
+    meta.innerHTML = `${d.method}  ·  patterns: ${(d.patterns || []).join(', ')}`;
+
+    // Hand-rolled canvas line chart
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    canvas.width = w * dpr; canvas.height = h * dpr; ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, w, h);
+
+    const pad = {l: 50, r: 16, t: 14, b: 30};
+    const xs = d.dates;
+    const ys = d.z;
+    const ymin = Math.min(-1, ...ys) - 0.3;
+    const ymax = Math.max(3, ...ys) + 0.3;
+    const sx = i => pad.l + (i / Math.max(xs.length - 1, 1)) * (w - pad.l - pad.r);
+    const sy = v => h - pad.b - ((v - ymin) / (ymax - ymin)) * (h - pad.t - pad.b);
+
+    // Grid + threshold lines
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.lineWidth = 1;
+    ctx.font = '10px monospace';
+    for (let i = 0; i <= 4; i++) {
+      const y = pad.t + i * (h - pad.t - pad.b) / 4;
+      ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(w - pad.r, y); ctx.stroke();
+      const yv = ymax - i * (ymax - ymin) / 4;
+      ctx.fillStyle = '#666'; ctx.textAlign = 'right';
+      ctx.fillText(yv.toFixed(1), pad.l - 6, y + 3);
+    }
+
+    // Threshold lines: SCOUT (z=2.0) and GUARDIAN (z=2.5)
+    [
+      {z: 2.0, color: 'rgba(251,191,36,0.45)', label: 'SCOUT 2.0'},
+      {z: 2.5, color: 'rgba(74,222,128,0.45)', label: 'GUARDIAN 2.5'},
+      {z: 0,   color: 'rgba(255,255,255,0.20)', label: ''},
+    ].forEach(t => {
+      ctx.strokeStyle = t.color;
+      ctx.setLineDash(t.z === 0 ? [] : [3, 3]);
+      ctx.beginPath(); ctx.moveTo(pad.l, sy(t.z)); ctx.lineTo(w - pad.r, sy(t.z)); ctx.stroke();
+      if (t.label) {
+        ctx.fillStyle = t.color.replace('0.45', '0.9');
+        ctx.font = '9px monospace'; ctx.textAlign = 'left';
+        ctx.fillText(t.label, w - pad.r - 80, sy(t.z) - 3);
+      }
+    });
+    ctx.setLineDash([]);
+
+    // X labels — first / mid / last
+    ctx.fillStyle = '#888'; ctx.textAlign = 'center'; ctx.font = '10px monospace';
+    [0, Math.floor(xs.length / 2), xs.length - 1].forEach(i => {
+      if (i < xs.length) ctx.fillText(xs[i], sx(i), h - pad.b + 16);
+    });
+
+    // BSI z line
+    ctx.strokeStyle = '#d4a574';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ys.forEach((v, i) => {
+      if (i === 0) ctx.moveTo(sx(i), sy(v));
+      else ctx.lineTo(sx(i), sy(v));
+    });
+    ctx.stroke();
+
+    // Highlight peaks above SCOUT
+    ys.forEach((v, i) => {
+      if (v >= 2.0) {
+        ctx.fillStyle = v >= 2.5 ? '#4ade80' : '#fbbf24';
+        ctx.beginPath(); ctx.arc(sx(i), sy(v), 2.5, 0, Math.PI * 2); ctx.fill();
+      }
+    });
+
+    // Stats grid
+    const s = d.stats || {};
+    const tiles = [
+      {k: 'current z', v: (s.current_z ?? 0).toFixed(2), col: s.current_z >= 2.0 ? '#fbbf24' : '#71717a'},
+      {k: 'max z (365d)', v: (s.max_z ?? 0).toFixed(2), col: s.max_z >= 2.5 ? '#4ade80' : s.max_z >= 2.0 ? '#fbbf24' : '#71717a'},
+      {k: 'SCOUT fires', v: s.fires_scout ?? 0, col: '#fbbf24'},
+      {k: 'complaints (365d)', v: (s.n_complaints_365d ?? 0).toLocaleString(), col: 'var(--text-primary)'},
+    ];
+    statsEl.innerHTML = tiles.map(t => `
+      <div style="background: var(--bg-card); border: 1px solid var(--border); padding: 8px 10px; border-radius: 4px; text-align:center;">
+        <div style="color: var(--text-tertiary); font-size: 9px; text-transform: uppercase; letter-spacing: 0.05em;">${t.k}</div>
+        <div style="color: ${t.col}; font-weight: 700; font-size: 14px; margin-top: 3px;">${t.v}</div>
+      </div>`).join('');
+
+  } catch (e) {
+    meta.innerHTML = `<span style="color:var(--danger);">Failed: ${e.message}</span>`;
+  }
+}
+
+// =================== Modal technical context (3 charts) ===================
+let M_FIB_CHART = null, M_QTR_CHART = null, M_VOL_CHART = null;
+
+async function loadModalTechnical(ticker) {
+  const meta = document.getElementById("m-tech-meta");
+  if (meta) meta.textContent = "loading technical context for " + ticker + "…";
+  try {
+    const r = await fetch(`/api/technical/${ticker}`);
+    const d = await r.json();
+    if (d.error) {
+      if (meta) meta.innerHTML = `<span style="color:var(--warning);">no technical context: ${d.error}</span>`;
+      return;
+    }
+    const ind = d.indicators;
+    const verdictColor = {
+      STRONG_SHORT_OK: '#4ade80', SHORT_OK: '#a3e635',
+      NEUTRAL: '#facc15', AVOID_SHORT: '#f87171',
+    }[d.tech_verdict] || 'var(--text)';
+    if (meta) {
+      meta.innerHTML = `
+        as of <strong style="color:var(--text);">${d.as_of}</strong> ·
+        verdict <strong style="color:${verdictColor};">${d.tech_verdict.replace('_',' ')}</strong> ·
+        bias score <strong style="color:var(--text);">${d.tech_bias_score}</strong> ·
+        ATR adaptive stop: <strong style="color:#4ade80;">+${ind.atr.adaptive_stop_pct_short}%</strong> ·
+        RSI: <strong style="color:${ind.rsi_stoch.rsi_14 >= 70 ? '#f87171' : ind.rsi_stoch.rsi_14 <= 30 ? '#60a5fa' : 'var(--text)'};">${ind.rsi_stoch.rsi_14}</strong> ·
+        Off 52w high: <strong style="color:var(--text);">${ind.highs.pct_off_52w_high}%</strong>
+      `;
+    }
+
+    // === Fibonacci chart ===
+    const series = d.price_series || [];
+    const labels = series.map(p => p.date);
+    const prices = series.map(p => p.close);
+    if (M_FIB_CHART) { try { M_FIB_CHART.destroy(); } catch {} }
+    const fibColors = {
+      '0.0':'#f87171','23.6':'#fb923c','38.2':'#facc15','50.0':'#a3e635',
+      '61.8':'#4ade80','78.6':'#22d3ee','100.0':'#60a5fa',
+    };
+    const fibDatasets = [{
+      label: `${d.ticker} close`, data: prices,
+      borderColor: '#e4e4e7', backgroundColor: 'rgba(228,228,231,0.05)',
+      borderWidth: 2, tension: 0.18, fill: true, pointRadius: 0, pointHoverRadius: 4,
+    }];
+    Object.entries(ind.fibonacci.levels).forEach(([k, v]) => {
+      fibDatasets.push({
+        label: `Fib ${k}% · $${v}`,
+        data: new Array(labels.length).fill(v),
+        borderColor: fibColors[k] || '#a78bfa',
+        borderWidth: 1, borderDash: [5, 3],
+        pointRadius: 0, fill: false, tension: 0,
+      });
+    });
+    M_FIB_CHART = new Chart(document.getElementById('m-fib-chart').getContext('2d'), {
+      type: 'line', data: { labels, datasets: fibDatasets },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: { legend: { display: false }, tooltip: { backgroundColor: '#0a0a0a', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 } },
+        scales: {
+          x: { ticks: { color: '#71717a', font: { size: 9 }, maxTicksLimit: 6 }, grid: { color: 'rgba(255,255,255,0.04)' } },
+          y: { ticks: { color: '#71717a', font: { size: 9, family: 'monospace' }, callback: v => '$' + v.toFixed(2) }, grid: { color: 'rgba(255,255,255,0.04)' } },
+        },
+      },
+    });
+
+    // === Quarters chart ===
+    const q = ind.highs.range_quarters;
+    const N = labels.length;
+    if (M_QTR_CHART) { try { M_QTR_CHART.destroy(); } catch {} }
+    const qtrEl = document.getElementById('m-qtr-current');
+    if (qtrEl) qtrEl.textContent = ind.highs.current_quarter;
+    M_QTR_CHART = new Chart(document.getElementById('m-qtr-chart').getContext('2d'), {
+      type: 'line',
+      data: { labels, datasets: [
+        { label: '_q1_low', data: new Array(N).fill(q.q1_bottom), borderWidth: 0, pointRadius: 0, fill: false, showLine: false },
+        { label: 'Q1 value', data: new Array(N).fill(q.q2_q1_split), borderColor: 'rgba(74,222,128,0.4)', backgroundColor: 'rgba(74,222,128,0.10)', borderWidth: 1, borderDash: [5,3], pointRadius: 0, fill: '-1', tension: 0 },
+        { label: 'Q2', data: new Array(N).fill(q.q3_q2_split), borderColor: 'rgba(163,230,53,0.4)', backgroundColor: 'rgba(163,230,53,0.10)', borderWidth: 1, borderDash: [5,3], pointRadius: 0, fill: '-1', tension: 0 },
+        { label: 'Q3', data: new Array(N).fill(q.q4_q3_split), borderColor: 'rgba(250,204,21,0.4)', backgroundColor: 'rgba(250,204,21,0.10)', borderWidth: 1, borderDash: [5,3], pointRadius: 0, fill: '-1', tension: 0 },
+        { label: 'Q4 distribution', data: new Array(N).fill(q.q4_top), borderColor: 'rgba(248,113,113,0.4)', backgroundColor: 'rgba(248,113,113,0.10)', borderWidth: 1, borderDash: [5,3], pointRadius: 0, fill: '-1', tension: 0 },
+        { label: `${d.ticker} close`, data: prices, borderColor: '#ffffff', borderWidth: 2.2, tension: 0.18, fill: false, pointRadius: 0, pointHoverRadius: 4 },
+      ]},
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { backgroundColor: '#0a0a0a' } },
+        scales: {
+          x: { ticks: { color: '#71717a', font: { size: 9 }, maxTicksLimit: 6 }, grid: { color: 'rgba(255,255,255,0.04)' } },
+          y: { ticks: { color: '#71717a', font: { size: 9, family: 'monospace' }, callback: v => '$' + v.toFixed(2) }, grid: { color: 'rgba(255,255,255,0.04)' } },
+        },
+      },
+    });
+
+    // === Up/Down Volume chart ===
+    const upVols = series.map(p => p.up_vol / 1e6);
+    const downVols = series.map(p => -p.down_vol / 1e6);
+    const obv = series.map(p => p.obv / 1e6);
+    if (M_VOL_CHART) { try { M_VOL_CHART.destroy(); } catch {} }
+    M_VOL_CHART = new Chart(document.getElementById('m-vol-chart').getContext('2d'), {
+      data: { labels, datasets: [
+        { type: 'bar', label: 'Up vol', data: upVols, backgroundColor: 'rgba(74,222,128,0.55)', yAxisID: 'y' },
+        { type: 'bar', label: 'Down vol', data: downVols, backgroundColor: 'rgba(248,113,113,0.55)', yAxisID: 'y' },
+        { type: 'line', label: 'OBV', data: obv, borderColor: '#a78bfa', borderWidth: 2, tension: 0.18, fill: false, pointRadius: 0, yAxisID: 'y1' },
+      ]},
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { backgroundColor: '#0a0a0a' } },
+        scales: {
+          x: { ticks: { color: '#71717a', font: { size: 9 }, maxTicksLimit: 6 }, stacked: true, grid: { color: 'rgba(255,255,255,0.04)' } },
+          y: { position: 'left', ticks: { color: '#71717a', font: { size: 9, family: 'monospace' }, callback: v => v + 'M' }, grid: { color: 'rgba(255,255,255,0.04)' } },
+          y1: { position: 'right', ticks: { color: '#a78bfa', font: { size: 9, family: 'monospace' }, callback: v => v + 'M' }, grid: { display: false } },
+        },
+      },
+    });
+
+    // === Indicator summary cards (3 columns) ===
+    const cards = document.getElementById('m-tech-cards');
+    if (cards) {
+      cards.innerHTML = `
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:8px 10px;">
+          <div style="font-size:9px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.05em;font-weight:600;font-family:var(--font-mono);">Entry quality</div>
+          <div style="font-family:var(--font-mono);font-size:13px;color:var(--text);margin-top:3px;">${ind.highs.entry_quality.replace('_',' ')}</div>
+          <div style="font-size:10px;color:var(--text-tertiary);margin-top:3px;line-height:1.4;">${ind.highs.interpretation.substring(0,90)}…</div>
+        </div>
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:8px 10px;">
+          <div style="font-size:9px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.05em;font-weight:600;font-family:var(--font-mono);">Trend (50/200 SMA + MACD)</div>
+          <div style="font-family:var(--font-mono);font-size:13px;color:${ind.moving_averages.death_cross ? '#4ade80' : 'var(--text)'};margin-top:3px;">${ind.moving_averages.death_cross ? 'DEATH CROSS · bearish' : 'Golden cross · bullish'}</div>
+          <div style="font-size:10px;color:var(--text-tertiary);margin-top:3px;line-height:1.4;">MACD: ${ind.moving_averages.macd_bearish ? 'bearish' : 'bullish'} histogram ${ind.moving_averages.macd_histogram}</div>
+        </div>
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:8px 10px;">
+          <div style="font-size:9px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.05em;font-weight:600;font-family:var(--font-mono);">U/D ratio (20d) + OBV</div>
+          <div style="font-family:var(--font-mono);font-size:13px;color:${ind.up_down_volume.ud_ratio_20d > 1 ? '#4ade80' : '#f87171'};margin-top:3px;">${ind.up_down_volume.ud_ratio_20d ?? '∞'} · OBV ${ind.up_down_volume.obv_trend}</div>
+          <div style="font-size:10px;color:var(--text-tertiary);margin-top:3px;line-height:1.4;">${ind.up_down_volume.interpretation.substring(0,90)}…</div>
+        </div>
+      `;
+    }
+  } catch (e) {
+    if (meta) meta.innerHTML = `<span style="color:var(--danger);">technical fetch failed: ${e.message}</span>`;
+  }
+}
+
+function closeFirmModal() {
+  document.getElementById("firm-modal").style.display = "none";
+  document.body.style.overflow = "";
+  if (CURRENT_CHART) { try { CURRENT_CHART.destroy(); } catch {} CURRENT_CHART = null; }
+  if (M_FIB_CHART)   { try { M_FIB_CHART.destroy();   } catch {} M_FIB_CHART = null; }
+  if (M_QTR_CHART)   { try { M_QTR_CHART.destroy();   } catch {} M_QTR_CHART = null; }
+  if (M_VOL_CHART)   { try { M_VOL_CHART.destroy();   } catch {} M_VOL_CHART = null; }
+}
+document.getElementById("firm-modal").addEventListener("click", e => {
+  if (e.target.id === "firm-modal") closeFirmModal();
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") closeFirmModal();
+});
+
+// Hardcoded demo news per firm — illustrative, since live news APIs need keys
+function getDemoNews(ticker) {
+  const news = {
+    CVNA: [
+      {date: "2026-04-12", title: "Carvana posts surprise Q1 profit; subprime delinquencies still elevated", source: "Bloomberg"},
+      {date: "2026-03-08", title: "DBRS Morningstar reviews CRVNA 2025-A subprime auto trust — negative outlook", source: "DBRS"},
+      {date: "2026-02-21", title: "CFPB receives 1,247 Carvana complaints in Feb — 3-month rolling avg up 38%", source: "CFPB Public Data"},
+    ],
+    UPST: [
+      {date: "2026-04-18", title: "Upstart Q1 originations down 12% YoY as institutional demand softens", source: "10-Q via EDGAR"},
+      {date: "2026-03-30", title: "Net charge-off rate climbs to 4.8% on 2024-vintage cohort", source: "trustee remittance"},
+      {date: "2026-02-14", title: "Reddit chatter on r/personalfinance spikes — 'denied for refinance' theme", source: "BearWatch ingest"},
+    ],
+    AFRM: [
+      {date: "2026-04-22", title: "Affirm extends Walmart partnership to in-store BNPL", source: "Reuters"},
+      {date: "2026-03-15", title: "AFRMT 2025-X trust prices wide of recent comps amid sector caution", source: "Asset-Backed Alert"},
+      {date: "2026-02-08", title: "30+ DPD on installment book climbs to 2.9% — highest since 2023", source: "10-Q via EDGAR"},
+    ],
+  };
+  return news[ticker] || [
+    {date: "2026-04-15", title: `${ticker} — no curated news in this demo`, source: "—"},
+    {date: "2026-04-08", title: "Hook live news ingest in production (NewsAPI / Tavily / Bloomberg)", source: "—"},
+  ];
+}
+
+async function loadMonitor() {
+  await refreshWatchlistState();
+  const r = await fetch("/api/monitor/firms");
+  const data = await r.json();
+  UNIVERSE = data.firms;
+  // Update T-1 banner
+  const asof = document.getElementById("mon-asof");
+  if (asof) asof.textContent = data.as_of || "—";
+  const lc = document.getElementById("mon-livecount");
+  if (lc) lc.textContent = data.live_count ?? "—";
+  renderTopRecs();
+  renderGrid();
+}
+loadMonitor();
+// Refresh every 5 min in case warehouse cache rolls over (the 60s warehouse TTL doesn't matter here — UI just stays in sync)
+setInterval(loadMonitor, 5 * 60 * 1000);
+</script>
+
+</body>
+</html>

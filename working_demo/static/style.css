@@ -1,0 +1,255 @@
+/* Apollo Hermes — design-parity refresh
+   Companion palette to BearWatch (warm amber).
+   Apollo identity: cool electric (cyan→blue), execution + intelligence. */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap');
+
+* { font-family: 'Inter', system-ui, sans-serif; }
+body { background: #07090d; color: #e8edf2; margin: 0; }
+code, .mono { font-family: 'JetBrains Mono', monospace; }
+
+/* === Apollo accent === */
+:root {
+  --apollo-primary: #38bdf8;       /* sky-400 */
+  --apollo-secondary: #0ea5e9;     /* sky-500 */
+  --apollo-deep: #0369a1;          /* sky-700 */
+  --apollo-bg: #07090d;
+  --apollo-surface: #11161e;
+  --apollo-surface-2: #161c26;
+  --apollo-border: #1f2733;
+  --apollo-text: #e8edf2;
+  --apollo-muted: #94a3b8;
+  --apollo-faint: #64748b;
+  /* BearWatch warm — used only when referencing partner system */
+  --bear-primary: #d4a574;
+}
+
+/* === Gradient text — cool === */
+.gradient-text {
+  background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.gradient-text-warm {
+  background: linear-gradient(135deg, #d4a574 0%, #ff8c42 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.glow {
+  box-shadow: 0 0 60px rgba(56, 189, 248, 0.18);
+}
+.glow-warm {
+  box-shadow: 0 0 60px rgba(212, 165, 116, 0.15);
+}
+
+/* === Surface cards === */
+.card {
+  background: var(--apollo-surface);
+  border: 1px solid var(--apollo-border);
+  border-radius: 14px;
+  transition: all 0.18s ease;
+}
+.card:hover {
+  border-color: #2a3340;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+}
+.card-accented {
+  background: linear-gradient(135deg, #11161e 0%, #161c26 100%);
+  position: relative;
+}
+.card-accented::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--apollo-primary), transparent);
+  border-radius: 14px 14px 0 0;
+}
+
+/* === Badge / pill === */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--apollo-surface);
+  border: 1px solid var(--apollo-border);
+  border-radius: 9999px;
+  font-size: 12px;
+  color: var(--apollo-muted);
+}
+.pill-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--apollo-primary);
+  box-shadow: 0 0 12px var(--apollo-primary);
+}
+
+/* === Nav === */
+.nav-link { transition: color 0.15s; color: var(--apollo-muted); }
+.nav-link:hover { color: var(--apollo-primary); }
+.nav-link.active { color: var(--apollo-primary); }
+
+/* === Animations === */
+@keyframes pulse-cyan {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.45); }
+  50% { opacity: 0.85; box-shadow: 0 0 0 10px rgba(56, 189, 248, 0); }
+}
+.pulse-cyan { animation: pulse-cyan 2.2s infinite; }
+
+@keyframes pulse-amber {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(212, 165, 116, 0.4); }
+  50% { opacity: 0.85; box-shadow: 0 0 0 10px rgba(212, 165, 116, 0); }
+}
+.pulse-amber { animation: pulse-amber 2.2s infinite; }
+
+@keyframes flow {
+  0% { stroke-dashoffset: 24; }
+  100% { stroke-dashoffset: 0; }
+}
+.flow-line { stroke-dasharray: 6 6; animation: flow 1.6s linear infinite; }
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+.float { animation: float 3.5s ease-in-out infinite; }
+
+/* === Scrollbar === */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--apollo-bg); }
+::-webkit-scrollbar-thumb { background: #2a3340; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #3a4554; }
+
+/* === Stat number === */
+.stat-number {
+  font-weight: 800;
+  font-size: 2.5rem;
+  letter-spacing: -0.02em;
+  background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* === Pod tile === */
+.pod-tile {
+  background: var(--apollo-surface);
+  border: 1px solid var(--apollo-border);
+  border-radius: 12px;
+  padding: 18px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+.pod-tile:hover {
+  border-color: var(--apollo-primary);
+  background: var(--apollo-surface-2);
+}
+.pod-tile .pod-icon {
+  font-size: 28px;
+  margin-bottom: 12px;
+}
+.pod-tile .pod-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: white;
+  margin-bottom: 4px;
+}
+.pod-tile .pod-desc {
+  font-size: 11px;
+  color: var(--apollo-faint);
+  line-height: 1.4;
+}
+
+/* === API code block === */
+.code-block {
+  background: #0a0e15;
+  border: 1px solid var(--apollo-border);
+  border-radius: 10px;
+  padding: 18px 20px;
+  overflow-x: auto;
+}
+.code-block pre { margin: 0; }
+.code-block .keyword { color: #c084fc; }
+.code-block .string { color: #86efac; }
+.code-block .number { color: #fbbf24; }
+.code-block .comment { color: #64748b; font-style: italic; }
+.code-block .api { color: var(--apollo-primary); }
+
+/* === Section divider === */
+.section-divider {
+  border-top: 1px solid var(--apollo-border);
+  background: #0a0d12;
+}
+
+/* === Bridge node (for integration diagram) === */
+.bridge-node {
+  background: var(--apollo-surface);
+  border: 1px solid var(--apollo-border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  text-align: center;
+}
+.bridge-node.bear {
+  border-color: rgba(212, 165, 116, 0.4);
+  background: linear-gradient(135deg, rgba(212,165,116,0.06), rgba(212,165,116,0.01));
+}
+.bridge-node.apollo {
+  border-color: rgba(56, 189, 248, 0.4);
+  background: linear-gradient(135deg, rgba(56,189,248,0.06), rgba(56,189,248,0.01));
+}
+
+/* === Mascot picker === */
+.mascot-card {
+  cursor: pointer;
+  position: relative;
+  border-width: 1.5px;
+}
+.mascot-card.mascot-active {
+  transform: translateY(-2px);
+}
+.mascot-card[data-mascot="BLITZ"].mascot-active {
+  border-color: #DC2626;
+  box-shadow: 0 0 0 1px #DC2626, 0 0 24px rgba(220, 38, 38, 0.22);
+}
+.mascot-card[data-mascot="SCOUT"].mascot-active {
+  border-color: #D4A574;
+  box-shadow: 0 0 0 1px #D4A574, 0 0 24px rgba(212, 165, 116, 0.22);
+}
+.mascot-card[data-mascot="GUARDIAN"].mascot-active {
+  border-color: #0F766E;
+  box-shadow: 0 0 0 1px #0F766E, 0 0 24px rgba(15, 118, 110, 0.22);
+}
+.mascot-card[data-mascot="ROBO"].mascot-active {
+  border-color: #8B5CF6;
+  box-shadow: 0 0 0 1px #8B5CF6, 0 0 24px rgba(139, 92, 246, 0.28);
+}
+.mascot-card:not(.mascot-active):hover {
+  border-color: #2a3340;
+}
+
+/* === Tab bar === */
+.tab-bar {
+  display: inline-flex;
+  background: var(--apollo-surface);
+  border: 1px solid var(--apollo-border);
+  border-radius: 10px;
+  padding: 4px;
+}
+.tab {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--apollo-muted);
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.tab.active {
+  background: var(--apollo-surface-2);
+  color: white;
+  box-shadow: 0 1px 0 var(--apollo-primary) inset;
+}

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>BearWatch 2.0 — Institutional Fixed Income</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='v2.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='pages.css') }}">
+</head>
+<body>
+{% include '_nav.html' %}
+
+<main class="page" style="max-width: 1180px;">
+
+  <!-- HERO -->
+  <section class="hero" style="padding: 32px 0 24px;">
+    <div style="display:inline-flex;align-items:center;gap:8px;padding:6px 14px;background:linear-gradient(135deg,#a78bfa22,#7c3aed11);border:1px solid #a78bfa44;border-radius:999px;font-size:11px;color:#c4b5fd;margin-bottom:16px;font-weight:600;letter-spacing:0.04em;">
+      <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#a78bfa;box-shadow:0 0 8px #a78bfa;"></span>
+      BEARWATCH 2.0  ·  COMING SOON  ·  ROADMAP DRAFT
+    </div>
+    <h1 class="hero-title" style="font-size:clamp(36px,5vw,60px);">
+      Same signal.<br>
+      <span class="gradient-cool">Cleaner instruments.</span><br>
+      Institutional scale.
+    </h1>
+    <p class="hero-sub" style="max-width: 720px;">
+      v1 expresses the credit-stress thesis through equity shorts on alt-credit consumer lenders.
+      That works, but equity carries narrative noise — and the SCP gate excludes investment-grade names entirely.
+      v2 moves the trade to the instrument the thesis actually targets: <strong style="color:var(--text-primary);">credit</strong>.
+    </p>
+  </section>
+
+  <!-- =============== THE SEZL LESSON — empirical justification for the pivot =============== -->
+  <section class="section" style="background: linear-gradient(180deg, rgba(248,113,113,0.05), transparent 60%), var(--bg-card); border: 1px solid rgba(248,113,113,0.25); border-radius: 14px; padding: 28px;">
+    <div style="display: inline-block; font-size: 9px; padding: 3px 9px; background: rgba(248,113,113,0.15); color: #f87171; border-radius: 3px; font-weight: 700; letter-spacing: 0.08em; margin-bottom: 12px; text-transform: uppercase; font-family: var(--font-mono);">EMPIRICAL JUSTIFICATION</div>
+    <h2 class="section-title" style="margin-top: 0;">Why fixed income — the SEZL lesson.</h2>
+    <p class="section-intro" style="margin-bottom: 18px;">
+      Equity shorts have an asymmetric problem: <strong>the company can survive while you lose money</strong>. SEZL (<a href="/case-study" style="color: var(--accent-signal);">case study tab</a>) is the proof. BSI fired a sustained 9× signal — a real CFPB complaint surge over years — yet the equity ran <strong>+600%</strong> on momentum and meme-flow. A short position would have been catastrophically stopped out. <strong>Distressed credit can't run.</strong> Bonds and ABS junior tranches re-price on perceived default risk regardless of what the equity does. That's the whole point of the v2 pivot.
+    </p>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px;">
+      <div style="background: var(--bg-elevated); border: 1px solid rgba(248,113,113,0.25); border-radius: 10px; padding: 18px;">
+        <div style="font-size: 9px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; margin-bottom: 8px;">Equity short — SEZL hypothetical</div>
+        <div style="font-family: var(--font-mono); font-size: 22px; color: var(--danger); font-weight: 700;">−$8,109 (−600%)</div>
+        <div style="font-size: 11.5px; color: var(--text-secondary); line-height: 1.6; margin-top: 10px;">
+          BSI says SHORT. Apollo sizes 100 shares at $13.51. Equity runs to $94.60 on momentum + meme inflow. Borrow gets called. Position stops out. <strong>The signal was right about distress; the instrument was wrong for the regime.</strong>
+        </div>
+      </div>
+      <div style="background: var(--bg-elevated); border: 1px solid rgba(34,197,94,0.3); border-radius: 10px; padding: 18px;">
+        <div style="font-size: 9px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; margin-bottom: 8px;">Same signal, fixed-income wrapper</div>
+        <div style="font-family: var(--font-mono); font-size: 22px; color: var(--success); font-weight: 700;">+~12% (illustrative)</div>
+        <div style="font-size: 11.5px; color: var(--text-secondary); line-height: 1.6; margin-top: 10px;">
+          BSI says SHORT credit. TRS short the 2027 convertible at 96. Spread widens 280→420 bp on the same complaint surge. Bond marks down ~12%. <strong>Equity meme momentum is irrelevant — bondholders price default risk, not narrative.</strong>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 18px; padding: 14px 18px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 8px;">
+      <div style="font-size: 12px; color: var(--text); font-weight: 600; margin-bottom: 10px;">The structural reason fixed income beats equity for this signal:</div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px 22px; font-size: 11.5px; color: var(--text-secondary); line-height: 1.65;">
+        <div><strong style="color: var(--danger);">Equity is reflexive.</strong> A meme run, sector rotation, benchmark inclusion, or short squeeze can sustain a stock above fair value for years. SEZL, GME, AMC, BBBY all proved this. The signal doesn't have to be wrong for the trade to lose.</div>
+        <div><strong style="color: var(--success);">Credit is binary.</strong> A bond either gets paid or it doesn't. Spreads price probability-of-default — a function of cash flow and leverage, not narrative. Even if SEZL the equity rallies, SEZL the bond can only re-price wider as default risk rises.</div>
+        <div><strong style="color: var(--danger);">Equity short = unbounded loss.</strong> A 7× run on a $5K position = $35K liability. Borrow vanishes when most needed. Forced cover at the worst possible price.</div>
+        <div><strong style="color: var(--success);">Credit short = capped loss.</strong> Pay coupon while short; max loss = par minus borrow cost. TRS structures cap exposure cleanly. Buy-to-cover is at par if it never defaults — bounded.</div>
+        <div><strong style="color: var(--danger);">Equity needs timing.</strong> Calendar-time alpha was statistically zero in v1 because equity reverts on flow. Held too short → squeeze loss. Held too long → opportunity cost.</div>
+        <div><strong style="color: var(--success);">Credit holds naturally.</strong> 12-24 month holding periods are the norm. The signal's 9-month average lead time matches the natural duration of distressed credit positioning. No timing required.</div>
+        <div><strong style="color: var(--danger);">Equity excludes IG names.</strong> Capital One, Discover, Ally are too liquid and too prime to short. Their stock won't move on consumer-credit signals — equity sector pricing dominates.</div>
+        <div><strong style="color: var(--success);">Credit reaches the whole universe.</strong> Every BSI universe firm has a tradeable credit instrument: ABS shelf, single-name CDS, HY bond, sub-IG note. Same signal, full coverage including IG.</div>
+      </div>
+    </div>
+
+    <p style="font-size: 11.5px; color: var(--text-tertiary); margin-top: 14px; line-height: 1.6; font-style: italic;">
+      v1 backtest produced 4-of-5 historical detects (CVNA, UPST, BRIDGECREST, TRICOLOR @ 11.3 mo) plus the 1 false positive (SEZL) across the equity strategy. <strong>In a fixed-income wrapper that one false positive disappears</strong> — Sezzle's sustained complaint surge would have moved its credit spreads regardless of equity-momentum noise. v2's empirical case is that the hit-rate becomes 5-of-5 once the signal targets the right asset class.
+    </p>
+  </section>
+
+  <!-- THE THESIS -->
+  <section class="section">
+    <h2 class="section-title">The thesis didn't change. The instrument did.</h2>
+    <p class="section-intro">BearWatch generates a behavioural signal of consumer-credit deterioration. That signal points cleanly at one asset class: <strong>the consumer credit itself</strong>. Equity is a noisy proxy. Junior ABS tranches, single-name CDS, and HY credit indices express the same idea with less noise, longer hold tolerance, and (critically) coverage of names equity excluded.</p>
+
+    <div class="m-grid-2" style="margin-top: 22px;">
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:24px;border-left:3px solid var(--accent-signal);">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent-signal);font-weight:600;margin-bottom:8px;">v1 — Equity shorts</div>
+        <h3 style="margin:0 0 12px;font-size:18px;color:var(--text-primary);">Tradeable today</h3>
+        <ul class="card-list" style="font-size:13px;">
+          <li>5 H1 historical events, $100K notional per trade</li>
+          <li>−45.7% factor-adjusted abret over 18 months</li>
+          <li>Equity beta load + sector concentration risk</li>
+          <li>SCP gate <strong>excludes investment-grade names</strong> — half the universe untradeable</li>
+          <li>Calendar-time alpha = 0; signal is event-driven, not portfolio-driven</li>
+        </ul>
+      </div>
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:24px;border-left:3px solid #a78bfa;">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:#a78bfa;font-weight:600;margin-bottom:8px;">v2 — Fixed income · institutional</div>
+        <h3 style="margin:0 0 12px;font-size:18px;color:var(--text-primary);">Roadmap (Sprint 7+)</h3>
+        <ul class="card-list" style="font-size:13px;">
+          <li>Junior ABS tranches · single-name CDS · HY credit · sub-IG bonds · TRS</li>
+          <li>Pure credit expression — no equity-narrative confound</li>
+          <li>Universe expands from 25 → ~60 (IG names tradeable via 5Y CDS)</li>
+          <li>$1M – $50M institutional sizing · prime-broker desk relationship</li>
+          <li>Hold horizon matches signal lead time (12–24 months) without margin friction</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- INSTRUMENT MAP -->
+  <section class="section">
+    <h2 class="section-title">Instrument map · how v2 expresses the trade</h2>
+    <p class="section-intro">Five instrument families, each suited to a different sub-class of the universe. The pod's signal stays identical; only the execution wrapper changes.</p>
+
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+      <div style="display:grid;grid-template-columns:160px 1fr 1fr 90px;gap:16px;padding:14px 18px;border-bottom:1px solid var(--border-strong);font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-tertiary);font-weight:600;">
+        <div>Instrument</div>
+        <div>Best for</div>
+        <div>Why</div>
+        <div style="text-align:right;">Typical size</div>
+      </div>
+
+      <div class="v2-row">
+        <div class="v2-inst">Junior ABS tranches  <span class="v2-tag">★ flagship</span></div>
+        <div>CRVNA (Carvana), AFRMT (Affirm), CACC, OPFI shelves</div>
+        <div>Pure credit. No equity noise. Tranche-level sensitivity to NCO &amp; DPD trajectory the BSI is forecasting. Direct OTS expression.</div>
+        <div class="v2-size">$5–25M</div>
+      </div>
+      <div class="v2-row">
+        <div class="v2-inst">Single-name 5Y CDS</div>
+        <div>ALLY, COF, DFS, PYPL, KMX (IG names)</div>
+        <div>Unlocks the IG portion of the universe that v1's SCP gate blocked. Liquid for big issuers, tighter spreads than ABS.</div>
+        <div class="v2-size">$10–50M notional</div>
+      </div>
+      <div class="v2-row">
+        <div class="v2-inst">CDX HY index</div>
+        <div>Sector-wide stress regime (multi-firm BSI elevation)</div>
+        <div>Cheapest sector-wide hedge. Lowest precision but highest liquidity. Useful for when 4+ firms hit FIRED_UP simultaneously.</div>
+        <div class="v2-size">$25–100M</div>
+      </div>
+      <div class="v2-row">
+        <div class="v2-inst">Sub-IG corporate bonds</div>
+        <div>CACC, OPFI, ENVA, OMF (rated B+ to BB+)</div>
+        <div>Direct credit short. More punishing than equity if right. Limited secondary market liquidity — best for buy-and-hold expression.</div>
+        <div class="v2-size">$5–15M</div>
+      </div>
+      <div class="v2-row">
+        <div class="v2-inst">Total Return Swap (TRS)</div>
+        <div>Custom-basket exposure across multiple FIRED_UP names</div>
+        <div>Off-balance-sheet, prime-broker structured, custom underlying. Lets you express conviction on the basket without 5 separate trades.</div>
+        <div class="v2-size">$10–40M</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ARCHITECTURE CHANGES -->
+  <section class="section">
+    <h2 class="section-title">What changes in the architecture</h2>
+    <p class="section-intro">Three architectural shifts. The signal engine (BSI · 8 pillars · 11 bear states) stays exactly the same. What gets re-wired is the gate logic and the execution layer.</p>
+
+    <div class="gate-row" style="grid-template-columns: 1fr 1fr 1fr;">
+      <div class="gate-card" style="border-color: rgba(167,139,250,0.4);">
+        <div class="gate-num" style="color:#a78bfa;">Change 1</div>
+        <div class="gate-name">SCP becomes a router, not a blocker</div>
+        <div class="gate-desc">v1: SCP fails → trade blocked. v2: SCP fails → trade routed to <strong>CDS</strong> instead of equity short. IG names become tradeable via credit.</div>
+      </div>
+      <div class="gate-card" style="border-color: rgba(167,139,250,0.4);">
+        <div class="gate-num" style="color:#a78bfa;">Change 2</div>
+        <div class="gate-name">Apollo gets an instrument-selector layer</div>
+        <div class="gate-desc">New step between Risk Verdict and Execute: maps event characteristics to optimal instrument (ABS / CDS / sub-IG bond / TRS / CDX). Sized by liquidity tier per name.</div>
+      </div>
+      <div class="gate-card" style="border-color: rgba(167,139,250,0.4);">
+        <div class="gate-num" style="color:#a78bfa;">Change 3</div>
+        <div class="gate-name">Calendar-time portfolio becomes viable</div>
+        <div class="gate-desc">v1 calendar-time alpha was zero — equity needs entry/exit timing the signal can't provide. Credit instruments hold 12–24 months by design; calendar-time becomes the natural reporting unit.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHY THIS MATTERS -->
+  <section class="section">
+    <h2 class="section-title">Why this materially upgrades the deliverable</h2>
+    <div class="m-grid-2">
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:22px;">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#a78bfa;font-weight:600;margin-bottom:8px;">Universe expansion</div>
+        <div style="font-family:var(--font-mono);font-size:32px;font-weight:700;color:var(--text-primary);line-height:1;">25 → 60+</div>
+        <div style="font-size:13px;color:var(--text-secondary);margin-top:8px;line-height:1.5;">v1 universe was 25 firms with most IG names sidelined. v2 unlocks every IG name via CDS, plus ABS shelves we already monitor (CRVNA, AFRMT) become directly tradeable.</div>
+      </div>
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:22px;">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#a78bfa;font-weight:600;margin-bottom:8px;">Signal-to-noise</div>
+        <div style="font-family:var(--font-mono);font-size:32px;font-weight:700;color:var(--text-primary);line-height:1;">~3× cleaner</div>
+        <div style="font-size:13px;color:var(--text-secondary);margin-top:8px;line-height:1.5;">Junior ABS pricing tracks NCO and DPD with ~3× the signal-to-noise of equity. Equity has earnings-narrative, sentiment, sector-rotation noise that ABS doesn't.</div>
+      </div>
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:22px;">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#a78bfa;font-weight:600;margin-bottom:8px;">Calendar-time viable</div>
+        <div style="font-family:var(--font-mono);font-size:32px;font-weight:700;color:var(--text-primary);line-height:1;">α &gt; 0</div>
+        <div style="font-size:13px;color:var(--text-secondary);margin-top:8px;line-height:1.5;">v1 calendar-time alpha was statistically zero (t = 0.08) — the signal works event-driven, not portfolio-driven. Fixed-income hold horizons let the same signal drive a continuously-rebalanced portfolio.</div>
+      </div>
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:22px;">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#a78bfa;font-weight:600;margin-bottom:8px;">Position-size scale</div>
+        <div style="font-family:var(--font-mono);font-size:32px;font-weight:700;color:var(--text-primary);line-height:1;">100×</div>
+        <div style="font-size:13px;color:var(--text-secondary);margin-top:8px;line-height:1.5;">v1 retail-sim sizing ($5K–$10K per trade) becomes institutional ($1M–$50M). Fixed income is where the buy-side actually operates at this thesis size.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ROADMAP -->
+  <section class="section">
+    <h2 class="section-title">Roadmap to v2.0 launch</h2>
+    <div class="sprint-list">
+      <div class="sprint-item">
+        <div class="sprint-id">Sprint 7</div>
+        <div class="sprint-info">
+          <div class="head">ABS-trustee remittance ingest (CRVNA · AFRMT · CACC)</div>
+          <div class="body">Pull monthly trustee reports from EDGAR ABS-EE filings. Per-pool NCO, 30+/60+/90+ DPD, cumulative loss curves. This is the data layer 2.0 needs to even begin.</div>
+        </div>
+        <div class="sprint-status queued">QUEUED  ·  ~12h</div>
+      </div>
+      <div class="sprint-item">
+        <div class="sprint-id">Sprint 8</div>
+        <div class="sprint-info">
+          <div class="head">CDS pricing layer (Markit / Bloomberg-EQ)</div>
+          <div class="body">Single-name 5Y CDS spreads for the IG portion of the universe. Wire pricing, basis-vs-bond, term-structure. Required before the SCP gate can route to CDS.</div>
+        </div>
+        <div class="sprint-status queued">QUEUED  ·  paid data</div>
+      </div>
+      <div class="sprint-item">
+        <div class="sprint-id">Sprint 9</div>
+        <div class="sprint-info">
+          <div class="head">Apollo instrument-selector layer</div>
+          <div class="body">New stage between Risk Verdict and Execute: maps `(name, conviction, vol_regime)` → optimal instrument via lookup table. Returns a structured trade ticket that goes to a real desk, not Investopedia sim.</div>
+        </div>
+        <div class="sprint-status queued">QUEUED  ·  ~16h</div>
+      </div>
+      <div class="sprint-item">
+        <div class="sprint-id">Sprint 10</div>
+        <div class="sprint-info">
+          <div class="head">Calendar-time portfolio re-test on credit instruments</div>
+          <div class="body">Run the headline H1 backtest replacing equity shorts with synthetic ABS junior tranche P&L. Goal: prove calendar-time alpha &gt; 0 in fixed income where it was statistically zero in equity.</div>
+        </div>
+        <div class="sprint-status queued">QUEUED  ·  ~20h</div>
+      </div>
+      <div class="sprint-item">
+        <div class="sprint-id">Sprint 11+</div>
+        <div class="sprint-info">
+          <div class="head">Live forward paper-trade · 90-day window</div>
+          <div class="body">First real-money-equivalent test. ~$5M synthetic notional across 4–6 credit positions. Reports realised vs. backtested.</div>
+        </div>
+        <div class="sprint-status queued">QUEUED  ·  90d</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HONEST DISCLOSURE -->
+  <section class="section">
+    <div style="background:linear-gradient(135deg,rgba(167,139,250,0.08),transparent);border:1px solid rgba(167,139,250,0.3);border-radius:14px;padding:26px;">
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:#a78bfa;font-weight:600;margin-bottom:8px;">★  Honest framing</div>
+      <h3 style="font-size:22px;font-weight:700;color:var(--text-primary);margin:0 0 12px;letter-spacing:-0.02em;">v2 is a roadmap, not a deliverable.</h3>
+      <p style="font-size:14px;color:var(--text-secondary);line-height:1.7;margin:0;">
+        Everything on this page is forward-looking. v1 ships today: equity shorts, retail sim sizing, the published −45.7% abret claim. v2 requires (a) ABS-trustee data ingest (~12h), (b) paid CDS pricing feed (Markit subscription, ~$X/mo), (c) prime-broker desk relationship to actually execute, and (d) live capital deployment. None of those exist yet. What does exist is the methodology — and the methodology is genuinely instrument-agnostic. The same BSI signal that fires on CVNA today would short CRVNA 2025-A junior tranches in v2; same data, cleaner expression.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<style>
+.v2-row {
+  display: grid;
+  grid-template-columns: 160px 1fr 1fr 90px;
+  gap: 16px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  align-items: start;
+  transition: background 120ms ease;
+}
+.v2-row:last-child { border-bottom: none; }
+.v2-row:hover { background: var(--bg-card-hover); }
+.v2-inst {
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 13px;
+}
+.v2-tag {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 6px;
+  background: linear-gradient(135deg, #d4a574, #f59e0b);
+  color: var(--bg-base);
+  vertical-align: middle;
+}
+.v2-row > div:nth-child(2),
+.v2-row > div:nth-child(3) {
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+.v2-size {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-primary);
+  text-align: right;
+  font-weight: 600;
+}
+</style>
+
+</body>
+</html>

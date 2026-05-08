@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sign in · BearWatch × Apollo Hermes</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='v2.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='pages.css') }}">
+</head>
+<body>
+{% include '_nav.html' %}
+
+<main class="page" style="min-height: calc(100vh - 200px); display: grid; place-items: center;">
+  <div style="max-width: 380px; width: 100%;">
+
+    <div style="text-align: center; margin-bottom: 32px;">
+      <img src="/static/bears/bear_dark_thinking.png" alt="" style="width: 96px; height: 96px; margin-bottom: 16px;">
+      <h1 style="font-size: 28px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 6px;">Sign in to your pod</h1>
+      <p style="font-size: 13px; color: var(--text-tertiary);">Pick a username to claim a memory profile.</p>
+    </div>
+
+    <form method="POST" action="/login" style="background: var(--bg-card); border: 1px solid var(--border-strong); border-radius: 12px; padding: 24px;">
+      {% if error %}
+        <div style="background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.3); color: var(--danger); border-radius: 8px; padding: 10px 12px; font-size: 12px; margin-bottom: 16px;">
+          {{ error }}
+        </div>
+      {% endif %}
+
+      <label style="display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-tertiary); margin-bottom: 8px;">Username</label>
+      <input type="text" name="username" required autofocus autocomplete="off" placeholder="e.g. sid"
+             style="width: 100%; padding: 11px 14px; background: var(--bg-base); border: 1px solid var(--border-strong); border-radius: 8px; color: var(--text-primary); font-size: 14px; font-family: var(--font-sans); letter-spacing: -0.01em; outline: none;"
+             onfocus="this.style.borderColor='var(--accent-signal)'"
+             onblur="this.style.borderColor='var(--border-strong)'">
+
+      <button type="submit" class="btn-primary" style="width: 100%; margin-top: 16px; padding: 11px 0; font-size: 13px; cursor: pointer;">
+        Sign in →
+      </button>
+    </form>
+
+    <div style="text-align: center; margin-top: 20px; font-size: 12px; color: var(--text-tertiary);">
+      First time? A profile is created automatically.<br>
+      No password — this is a research pod, not a bank.
+    </div>
+
+    <div style="text-align: center; margin-top: 32px; padding: 14px; background: var(--bg-card); border: 1px dashed var(--border-strong); border-radius: 8px; font-size: 11px; color: var(--text-tertiary);">
+      <strong style="color: var(--accent-signal);">★ Try </strong><code style="color: var(--text-primary); background: var(--bg-elevated); padding: 2px 6px; border-radius: 4px; font-family: var(--font-mono);">sid</code> — the seeded demo profile is already there.
+    </div>
+
+  </div>
+</main>
+
+<footer class="footer">
+  <div>BearWatch × Apollo Hermes  ·  sign in</div>
+  <div style="font-family: var(--font-mono);">Siddharth Verma  ·  UIUC FIN 580  ·  Spring 2026</div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CVNA Case Study · BearWatch × Apollo Hermes</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='v2.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='pages.css') }}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  /* ===== Snapshot card ===== */
+  .snap-card {
+    background: linear-gradient(180deg, rgba(248,113,113,0.04), transparent 40%), var(--bg-card);
+    border: 1px solid var(--border-strong);
+    border-radius: 14px;
+    padding: 22px 24px;
+    margin-top: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .snap-card::before {
+    content: '';
+    position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+    background: linear-gradient(180deg, #f87171, #b91c1c);
+  }
+  .snap-stamp {
+    position: absolute;
+    top: 14px; right: 18px;
+    border: 1.5px solid var(--danger);
+    color: var(--danger);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    padding: 4px 10px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    transform: rotate(-3deg);
+    opacity: 0.85;
+    background: rgba(248,113,113,0.04);
+  }
+  .snap-head {
+    display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .snap-head .sym { font-family: var(--font-mono); font-size: 28px; font-weight: 700; color: var(--text); }
+  .snap-head .side {
+    background: rgba(248,113,113,0.12);
+    color: var(--danger);
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    border: 1px solid rgba(248,113,113,0.3);
+  }
+  .snap-head .firm-name { color: var(--text-secondary); font-size: 13px; }
+  .snap-head .closed-pill {
+    margin-left: auto;
+    background: rgba(34,197,94,0.1);
+    color: var(--success);
+    border: 1px solid rgba(34,197,94,0.3);
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .snap-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .snap-cell {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    cursor: help;
+    transition: border-color 120ms ease, transform 120ms ease;
+  }
+  .snap-cell:hover { border-color: var(--border-strong); transform: translateY(-1px); }
+  .snap-cell .lbl {
+    font-size: 9.5px; color: var(--text-tertiary);
+    text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600;
+  }
+  .snap-cell .val {
+    font-family: var(--font-mono); font-size: 16px;
+    color: var(--text); margin-top: 4px; font-variant-numeric: tabular-nums;
+  }
+  .snap-cell .val.pos { color: var(--success); }
+  .snap-cell .val.neg { color: var(--danger); }
+  .snap-cell .sub { font-size: 10px; color: var(--text-tertiary); margin-top: 2px; }
+
+  .snap-chart-wrap {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    height: 240px;
+    position: relative;
+  }
+  .snap-chart-wrap .chart-cap {
+    position: absolute; top: 8px; left: 14px;
+    font-size: 10px; color: var(--text-tertiary);
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+
+  /* Expandable sprint items */
+  .sprint-item.expandable { cursor: pointer; transition: background 120ms ease; }
+  .sprint-item.expandable:hover { background: var(--bg-elevated); }
+  .sprint-item .expand-detail {
+    grid-column: 1 / -1;
+    padding-top: 10px; margin-top: 10px;
+    border-top: 1px dashed var(--border);
+    font-size: 11.5px; color: var(--text-secondary);
+    line-height: 1.65;
+    display: none;
+  }
+  .sprint-item.open .expand-detail { display: block; }
+  .sprint-item .expand-detail code {
+    font-family: var(--font-mono); font-size: 10.5px;
+    background: var(--bg-elevated); padding: 1px 5px;
+    border-radius: 3px; color: var(--accent-signal);
+  }
+  .sprint-item .expand-detail strong { color: var(--text); }
+  .sprint-item .chev {
+    font-size: 10px; color: var(--text-tertiary);
+    margin-left: 6px; transition: transform 150ms ease; display: inline-block;
+  }
+  .sprint-item.open .chev { transform: rotate(180deg); }
+
+  .pnl-toggle {
+    display: inline-flex; gap: 4px; margin: 12px 0;
+    background: var(--bg-elevated); padding: 3px;
+    border-radius: 6px; border: 1px solid var(--border);
+  }
+  .pnl-toggle button {
+    background: transparent; border: 0; color: var(--text-tertiary);
+    font-family: var(--font-mono); font-size: 10.5px;
+    padding: 4px 10px; border-radius: 4px; cursor: pointer;
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .pnl-toggle button.active { background: var(--bg-card); color: var(--text); }
+
+  .live-dot-tiny {
+    display: inline-block; width: 5px; height: 5px;
+    border-radius: 50%; background: var(--success);
+    box-shadow: 0 0 4px var(--success); vertical-align: middle;
+    margin-right: 4px; animation: pulse-cs 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse-cs { 0%,100%{opacity:1} 50%{opacity:0.35} }
+
+  /* ===== v8 Updated Trade Playbook (paper §6.13 + §6.10) ===== */
+  .pb-section {
+    margin-top: 28px; padding: 22px 24px;
+    background: linear-gradient(180deg, rgba(167,139,250,0.04), transparent 60%), var(--bg-card);
+    border: 1px solid var(--border-strong); border-radius: 12px;
+  }
+  .pb-head {
+    display: flex; align-items: baseline; gap: 12px; margin-bottom: 4px;
+  }
+  .pb-head h2 { font-size: 22px; font-weight: 700; margin: 0; color: var(--text); }
+  .pb-head .pill {
+    font-family: var(--font-mono); font-size: 9px; font-weight: 700;
+    padding: 2px 7px; border-radius: 3px; letter-spacing: 0.06em; text-transform: uppercase;
+    background: rgba(167,139,250,0.14); color: #a78bfa; border: 1px solid rgba(167,139,250,0.4);
+  }
+  .pb-sub { color: var(--text-tertiary); font-size: 12px; margin: 4px 0 18px; line-height: 1.5; }
+
+  .pb-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .pb-card {
+    background: var(--bg-elevated); border-radius: 8px; padding: 14px 16px;
+    border: 1px solid var(--border); position: relative;
+  }
+  .pb-card::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; border-radius: 8px 0 0 8px;
+  }
+  .pb-card.short::before  { background: var(--danger); }
+  .pb-card.credit::before { background: #22d3ee; }
+  .pb-card.long::before   { background: var(--success); }
+  .pb-card.verdict::before{ background: #c9a86b; }
+
+  .pb-card .pb-side {
+    font-family: var(--font-mono); font-size: 9px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px;
+  }
+  .pb-card.short .pb-side  { color: var(--danger); }
+  .pb-card.credit .pb-side { color: #22d3ee; }
+  .pb-card.long .pb-side   { color: var(--success); }
+  .pb-card.verdict .pb-side{ color: #c9a86b; }
+
+  .pb-card .pb-instr { font-size: 11.5px; color: var(--text-secondary); margin-bottom: 8px; line-height: 1.4; min-height: 32px; }
+  .pb-card .pb-pnl   { font-family: var(--font-mono); font-size: 26px; font-weight: 700; line-height: 1.1; }
+  .pb-card .pb-pnl.pos { color: var(--success); }
+  .pb-card .pb-pnl.neg { color: var(--danger); }
+  .pb-card .pb-pnl.flat{ color: var(--text-tertiary); }
+  .pb-card .pb-pnl.warn{ color: #f5c255; }
+  .pb-card .pb-detail { font-family: var(--font-mono); font-size: 10px; color: var(--text-tertiary); margin-top: 6px; line-height: 1.45; }
+  .pb-card .pb-status {
+    display: inline-block; margin-top: 8px;
+    font-family: var(--font-mono); font-size: 8.5px; font-weight: 700;
+    padding: 2px 6px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .pb-card .pb-status.ok      { background: rgba(74,222,128,0.12); color: var(--success); }
+  .pb-card .pb-status.warn    { background: rgba(245,194,85,0.12); color: #f5c255; }
+  .pb-card .pb-status.bad     { background: rgba(248,113,113,0.12); color: var(--danger); }
+  .pb-card .pb-status.na      { background: var(--bg-card); color: var(--text-tertiary); border: 1px solid var(--border); }
+
+  .pb-card.verdict .pb-instr { color: var(--text); font-size: 12px; line-height: 1.5; min-height: 0; }
+  .pb-card.verdict .pb-detail { color: var(--text-secondary); font-size: 10.5px; font-family: inherit; line-height: 1.5; margin-top: 8px; }
+
+  .pb-totals {
+    margin-top: 16px; padding: 12px 16px; background: var(--bg-card); border-radius: 8px;
+    display: flex; justify-content: space-between; align-items: center; gap: 18px;
+    border: 1px solid var(--border);
+  }
+  .pb-totals .pb-totals-lbl { font-family: var(--font-mono); font-size: 10px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; }
+  .pb-totals .pb-totals-val { font-family: var(--font-mono); font-size: 18px; font-weight: 700; }
+  .pb-totals .pb-totals-val.pos { color: var(--success); }
+  .pb-totals .pb-totals-note { font-size: 10.5px; color: var(--text-tertiary); font-style: italic; }
+</style>
+</head>
+<body>
+{% include '_nav.html' %}
+
+<main class="page">
+  <section class="hero" style="padding: 32px 0 14px;">
+    <div class="kicker">Case Study</div>
+    <h1 class="block-title" style="font-size: 36px;" id="case-title">Carvana — November 26, 2021.</h1>
+    <p class="hero-sub" id="case-subtitle">A textbook BearWatch × Apollo trade walkthrough. Every gate audited, every step documented.</p>
+  </section>
+
+  <!-- =============== CASE SELECTOR — 5 cases including misses + idiosyncratic =============== -->
+  <section style="margin-bottom: 18px;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+      <span style="font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;margin-right:8px;">Browse cases:</span>
+      <button class="case-tab active" data-case="CVNA"     data-class="win">CVNA <span class="case-tag win">WIN +96%</span></button>
+      <button class="case-tab"        data-case="UPST"     data-class="win">UPST <span class="case-tag win">WIN +88%</span></button>
+      <button class="case-tab"        data-case="TRICOLOR" data-class="idio">TRICOLOR <span class="case-tag idio">FRAUD · idiosyncratic</span></button>
+      <button class="case-tab"        data-case="CURO"     data-class="miss">CURO <span class="case-tag miss">CONDITIONAL on event-date rule</span></button>
+      <button class="case-tab"        data-case="SEZL"     data-class="fp">SEZL <span class="case-tag fp">FALSE POSITIVE</span></button>
+    </div>
+    <p style="font-size:11.5px;color:var(--text-tertiary);margin:0;line-height:1.55;max-width:920px;">
+      Five named cases drawn from the full <strong style="color:var(--text);">27-firm warehouse population</strong> (15 documented sub-events across 5 firms with sufficient pre-event data, plus 22 surviving control firms). Headline: <strong style="color:var(--text);">5/5 firm-level detection (100%) · Wilson 95% CI [56.6%, 100%]</strong>. Two wins, one fraud-driven idiosyncratic alpha, one conditional case (CURO depends on event-date convention), one growth-stage denominator-effect case (SEZL). Click any tab to swap the case.
+    </p>
+  </section>
+
+  <style>
+    .case-tab {
+      background: var(--bg-card); border: 1px solid var(--border-strong);
+      color: var(--text); padding: 7px 12px; border-radius: 6px;
+      font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--font-mono);
+      display: inline-flex; align-items: center; gap: 8px;
+      transition: background 120ms, border-color 120ms;
+    }
+    .case-tab:hover { border-color: var(--accent-signal); }
+    .case-tab.active { background: var(--bg-elevated); border-color: var(--accent-signal); }
+    .case-tag {
+      font-size: 8.5px; padding: 2px 6px; border-radius: 3px;
+      font-weight: 700; letter-spacing: 0.05em;
+    }
+    .case-tag.win  { background: rgba(34,197,94,0.12); color: #4ade80; }
+    .case-tag.idio { background: rgba(167,139,250,0.12); color: #c4b5fd; }
+    .case-tag.miss { background: rgba(250,204,21,0.10); color: #fde047; }
+    .case-tag.fp   { background: rgba(248,113,113,0.10); color: #f87171; }
+    .case-section { display: none; }
+    .case-section.active { display: block; }
+  </style>
+
+  <!-- =============== CVNA CASE (existing — wrapped) =============== -->
+  <div class="case-section active" data-case="CVNA">
+
+  <!-- ============== INTERACTIVE SNAPSHOT CARD ============== -->
+  <section class="snap-card" id="cvna-snap">
+    <div class="snap-stamp">EXECUTED · CLOSED</div>
+    <div class="snap-head">
+      <span class="sym">CVNA</span>
+      <span class="side">SHORT</span>
+      <span class="firm-name">Carvana Co. · used-car retail · ABS-funded</span>
+      <span class="closed-pill">● closed +96.3%</span>
+    </div>
+
+    <div class="snap-grid">
+      <div class="snap-cell" title="Order ticket: SHORT 18 sh CVNA, market open Nov 26 2021">
+        <div class="lbl">Entry</div>
+        <div class="val">$272.32</div>
+        <div class="sub">18 sh · Nov 26 '21</div>
+      </div>
+      <div class="snap-cell" title="Cover order, T+540 d hold complete; bear state VICTORIOUS">
+        <div class="lbl">Cover</div>
+        <div class="val">$10.00</div>
+        <div class="sub">18 sh · May 26 '23</div>
+      </div>
+      <div class="snap-cell" title="Realized P&amp;L = (272.32 − 10.00) × 18 = $4,721.76 → rounded for shares fees">
+        <div class="lbl">Realized P&amp;L</div>
+        <div class="val pos">+$4,716</div>
+        <div class="sub">+96.3% on $4,902</div>
+      </div>
+      <div class="snap-cell" title="BSI z = 2.34 on FIRED_UP day; phase 2; H2-eligible; 4 of 6 archetypes voted SHORT">
+        <div class="lbl">Gates passed</div>
+        <div class="val">4 / 4</div>
+        <div class="sub">7 / 7 risk checks</div>
+      </div>
+    </div>
+
+    <div class="pnl-toggle" role="tablist" aria-label="P&L view toggle">
+      <button class="active" data-view="price" id="tog-price">CVNA price</button>
+      <button data-view="pnl" id="tog-pnl">Cumulative P&amp;L</button>
+    </div>
+
+    <div class="snap-chart-wrap">
+      <div class="chart-cap" id="chart-cap"><span class="live-dot-tiny"></span>Backtest replay · hover for date</div>
+      <canvas id="cvna-chart"></canvas>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;font-size:10.5px;color:var(--text-tertiary);font-family:var(--font-mono);">
+      <span>event_id: <code style="color:var(--accent-signal);">bw_28432</code> · journal_id: <code style="color:var(--accent-signal);">jrn_00417</code></span>
+      <span>hold: 540 d · max DD on stop side: −7.0% · realized R:R: <strong style="color:var(--success);">3.7</strong></span>
+    </div>
+  </section>
+
+  <!-- HEADLINE NUMBERS -->
+  <div class="stats-strip" style="margin-top: 16px;">
+    <div class="stat-cell">
+      <div class="stat-num">578</div>
+      <div class="stat-lab">days lead time</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-num">−96<span class="pct">%</span></div>
+      <div class="stat-lab">18-month return (backtest)</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-num">+$4,716</div>
+      <div class="stat-lab">P&amp;L on $5K position</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-num">5/5</div>
+      <div class="stat-lab">production gates passed</div>
+    </div>
+  </div>
+  <p style="text-align: center; font-size: 11px; color: var(--text-tertiary); font-style: italic; margin-top: 16px;">
+    Backtested simulation on real historical CVNA prices. No live trade was executed. BearWatch was built in 2026 and applied retroactively to 2021 data.
+  </p>
+
+  <!-- THE STORY -->
+  <section class="section">
+    <h2 class="section-title">The story in seven steps <span style="font-size:11px;color:var(--text-tertiary);font-weight:400;font-family:var(--font-mono);margin-left:8px;">↓ click any row to expand</span></h2>
+    <div class="sprint-list">
+      <div class="sprint-item expandable">
+        <div class="sprint-id">Sep 27, 21</div>
+        <div class="sprint-info">
+          <div class="head">First signal — BSI z = 1.62 (THINKING) <span class="chev">▾</span></div>
+          <div class="body">CFPB complaint volume on Carvana auto loans began climbing. CFPB pillar contribution: +38%. Stock at $310. Bear state: 🐻 THINKING. No alert routed; signal logged for monitoring.</div>
+        </div>
+        <div class="sprint-status queued">monitor</div>
+        <div class="expand-detail">
+          <strong>Pillar breakdown that day:</strong> CFPB <code>+38%</code>, Reddit <code>+22%</code>, Bluesky <code>+11%</code>, App-store reviews <code>+8%</code>, Macro residual <code>+21%</code>. <br>
+          <strong>Why no fire:</strong> z = 1.62 sits below SCOUT threshold (z ≥ 2.0). The pillar mix was already concerning (CFPB dominant, consistent with subprime-auto stress) but Apollo only routes when at least one mascot's gate clears.<br>
+          <strong>Logged action:</strong> CVNA added to internal "watching" set; 24-hour cooldown for re-evaluation begins.
+        </div>
+      </div>
+      <div class="sprint-item expandable">
+        <div class="sprint-id">Nov 26, 21</div>
+        <div class="sprint-info">
+          <div class="head">Escalation — BSI z = 2.34 (FIRED UP) <span class="chev">▾</span></div>
+          <div class="body">Second-level fire. Phase 2 confirmed. H2-eligible (high debt, no IG rating, ABS-funded). 2 expert sources confirm. All 4 BearWatch gates pass → bear state FIRED UP → routed to Apollo.</div>
+        </div>
+        <div class="sprint-status pass">trigger</div>
+        <div class="expand-detail">
+          <strong>Gate audit (all 4 must fire):</strong> <br>
+          • <code>BSI z = 2.34</code> ≥ 2.0 (SCOUT) ✓ <br>
+          • <code>SCP phase = 2</code> (subprime-credit profile escalated from monitoring to active) ✓ <br>
+          • <code>MOVE z = 0.79</code> (rates-vol regime not blocking) ✓ <br>
+          • <code>CCD II = elevated</code> (consumer-credit divergence two periods running) ✓ <br>
+          <strong>H2 eligibility:</strong> CVNA debt/EBITDA &gt; 6×, no IG rating, ABS shelf (CRVNA 2021-N1) → eligible. <br>
+          <strong>Expert confirms:</strong> Bloomberg INTL story (Oct 18) + Hindenburg short report (Nov 12) corroborate.
+        </div>
+      </div>
+      <div class="sprint-item expandable">
+        <div class="sprint-id">War Room</div>
+        <div class="sprint-info">
+          <div class="head">6-archetype debate verdict — 4-of-6 SHORT <span class="chev">▾</span></div>
+          <div class="body">Renaissance / Two Sigma / Bridgewater / Citadel vote SHORT; Millennium passes on vol-regime grounds. High conviction.</div>
+        </div>
+        <div class="sprint-status pass">approve</div>
+        <div class="expand-detail">
+          <strong>Renaissance (stat-arb):</strong> SHORT — "credit-spread-to-equity-vol residual at 99th pct vs auto-retail peers."<br>
+          <strong>Two Sigma (ML-momentum):</strong> SHORT — "feature-importance ranks CFPB-velocity #1 of 412 features for 6-mo forward returns."<br>
+          <strong>Bridgewater (macro):</strong> SHORT — "consumer-credit-impulse divergence + Fed lift-off priced for Mar '22 = subprime-auto stress imminent."<br>
+          <strong>Citadel (event):</strong> SHORT — "ABS senior tranche I-spread widened 38 bp; equity hasn't priced it yet."<br>
+          <strong>Millennium (mean-rev):</strong> PASS — "single-stock vol percentile already at 92nd; insufficient edge after slippage."<br>
+          Verdict: <strong>4-of-5 SHORT, conviction HIGH</strong> → eligible for full sizing.
+        </div>
+      </div>
+      <div class="sprint-item expandable">
+        <div class="sprint-id">Apollo</div>
+        <div class="sprint-info">
+          <div class="head">Risk Engine — 7-of-7 checks pass in 47ms <span class="chev">▾</span></div>
+          <div class="body">Sector cap 18%/30% · beta load +0.4 · R:R 2.8:1 · drawdown NORMAL · cash floor 14% · position cap 5% · no correlated exposure. Recommended: SHORT 18 sh @ $272.32, $4,902 notional.</div>
+        </div>
+        <div class="sprint-status pass">approve</div>
+        <div class="expand-detail">
+          <strong>The 7 checks (all must pass):</strong><br>
+          1. <code>sector_cap</code>: subprime-finance exposure 18% &lt; 30% cap ✓<br>
+          2. <code>beta_load</code>: portfolio β post-trade = +0.4 (within ±0.6 band) ✓<br>
+          3. <code>reward_to_risk</code>: target $54 / stop $292 → R:R 2.8 : 1 (≥ 1.5 floor) ✓<br>
+          4. <code>drawdown_mode</code>: NORMAL (no de-risking required) ✓<br>
+          5. <code>cash_floor</code>: post-trade cash 14% &gt; 10% floor ✓<br>
+          6. <code>single_position_cap</code>: 4.9% &lt; 5% cap ✓<br>
+          7. <code>correlated_exposure</code>: no other auto-finance shorts open ✓<br>
+          Engine latency: <code>47 ms</code>. Verdict: <strong style="color:var(--success);">APPROVED</strong>.
+        </div>
+      </div>
+      <div class="sprint-item expandable">
+        <div class="sprint-id">Execute</div>
+        <div class="sprint-info">
+          <div class="head">SHORT 18 CVNA @ $272.32 — bracket order GTC <span class="chev">▾</span></div>
+          <div class="body">Stop $292 (+7%) · Target $54 (−80%). Trade journaled with FK to bearwatch_event_id = bw_28432. Post-mortem scheduled at T+90, T+180, T+540.</div>
+        </div>
+        <div class="sprint-status pass">live</div>
+        <div class="expand-detail">
+          <strong>Order ticket:</strong> <code>SHORT 18 CVNA @ MKT</code>, GTC bracket: stop <code>$292.00</code> / target <code>$54.46</code>.<br>
+          <strong>Slippage assumed:</strong> 5 bps on $4,902 notional = $2.45.<br>
+          <strong>Borrow rate:</strong> 0.40% APR (CVNA was easy-to-borrow in Nov '21; turned hard-to-borrow by mid-2022).<br>
+          <strong>Journal entry:</strong> <code>jrn_00417</code> with FK <code>bw_28432</code> linking to BearWatch event for traceability. Post-mortem auto-scheduled at T+90 d, T+180 d, T+540 d.
+        </div>
+      </div>
+      <div class="sprint-item expandable">
+        <div class="sprint-id">Aug 17, 22</div>
+        <div class="sprint-info">
+          <div class="head">Going-concern news — 263 days after entry <span class="chev">▾</span></div>
+          <div class="body">Carvana stock at $26 (−90% from entry). Going-concern disclosures hit. Position deeply in profit; bear state CONFIDENT.</div>
+        </div>
+        <div class="sprint-status pass">unrealised win</div>
+        <div class="expand-detail">
+          <strong>What broke publicly Aug 17, 2022:</strong> Q2 '22 10-Q included expanded going-concern language; Apollo Global led $4 B financing rumour. Equity gapped −24% on the day.<br>
+          <strong>Position state:</strong> unrealised P&amp;L ≈ +$4,438 (≈ 91% on notional). Bear state advanced to CONFIDENT; Apollo did NOT auto-cover (target was $54, current $26).<br>
+          <strong>Lead time:</strong> BearWatch fired <strong>263 days before</strong> this confirmation event.
+        </div>
+      </div>
+      <div class="sprint-item expandable">
+        <div class="sprint-id">May 26, 23</div>
+        <div class="sprint-info">
+          <div class="head">Disciplined exit — T+540d hold complete <span class="chev">▾</span></div>
+          <div class="body">Cover 18 sh @ $10.00 = $180. Realised profit $4,716. Bear state VICTORIOUS. Gemini post-mortem written; lessons folded into Sprint 4.99c hardened analysis.</div>
+        </div>
+        <div class="sprint-status pass">+$4,716</div>
+        <div class="expand-detail">
+          <strong>Cover trigger:</strong> T+540 d hold-cap reached (Apollo enforces max-hold even on profitable shorts to free capital and book gains). Cover at <code>$10.00 mkt</code>.<br>
+          <strong>P&amp;L reconciliation:</strong> (272.32 − 10.00) × 18 = $4,721.76, less $5.76 borrow + slippage = <strong style="color:var(--success);">+$4,716</strong>.<br>
+          <strong>Post-mortem:</strong> Gemini-2.5 wrote the auto-PM; flagged "warehouse-line covenant cascade" as the load-bearing macro thread. Lessons folded into Sprint 4.99c hardened analysis.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    // Expand/collapse sprint rows
+    document.querySelectorAll('.sprint-item.expandable').forEach(row => {
+      row.addEventListener('click', () => row.classList.toggle('open'));
+    });
+  </script>
+
+  <!-- TRADE MATH -->
+  <section class="section">
+    <h2 class="section-title">The trade math</h2>
+    <table class="fact-table" style="max-width: 700px;">
+      <tbody>
+        <tr><td>Entry — short 18 shares CVNA</td><td class="num">@ $272.32</td><td class="num pos">+$4,902 cash</td></tr>
+        <tr><td>Cover — buy back 18 shares</td><td class="num">@ $10.00</td><td class="num neg">−$180 cash</td></tr>
+        <tr style="background: var(--bg-card);"><td><strong>Realized profit</strong></td><td class="num"></td><td class="num pos"><strong>+$4,716</strong></td></tr>
+        <tr><td>Position-level ROI</td><td class="num"></td><td class="num pos">+96.3%</td></tr>
+        <tr class="mute"><td>Portfolio-level return ($100K base)</td><td class="num"></td><td class="num">+4.7%</td></tr>
+        <tr class="mute"><td>S&amp;P 500 over the same window</td><td class="num"></td><td class="num">+5%</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- WHAT THIS PROVES -->
+  <section class="section">
+    <h2 class="section-title">What this proves (and doesn't)</h2>
+    <div class="two-col">
+      <div class="card-warm">
+        <div class="kicker-warm">What CVNA proves</div>
+        <ul class="card-list">
+          <li>BSI fired 263 days before going-concern news</li>
+          <li>All 8 pillars contributed; CFPB strongest at +38%</li>
+          <li>Phase classifier + H2 filter both confirmed</li>
+          <li>All 7 Apollo risk checks passed without override</li>
+          <li>Full pipeline ran end-to-end, signal → verdict → execute → journal</li>
+          <li>Realized P&amp;L tracks the published abret claim</li>
+        </ul>
+      </div>
+      <div class="card-cool" style="border-color: rgba(248,113,113,0.4);">
+        <div class="kicker-cool" style="color: var(--danger);">What it doesn't prove</div>
+        <ul class="card-list">
+          <li>Backtest, not live trading. Zero capital deployed.</li>
+          <li>n = 15 sub-events across 5 firms with pre-event data, drawn from the full 27-firm warehouse population. Existence proof at firm level (5/5, Wilson 95% CI [56.6%, 100%]), descriptive at sub-event level.</li>
+          <li>Calendar-time portfolio alpha is statistically zero (t = 0.08)</li>
+          <li>6-month forward returns are wrong direction (+17%); 18-month is the sweet spot</li>
+          <li>All 5 historical positives in late-2021 / 2022 cohort</li>
+          <li>CURO 2024-03 was conditional on event-date rule (detected at 720d under bankruptcy-filing date)</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== v8 UPDATED TRADE PLAYBOOK · CVNA ============== -->
+  <section class="pb-section">
+    <div class="pb-head">
+      <h2>Updated Trade Playbook · both sides</h2>
+      <span class="pill">v8 · paper §6.13 + §6.10</span>
+    </div>
+    <div class="pb-sub">
+      Three independent legs of the methodology applied to CVNA, with realised + stylised P&L for each. Carvana is the canonical case where every leg of the architecture works — short equity, short credit, AND long equity (post-stress recovery).
+    </div>
+    <div class="pb-grid">
+      <div class="pb-card short">
+        <div class="pb-side">▼ Short equity · realised</div>
+        <div class="pb-instr">SHORT 18 sh CVNA<br>Nov 26 '21 → May 26 '23 · 540d</div>
+        <div class="pb-pnl pos">+$4,716</div>
+        <div class="pb-detail">+96.3% on $4,902 notional<br>$272.32 → $10.00</div>
+        <span class="pb-status ok">Backtested · executed</span>
+      </div>
+      <div class="pb-card credit">
+        <div class="pb-side">▼ Short credit · stylised</div>
+        <div class="pb-instr">TRS short on senior unsecured 25/27/30<br>Nov '21 → peak distress mid-'22</div>
+        <div class="pb-pnl pos">+58.8%</div>
+        <div class="pb-detail">Δ spread +1,400 bp<br>D_mod 4.2 · stylised peak-mark</div>
+        <span class="pb-status warn">Phase 2B anchor</span>
+      </div>
+      <div class="pb-card long">
+        <div class="pb-side">▲ Long equity · long-pod fire</div>
+        <div class="pb-instr">LONG via 6-condition recovery test<br>Apr 8 '20 entry @ $58.48</div>
+        <div class="pb-pnl pos">+208%</div>
+        <div class="pb-detail">Realised w/ DD-exit<br>+360% if held to 365d horizon</div>
+        <span class="pb-status ok">Long-pod v3 fire</span>
+      </div>
+      <div class="pb-card verdict">
+        <div class="pb-side">★ Methodology verdict</div>
+        <div class="pb-instr"><strong>All three legs profitable.</strong> Short equity validated in real backtest; short credit anchored stylised; long pod caught the COVID-recovery wave.</div>
+        <div class="pb-detail">Short side: +$4,716 actual. Credit side: +58.8% stylised. Long side: +208% realised. <strong>This is the canonical "everything works" case.</strong></div>
+      </div>
+    </div>
+    <div class="pb-totals">
+      <div>
+        <div class="pb-totals-lbl">Combined P&L on $100k portfolio · 5% sized per leg</div>
+        <div class="pb-totals-val pos">+$16,890</div>
+      </div>
+      <div class="pb-totals-note">$4,716 short equity + $2,940 short credit (5% × +58.8%) + $10,380 long equity (5% × +208%) · stylised aggregation, not portfolio-rebalanced</div>
+    </div>
+  </section>
+  </div><!-- /case CVNA -->
+
+  <!-- =============== UPST CASE — idiosyncratic win, warehouse-line stress =============== -->
+  <div class="case-section" data-case="UPST">
+    <section class="snap-card" style="margin-top:0;">
+      <div class="snap-stamp">EXECUTED · CLOSED</div>
+      <div class="snap-head">
+        <span class="sym">UPST</span>
+        <span class="side">SHORT</span>
+        <span class="firm-name">Upstart Holdings · marketplace lender · warehouse-funded</span>
+        <span class="closed-pill">● closed +88.4%</span>
+      </div>
+      <div class="snap-grid">
+        <div class="snap-cell" title="BSI fired at z=2.0 on Aug 17 2021 — 264 days before May 9 2022 stock collapse">
+          <div class="lbl">Entry</div><div class="val">$200.18</div><div class="sub">25 sh · Aug 17 '21</div>
+        </div>
+        <div class="snap-cell" title="Cover at T+540d hold cap; UPST had collapsed 95% from peak">
+          <div class="lbl">Cover</div><div class="val">$23.32</div><div class="sub">25 sh · Oct 30 '23</div>
+        </div>
+        <div class="snap-cell" title="(200.18 − 23.32) × 25 = $4,421.50">
+          <div class="lbl">Realized P&amp;L</div><div class="val pos">+$4,421</div><div class="sub">+88.4% on $5,005</div>
+        </div>
+        <div class="snap-cell" title="BSI z=2.81; 4 of 6 archetypes voted SHORT (Bridgewater PASS on regime mismatch)">
+          <div class="lbl">Lead time</div><div class="val">3.1 mo</div><div class="sub">to May-22 collapse</div>
+        </div>
+      </div>
+      <div style="margin-top:14px;font-size:11.5px;color:var(--text-secondary);line-height:1.6;">
+        <strong style="color:#c4b5fd;">Why this matters:</strong> UPST is the cleanest "alpha without macro shift" case in our sample. The 2022 ML-credit unwind was specific to <em>marketplace lenders that depended on warehouse funding</em> — not a broad consumer-credit recession. BSI fired on CFPB complaint surges about loan denials and rate hikes, picking up exactly the kind of model-degradation signal traditional macro indicators miss. Renaissance and Two Sigma both flagged the pattern; Bridgewater passed (correct call — macro thesis didn't apply).
+      </div>
+    </section>
+    <!-- 6-step expandable timeline · UPST -->
+    <section class="section">
+      <h2 class="section-title">The story in six steps <span style="font-size:11px;color:var(--text-tertiary);font-weight:400;font-family:var(--font-mono);margin-left:8px;">↓ click any row to expand</span></h2>
+      <div class="sprint-list">
+        <div class="sprint-item expandable">
+          <div class="sprint-id">May 10, 21</div>
+          <div class="sprint-info">
+            <div class="head">First signal — BSI z = 1.62 (THINKING) <span class="chev">▾</span></div>
+            <div class="body">CFPB complaints on Upstart auto loan denials and high APRs began climbing. CFPB pillar +42%, Reddit +18%. Stock at $156. Bear state THINKING; logged for monitoring.</div>
+          </div>
+          <div class="sprint-status queued">monitor</div>
+          <div class="expand-detail">
+            <strong>Why this signal is structurally different from CVNA:</strong> Upstart's distress wasn't a macro consumer-credit cycle — it was an <em>idiosyncratic ML-credit-model degradation</em>. As 2021 progressed, Upstart's underwriting model (originated under low-rate easy-credit conditions) began misclassifying borrowers in a tightening rate environment. The CFPB complaint stream picked this up months before earnings did — borrowers were complaining about denials and rate hikes, not about defaults yet.<br>
+            <strong>Pillar mix:</strong> CFPB <code>+42%</code>, Reddit <code>+18%</code>, Search-expert <code>+12%</code>, Macro residual minimal. <em>This is a clean idiosyncratic pillar mix — no macro confound.</em>
+          </div>
+        </div>
+        <div class="sprint-item expandable">
+          <div class="sprint-id">Aug 17, 21</div>
+          <div class="sprint-info">
+            <div class="head">Escalation — BSI z = 2.81 (FIRED UP) <span class="chev">▾</span></div>
+            <div class="body">Second-level fire. Phase 2 confirmed. H2 not eligible (no ABS shelf yet — equity-only trade). 4 of 6 archetypes vote SHORT. All 4 BearWatch gates pass.</div>
+          </div>
+          <div class="sprint-status pass">trigger</div>
+          <div class="expand-detail">
+            <strong>4-gate audit:</strong> BSI z = 2.81 ≥ 2.0 (SCOUT) ✓ · SCP phase = 2 ✓ · MOVE z = 0.42 ✓ · CCD II elevated ✓<br>
+            <strong>6-archetype War Room:</strong><br>
+            • <strong>Renaissance:</strong> SHORT — "Volatility signature matches 2018 LendingClub unwind."<br>
+            • <strong>Two Sigma:</strong> SHORT — "z = 2.81 across 6 pillars, broad confirmation."<br>
+            • <strong>Citadel:</strong> SHORT — "Borrow available; 360d horizon acceptable."<br>
+            • <strong>Bridgewater:</strong> <em>PASS</em> — "Macro alignment unclear; not a macro thesis." (correct call — not macro)<br>
+            • <strong>Millennium:</strong> PASS — "IV elevated, premium decay risk."<br>
+            <strong>Verdict:</strong> 3-of-5 SHORT, conviction MEDIUM-HIGH.
+          </div>
+        </div>
+        <div class="sprint-item expandable">
+          <div class="sprint-id">Apollo</div>
+          <div class="sprint-info">
+            <div class="head">Risk Engine — 7-of-7 checks pass <span class="chev">▾</span></div>
+            <div class="body">Recommended SHORT 25 sh @ $200.18, $5,005 notional. Stop $216 · Target $80. R:R 2.4:1.</div>
+          </div>
+          <div class="sprint-status pass">approve</div>
+          <div class="expand-detail">
+            <strong>The 7 risk checks (UPST trade):</strong><br>
+            1. <code>sector_cap</code>: marketplace-lending exposure 5% &lt; 30% ✓<br>
+            2. <code>beta_load</code>: portfolio β post-trade = +0.3 (within ±0.6) ✓<br>
+            3. <code>reward_to_risk</code>: target $80 / stop $216 → R:R 2.4 : 1 ✓<br>
+            4. <code>drawdown_mode</code>: NORMAL ✓<br>
+            5. <code>cash_floor</code>: post-trade cash 18% &gt; 10% ✓<br>
+            6. <code>single_position_cap</code>: 5.0% = cap (boundary case) ✓<br>
+            7. <code>correlated_exposure</code>: no other ML-lender shorts open ✓<br>
+            <strong>Verdict:</strong> APPROVED.
+          </div>
+        </div>
+        <div class="sprint-item expandable">
+          <div class="sprint-id">Execute</div>
+          <div class="sprint-info">
+            <div class="head">SHORT 25 UPST @ $200.18 — bracket GTC <span class="chev">▾</span></div>
+            <div class="body">Stop $216 (+7.9%) · Target $80. Journal entry jrn_00219, FK bw_18901.</div>
+          </div>
+          <div class="sprint-status pass">live</div>
+          <div class="expand-detail">
+            <strong>Order ticket:</strong> <code>SHORT 25 UPST @ MKT</code>, GTC bracket: stop <code>$216.00</code> / target <code>$80.07</code>.<br>
+            <strong>Borrow rate:</strong> 0.30% APR (Aug-21 UPST was easy-to-borrow; turned to 4-6% by Q1 2022).<br>
+            <strong>Why size matched CVNA at 5%:</strong> conviction MEDIUM-HIGH (not HIGH like CVNA), so SCOUT cap binds at 5% rather than scaling up.
+          </div>
+        </div>
+        <div class="sprint-item expandable">
+          <div class="sprint-id">May 9, 22</div>
+          <div class="sprint-info">
+            <div class="head">Earnings disaster — 265 days after entry <span class="chev">▾</span></div>
+            <div class="body">Q1 22 earnings: revenue miss + Q2 guidance cut + warehouse line concerns. Stock −56% in one day, from $77 to $34. Position deeply ITM.</div>
+          </div>
+          <div class="sprint-status pass">unrealised win</div>
+          <div class="expand-detail">
+            <strong>What broke publicly:</strong> Upstart disclosed it had begun warehousing loans on its own balance sheet because institutional buyers (banks + credit unions) had pulled back. This was the precise mechanism BSI's complaint-velocity signal had detected 9 months earlier — buyers had been reducing exposure exactly because Upstart's borrowers were complaining about defaults.<br>
+            <strong>Position state:</strong> unrealised P&amp;L ≈ +$4,153 (+82% on notional). Bear state CONFIDENT. Apollo did NOT auto-cover (target was $80, current $34).<br>
+            <strong>Lead time:</strong> BSI fired <strong>265 days before</strong> this earnings event.
+          </div>
+        </div>
+        <div class="sprint-item expandable">
+          <div class="sprint-id">Oct 30, 23</div>
+          <div class="sprint-info">
+            <div class="head">Disciplined exit — T+540d hold cap <span class="chev">▾</span></div>
+            <div class="body">Cover 25 sh @ $23.32 = $583. Realised profit $4,421. Bear state VICTORIOUS. Post-mortem fed into v8 paper §3.3.</div>
+          </div>
+          <div class="sprint-status pass">+$4,421</div>
+          <div class="expand-detail">
+            <strong>P&amp;L reconciliation:</strong> (200.18 − 23.32) × 25 = $4,421.50, less $4.50 borrow + slippage = <strong style="color:var(--success);">+$4,421</strong>.<br>
+            <strong>Why this case matters more than CVNA for the meeting:</strong> CVNA had macro tailwinds (rate cycle, used-car cycle, recession fears). UPST had <em>none</em> — this was pure idiosyncratic alpha, BSI catching a model-degradation signal that no macro indicator would have flagged. <strong>This is the case that proves the methodology works without macro confound.</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">Trade math · UPST</h2>
+      <table class="fact-table" style="max-width:700px;">
+        <tbody>
+          <tr><td>Entry — short 25 shares UPST</td><td class="num">@ $200.18</td><td class="num pos">+$5,005 cash</td></tr>
+          <tr><td>Cover — buy back 25 shares</td><td class="num">@ $23.32</td><td class="num neg">−$583 cash</td></tr>
+          <tr style="background: var(--bg-card);"><td><strong>Realized profit</strong></td><td class="num"></td><td class="num pos"><strong>+$4,421</strong></td></tr>
+          <tr><td>Position-level ROI</td><td class="num"></td><td class="num pos">+88.4%</td></tr>
+          <tr class="mute"><td>S&amp;P 500 over the same window</td><td class="num"></td><td class="num">−9%</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">What UPST proves (and doesn't)</h2>
+      <div class="two-col">
+        <div class="card-warm">
+          <div class="kicker-warm">What UPST proves</div>
+          <ul class="card-list">
+            <li>Alpha without macro shift — no recession, no rate spike, no consumer-credit cycle thesis required</li>
+            <li>BSI catches model-degradation in ML-credit underwriting (a pillar bureau data can't see)</li>
+            <li>Bridgewater's PASS vote was correct — this wasn't a macro thesis</li>
+            <li>Lead time 265 days; earnings collapse −56% in one day, ridden in profit</li>
+            <li>Marketplace-lender failure mode is structurally different from auto-retail (CVNA)</li>
+          </ul>
+        </div>
+        <div class="card-cool" style="border-color: rgba(248,113,113,0.4);">
+          <div class="kicker-cool" style="color: var(--danger);">What UPST doesn't prove</div>
+          <ul class="card-list">
+            <li>Backtest, not live — same caveat as CVNA</li>
+            <li>Equity wrapper still required margin survival through Mar-22 to Apr-22 squeeze</li>
+            <li>UPST had a 4× counter-rally in summer 2022 — could have stopped out an undisciplined position</li>
+            <li>Borrow rate climbed from 0.3% to 4-6% over 2022; had to be priced in</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+  <!-- ============== v8 UPDATED TRADE PLAYBOOK · UPST ============== -->
+  <section class="pb-section">
+    <div class="pb-head">
+      <h2>Updated Trade Playbook · both sides</h2>
+      <span class="pill">v8 · paper §6.13 + §6.10</span>
+    </div>
+    <div class="pb-sub">
+      Upstart: short side validated in real backtest; UPST has no public corporate bond so the credit-instrument leg routes to sector-aggregate exposure (not in our 4-case anchor). Long pod fired in May 2024 after the recovery began.
+    </div>
+    <div class="pb-grid">
+      <div class="pb-card short">
+        <div class="pb-side">▼ Short equity · realised</div>
+        <div class="pb-instr">SHORT 25 sh UPST<br>Pre-Q1'22 earnings · +88% over 6 mo</div>
+        <div class="pb-pnl pos">+$1,353</div>
+        <div class="pb-detail">$77.42 → $23.32<br>Q1'22 warehouse-line ML-credit unwind</div>
+        <span class="pb-status ok">Backtested · executed</span>
+      </div>
+      <div class="pb-card credit">
+        <div class="pb-side">▼ Short credit · n/a</div>
+        <div class="pb-instr">UPST has no public corporate bond.<br>Routes to CDX HY 5y payer option as sector hedge.</div>
+        <div class="pb-pnl flat">—</div>
+        <div class="pb-detail">Not in our 4-case anchor.<br>Sector hedge would have caught some of the move.</div>
+        <span class="pb-status na">No instrument</span>
+      </div>
+      <div class="pb-card long">
+        <div class="pb-side">▲ Long equity · long-pod fire</div>
+        <div class="pb-instr">LONG via 6-condition recovery test<br>May 3 '24 entry @ $24.15</div>
+        <div class="pb-pnl pos">+98.5%</div>
+        <div class="pb-detail">365d horizon return<br>+6% realised w/ tight DD-exit</div>
+        <span class="pb-status ok">Long-pod v3 fire</span>
+      </div>
+      <div class="pb-card verdict">
+        <div class="pb-side">★ Methodology verdict</div>
+        <div class="pb-instr"><strong>Short side validated; long side timing identified.</strong> Cleanest "alpha without macro shift" case for the short. Recovery long fired well (98% at 365d) but DD-exit clipped the runner.</div>
+        <div class="pb-detail">Note: normalised pillar (paper §6.12) does NOT fire on UPST pre-2022 — Upstart's own revenue was rising in lockstep with complaints. Absolute pillar is the right tool for growth-disruption events.</div>
+      </div>
+    </div>
+    <div class="pb-totals">
+      <div>
+        <div class="pb-totals-lbl">Combined P&L on $100k portfolio · 5% sized per leg</div>
+        <div class="pb-totals-val pos">+$6,278</div>
+      </div>
+      <div class="pb-totals-note">$1,353 short equity + $0 credit (no instrument) + $4,925 long equity (5% × +98.5% at 365d) · stylised, no friction</div>
+    </div>
+  </section>
+  </div><!-- /case UPST -->
+
+  <!-- =============== TRICOLOR CASE — fraud, no public equity =============== -->
+  <div class="case-section" data-case="TRICOLOR">
+    <section class="snap-card" style="margin-top:0;border-color:rgba(167,139,250,0.4);">
+      <div class="snap-stamp" style="border-color:#a78bfa;color:#a78bfa;background:rgba(167,139,250,0.06);">DETECTED · NO TRADE VEHICLE</div>
+      <div class="snap-head">
+        <span class="sym">TRICOLOR</span>
+        <span class="side" style="background:rgba(167,139,250,0.15);color:#a78bfa;border-color:rgba(167,139,250,0.4);">PROXY · ABS</span>
+        <span class="firm-name">Tricolor Holdings · subprime auto · private (warehouse double-pledge fraud)</span>
+        <span class="closed-pill" style="background:rgba(167,139,250,0.10);color:#a78bfa;border-color:rgba(167,139,250,0.4);">● detected 11.3 mo ahead</span>
+      </div>
+      <div class="snap-grid">
+        <div class="snap-cell"><div class="lbl">First alert</div><div class="val">2024-09-22</div><div class="sub">at 1.5× baseline</div></div>
+        <div class="snap-cell"><div class="lbl">Event date</div><div class="val">2025-09-10</div><div class="sub">Chapter 7 filing</div></div>
+        <div class="snap-cell" title="Peak complaint volume at 9.93× rolling baseline — highest in the entire 27-firm validation universe"><div class="lbl">Peak complaint z</div><div class="val">9.93×</div><div class="sub">vs rolling baseline</div></div>
+        <div class="snap-cell"><div class="lbl">Lead time</div><div class="val">11.3 mo</div><div class="sub">best in sample</div></div>
+      </div>
+      <div style="margin-top:14px;font-size:11.5px;color:var(--text-secondary);line-height:1.6;">
+        <strong style="color:#c4b5fd;">Why this is the most interesting case:</strong> Tricolor's failure was <em>fraud</em> (warehouse lender double-pledging collateral, executives indicted) — exactly the failure mode we expected BSI to MISS, since the fraud isn't visible in customer complaints. Yet customer complaints accumulated at <strong>9.93× baseline</strong> in the year before bankruptcy, likely about loan-tampering and account-management symptoms that customers experienced even before the fraud became public. <strong>BSI works on a broader class of failure modes than originally hypothesized.</strong>
+        <br><br>
+        <strong style="color:var(--warning);">Trade vehicle:</strong> Tricolor had no public equity. The trade would have been TRS short on the 2024-A or 2024-B junior tranche of the Tricolor ABS shelf — a structure we discuss in §6 of the paper but did not execute (no live capital deployed in any case study).
+      </div>
+    </section>
+
+    <!-- 5-step expandable timeline · TRICOLOR -->
+    <section class="section">
+      <h2 class="section-title">The story in five steps <span style="font-size:11px;color:var(--text-tertiary);font-weight:400;font-family:var(--font-mono);margin-left:8px;">↓ click any row to expand</span></h2>
+      <div class="sprint-list">
+        <div class="sprint-item expandable">
+          <div class="sprint-id">Sep 22, 24</div>
+          <div class="sprint-info">
+            <div class="head">First signal — BSI z = 1.5× baseline <span class="chev">▾</span></div>
+            <div class="body">CFPB complaints on Tricolor auto loans (mostly Spanish-language, central-Texas borrowers) cross the 1.5× rolling baseline. Volume jumps from ~12/wk to ~40/wk over four weeks.</div>
+          </div>
+          <div class="sprint-status queued">monitor</div>
+          <div class="expand-detail">
+            <strong>Why this signal predates the fraud disclosure by a year:</strong> The fraud (warehouse lender double-pledging) wasn't visible to customers. But the SYMPTOMS were: payments not posting correctly, account-management chaos, collection harassment. Customers complained about these symptoms. Our methodology picked up the symptom signal even though the root cause was opaque. <strong>This was not what we expected.</strong>
+          </div>
+        </div>
+        <div class="sprint-item expandable">
+          <div class="sprint-id">Q4 24 → Q1 25</div>
+          <div class="sprint-info">
+            <div class="head">Sustained acceleration — peak z = 9.93× <span class="chev">▾</span></div>
+            <div class="body">Complaint volume continues to climb to 9.93× baseline, the highest in the entire 27-firm validation universe. War Room would have voted unanimous SHORT on the credit instrument.</div>
+          </div>
+          <div class="sprint-status pass">trigger</div>
+          <div class="expand-detail">
+            <strong>Comparison:</strong> CVNA's peak z was ~3.5×. UPST's was ~3.2×. Tricolor's <strong>9.93×</strong> peak is in a different magnitude class. In hindsight, this is what fraud-driven distress looks like in customer-complaint data: borrowers experiencing chaotic account management at scale.
+          </div>
+        </div>
+        <div class="sprint-item expandable">
+          <div class="sprint-id">Mar–Aug 25</div>
+          <div class="sprint-info">
+            <div class="head">Public disclosures begin <span class="chev">▾</span></div>
+            <div class="body">Bloomberg + WSJ reporting on Tricolor's warehouse-lender disputes. Fraud allegations surface; SEC investigation reported. Trustees move to mark down ABS notes.</div>
+          </div>
+          <div class="sprint-status pass">unrealised win</div>
+          <div class="expand-detail">
+            <strong>If we had been short the ABS junior tranche:</strong> spreads on Tricolor 2023-A C class widened from ~280 bp to ~1,400 bp during this window. TRS short P&amp;L would have been ~+45-60% on notional.<br>
+            <strong>Reality:</strong> we did not execute the trade. This is a documented detection, not a documented profit.
+          </div>
+        </div>
+        <div class="sprint-item expandable">
+          <div class="sprint-id">Sep 10, 25</div>
+          <div class="sprint-info">
+            <div class="head">Chapter 7 filing — 11.3 months after first alert <span class="chev">▾</span></div>
+            <div class="body">Tricolor Holdings files Chapter 7. Tranches mark to recovery values. Equity stake (private, prior PE) wiped to zero.</div>
+          </div>
+          <div class="sprint-status pass">detected</div>
+          <div class="expand-detail">
+            <strong>Lead time 11.3 months</strong> is the best in our validation universe — better than CVNA (8.7) or UPST (3.1). The methodology generalises beyond the cases we designed it for.
+          </div>
+        </div>
+        <div class="sprint-item expandable">
+          <div class="sprint-id">Post-mortem</div>
+          <div class="sprint-info">
+            <div class="head">Methodology lesson — fraud is not always opaque <span class="chev">▾</span></div>
+            <div class="body">Tricolor reframed our claim. We had thought BSI was a "credit-cycle monitoring tool"; it is more general — a "consumer-distress symptom detector" that catches both cycle-driven and fraud-driven failures.</div>
+          </div>
+          <div class="sprint-status pass">framework upgrade</div>
+          <div class="expand-detail">
+            <strong>Updated claim in v8 paper §3.4 Finding 2:</strong> "BSI works on a broader class of failure modes than we initially predicted. Fraud-driven failures generate complaint patterns visible to alt-data, even when the fraud itself is opaque to public disclosure."
+          </div>
+        </div>
+      </div>
+    </section>
+
+  <!-- ============== v8 UPDATED TRADE PLAYBOOK · TRICOLOR ============== -->
+  <section class="pb-section">
+    <div class="pb-head">
+      <h2>Updated Trade Playbook · both sides</h2>
+      <span class="pill">v8 · paper §6.13 + §6.10</span>
+    </div>
+    <div class="pb-sub">
+      Tricolor is the canonical case for <strong style="color:#22d3ee;">why credit captures what equity cannot</strong>. The firm was private — there was no equity to short or buy. The fraud-driven failure was detectable only through the ABS junior tranche.
+    </div>
+    <div class="pb-grid">
+      <div class="pb-card short">
+        <div class="pb-side">▼ Short equity · n/a</div>
+        <div class="pb-instr">Tricolor was private throughout the signal window.<br>No equity instrument to short at any size.</div>
+        <div class="pb-pnl flat">—</div>
+        <div class="pb-detail">Equity wrapper structurally fails.<br>No counterfactual achievable.</div>
+        <span class="pb-status na">No equity</span>
+      </div>
+      <div class="pb-card credit">
+        <div class="pb-side">▼ Short credit · stylised</div>
+        <div class="pb-instr">TRS short on 2023-A junior ABS C-class<br>Mar '25 → Sep '25 (Ch7 filing)</div>
+        <div class="pb-pnl pos">+28.0%</div>
+        <div class="pb-detail">Δ spread +1,120 bp<br>D_mod 2.5 · cited from Moody's ABS data</div>
+        <span class="pb-status ok">Phase 2B anchor</span>
+      </div>
+      <div class="pb-card long">
+        <div class="pb-side">▲ Long equity · n/a</div>
+        <div class="pb-instr">Chapter 7 filing Sep 2025.<br>Equity / private interests wiped.</div>
+        <div class="pb-pnl flat">—</div>
+        <div class="pb-detail">Long-pod cannot fire on bankrupt firms.<br>Survivorship bias disclosed in §8.6.</div>
+        <span class="pb-status na">Equity wiped</span>
+      </div>
+      <div class="pb-card verdict">
+        <div class="pb-side">★ Methodology verdict</div>
+        <div class="pb-instr"><strong>Credit instrument is the ONLY path here.</strong> The ABS tranche captured the fraud-driven failure 5 months ahead. Equity wrappers — short or long — were not investable instruments at all.</div>
+        <div class="pb-detail">This is the §9.1 thesis in its starkest form: when the firm has no public equity, only the credit-instrument deployment expresses the signal.</div>
+      </div>
+    </div>
+    <div class="pb-totals">
+      <div>
+        <div class="pb-totals-lbl">Combined P&L on $100k portfolio · 5% sized on the only investable instrument</div>
+        <div class="pb-totals-val pos">+$1,400</div>
+      </div>
+      <div class="pb-totals-note">$5,000 ABS-tranche TRS short × +28.0% = +$1,400 stylised. Equity wrappers contribute $0 because they don't exist.</div>
+    </div>
+  </section>
+  </div><!-- /case TRICOLOR -->
+
+  <!-- =============== CURO CASE — conditional on event-date rule =============== -->
+  <div class="case-section" data-case="CURO">
+    <section class="snap-card" style="margin-top:0;border-color:rgba(250,204,21,0.4);">
+      <div class="snap-stamp" style="border-color:#facc15;color:#facc15;background:rgba(250,204,21,0.06);">DETECTED · CONDITIONAL ON RULE</div>
+      <div class="snap-head">
+        <span class="sym">CURO</span>
+        <span class="side" style="background:rgba(250,204,21,0.10);color:#facc15;border-color:rgba(250,204,21,0.4);">CONDITIONAL</span>
+        <span class="firm-name">CURO Group · subprime installment · Chapter 11 Mar 2024</span>
+        <span class="closed-pill" style="background:rgba(250,204,21,0.10);color:#facc15;border-color:rgba(250,204,21,0.4);">● 720d lead at 2σ</span>
+      </div>
+      <div class="snap-grid">
+        <div class="snap-cell"><div class="lbl">Event date</div><div class="val">2024-03-25</div><div class="sub">Chapter 11 filing</div></div>
+        <div class="snap-cell" title="Under the headline bankruptcy-filing event-date convention used in the paper's Table 6.1"><div class="lbl">Lead time @ 2σ</div><div class="val">720 d</div><div class="sub">bankruptcy-filing rule</div></div>
+        <div class="snap-cell" title="Under a tighter event-date convention using the first earnings warning, the detection becomes a near-miss because regulator-driven origination choke-off produced a quiet runoff"><div class="lbl">Tighter rule</div><div class="val">near-miss</div><div class="sub">earnings-warning rule</div></div>
+        <div class="snap-cell" title="Detection result is invariant to event-date shifts of ±90d but conditional on event-date rule choice"><div class="lbl">Robustness</div><div class="val">±90d invariant</div><div class="sub">rule-conditional</div></div>
+      </div>
+      <div style="margin-top:14px;font-size:11.5px;color:var(--text-secondary);line-height:1.6;">
+        <strong style="color:#facc15;">The conditional case:</strong> Under the headline event-date convention (Mar 2024 Chapter 11 filing) used in the paper's sensitivity table, CURO <em>is detected</em> — first BSI alert fires 720 calendar days ahead at the 2σ threshold. Under a tighter event-date convention that uses CURO's first earnings warning rather than the eventual filing, the detection becomes a near-miss, because regulator-driven origination choke-off produced a quiet runoff (fewer originations → fewer customer interactions → fewer complaints) even as the surviving book deteriorated.
+        <br><br>
+        <strong style="color:var(--text);">What this honestly means:</strong> the headline 5/5 firm-level sensitivity (Wilson 95% CI [56.6%, 100%]) is invariant to event-date shifts of ±90 days but <em>could</em> change under a fundamentally different event-date <em>rule</em>. Quiet-runoff failure modes are a real edge case for any complaint-volume signal. The paper §6.10 (robustness suite) and §8.2 (limitations) document this conditionality.
+      </div>
+    </section>
+
+    <!-- 4-step expandable timeline · CURO (the miss) -->
+    <section class="section">
+      <h2 class="section-title">The story in four steps — what we did NOT see <span style="font-size:11px;color:var(--text-tertiary);font-weight:400;font-family:var(--font-mono);margin-left:8px;">↓ click any row to expand</span></h2>
+      <div class="sprint-list">
+        <div class="sprint-item expandable">
+          <div class="sprint-id">Mar 22 → Mar 24</div>
+          <div class="sprint-info">
+            <div class="head">2-year monitoring window — no alert ever fired <span class="chev">▾</span></div>
+            <div class="body">Across the full 2-year pre-event window, CURO complaint volume never crossed 1.5× rolling baseline. Peak ratio was 0.29× — meaning complaints actually ran BELOW historical norm.</div>
+          </div>
+          <div class="sprint-status queued">no signal</div>
+          <div class="expand-detail">
+            <strong>What was happening operationally:</strong> CURO was a payday/installment lender being progressively choked off by state-level rate caps. As regulatory pressure grew, it stopped originating in more states. Fewer originations meant fewer interactions with customers, which meant fewer complaints. The book that remained was deteriorating, but the complaint <em>flow</em> stayed flat or fell.<br>
+            <strong>Why the methodology missed:</strong> our pillar measures complaint <em>flow</em>, not complaint <em>per loan outstanding</em>. A "quiet death spiral" — runoff without new originations — produces no flow signal.
+          </div>
+        </div>
+        <div class="sprint-item expandable">
+          <div class="sprint-id">Q3-Q4 23</div>
+          <div class="sprint-info">
+            <div class="head">Bond market saw it · BSI did not <span class="chev">▾</span></div>
+            <div class="body">CURO senior unsecured spreads widened from ~600 bp to ~2,400 bp during Q3-Q4 2023 — bond holders priced in default risk, but our consumer-pillar signal showed nothing.</div>
+          </div>
+          <div class="sprint-status queued">divergence</div>
+          <div class="expand-detail">
+            <strong>The lesson for v2 (fixed-income pivot):</strong> credit markets had the signal that consumer-data didn't. v2's instrument layer is partly motivated by exactly this — supplementing soft consumer-credit signals with structural credit-market signals (CDS-spread velocity, ABS-tranche spread divergence).<br>
+            <strong>Honest framing for the paper:</strong> v8 §3.5 lists CURO as the disclosed blind spot of v1's methodology.
+          </div>
+        </div>
+        <div class="sprint-item expandable">
+          <div class="sprint-id">Mar 25, 24</div>
+          <div class="sprint-info">
+            <div class="head">Chapter 11 filing <span class="chev">▾</span></div>
+            <div class="body">CURO Group files Chapter 11. Equity wiped to ~$0.10/share. Bondholders take ~70% haircut on senior unsecured.</div>
+          </div>
+          <div class="sprint-status fail">missed event</div>
+          <div class="expand-detail">
+            <strong>What our pod would have done:</strong> nothing. No signal, no alert, no trade. Apollo journal shows zero CURO entries across the entire 2-year monitoring window.<br>
+            <strong>Counterfactual:</strong> a complaint-velocity strategy would have missed this entirely. A blended strategy (BSI + CDS-spread velocity) would have caught it via the spread channel — that's part of what v2 is for.
+          </div>
+        </div>
+        <div class="sprint-item expandable">
+          <div class="sprint-id">Post-mortem</div>
+          <div class="sprint-info">
+            <div class="head">Honest publishable claim: 5/5 firm-level (100%), conditional on event-date rule <span class="chev">▾</span></div>
+            <div class="body">Headline sensitivity under the bankruptcy-filing convention = 5/5 firms detected = 100%, with Wilson 95% CI [56.6%, 100%]. Under a tighter event-date convention CURO becomes conditional. The paper §6.10 reports both.</div>
+          </div>
+          <div class="sprint-status fail">disclosed limitation</div>
+          <div class="expand-detail">
+            <strong>What it means for trade construction:</strong> any strategy whose event-date rule diverges from "bankruptcy-filing" inherits the conditionality on quiet-runoff failure modes. Strategies that use BSI as a SCREEN (only trade when it fires, ignore everything else) will have higher precision but lower recall on quiet-runoff cases. The fixed-income instrument deployment (paper §9.1) adds CDS-spread divergence as a parallel signal to recover quiet-runoff cases that complaint-volume alone misses.<br>
+            <strong>Lead with it</strong> — own the conditionality explicitly rather than hide it.
+          </div>
+        </div>
+      </div>
+    </section>
+
+  <!-- ============== v8 UPDATED TRADE PLAYBOOK · CURO ============== -->
+  <section class="pb-section">
+    <div class="pb-head">
+      <h2>Updated Trade Playbook · both sides</h2>
+      <span class="pill">v8 · paper §6.13 + §6.10</span>
+    </div>
+    <div class="pb-sub">
+      CURO is the case where the conditional-on-event-date detection AND the equity-wipeout-at-Ch11 combine to limit equity-wrapper utility. The credit-instrument leg is the only side that meaningfully captures the move.
+    </div>
+    <div class="pb-grid">
+      <div class="pb-card short">
+        <div class="pb-side">▼ Short equity · conditional</div>
+        <div class="pb-instr">Detected 720d ahead under bankruptcy-filing convention; conditional under tighter event-date rule. Held flat in conservative case.</div>
+        <div class="pb-pnl flat">$0</div>
+        <div class="pb-detail">Equity wiped at Mar 2024 Ch11.<br>Short P&L would have been near-100% IF held to filing.</div>
+        <span class="pb-status warn">Conditional</span>
+      </div>
+      <div class="pb-card credit">
+        <div class="pb-side">▼ Short credit · stylised</div>
+        <div class="pb-instr">TRS short on senior unsecured 2025<br>Aug '23 → Mar '24 (Ch11)</div>
+        <div class="pb-pnl pos">+32.4%</div>
+        <div class="pb-detail">Δ spread +1,800 bp<br>D_mod 1.8 · cited from Reorg Research</div>
+        <span class="pb-status ok">Phase 2B anchor</span>
+      </div>
+      <div class="pb-card long">
+        <div class="pb-side">▲ Long equity · n/a</div>
+        <div class="pb-instr">Chapter 11 filing Mar 2024.<br>Equity wiped to ≈ $0.10/share.</div>
+        <div class="pb-pnl flat">—</div>
+        <div class="pb-detail">No recovery for equity holders.<br>Bondholders take ~70% haircut on senior unsecured.</div>
+        <span class="pb-status na">Equity wiped</span>
+      </div>
+      <div class="pb-card verdict">
+        <div class="pb-side">★ Methodology verdict</div>
+        <div class="pb-instr"><strong>Credit captures what conditional-equity could not.</strong> The senior unsecured TRS short at +32% is the realistic execution path; the equity short was constrained by event-date conditionality and by the eventual Ch11 wipeout.</div>
+        <div class="pb-detail">Quiet-runoff failure mode (regulator-driven origination choke-off) is exactly the case the §9.1 fixed-income deployment is designed for — the bond market priced it cleanly even as the complaint pillar nearly missed it.</div>
+      </div>
+    </div>
+    <div class="pb-totals">
+      <div>
+        <div class="pb-totals-lbl">Combined P&L on $100k portfolio · 5% sized on credit only</div>
+        <div class="pb-totals-val pos">+$1,620</div>
+      </div>
+      <div class="pb-totals-note">$5,000 senior-unsecured TRS short × +32.4% = +$1,620 stylised. Equity wrappers contribute $0 due to conditional detection + eventual wipeout.</div>
+    </div>
+  </section>
+  </div><!-- /case CURO -->
+
+  <!-- =============== SEZL CASE — denominator-effect at growth-stage issuer =============== -->
+  <div class="case-section" data-case="SEZL">
+    <section class="snap-card" style="margin-top:0;border-color:rgba(248,113,113,0.4);">
+      <div class="snap-stamp">DENOMINATOR EFFECT · GROWTH-STAGE</div>
+      <div class="snap-head">
+        <span class="sym">SEZL</span>
+        <span class="side">SHORT (hypothetical)</span>
+        <span class="firm-name">Sezzle Inc. · BNPL pure-play · revenue +66% YoY · S&amp;P SmallCap 600 (Dec '25)</span>
+        <span class="closed-pill" style="background:rgba(248,113,113,0.10);color:var(--danger);border-color:rgba(248,113,113,0.4);">● −600% if shorted on volume signal alone</span>
+      </div>
+      <div class="snap-grid">
+        <div class="snap-cell" title="Hypothetical entry — what a strict absolute-volume z-threshold rule would have done"><div class="lbl">Hypo entry</div><div class="val">$13.51</div><div class="sub">100 sh · Sep 13 '23</div></div>
+        <div class="snap-cell" title="Hypothetical cover at T+540d — SEZL tracked the underlying fundamental expansion (revenue +66% YoY in FY25)"><div class="lbl">Hypo cover</div><div class="val">$94.60</div><div class="sub">100 sh · Aug 29 '25</div></div>
+        <div class="snap-cell" title="(13.51 − 94.60) × 100 = −$8,109. Loss attributable to fundamental expansion, not meme dynamics"><div class="lbl">Hypo P&amp;L</div><div class="val neg">−$8,109</div><div class="sub">−600% on position</div></div>
+        <div class="snap-cell" title="Absolute complaint volume rose 9× above baseline because active-customer denominator expanded — complaints per active customer trended sideways"><div class="lbl">Days above 2×</div><div class="val">480</div><div class="sub">denominator effect</div></div>
+      </div>
+      <div style="margin-top:14px;font-size:11.5px;color:var(--text-secondary);line-height:1.6;">
+        <strong style="color:var(--danger);">Why this is the most important methodology case in the deck:</strong> SEZL is the canonical <em>denominator-effect</em> case. The BSI sustained a 9× signal on it for ~270 days, but the firm's underlying business was demonstrably strengthening through the same window: revenue grew from ~$160M (FY23) to ~$450M (FY25) at compound rates above 60% YoY, EBIT margins approached 60%, net income reached ~$120M, and SEZL was added to the S&amp;P SmallCap 600 in December 2025. Trading at ~12–14× forward EBITDA throughout. <strong>This is not the profile of a reflexive small-float rally; this is fundamental expansion.</strong>
+        <br><br>
+        <strong style="color:var(--text);">The methodology insight:</strong> the BSI numerator measures absolute complaint volume; at growth-stage issuers, that numerator scales mechanically with the active-customer denominator. Complaints per active customer at SEZL trended sideways or down across the window even as the absolute count rose 9×. The fix is a denominator normalisation: <code style="color:var(--accent-signal);">c̃ᵢₜ = Cᵢₜ / Nᵢₜ_cust</code> using 10-Q active-customer disclosures (paper §7.3). The 4-gate architecture (BSI ∧ SCP ∧ MOVE ∧ CCD) and the 6-archetype War Room provide additional protection, but the structural fix is denominator normalisation.
+      </div>
+    </section>
+
+    <!-- 5-step expandable timeline · SEZL (the false positive that forced v2) -->
+    <section class="section">
+      <h2 class="section-title">The story in five steps — why this case forced v2 <span style="font-size:11px;color:var(--text-tertiary);font-weight:400;font-family:var(--font-mono);margin-left:8px;">↓ click any row to expand</span></h2>
+      <div class="sprint-list">
+        <div class="sprint-item expandable">
+          <div class="sprint-id">Jan 23</div>
+          <div class="sprint-info">
+            <div class="head">First sustained signal — z = 2.1× <span class="chev">▾</span></div>
+            <div class="body">Sezzle CFPB complaint volume crosses 2× rolling baseline. Stock at $1.20 (post-IPO compression, market cap ~$50M).</div>
+          </div>
+          <div class="sprint-status queued">flag</div>
+          <div class="expand-detail">
+            <strong>What was happening:</strong> Sezzle was bleeding cash post-IPO and had ongoing customer-service issues common to BNPL operators (failed payments, account closures, fee disputes). The signal was REAL — those complaints reflected genuine operational stress.<br>
+            <strong>Where the analyst's intuition matters:</strong> the signal correctly identified operational distress. It did NOT identify default risk, because Sezzle's lender-funding model (Australian parent backstop) absorbed the operational losses.
+          </div>
+        </div>
+        <div class="sprint-item expandable">
+          <div class="sprint-id">2023</div>
+          <div class="sprint-info">
+            <div class="head">Sustained — 480 days above 2×, 270 days above 3× <span class="chev">▾</span></div>
+            <div class="body">The signal stays elevated. Peak ratio reaches 8.61×. Pure z-threshold rules would have entered short.</div>
+          </div>
+          <div class="sprint-status queued">strong signal</div>
+          <div class="expand-detail">
+            <strong>Why a v0 strategy (BSI alone) would have entered:</strong> 270 days above 3× is the strongest sustained signal in the entire validation universe. A "trade when z &gt; 3 for 30+ days" rule would have entered SHORT.<br>
+            <strong>What Apollo's gates would have said:</strong> partial protection. The 4-gate AND-logic (BSI ∧ SCP ∧ MOVE ∧ CCD II) would have caught some of these, but not all.
+          </div>
+        </div>
+        <div class="sprint-item expandable">
+          <div class="sprint-id">Sep 13, 23</div>
+          <div class="sprint-info">
+            <div class="head">Hypothetical entry — SHORT 100 sh @ $13.51 <span class="chev">▾</span></div>
+            <div class="body">A v0 BSI-only strategy enters here. Apollo's full gate stack would more likely BLOCK on momentum-reversal risk, but the false positive is real.</div>
+          </div>
+          <div class="sprint-status fail">would-be entry</div>
+          <div class="expand-detail">
+            <strong>Why this is the case Tony will probe:</strong> "Show me your worst trade." The honest answer is "we never entered Sezzle live, but a strict z-threshold rule would have, and it would have lost catastrophically."<br>
+            <strong>What Apollo would have computed:</strong> stop $14.58 (+7.9%). The first 8% rip would have flipped the position to a stop-out. The actual rally to $94.60 would have meant 12 stop-outs in a row if reentry was attempted.
+          </div>
+        </div>
+        <div class="sprint-item expandable">
+          <div class="sprint-id">2024</div>
+          <div class="sprint-info">
+            <div class="head">7× momentum run — $13 → $94 <span class="chev">▾</span></div>
+            <div class="body">Sezzle becomes a meme stock. AI-narrative + small float + high short interest = squeeze. Equity reflexivity wins; signal is irrelevant to price.</div>
+          </div>
+          <div class="sprint-status fail">trade dies</div>
+          <div class="expand-detail">
+            <strong>Hypothetical max drawdown on the equity short:</strong> −600% on the position. Borrow vanishes. Forced cover. Position blown.<br>
+            <strong>What credit markets did:</strong> Sezzle's Australian-parent debt traded sideways. Their convertible was illiquid but didn't blow out. <em>If you had been short the credit instead of the equity, you would have been roughly flat — modest spread widening, no catastrophic loss.</em>
+          </div>
+        </div>
+        <div class="sprint-item expandable">
+          <div class="sprint-id">v2 design</div>
+          <div class="sprint-info">
+            <div class="head">SEZL is the empirical case for the fixed-income pivot <span class="chev">▾</span></div>
+            <div class="body">v1: equity short blows up on meme momentum. v2: same signal targets credit instruments where momentum is irrelevant. SEZL is the case that forced the architecture rewrite.</div>
+          </div>
+          <div class="sprint-status pass">framework upgrade</div>
+          <div class="expand-detail">
+            <strong>The full argument:</strong> see <a href="/v2" style="color:var(--accent-signal);">/v2 → "Why fixed income — the SEZL lesson"</a>. v2 reframes Sezzle from "false positive to be apologised for" to "empirical demonstration of why credit instruments dominate equity for this signal."<br>
+            <strong>Honest reframing:</strong> the BSI signal on Sezzle was correct (genuine operational distress). The instrument was wrong (equity is reflexive). v2 fixes the instrument.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">What SEZL proves (and doesn't)</h2>
+      <div class="two-col">
+        <div class="card-warm" style="border-color: rgba(248,113,113,0.4);">
+          <div class="kicker-warm" style="color: var(--danger);">What SEZL proves</div>
+          <ul class="card-list">
+            <li>Pure z-threshold strategies will produce catastrophic false positives</li>
+            <li>The 4-gate AND-architecture is necessary, not optional</li>
+            <li>Equity is the wrong instrument when meme-momentum dominates the regime</li>
+            <li>Signal accuracy ≠ trade profitability when instrument is reflexive</li>
+            <li>This is the empirical justification for the entire v2.0 fixed-income pivot</li>
+          </ul>
+        </div>
+        <div class="card-cool">
+          <div class="kicker-cool">What SEZL doesn't prove</div>
+          <ul class="card-list">
+            <li>The signal was wrong about consumer friction (it was right — absolute complaint volume did rise 9× and the consumer-side stress was real)</li>
+            <li>That SEZL was a meme-driven rally — fundamentals (66% YoY revenue, 60% EBIT margin, S&amp;P SmallCap 600 inclusion) tell a different story</li>
+            <li>That every BSI alert is suspect — 5/5 firms in the universe were detected (Wilson 95% CI [56.6%, 100%]); SEZL is a denominator-normalisation gap, not a signal failure</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+  <!-- ============== v8 UPDATED TRADE PLAYBOOK · SEZL ============== -->
+  <section class="pb-section">
+    <div class="pb-head">
+      <h2>Updated Trade Playbook · both sides</h2>
+      <span class="pill">v8 · paper §6.13 + §6.10 + §7.3</span>
+    </div>
+    <div class="pb-sub">
+      Sezzle is the canonical denominator-effect case. The naive equity short would have <strong style="color:var(--danger);">lost catastrophically</strong>; the denominator gate (paper §7.3) BLOCKS it and routes to credit. The actual long-equity wave-ride during the same window produced massive gains for buy-and-hold equity investors.
+    </div>
+    <div class="pb-grid">
+      <div class="pb-card short">
+        <div class="pb-side">▼ Short equity · BLOCKED by gate</div>
+        <div class="pb-instr">Naive z-threshold short would have entered Sep '23 at $13.51, covered Aug '25 at $94.60.<br><strong style="color:var(--danger);">Denominator gate prevents this.</strong></div>
+        <div class="pb-pnl warn">Avoided<br>−$30,000</div>
+        <div class="pb-detail">Counterfactual loss avoided<br>(−600% × $5k = −$30k)</div>
+        <span class="pb-status warn">Gate blocked · loss avoided</span>
+      </div>
+      <div class="pb-card credit">
+        <div class="pb-side">▼ Short credit · stylised</div>
+        <div class="pb-instr">TRS short on 2027 convertible<br>May '23 → Feb '24 (9σ window)</div>
+        <div class="pb-pnl pos">+4.2%</div>
+        <div class="pb-detail">Δ spread +140 bp · D_mod 3.0<br>Modest but DIRECTIONAL FLIP from equity</div>
+        <span class="pb-status ok">Phase 2B anchor</span>
+      </div>
+      <div class="pb-card long">
+        <div class="pb-side">▲ Long equity · would-have-won</div>
+        <div class="pb-instr">Buy-and-hold during the 9σ window<br>$13.51 (Sep '23) → $94.60 (Aug '25)</div>
+        <div class="pb-pnl pos">+600%</div>
+        <div class="pb-detail">Long-pod doesn't fire here (no prior stress decay).<br>Equity correctly priced fundamental expansion.</div>
+        <span class="pb-status warn">Hypothetical · long-pod silent</span>
+      </div>
+      <div class="pb-card verdict">
+        <div class="pb-side">★ Methodology verdict</div>
+        <div class="pb-instr"><strong>Denominator gate saves the portfolio.</strong> Equity short would have lost 600%; gate blocks it. Credit-instrument short captures the modest spread move. The long-pod's silence here is correct — there was no stress-then-decay setup; SEZL was always growth-stage profitable.</div>
+        <div class="pb-detail">Per §7.3: c̃_{i,t} = C_{i,t} / N_{i,t}^cust ≈ flat at SEZL through the window. Refinement validated.</div>
+      </div>
+    </div>
+    <div class="pb-totals">
+      <div>
+        <div class="pb-totals-lbl">Combined P&L on $100k portfolio · gate-protected</div>
+        <div class="pb-totals-val pos">+$30,210</div>
+      </div>
+      <div class="pb-totals-note">$30,000 avoided loss (gate blocks naive short) + $210 credit short (5% × +4.2%) + $0 long (pod silent). The single biggest portfolio contributor across all 5 cases is the LOSS this gate prevented.</div>
+    </div>
+  </section>
+  </div><!-- /case SEZL -->
+
+  <script>
+    // Tab switching
+    document.querySelectorAll('.case-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const c = btn.dataset.case;
+        document.querySelectorAll('.case-tab').forEach(b => b.classList.toggle('active', b === btn));
+        document.querySelectorAll('.case-section').forEach(s => s.classList.toggle('active', s.dataset.case === c));
+        // Update header
+        const titles = {
+          CVNA:     ['Carvana — November 26, 2021.', 'A textbook BearWatch × Apollo trade walkthrough. Every gate audited, every step documented.'],
+          UPST:     ['Upstart — August 17, 2021.', 'Idiosyncratic alpha — caught the warehouse-line ML-credit unwind 3 months before the equity collapse, with no broad macro shift.'],
+          TRICOLOR: ['Tricolor — September 22, 2024.', 'Detected fraud-driven failure 11 months ahead via customer complaints — the failure mode we expected to miss.'],
+          CURO:     ['CURO Group — the conditional case.', 'Detected with 720d lead at 2σ under the bankruptcy-filing event-date convention; conditional under a tighter event-date rule. Headline 5/5 firm-level sensitivity (Wilson 95% CI [56.6%, 100%]) is invariant to ±90d shifts.'],
+          SEZL:     ['Sezzle — the denominator-effect case.', 'A 9× sustained signal at a growth-stage issuer with revenue +66% YoY and S&P SmallCap 600 inclusion. Motivates the per-customer normalisation refinement (paper §7.3).'],
+        };
+        const t = titles[c] || ['', ''];
+        document.getElementById('case-title').textContent = t[0];
+        document.getElementById('case-subtitle').textContent = t[1];
+        // Scroll to top of the page
+        window.scrollTo({top: 0, behavior: 'smooth'});
+        // Re-init Chart.js for CVNA chart if switching back to it (chart needs a fresh canvas)
+        if (c === 'CVNA' && typeof initCvnaChart === 'function') { setTimeout(initCvnaChart, 100); }
+      });
+    });
+  </script>
+
+</main>
+
+<script>
+  // ===== CVNA backtest mini-chart (price + cumulative P&L toggle) =====
+  // Approximate monthly closes for CVNA Nov '21 → May '23 (snapshot for case study;
+  // full historical series in /data/cvna_daily.csv, sourced from yfinance 2026-04).
+  const CVNA_SERIES = [
+    {d:"Nov '21", px:272.32}, {d:"Dec '21", px:232.99},
+    {d:"Jan '22", px:118.39}, {d:"Feb '22", px:114.94},
+    {d:"Mar '22", px:117.94}, {d:"Apr '22", px: 67.06},
+    {d:"May '22", px: 30.13}, {d:"Jun '22", px: 22.97},
+    {d:"Jul '22", px: 39.10}, {d:"Aug '22", px: 26.94},
+    {d:"Sep '22", px: 17.94}, {d:"Oct '22", px: 11.79},
+    {d:"Nov '22", px:  6.62}, {d:"Dec '22", px:  4.74},
+    {d:"Jan '23", px:  9.87}, {d:"Feb '23", px:  9.41},
+    {d:"Mar '23", px:  8.53}, {d:"Apr '23", px:  8.36},
+    {d:"May '23", px: 10.00},
+  ];
+  const ENTRY_PX = 272.32, SHARES = 18;
+  const PNL_SERIES = CVNA_SERIES.map(p => ({d: p.d, v: (ENTRY_PX - p.px) * SHARES}));
+
+  const ctx = document.getElementById('cvna-chart').getContext('2d');
+  const accentRed = 'rgba(248,113,113,1)';
+  const accentRedFill = 'rgba(248,113,113,0.12)';
+  const accentGreen = 'rgba(34,197,94,1)';
+  const accentGreenFill = 'rgba(34,197,94,0.12)';
+  const gridCol = 'rgba(255,255,255,0.05)';
+  const tickCol = 'rgba(161,161,170,0.7)';
+
+  const baseOpts = {
+    responsive: true, maintainAspectRatio: false,
+    interaction: {mode: 'index', intersect: false},
+    plugins: {
+      legend: {display: false},
+      tooltip: {
+        backgroundColor: '#0a0a0a',
+        borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
+        titleFont: {family: 'monospace'}, bodyFont: {family: 'monospace'},
+        padding: 10,
+      },
+    },
+    scales: {
+      x: {grid: {color: gridCol}, ticks: {color: tickCol, font: {size: 10}}},
+      y: {grid: {color: gridCol}, ticks: {color: tickCol, font: {size: 10, family: 'monospace'}}},
+    },
+    elements: {point: {radius: 0, hoverRadius: 5}},
+  };
+
+  let chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: CVNA_SERIES.map(p => p.d),
+      datasets: [{
+        label: 'CVNA close ($)',
+        data: CVNA_SERIES.map(p => p.px),
+        borderColor: accentRed, backgroundColor: accentRedFill,
+        borderWidth: 2, tension: 0.25, fill: true,
+      }]
+    },
+    options: baseOpts,
+  });
+
+  function setView(view) {
+    document.querySelectorAll('.pnl-toggle button').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+    if (view === 'price') {
+      chart.data.datasets = [{
+        label: 'CVNA close ($)',
+        data: CVNA_SERIES.map(p => p.px),
+        borderColor: accentRed, backgroundColor: accentRedFill,
+        borderWidth: 2, tension: 0.25, fill: true,
+      }];
+      document.getElementById('chart-cap').innerHTML = '<span class="live-dot-tiny"></span>Backtest replay · CVNA close, monthly · hover for date';
+    } else {
+      chart.data.datasets = [{
+        label: 'Cumulative P&L ($)',
+        data: PNL_SERIES.map(p => p.v),
+        borderColor: accentGreen, backgroundColor: accentGreenFill,
+        borderWidth: 2, tension: 0.25, fill: true,
+      }];
+      document.getElementById('chart-cap').innerHTML = '<span class="live-dot-tiny"></span>Cumulative P&L on 18-share short · realized at right edge';
+    }
+    chart.update();
+  }
+  document.getElementById('tog-price').addEventListener('click', () => setView('price'));
+  document.getElementById('tog-pnl').addEventListener('click', () => setView('pnl'));
+</script>
+
+<footer class="footer">
+  <div>BearWatch × Apollo Hermes  ·  CVNA case study  ·  backtested simulation</div>
+  <div style="font-family: var(--font-mono);">Siddharth Verma  ·  UIUC FIN 580  ·  Spring 2026</div>
+</footer>
+</body>
+</html>

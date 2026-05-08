@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Apollo Hermes - Live Demo</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="antialiased">
+
+<!-- NAV -->
+<nav class="border-b border-[#1f2733] bg-[#07090d]/90 backdrop-blur sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="text-2xl">&#9889;</div>
+      <div>
+        <div class="font-bold text-white text-sm tracking-tight">APOLLO HERMES</div>
+        <div class="text-[10px] text-[#64748b] tracking-widest uppercase">Live Working Demo</div>
+      </div>
+    </div>
+    <div class="hidden md:flex items-center gap-8 text-sm">
+      <a href="/" class="nav-link active">Dashboard</a>
+      <a href="/integration" class="nav-link">BearWatch Bridge</a>
+    </div>
+    <div class="pill"><span class="pill-dot pulse-cyan"></span> <span id="status-badge">live</span></div>
+  </div>
+</nav>
+
+<!-- TOAST CONTAINER -->
+<div id="toast-stack" class="fixed top-20 right-6 z-[100] flex flex-col gap-2"></div>
+
+<!-- PORTFOLIO STRIP -->
+<section class="px-6 pt-6">
+  <div class="max-w-7xl mx-auto card p-4">
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
+      <div>
+        <div class="text-xs uppercase tracking-widest text-[#64748b]">Cash</div>
+        <div class="text-2xl font-bold text-white mono" id="port-cash">$100,000</div>
+      </div>
+      <div>
+        <div class="text-xs uppercase tracking-widest text-[#64748b]">Open Positions</div>
+        <div class="text-2xl font-bold text-white mono" id="port-positions">0</div>
+      </div>
+      <div>
+        <div class="text-xs uppercase tracking-widest text-[#64748b]">Drawdown Mode</div>
+        <div class="text-2xl font-bold mono" id="port-mode">NORMAL</div>
+      </div>
+      <div>
+        <div class="text-xs uppercase tracking-widest text-[#64748b]">Portfolio &beta;</div>
+        <div class="text-2xl font-bold text-white mono" id="port-beta">+0.00</div>
+      </div>
+      <div>
+        <div class="text-xs uppercase tracking-widest text-[#64748b]">Portfolio Value</div>
+        <div class="text-2xl font-bold text-white mono" id="port-value">$100,000</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HERO -->
+<section class="pt-10 pb-6 px-6">
+  <div class="max-w-7xl mx-auto text-center">
+    <h1 class="text-4xl md:text-5xl font-extrabold tracking-tighter leading-none mb-3 text-white">
+      BearWatch <span class="gradient-text-warm">senses.</span>
+      Apollo Hermes <span class="gradient-text">acts.</span>
+    </h1>
+    <p class="text-[#94a3b8] mt-2 max-w-2xl mx-auto text-sm">
+      Pick your bear mascot, then fire an event through the live pipeline.
+      Risk checks run in real Python. Quotes pulled live from yfinance. State persists to SQLite.
+    </p>
+  </div>
+</section>
+
+<!-- BEAR SQUAD — three mascots, three risk profiles -->
+<section class="px-6 pb-6">
+  <div class="max-w-7xl mx-auto card-accented card p-6">
+    <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+      <div>
+        <div class="text-xs uppercase tracking-widest text-[#d4a574]">Pick your mascot &mdash; The Bear Squad</div>
+        <div class="text-white font-semibold">Three personalities. Same engine. Three risk profiles.</div>
+      </div>
+      <div class="text-xs text-[#64748b]">Currently active: <span id="active-mascot" class="text-[#d4a574] font-semibold">SCOUT</span></div>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="mascot-row">
+      <!-- BLITZ -->
+      <button class="mascot-card card p-4 text-left transition-all" data-mascot="BLITZ"
+              data-z="1.5" data-size="0.12" data-stop="0.10" data-color="#DC2626">
+        <div class="flex items-start justify-between mb-2">
+          <div class="text-3xl">&#128059;&#128293;</div>
+          <span class="text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider"
+                style="background:#7F1D1D33;color:#FCA5A5;border:1px solid #7F1D1D">Aggressive</span>
+        </div>
+        <div class="font-bold text-white text-lg" style="color:#DC2626">BLITZ</div>
+        <div class="text-xs italic text-[#94a3b8] mt-0.5">"Strike first. Strike fast."</div>
+        <div class="mt-3 grid grid-cols-2 gap-1 text-[10px] mono">
+          <div class="text-[#64748b]">Trigger</div><div class="text-white text-right">z &ge; 1.5</div>
+          <div class="text-[#64748b]">Size cap</div><div class="text-white text-right">12%</div>
+          <div class="text-[#64748b]">Catch / FP</div><div class="text-white text-right">5/5 &middot; 8&ndash;12</div>
+        </div>
+        <div class="text-[10px] text-[#64748b] mt-2">High-recall research</div>
+      </button>
+
+      <!-- SCOUT (default) -->
+      <button class="mascot-card card p-4 text-left transition-all mascot-active" data-mascot="SCOUT"
+              data-z="2.0" data-size="0.05" data-stop="0.07" data-color="#D4A574">
+        <div class="flex items-start justify-between mb-2">
+          <div class="text-3xl">&#128059;&#127919;</div>
+          <span class="text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider"
+                style="background:#78350F33;color:#FCD34D;border:1px solid #78350F">&#9733; Default</span>
+        </div>
+        <div class="font-bold text-white text-lg" style="color:#D4A574">SCOUT</div>
+        <div class="text-xs italic text-[#94a3b8] mt-0.5">"Watch. Wait. Strike clean."</div>
+        <div class="mt-3 grid grid-cols-2 gap-1 text-[10px] mono">
+          <div class="text-[#64748b]">Trigger</div><div class="text-white text-right">z &ge; 2.0</div>
+          <div class="text-[#64748b]">Size cap</div><div class="text-white text-right">5%</div>
+          <div class="text-[#64748b]">Catch / FP</div><div class="text-white text-right">5/5 &middot; 2&ndash;4</div>
+        </div>
+        <div class="text-[10px] text-[#64748b] mt-2">Published default config</div>
+      </button>
+
+      <!-- GUARDIAN -->
+      <button class="mascot-card card p-4 text-left transition-all" data-mascot="GUARDIAN"
+              data-z="2.5" data-size="0.02" data-stop="0.05" data-color="#0F766E">
+        <div class="flex items-start justify-between mb-2">
+          <div class="text-3xl">&#128059;&#128737;&#65039;</div>
+          <span class="text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider"
+                style="background:#0F766E33;color:#5EEAD4;border:1px solid #0F766E">Conservative</span>
+        </div>
+        <div class="font-bold text-white text-lg" style="color:#0F766E">GUARDIAN</div>
+        <div class="text-xs italic text-[#94a3b8] mt-0.5">"Roar only when the threat is real."</div>
+        <div class="mt-3 grid grid-cols-2 gap-1 text-[10px] mono">
+          <div class="text-[#64748b]">Trigger</div><div class="text-white text-right">z &ge; 2.5</div>
+          <div class="text-[#64748b]">Size cap</div><div class="text-white text-right">2%</div>
+          <div class="text-[#64748b]">Catch / FP</div><div class="text-white text-right">1/5 &middot; 0&ndash;1</div>
+        </div>
+        <div class="text-[10px] text-[#64748b] mt-2">Capital-preservation</div>
+      </button>
+
+      <!-- ROBO-BEAR (alpha) -->
+      <button class="mascot-card card p-4 text-left transition-all" data-mascot="ROBO"
+              data-z="1.5" data-size="0.05" data-stop="0.07" data-color="#8B5CF6">
+        <div class="flex items-start justify-between mb-2">
+          <div class="text-3xl">&#128059;&#129302;</div>
+          <span class="text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider"
+                style="background:#8B5CF633;color:#C4B5FD;border:1px solid #8B5CF6">&#945; Alpha</span>
+        </div>
+        <div class="font-bold text-white text-lg" style="color:#8B5CF6">ROBO-BEAR</div>
+        <div class="text-xs italic text-[#94a3b8] mt-0.5">"Reads the firm. Picks the strategy."</div>
+        <div class="mt-3 grid grid-cols-2 gap-1 text-[10px] mono">
+          <div class="text-[#64748b]">Trigger</div><div class="text-white text-right">adaptive</div>
+          <div class="text-[#64748b]">Size cap</div><div class="text-white text-right">3&ndash;10%</div>
+          <div class="text-[#64748b]">Backtest</div><div class="text-white text-right">+$20K &middot; 4/5 win</div>
+        </div>
+        <div class="text-[10px] text-[#64748b] mt-2">Adaptive meta-strategy</div>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- DEMO TRIGGERS -->
+<section class="px-6 pb-6">
+  <div class="max-w-7xl mx-auto card-accented card p-6">
+    <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+      <div>
+        <div class="text-xs uppercase tracking-widest text-[#38bdf8]">Demo triggers</div>
+        <div class="text-white font-semibold">Fire a BearWatch event &rarr; live verdict in &lt; 1 sec</div>
+      </div>
+      <button id="btn-reset" class="text-xs px-3 py-1.5 rounded-md border border-[#1f2733] text-[#94a3b8] hover:text-white hover:border-[#38bdf8] transition-all">
+        Reset demo state
+      </button>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <button class="demo-fire card p-4 text-left hover:border-[#38bdf8] transition-all" data-demo="CVNA">
+        <div class="text-2xl mb-2">&#128059;&#128293;</div>
+        <div class="font-semibold text-white">Fire CVNA bear</div>
+        <div class="text-xs text-[#94a3b8] mt-1">BSI z=3.42 &middot; Phase 2 &middot; H2-eligible &middot; 4-of-5 SHORT</div>
+      </button>
+      <button class="demo-fire card p-4 text-left hover:border-[#38bdf8] transition-all" data-demo="UPST">
+        <div class="text-2xl mb-2">&#128059;</div>
+        <div class="font-semibold text-white">Fire UPST bear</div>
+        <div class="text-xs text-[#94a3b8] mt-1">BSI z=2.81 &middot; Phase 2 &middot; medium conviction</div>
+      </button>
+      <button class="demo-fire card p-4 text-left hover:border-[#38bdf8] transition-all" data-demo="AFRM">
+        <div class="text-2xl mb-2">&#128059;</div>
+        <div class="font-semibold text-white">Fire AFRM bear</div>
+        <div class="text-xs text-[#94a3b8] mt-1">BSI z=2.45 &middot; Phase 1 (TRANSITION) &middot; low conviction</div>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- LATEST VERDICT PANEL -->
+<section class="px-6 pb-6">
+  <div class="max-w-7xl mx-auto card p-0 overflow-hidden">
+    <div class="grid grid-cols-1 md:grid-cols-3 border-b border-[#1f2733]">
+      <div class="p-5 border-r border-[#1f2733]">
+        <div class="text-xs uppercase tracking-widest text-[#d4a574] mb-1">Step 1 &middot; BearWatch</div>
+        <div class="font-semibold text-white">Bear fires</div>
+      </div>
+      <div class="p-5 border-r border-[#1f2733]">
+        <div class="text-xs uppercase tracking-widest text-[#38bdf8] mb-1">Step 2 &middot; Apollo</div>
+        <div class="font-semibold text-white">Risk verdict</div>
+      </div>
+      <div class="p-5">
+        <div class="text-xs uppercase tracking-widest text-[#94a3b8] mb-1">Step 3 &middot; Trader</div>
+        <div class="font-semibold text-white">Reviews + executes</div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3" id="verdict-row">
+      <!-- Step 1 -->
+      <div class="p-6 border-r border-[#1f2733] bg-gradient-to-br from-amber-950/10 to-transparent" id="step1">
+        <div class="text-sm text-[#64748b]">No event yet. Click a demo button above.</div>
+      </div>
+      <!-- Step 2 -->
+      <div class="p-6 border-r border-[#1f2733] bg-gradient-to-br from-sky-950/15 to-transparent" id="step2">
+        <div class="text-sm text-[#64748b]">Verdict will appear here.</div>
+      </div>
+      <!-- Step 3 -->
+      <div class="p-6 bg-gradient-to-br from-slate-800/15 to-transparent" id="step3">
+        <div class="text-sm text-[#64748b]">Execute button will appear here.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ACTIVE BEARS -->
+<section class="px-6 pb-6">
+  <div class="max-w-7xl mx-auto card overflow-hidden">
+    <div class="px-5 py-4 border-b border-[#1f2733] flex items-center justify-between">
+      <div>
+        <div class="text-xs uppercase tracking-widest text-[#d4a574]">Active BearWatch alerts</div>
+        <div class="font-semibold text-white text-sm">Recent ingested events</div>
+      </div>
+      <div class="text-xs text-[#64748b] mono" id="bears-count">0 alerts</div>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-[#0a0d12] text-left text-[#94a3b8] uppercase text-xs tracking-wider">
+          <tr>
+            <th class="px-5 py-3">Time</th>
+            <th class="px-5 py-3">Ticker</th>
+            <th class="px-5 py-3">Sector</th>
+            <th class="px-5 py-3">BSI z</th>
+            <th class="px-5 py-3">Phase</th>
+            <th class="px-5 py-3">Bear state</th>
+            <th class="px-5 py-3">Verdict</th>
+            <th class="px-5 py-3 text-right">Recommended size</th>
+          </tr>
+        </thead>
+        <tbody id="bears-tbody" class="text-[#cbd5e1] mono text-xs">
+          <tr><td colspan="8" class="px-5 py-6 text-center text-[#64748b]">No alerts yet.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- JOURNAL -->
+<section class="px-6 pb-12">
+  <div class="max-w-7xl mx-auto card overflow-hidden">
+    <div class="px-5 py-4 border-b border-[#1f2733] flex items-center justify-between">
+      <div>
+        <div class="text-xs uppercase tracking-widest text-[#38bdf8]">Trade journal</div>
+        <div class="font-semibold text-white text-sm">Last 10 executed trades (FK to bearwatch_event_id)</div>
+      </div>
+      <div class="text-xs text-[#64748b] mono" id="journal-count">0 trades</div>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-[#0a0d12] text-left text-[#94a3b8] uppercase text-xs tracking-wider">
+          <tr>
+            <th class="px-5 py-3">Time</th>
+            <th class="px-5 py-3">Ticker</th>
+            <th class="px-5 py-3">Side</th>
+            <th class="px-5 py-3 text-right">Shares</th>
+            <th class="px-5 py-3 text-right">Entry</th>
+            <th class="px-5 py-3 text-right">Stop / Target</th>
+            <th class="px-5 py-3 text-right">Notional</th>
+            <th class="px-5 py-3">BearWatch FK</th>
+          </tr>
+        </thead>
+        <tbody id="journal-tbody" class="text-[#cbd5e1] mono text-xs">
+          <tr><td colspan="8" class="px-5 py-6 text-center text-[#64748b]">No trades logged yet.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="py-8 px-6 border-t border-[#1f2733]">
+  <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-[#64748b]">
+    <div><span class="text-white font-semibold">Apollo Hermes</span> &middot; companion to <span class="text-[#d4a574]">BearWatch</span> &middot; working demo</div>
+    <div>Siddharth Verma &middot; UIUC FIN 580 &middot; Spring 2026</div>
+  </div>
+</footer>
+
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

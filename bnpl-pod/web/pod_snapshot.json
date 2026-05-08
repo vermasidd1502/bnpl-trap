@@ -2,7 +2,7 @@
   "meta": {
     "version": "v4.1",
     "asOf": "2026-04-17",
-    "commit": "467025b",
+    "commit": "711ef08",
     "warehouse": "warehouse.duckdb",
     "tradeMode": "paper-trade only",
     "gates": "BSI+MOVE+SCP+CCDII"
@@ -53,7 +53,7 @@
     {
       "sym": "next\u00b7catalyst",
       "val": "CCD",
-      "delta": "212d",
+      "delta": "211d",
       "dir": "flat"
     }
   ],
@@ -623,7 +623,7 @@
       {
         "id": "G4",
         "name": "CCD-II T-minus",
-        "current": 212,
+        "current": 211,
         "threshold": 30,
         "unit": "d",
         "hold": true,
@@ -815,7 +815,7 @@
   "catalyst": {
     "name": "CCD II Transposition",
     "date": "2026-11-20",
-    "daysTo": 212,
+    "daysTo": 211,
     "materiality": 1.0,
     "previous": {
       "name": "CFPB Regz Effective",
@@ -3261,484 +3261,484 @@
   },
   "agentLog": [
     {
-      "ts": "2026-04-22 06:53:49",
+      "ts": "2026-04-23 21:17:53",
       "agent": "RISK",
       "model": "nemotron-mini-4b-instruc",
-      "tokens": 142,
-      "latencyMs": 724,
+      "tokens": 231,
+      "latencyMs": 970,
       "msg": "no freeze_flag in vitality component; green."
     },
     {
-      "ts": "2026-04-22 06:53:48",
+      "ts": "2026-04-23 21:17:52",
+      "agent": "QUANT",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 284,
+      "latencyMs": 1387,
+      "msg": "tranche PV within 1\u03c3 of baseline; carry +4bp."
+    },
+    {
+      "ts": "2026-04-23 21:17:50",
+      "agent": "MACRO",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 458,
+      "latencyMs": 4213,
+      "msg": "fed funds path priced; macro-gate unchanged."
+    },
+    {
+      "ts": "2026-04-23 21:03:56",
+      "agent": "RISK",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 142,
+      "latencyMs": 733,
+      "msg": "no freeze_flag in vitality component; green."
+    },
+    {
+      "ts": "2026-04-23 21:03:55",
       "agent": "QUANT",
       "model": "nemotron-mini-4b-instruc",
       "tokens": 353,
-      "latencyMs": 2053,
+      "latencyMs": 1939,
       "msg": "Monte-Carlo SR narrow; no retune triggered."
     },
     {
-      "ts": "2026-04-22 06:53:46",
+      "ts": "2026-04-23 21:03:53",
       "agent": "MACRO",
       "model": "nemotron-mini-4b-instruc",
       "tokens": 460,
-      "latencyMs": 5872,
+      "latencyMs": 1461,
       "msg": "BSI z stable; no regime transition flagged."
     },
     {
-      "ts": "2026-04-20 02:57:13",
+      "ts": "2026-04-23 20:58:46",
       "agent": "RISK",
       "model": "nemotron-mini-4b-instruc",
       "tokens": 231,
-      "latencyMs": 1080,
+      "latencyMs": 969,
       "msg": "no freeze_flag in vitality component; green."
     },
     {
-      "ts": "2026-04-20 02:57:12",
+      "ts": "2026-04-23 20:58:44",
       "agent": "QUANT",
       "model": "nemotron-mini-4b-instruc",
       "tokens": 284,
-      "latencyMs": 1510,
+      "latencyMs": 1378,
       "msg": "tranche PV within 1\u03c3 of baseline; carry +4bp."
     },
     {
-      "ts": "2026-04-20 02:57:11",
+      "ts": "2026-04-23 20:58:43",
       "agent": "MACRO",
       "model": "nemotron-mini-4b-instruc",
-      "tokens": 299,
-      "latencyMs": 3400,
-      "msg": "BSI z stable; no regime transition flagged."
+      "tokens": 458,
+      "latencyMs": 1417,
+      "msg": "fed funds path priced; macro-gate unchanged."
     },
     {
-      "ts": "2026-04-20 02:52:04",
+      "ts": "2026-04-23 20:58:36",
       "agent": "RISK",
       "model": "nemotron-mini-4b-instruc",
       "tokens": 231,
-      "latencyMs": 1241,
+      "latencyMs": 998,
       "msg": "no freeze_flag in vitality component; green."
     },
     {
-      "ts": "2026-04-20 02:52:02",
+      "ts": "2026-04-23 20:58:34",
       "agent": "QUANT",
       "model": "nemotron-mini-4b-instruc",
       "tokens": 284,
-      "latencyMs": 1529,
+      "latencyMs": 1362,
       "msg": "tranche PV within 1\u03c3 of baseline; carry +4bp."
     },
     {
-      "ts": "2026-04-20 02:52:01",
+      "ts": "2026-04-23 20:58:33",
       "agent": "MACRO",
       "model": "nemotron-mini-4b-instruc",
-      "tokens": 299,
-      "latencyMs": 1955,
-      "msg": "BSI z stable; no regime transition flagged."
+      "tokens": 458,
+      "latencyMs": 4271,
+      "msg": "fed funds path priced; macro-gate unchanged."
     },
     {
-      "ts": "2026-04-20 02:51:57",
-      "agent": "RISK",
-      "model": "nemotron-mini-4b-instruc",
-      "tokens": 231,
-      "latencyMs": 1062,
-      "msg": "no freeze_flag in vitality component; green."
-    },
-    {
-      "ts": "2026-04-20 02:51:56",
-      "agent": "QUANT",
-      "model": "nemotron-mini-4b-instruc",
-      "tokens": 284,
-      "latencyMs": 1474,
-      "msg": "tranche PV within 1\u03c3 of baseline; carry +4bp."
-    },
-    {
-      "ts": "2026-04-20 02:51:54",
-      "agent": "MACRO",
-      "model": "nemotron-mini-4b-instruc",
-      "tokens": 299,
-      "latencyMs": 1872,
-      "msg": "BSI z stable; no regime transition flagged."
-    },
-    {
-      "ts": "2026-04-20 02:51:47",
+      "ts": "2026-04-23 20:43:55",
       "agent": "RISK",
       "model": "nemotron-mini-4b-instruc",
       "tokens": 142,
-      "latencyMs": 884,
+      "latencyMs": 739,
       "msg": "no freeze_flag in vitality component; green."
     },
     {
-      "ts": "2026-04-20 02:51:46",
+      "ts": "2026-04-23 20:43:54",
       "agent": "QUANT",
       "model": "nemotron-mini-4b-instruc",
       "tokens": 353,
-      "latencyMs": 2268,
+      "latencyMs": 1978,
       "msg": "Monte-Carlo SR narrow; no retune triggered."
     },
     {
-      "ts": "2026-04-20 02:51:43",
+      "ts": "2026-04-23 20:43:52",
       "agent": "MACRO",
       "model": "nemotron-mini-4b-instruc",
-      "tokens": 303,
-      "latencyMs": 2610,
-      "msg": "MOVE MA30 below gate; G3 HOLD."
+      "tokens": 460,
+      "latencyMs": 1487,
+      "msg": "BSI z stable; no regime transition flagged."
     },
     {
-      "ts": "2026-04-20 02:44:15",
+      "ts": "2026-04-23 20:41:41",
+      "agent": "RISK",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 231,
+      "latencyMs": 976,
+      "msg": "no freeze_flag in vitality component; green."
+    },
+    {
+      "ts": "2026-04-23 20:41:40",
+      "agent": "QUANT",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 284,
+      "latencyMs": 1316,
+      "msg": "tranche PV within 1\u03c3 of baseline; carry +4bp."
+    },
+    {
+      "ts": "2026-04-23 20:41:39",
+      "agent": "MACRO",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 458,
+      "latencyMs": 1471,
+      "msg": "fed funds path priced; macro-gate unchanged."
+    },
+    {
+      "ts": "2026-04-23 20:41:33",
+      "agent": "RISK",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 231,
+      "latencyMs": 1026,
+      "msg": "no freeze_flag in vitality component; green."
+    },
+    {
+      "ts": "2026-04-23 20:41:32",
+      "agent": "QUANT",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 284,
+      "latencyMs": 1331,
+      "msg": "tranche PV within 1\u03c3 of baseline; carry +4bp."
+    },
+    {
+      "ts": "2026-04-23 20:41:31",
+      "agent": "MACRO",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 458,
+      "latencyMs": 2677,
+      "msg": "fed funds path priced; macro-gate unchanged."
+    },
+    {
+      "ts": "2026-04-23 19:42:46",
       "agent": "RISK",
       "model": "nemotron-mini-4b-instruc",
       "tokens": 142,
-      "latencyMs": 911,
+      "latencyMs": 732,
       "msg": "no freeze_flag in vitality component; green."
     },
     {
-      "ts": "2026-04-20 02:44:14",
+      "ts": "2026-04-23 19:42:45",
       "agent": "QUANT",
       "model": "nemotron-mini-4b-instruc",
       "tokens": 353,
-      "latencyMs": 2269,
+      "latencyMs": 1934,
       "msg": "Monte-Carlo SR narrow; no retune triggered."
     },
     {
-      "ts": "2026-04-20 02:44:11",
+      "ts": "2026-04-23 19:42:43",
       "agent": "MACRO",
       "model": "nemotron-mini-4b-instruc",
-      "tokens": 303,
-      "latencyMs": 1921,
-      "msg": "MOVE MA30 below gate; G3 HOLD."
-    },
-    {
-      "ts": "2026-04-20 02:42:48",
-      "agent": "RISK",
-      "model": "nemotron-mini-4b-instruc",
-      "tokens": 231,
-      "latencyMs": 1102,
-      "msg": "no freeze_flag in vitality component; green."
-    },
-    {
-      "ts": "2026-04-20 02:42:47",
-      "agent": "QUANT",
-      "model": "nemotron-mini-4b-instruc",
-      "tokens": 284,
-      "latencyMs": 1504,
-      "msg": "tranche PV within 1\u03c3 of baseline; carry +4bp."
-    },
-    {
-      "ts": "2026-04-20 02:42:45",
-      "agent": "MACRO",
-      "model": "nemotron-mini-4b-instruc",
-      "tokens": 299,
-      "latencyMs": 1866,
+      "tokens": 460,
+      "latencyMs": 1388,
       "msg": "BSI z stable; no regime transition flagged."
     },
     {
-      "ts": "2026-04-20 02:42:41",
+      "ts": "2026-04-23 19:40:16",
       "agent": "RISK",
       "model": "nemotron-mini-4b-instruc",
       "tokens": 231,
-      "latencyMs": 1062,
+      "latencyMs": 922,
       "msg": "no freeze_flag in vitality component; green."
     },
     {
-      "ts": "2026-04-20 02:42:40",
+      "ts": "2026-04-23 19:40:15",
       "agent": "QUANT",
       "model": "nemotron-mini-4b-instruc",
       "tokens": 284,
-      "latencyMs": 1495,
+      "latencyMs": 1291,
       "msg": "tranche PV within 1\u03c3 of baseline; carry +4bp."
     },
     {
-      "ts": "2026-04-20 02:42:39",
+      "ts": "2026-04-23 19:40:14",
       "agent": "MACRO",
       "model": "nemotron-mini-4b-instruc",
-      "tokens": 299,
-      "latencyMs": 2773,
-      "msg": "BSI z stable; no regime transition flagged."
+      "tokens": 458,
+      "latencyMs": 1346,
+      "msg": "fed funds path priced; macro-gate unchanged."
     },
     {
-      "ts": "2026-04-20 02:18:42",
+      "ts": "2026-04-23 19:40:10",
+      "agent": "RISK",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 231,
+      "latencyMs": 943,
+      "msg": "no freeze_flag in vitality component; green."
+    },
+    {
+      "ts": "2026-04-23 19:40:09",
+      "agent": "QUANT",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 284,
+      "latencyMs": 1279,
+      "msg": "tranche PV within 1\u03c3 of baseline; carry +4bp."
+    },
+    {
+      "ts": "2026-04-23 19:40:08",
+      "agent": "MACRO",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 458,
+      "latencyMs": 2317,
+      "msg": "fed funds path priced; macro-gate unchanged."
+    },
+    {
+      "ts": "2026-04-23 19:32:40",
       "agent": "RISK",
       "model": "nemotron-mini-4b-instruc",
       "tokens": 142,
-      "latencyMs": 871,
+      "latencyMs": 712,
       "msg": "no freeze_flag in vitality component; green."
     },
     {
-      "ts": "2026-04-20 02:18:41",
+      "ts": "2026-04-23 19:32:39",
       "agent": "QUANT",
       "model": "nemotron-mini-4b-instruc",
       "tokens": 353,
-      "latencyMs": 2352,
+      "latencyMs": 1953,
       "msg": "Monte-Carlo SR narrow; no retune triggered."
     },
     {
-      "ts": "2026-04-20 02:18:39",
+      "ts": "2026-04-23 19:32:37",
       "agent": "MACRO",
       "model": "nemotron-mini-4b-instruc",
-      "tokens": 303,
-      "latencyMs": 2029,
-      "msg": "MOVE MA30 below gate; G3 HOLD."
-    },
-    {
-      "ts": "2026-04-20 02:17:02",
-      "agent": "RISK",
-      "model": "nemotron-mini-4b-instruc",
-      "tokens": 231,
-      "latencyMs": 1207,
-      "msg": "no freeze_flag in vitality component; green."
-    },
-    {
-      "ts": "2026-04-20 02:17:01",
-      "agent": "QUANT",
-      "model": "nemotron-mini-4b-instruc",
-      "tokens": 284,
-      "latencyMs": 1595,
-      "msg": "tranche PV within 1\u03c3 of baseline; carry +4bp."
-    },
-    {
-      "ts": "2026-04-20 02:16:59",
-      "agent": "MACRO",
-      "model": "nemotron-mini-4b-instruc",
-      "tokens": 299,
-      "latencyMs": 2219,
+      "tokens": 460,
+      "latencyMs": 1395,
       "msg": "BSI z stable; no regime transition flagged."
     },
     {
-      "ts": "2026-04-20 02:16:51",
+      "ts": "2026-04-23 19:29:53",
       "agent": "RISK",
       "model": "nemotron-mini-4b-instruc",
       "tokens": 231,
-      "latencyMs": 1257,
+      "latencyMs": 925,
       "msg": "no freeze_flag in vitality component; green."
     },
     {
-      "ts": "2026-04-20 02:16:49",
+      "ts": "2026-04-23 19:29:52",
       "agent": "QUANT",
       "model": "nemotron-mini-4b-instruc",
       "tokens": 284,
-      "latencyMs": 1531,
+      "latencyMs": 1288,
       "msg": "tranche PV within 1\u03c3 of baseline; carry +4bp."
     },
     {
-      "ts": "2026-04-20 02:16:48",
+      "ts": "2026-04-23 19:29:51",
       "agent": "MACRO",
       "model": "nemotron-mini-4b-instruc",
-      "tokens": 299,
-      "latencyMs": 4253,
-      "msg": "BSI z stable; no regime transition flagged."
+      "tokens": 458,
+      "latencyMs": 1356,
+      "msg": "fed funds path priced; macro-gate unchanged."
     },
     {
-      "ts": "2026-04-20 02:15:52",
+      "ts": "2026-04-23 19:29:45",
+      "agent": "RISK",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 231,
+      "latencyMs": 929,
+      "msg": "no freeze_flag in vitality component; green."
+    },
+    {
+      "ts": "2026-04-23 19:29:44",
+      "agent": "QUANT",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 284,
+      "latencyMs": 1301,
+      "msg": "tranche PV within 1\u03c3 of baseline; carry +4bp."
+    },
+    {
+      "ts": "2026-04-23 19:29:42",
+      "agent": "MACRO",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 458,
+      "latencyMs": 3399,
+      "msg": "fed funds path priced; macro-gate unchanged."
+    },
+    {
+      "ts": "2026-04-23 19:27:42",
+      "agent": "RISK",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 231,
+      "latencyMs": 925,
+      "msg": "no freeze_flag in vitality component; green."
+    },
+    {
+      "ts": "2026-04-23 19:27:41",
+      "agent": "QUANT",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 284,
+      "latencyMs": 1279,
+      "msg": "tranche PV within 1\u03c3 of baseline; carry +4bp."
+    },
+    {
+      "ts": "2026-04-23 19:27:40",
+      "agent": "MACRO",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 458,
+      "latencyMs": 1351,
+      "msg": "fed funds path priced; macro-gate unchanged."
+    },
+    {
+      "ts": "2026-04-23 19:27:35",
+      "agent": "RISK",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 231,
+      "latencyMs": 935,
+      "msg": "no freeze_flag in vitality component; green."
+    },
+    {
+      "ts": "2026-04-23 19:27:34",
+      "agent": "QUANT",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 284,
+      "latencyMs": 1294,
+      "msg": "tranche PV within 1\u03c3 of baseline; carry +4bp."
+    },
+    {
+      "ts": "2026-04-23 19:27:33",
+      "agent": "MACRO",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 458,
+      "latencyMs": 1986,
+      "msg": "fed funds path priced; macro-gate unchanged."
+    },
+    {
+      "ts": "2026-04-23 19:26:37",
+      "agent": "RISK",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 231,
+      "latencyMs": 925,
+      "msg": "no freeze_flag in vitality component; green."
+    },
+    {
+      "ts": "2026-04-23 19:26:36",
+      "agent": "QUANT",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 284,
+      "latencyMs": 1286,
+      "msg": "tranche PV within 1\u03c3 of baseline; carry +4bp."
+    },
+    {
+      "ts": "2026-04-23 19:26:35",
+      "agent": "MACRO",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 458,
+      "latencyMs": 1368,
+      "msg": "fed funds path priced; macro-gate unchanged."
+    },
+    {
+      "ts": "2026-04-23 19:26:32",
+      "agent": "RISK",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 231,
+      "latencyMs": 938,
+      "msg": "no freeze_flag in vitality component; green."
+    },
+    {
+      "ts": "2026-04-23 19:26:31",
+      "agent": "QUANT",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 284,
+      "latencyMs": 1294,
+      "msg": "tranche PV within 1\u03c3 of baseline; carry +4bp."
+    },
+    {
+      "ts": "2026-04-23 19:26:30",
+      "agent": "MACRO",
+      "model": "nemotron-mini-4b-instruc",
+      "tokens": 458,
+      "latencyMs": 2283,
+      "msg": "fed funds path priced; macro-gate unchanged."
+    },
+    {
+      "ts": "2026-04-23 19:14:17",
       "agent": "RISK",
       "model": "nemotron-mini-4b-instruc",
       "tokens": 142,
-      "latencyMs": 987,
+      "latencyMs": 741,
       "msg": "no freeze_flag in vitality component; green."
     },
     {
-      "ts": "2026-04-20 02:15:51",
+      "ts": "2026-04-23 19:14:16",
       "agent": "QUANT",
       "model": "nemotron-mini-4b-instruc",
       "tokens": 353,
-      "latencyMs": 2399,
+      "latencyMs": 1949,
       "msg": "Monte-Carlo SR narrow; no retune triggered."
     },
     {
-      "ts": "2026-04-20 02:15:48",
+      "ts": "2026-04-23 19:14:14",
       "agent": "MACRO",
       "model": "nemotron-mini-4b-instruc",
-      "tokens": 303,
-      "latencyMs": 4420,
-      "msg": "MOVE MA30 below gate; G3 HOLD."
-    },
-    {
-      "ts": "2026-04-20 02:14:20",
-      "agent": "RISK",
-      "model": "nemotron-mini-4b-instruc",
-      "tokens": 142,
-      "latencyMs": 1009,
-      "msg": "no freeze_flag in vitality component; green."
-    },
-    {
-      "ts": "2026-04-20 02:14:18",
-      "agent": "QUANT",
-      "model": "nemotron-mini-4b-instruc",
-      "tokens": 353,
-      "latencyMs": 2696,
-      "msg": "Monte-Carlo SR narrow; no retune triggered."
-    },
-    {
-      "ts": "2026-04-20 02:14:16",
-      "agent": "MACRO",
-      "model": "nemotron-mini-4b-instruc",
-      "tokens": 303,
-      "latencyMs": 3111,
-      "msg": "MOVE MA30 below gate; G3 HOLD."
-    },
-    {
-      "ts": "2026-04-20 02:12:37",
-      "agent": "RISK",
-      "model": "nemotron-mini-4b-instruc",
-      "tokens": 231,
-      "latencyMs": 1129,
-      "msg": "no freeze_flag in vitality component; green."
-    },
-    {
-      "ts": "2026-04-20 02:12:36",
-      "agent": "QUANT",
-      "model": "nemotron-mini-4b-instruc",
-      "tokens": 284,
-      "latencyMs": 1599,
-      "msg": "tranche PV within 1\u03c3 of baseline; carry +4bp."
-    },
-    {
-      "ts": "2026-04-20 02:12:34",
-      "agent": "MACRO",
-      "model": "nemotron-mini-4b-instruc",
-      "tokens": 299,
-      "latencyMs": 2206,
+      "tokens": 460,
+      "latencyMs": 1364,
       "msg": "BSI z stable; no regime transition flagged."
     },
     {
-      "ts": "2026-04-20 02:12:26",
+      "ts": "2026-04-23 19:12:05",
       "agent": "RISK",
       "model": "nemotron-mini-4b-instruc",
       "tokens": 231,
-      "latencyMs": 1188,
+      "latencyMs": 928,
       "msg": "no freeze_flag in vitality component; green."
     },
     {
-      "ts": "2026-04-20 02:12:25",
+      "ts": "2026-04-23 19:12:04",
       "agent": "QUANT",
       "model": "nemotron-mini-4b-instruc",
       "tokens": 284,
-      "latencyMs": 1568,
+      "latencyMs": 1287,
       "msg": "tranche PV within 1\u03c3 of baseline; carry +4bp."
     },
     {
-      "ts": "2026-04-20 02:12:23",
+      "ts": "2026-04-23 19:12:03",
       "agent": "MACRO",
       "model": "nemotron-mini-4b-instruc",
-      "tokens": 299,
-      "latencyMs": 4366,
-      "msg": "BSI z stable; no regime transition flagged."
+      "tokens": 458,
+      "latencyMs": 1355,
+      "msg": "fed funds path priced; macro-gate unchanged."
     },
     {
-      "ts": "2026-04-20 02:11:29",
+      "ts": "2026-04-23 19:11:59",
       "agent": "RISK",
       "model": "nemotron-mini-4b-instruc",
       "tokens": 231,
-      "latencyMs": 1104,
+      "latencyMs": 941,
       "msg": "no freeze_flag in vitality component; green."
     },
     {
-      "ts": "2026-04-20 02:11:28",
+      "ts": "2026-04-23 19:11:58",
       "agent": "QUANT",
       "model": "nemotron-mini-4b-instruc",
       "tokens": 284,
-      "latencyMs": 1587,
+      "latencyMs": 1300,
       "msg": "tranche PV within 1\u03c3 of baseline; carry +4bp."
     },
     {
-      "ts": "2026-04-20 02:11:26",
+      "ts": "2026-04-23 19:11:57",
       "agent": "MACRO",
       "model": "nemotron-mini-4b-instruc",
-      "tokens": 299,
-      "latencyMs": 2348,
-      "msg": "BSI z stable; no regime transition flagged."
-    },
-    {
-      "ts": "2026-04-20 02:11:18",
-      "agent": "RISK",
-      "model": "nemotron-mini-4b-instruc",
-      "tokens": 231,
-      "latencyMs": 1176,
-      "msg": "no freeze_flag in vitality component; green."
-    },
-    {
-      "ts": "2026-04-20 02:11:16",
-      "agent": "QUANT",
-      "model": "nemotron-mini-4b-instruc",
-      "tokens": 284,
-      "latencyMs": 1658,
-      "msg": "tranche PV within 1\u03c3 of baseline; carry +4bp."
-    },
-    {
-      "ts": "2026-04-20 02:11:15",
-      "agent": "MACRO",
-      "model": "nemotron-mini-4b-instruc",
-      "tokens": 299,
-      "latencyMs": 5288,
-      "msg": "BSI z stable; no regime transition flagged."
-    },
-    {
-      "ts": "2026-04-20 00:58:45",
-      "agent": "RISK",
-      "model": "nemotron-mini-4b-instruc",
-      "tokens": 142,
-      "latencyMs": 839,
-      "msg": "no freeze_flag in vitality component; green."
-    },
-    {
-      "ts": "2026-04-20 00:58:44",
-      "agent": "QUANT",
-      "model": "nemotron-mini-4b-instruc",
-      "tokens": 353,
-      "latencyMs": 2313,
-      "msg": "Monte-Carlo SR narrow; no retune triggered."
-    },
-    {
-      "ts": "2026-04-20 00:58:41",
-      "agent": "MACRO",
-      "model": "nemotron-mini-4b-instruc",
-      "tokens": 303,
-      "latencyMs": 2154,
-      "msg": "MOVE MA30 below gate; G3 HOLD."
-    },
-    {
-      "ts": "2026-04-20 00:57:43",
-      "agent": "RISK",
-      "model": "nemotron-mini-4b-instruc",
-      "tokens": 231,
-      "latencyMs": 1183,
-      "msg": "no freeze_flag in vitality component; green."
-    },
-    {
-      "ts": "2026-04-20 00:57:41",
-      "agent": "QUANT",
-      "model": "nemotron-mini-4b-instruc",
-      "tokens": 284,
-      "latencyMs": 1478,
-      "msg": "tranche PV within 1\u03c3 of baseline; carry +4bp."
-    },
-    {
-      "ts": "2026-04-20 00:57:40",
-      "agent": "MACRO",
-      "model": "nemotron-mini-4b-instruc",
-      "tokens": 299,
-      "latencyMs": 1964,
-      "msg": "BSI z stable; no regime transition flagged."
-    },
-    {
-      "ts": "2026-04-20 00:57:34",
-      "agent": "RISK",
-      "model": "nemotron-mini-4b-instruc",
-      "tokens": 231,
-      "latencyMs": 1229,
-      "msg": "no freeze_flag in vitality component; green."
-    },
-    {
-      "ts": "2026-04-20 00:57:33",
-      "agent": "QUANT",
-      "model": "nemotron-mini-4b-instruc",
-      "tokens": 284,
-      "latencyMs": 1560,
-      "msg": "tranche PV within 1\u03c3 of baseline; carry +4bp."
-    },
-    {
-      "ts": "2026-04-20 00:57:31",
-      "agent": "MACRO",
-      "model": "nemotron-mini-4b-instruc",
-      "tokens": 299,
-      "latencyMs": 3944,
-      "msg": "BSI z stable; no regime transition flagged."
+      "tokens": 458,
+      "latencyMs": 2670,
+      "msg": "fed funds path priced; macro-gate unchanged."
     }
   ]
 }

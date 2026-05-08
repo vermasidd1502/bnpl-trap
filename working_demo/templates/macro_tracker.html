@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Macro Tracker · BearWatch × Apollo Hermes</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='v2.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='pages.css') }}">
+<style>
+  /* Macro-tracker palette — cyan/teal, distinct from equity-monitor (purple) */
+  :root {
+    --m-cyan:    #06b6d4;
+    --m-teal:    #0e7490;
+    --m-amber:   #fbbf24;
+    --m-green:   #22c55e;
+    --m-red:     #ef4444;
+    --m-purple:  #a78bfa;
+  }
+  .mt-page  { max-width: 1320px; margin: 0 auto; padding: 0 22px 60px; }
+  .mt-hero  { padding: 30px 0 18px; border-bottom: 1px solid var(--border); margin-bottom: 22px; }
+  .mt-kicker {
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em;
+    color: var(--m-cyan); text-transform: uppercase; font-weight: 700;
+  }
+  .mt-hero h1 { font-size: 38px; line-height: 1.15; margin: 6px 0 8px; }
+  .mt-hero .sub { color: var(--text-secondary); font-size: 13.5px; max-width: 920px; }
+
+  .mt-grid-2 { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 16px; }
+  .mt-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .mt-grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+
+  .mt-card {
+    background: var(--bg-elevated); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px 18px;
+  }
+  .mt-card.accent { border-left: 3px solid var(--m-cyan); }
+
+  .mt-section-h {
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.10em;
+    text-transform: uppercase; color: var(--text-tertiary); font-weight: 700; margin-bottom: 8px;
+  }
+  .mt-h2 { font-size: 18px; margin: 0 0 12px; font-weight: 700; }
+  .mt-section { margin-top: 24px; }
+
+  /* Regime card */
+  .regime-card { padding: 22px 24px; border-radius: 14px; position: relative; overflow: hidden; }
+  .regime-card.RISK-ON       { background: linear-gradient(135deg, rgba(34,197,94,0.10), rgba(34,197,94,0.02)); border: 1px solid rgba(34,197,94,0.25); }
+  .regime-card.RISK-OFF      { background: linear-gradient(135deg, rgba(239,68,68,0.10), rgba(239,68,68,0.02)); border: 1px solid rgba(239,68,68,0.25); }
+  .regime-card.TRANSITIONAL  { background: linear-gradient(135deg, rgba(251,191,36,0.10), rgba(251,191,36,0.02)); border: 1px solid rgba(251,191,36,0.25); }
+  .regime-card.unknown       { background: var(--bg-elevated); border: 1px solid var(--border); }
+  .regime-label { font-size: 11px; font-family: var(--font-mono); letter-spacing: 0.10em; color: var(--text-tertiary); text-transform: uppercase; }
+  .regime-name  { font-family: var(--font-mono); font-weight: 800; font-size: 36px; letter-spacing: 0.04em; margin-top: 4px; }
+  .regime-name.RISK-ON      { color: var(--m-green); }
+  .regime-name.RISK-OFF     { color: var(--m-red); }
+  .regime-name.TRANSITIONAL { color: var(--m-amber); }
+  .regime-rec { font-size: 13px; color: var(--text-secondary); margin-top: 10px; line-height: 1.55; }
+
+  .regime-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 14px; }
+  .regime-stat { background: rgba(0,0,0,0.18); border-radius: 8px; padding: 10px; text-align: center; }
+  .regime-stat .lbl { font-size: 9.5px; font-family: var(--font-mono); color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; }
+  .regime-stat .val { font-family: var(--font-mono); font-weight: 800; font-size: 18px; margin-top: 4px; }
+
+  /* Confidence bar */
+  .conf-bar { background: rgba(255,255,255,0.06); border-radius: 4px; height: 6px; overflow: hidden; margin-top: 6px; }
+  .conf-bar > span { display: block; height: 100%; background: linear-gradient(90deg, var(--m-cyan), var(--m-teal)); }
+
+  /* Yield curve chart */
+  #yc-chart { width: 100%; height: 220px; display: block; }
+  .curve-meta { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 11px; margin-top: 8px; color: var(--text-secondary); }
+  .yc-pill {
+    display:inline-block; padding: 3px 8px; font-size: 9.5px; font-family: var(--font-mono);
+    text-transform: uppercase; letter-spacing: 0.06em; border-radius: 4px; font-weight: 700;
+  }
+  .yc-pill.RISK-OFF   { background: rgba(239,68,68,0.15); color: var(--m-red); }
+  .yc-pill.NEUTRAL    { background: rgba(251,191,36,0.15); color: var(--m-amber); }
+  .yc-pill.RISK-ON    { background: rgba(34,197,94,0.15); color: var(--m-green); }
+
+  /* Bond ETF mini cards */
+  .etf-card { background: rgba(0,0,0,0.18); border-radius: 8px; padding: 9px 11px; }
+  .etf-card .nm { font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary); }
+  .etf-card .px { font-family: var(--font-mono); font-weight: 700; font-size: 14px; margin-top: 2px; }
+  .etf-card .ch { font-family: var(--font-mono); font-size: 11px; margin-top: 2px; }
+  .pos { color: var(--m-green); }
+  .neg { color: var(--m-red); }
+  .neu { color: var(--text-tertiary); }
+
+  /* Commodity grid */
+  .com-row { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; margin-top: 8px; }
+  .com-tile { background: rgba(0,0,0,0.18); border-radius: 6px; padding: 8px 10px; font-family: var(--font-mono); font-size: 11px; }
+  .com-tile .nm  { font-size: 10px; color: var(--text-tertiary); }
+  .com-tile .px  { font-weight: 700; font-size: 13px; margin-top: 2px; }
+  .com-tile .ch  { font-size: 10px; margin-top: 2px; }
+
+  /* FRED stream */
+  .fred-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
+  .fred-tile { background: rgba(0,0,0,0.18); border-radius: 8px; padding: 10px 12px; }
+  .fred-tile .nm  { font-family: var(--font-mono); font-size: 10px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; }
+  .fred-tile .v   { font-family: var(--font-mono); font-weight: 800; font-size: 18px; margin-top: 4px; }
+  .fred-tile .d   { font-family: var(--font-mono); font-size: 10px; color: var(--text-tertiary); margin-top: 2px; }
+
+  /* Sector heatmap */
+  .heat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 6px; }
+  .heat-cell { padding: 10px 12px; border-radius: 8px; font-family: var(--font-mono); }
+  .heat-cell .nm   { font-size: 11px; font-weight: 700; }
+  .heat-cell .tk   { font-size: 9.5px; opacity: 0.8; }
+  .heat-cell .stat { font-size: 11px; margin-top: 4px; display: flex; justify-content: space-between; }
+
+  .mini-loading {
+    color: var(--text-tertiary); font-size: 11px; font-family: var(--font-mono); text-align: center; padding: 18px 0;
+  }
+  .err-banner {
+    background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25); border-radius: 6px;
+    padding: 8px 12px; color: var(--m-red); font-size: 11.5px; font-family: var(--font-mono);
+  }
+  .info-banner {
+    background: rgba(6,182,212,0.06); border: 1px solid rgba(6,182,212,0.20); border-radius: 6px;
+    padding: 8px 12px; color: var(--m-cyan); font-size: 11.5px; font-family: var(--font-mono);
+  }
+
+  .legend {
+    font-size: 11px; color: var(--text-tertiary); line-height: 1.55; margin-top: 8px;
+  }
+  .bsi-bridge {
+    border-left: 3px solid var(--m-purple); background: rgba(167,139,250,0.05);
+    border-radius: 6px; padding: 12px 14px; font-size: 11.5px; color: var(--text-secondary); line-height: 1.6;
+  }
+  .bsi-bridge code { color: var(--m-purple); font-family: var(--font-mono); }
+</style>
+</head>
+<body>
+{% include '_nav.html' %}
+
+<main class="mt-page">
+
+  <!-- HERO -->
+  <section class="mt-hero">
+    <div class="mt-kicker">🌐 Macro Tracker · live</div>
+    <h1>The world in one screen.</h1>
+    <p class="sub">
+      Risk regime, yield curve, credit spreads, FRED economic stream, sector rotation, and commodities —
+      the macro context you need before firing a BSI signal. Streamed live from yfinance and FRED;
+      cached server-side at 5 min (300 s) per endpoint to stay polite to upstream.
+    </p>
+  </section>
+
+  <!-- ROW 1: REGIME + VOL -->
+  <section class="mt-grid-2">
+    <div class="mt-card accent" id="regime-wrap">
+      <div class="mt-section-h">SECTION 01 · risk regime</div>
+      <div id="regime-body"><div class="mini-loading">Loading regime…</div></div>
+    </div>
+
+    <div class="mt-card">
+      <div class="mt-section-h">SECTION 02 · vol &amp; trend</div>
+      <div id="vol-body"><div class="mini-loading">Loading…</div></div>
+    </div>
+  </section>
+
+  <!-- BSI BRIDGE — the bit that ties macro tracker into BearWatch's gate logic -->
+  <section class="mt-section">
+    <div class="bsi-bridge">
+      <strong>How this feeds BearWatch:</strong> the BSI v3 composite excludes MOVE/VIX as macro-context
+      (paper §10.14). This page is the missing context view — the SCOUT/GUARDIAN gates G3 (MOVE),
+      G4 (CCD) and ROBO's <code>macro_tail</code> feature read from the same regime / vol-expansion /
+      curve-inversion signals shown here. When this page flashes <code>RISK-OFF</code>, ROBO routes to its
+      <em>GUARDIAN-subroutine</em> automatically.
+    </div>
+  </section>
+
+  <!-- ROW 2: YIELD CURVE + BOND ETFs -->
+  <section class="mt-section mt-grid-2">
+    <div class="mt-card">
+      <div class="mt-section-h">SECTION 03 · yield curve</div>
+      <h3 class="mt-h2">US Treasury curve · 3M / 5Y / 10Y / 30Y</h3>
+      <canvas id="yc-chart"></canvas>
+      <div class="curve-meta" id="yc-meta">—</div>
+      <div class="legend">
+        Inversion = 3M yield above 10Y yield. Historically a recession signal with a 6-18 month lag.
+        We use the 3M/10Y proxy because <code>2YY=F</code> is unreliable in yfinance; FRED <code>DGS2</code>
+        is preferred when the FRED key is configured.
+      </div>
+    </div>
+
+    <div class="mt-card">
+      <div class="mt-section-h">SECTION 04 · fixed income ETFs</div>
+      <h3 class="mt-h2">Bond ETF dashboard</h3>
+      <div id="bond-etfs" class="mt-grid-4">
+        <div class="mini-loading">Loading…</div>
+      </div>
+      <div class="legend">
+        <strong>HYG</strong> is the canonical credit-spread proxy in BearWatch backtests; widening
+        in HYG vs LQD is one of the inputs to G4 (CCD) gate.
+      </div>
+    </div>
+  </section>
+
+  <!-- ROW 3: FRED MACRO + SECTORS -->
+  <section class="mt-section mt-grid-2">
+    <div class="mt-card">
+      <div class="mt-section-h">SECTION 05 · FRED macro stream</div>
+      <h3 class="mt-h2">St. Louis Fed economic series</h3>
+      <div id="fred-body"><div class="mini-loading">Loading…</div></div>
+      <div class="legend">
+        Latest observation per series. Values older than 30d shown in dim text. CPI/UNRATE/FED-FUNDS
+        are the inputs to the BSI regime overlay.
+      </div>
+    </div>
+
+    <div class="mt-card">
+      <div class="mt-section-h">SECTION 06 · sector rotation</div>
+      <h3 class="mt-h2">SPDR sector ETFs · 1d / 5d / 1m</h3>
+      <div id="sector-body"><div class="mini-loading">Loading…</div></div>
+      <div class="legend">Heatmap shading uses 1m return. Strong defensive-sector outperformance (XLV, XLP, XLU) over cyclicals (XLY, XLI) is a textbook risk-off rotation signal.</div>
+    </div>
+  </section>
+
+  <!-- ROW 4: COMMODITIES -->
+  <section class="mt-section">
+    <div class="mt-card">
+      <div class="mt-section-h">SECTION 07 · commodities</div>
+      <h3 class="mt-h2">Metals · Energy · Agriculture</h3>
+      <div id="commodity-body"><div class="mini-loading">Loading…</div></div>
+      <div class="legend">
+        Gold / Copper ratio is the classic risk-off vs risk-on metals signal. Brent-WTI spread is a
+        proxy for global vs domestic energy supply imbalances.
+      </div>
+    </div>
+  </section>
+
+  <!-- ROW 5: METHOD -->
+  <section class="mt-section">
+    <div class="mt-card">
+      <div class="mt-section-h">METHOD &amp; PROVENANCE</div>
+      <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.65;">
+        <strong>Data sources:</strong> SPY / VIX / Treasury futures / sector ETFs / commodity futures via
+        <code>yfinance</code>; macro econ series via FRED. <strong>Cache:</strong> 5-minute server-side
+        TTL on every endpoint, with FRED at 60-minute (data updates monthly/weekly, not intraday).
+        <strong>Regime classifier:</strong> SPY 20d realised vol vs 60d, SPY vs SMA-50, VIX threshold
+        at 25 — published in Apollo Hermes <code>v7.0::market_regime</code>. <strong>This is real-money-grade
+        data but research-grade plumbing</strong> — no failover provider, no SLA. For production use,
+        wire to Bloomberg MIL or a paid Polygon feed.
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer" style="text-align: center; font-size: 11px; color: var(--text-tertiary); padding: 30px 0 18px;">
+  <div>BearWatch × Apollo Hermes  ·  Macro Tracker  ·  ported from Apollo Hermes v7.0</div>
+  <div style="font-family: var(--font-mono); margin-top: 4px;">Siddharth Verma  ·  UIUC FIN 580  ·  Spring 2026</div>
+</footer>
+
+<script>
+// ============== UTILITIES ==============
+function fmtPct(x, dp=2) {
+  if (x === null || x === undefined || isNaN(x)) return '—';
+  const sign = x > 0 ? '+' : '';
+  return sign + Number(x).toFixed(dp) + '%';
+}
+function fmtNum(x, dp=2) {
+  if (x === null || x === undefined || isNaN(x)) return '—';
+  return Number(x).toLocaleString(undefined, {minimumFractionDigits: dp, maximumFractionDigits: dp});
+}
+function chColor(x) {
+  if (x === null || x === undefined || isNaN(x)) return 'neu';
+  return x > 0 ? 'pos' : x < 0 ? 'neg' : 'neu';
+}
+async function getJson(url) {
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+
+// ============== REGIME + VOL ==============
+async function loadRegime() {
+  try {
+    const d = await getJson('/api/macro/regime');
+    if (d.error) {
+      document.getElementById('regime-body').innerHTML =
+        `<div class="err-banner">Regime fetch failed: ${d.error}</div>`;
+      document.getElementById('vol-body').innerHTML = '<div class="err-banner">Vol unavailable</div>';
+      return;
+    }
+    const reg = d.regime || 'unknown';
+    document.getElementById('regime-wrap').classList.add('regime-card', reg);
+    document.getElementById('regime-body').innerHTML = `
+      <div class="regime-label">Current regime</div>
+      <div class="regime-name ${reg}">${reg}</div>
+      <div class="regime-rec">${d.recommendation || ''}</div>
+      <div style="margin-top: 14px;">
+        <div style="font-size:10px;font-family:var(--font-mono);color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.06em;">Confidence</div>
+        <div class="conf-bar"><span style="width:${d.confidence}%"></span></div>
+        <div style="font-family:var(--font-mono);font-size:11px;text-align:right;margin-top:4px;">${d.confidence}%</div>
+      </div>
+      <div class="regime-stats">
+        <div class="regime-stat"><div class="lbl">SPY</div><div class="val">$${fmtNum(d.spy_price)}</div></div>
+        <div class="regime-stat"><div class="lbl">VIX</div><div class="val" style="color:${d.vix > 25 ? 'var(--m-red)' : 'var(--text-primary)'}">${fmtNum(d.vix)}</div></div>
+        <div class="regime-stat"><div class="lbl">SMA-50</div><div class="val">$${fmtNum(d.sma_50)}</div></div>
+        <div class="regime-stat"><div class="lbl">Trend</div><div class="val" style="color:${d.trend === 'BULLISH' ? 'var(--m-green)' : 'var(--m-red)'}">${d.trend}</div></div>
+      </div>
+    `;
+    document.getElementById('vol-body').innerHTML = `
+      <div style="font-size: 36px; font-family: var(--font-mono); font-weight: 800; color: ${d.volatility.expanding ? 'var(--m-red)' : 'var(--m-green)'};">
+        ${d.volatility.current}<span style="font-size: 18px; color: var(--text-tertiary);">% vol</span>
+      </div>
+      <div style="font-size: 11px; color: var(--text-tertiary); font-family: var(--font-mono); margin-top: 4px;">
+        20d realised · vs ${d.volatility.long_term}% long-term · regime <strong style="color: var(--text-primary);">${d.volatility.regime}</strong>
+      </div>
+      <div style="margin-top: 14px;">
+        <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:11px;">
+          <span>SPY 20d return</span>
+          <span class="${chColor(d.return_20d)}">${fmtPct(d.return_20d)}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:11px;margin-top:6px;">
+          <span>Vol expanding?</span>
+          <span style="color: ${d.signals.vol_expanding ? 'var(--m-red)' : 'var(--m-green)'};">${d.signals.vol_expanding ? 'YES' : 'no'}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:11px;margin-top:6px;">
+          <span>VIX elevated (&gt;25)?</span>
+          <span style="color: ${d.signals.vix_elevated ? 'var(--m-red)' : 'var(--m-green)'};">${d.signals.vix_elevated ? 'YES' : 'no'}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:11px;margin-top:6px;">
+          <span>Price &gt; SMA-50?</span>
+          <span style="color: ${d.signals.price_above_sma50 ? 'var(--m-green)' : 'var(--m-red)'};">${d.signals.price_above_sma50 ? 'YES' : 'no'}</span>
+        </div>
+      </div>
+    `;
+  } catch (e) {
+    document.getElementById('regime-body').innerHTML = `<div class="err-banner">${e.message}</div>`;
+  }
+}
+
+// ============== YIELD CURVE + BONDS ==============
+function drawYieldCurve(canvas, points) {
+  if (!canvas || !canvas.getContext) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  canvas.width = w * dpr; canvas.height = h * dpr; ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, w, h);
+  if (!points.length) {
+    ctx.fillStyle = '#888'; ctx.font = '12px monospace';
+    ctx.textAlign = 'center'; ctx.fillText('no curve data', w/2, h/2);
+    return;
+  }
+  const pad = {l: 50, r: 18, t: 18, b: 32};
+  const xs = points.map(p => p.maturity);
+  const ys = points.map(p => p.yield);
+  const xmin = 0, xmax = Math.max.apply(null, xs);
+  const ymin = Math.min.apply(null, ys) - 0.3;
+  const ymax = Math.max.apply(null, ys) + 0.3;
+  const sx = m => pad.l + (m - xmin) / (xmax - xmin) * (w - pad.l - pad.r);
+  const sy = y => h - pad.b - (y - ymin) / (ymax - ymin) * (h - pad.t - pad.b);
+
+  // gridlines
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.t + i * (h - pad.t - pad.b) / 4;
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(w - pad.r, y); ctx.stroke();
+    const yv = ymax - i * (ymax - ymin) / 4;
+    ctx.fillStyle = '#666'; ctx.font = '10px monospace'; ctx.textAlign = 'right';
+    ctx.fillText(yv.toFixed(2) + '%', pad.l - 6, y + 3);
+  }
+  // x labels
+  ctx.fillStyle = '#888'; ctx.textAlign = 'center';
+  points.forEach(p => {
+    ctx.fillText(p.name.split(' ')[0], sx(p.maturity), h - pad.b + 18);
+  });
+  // curve line
+  ctx.strokeStyle = '#06b6d4'; ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  points.forEach((p, i) => {
+    if (i === 0) ctx.moveTo(sx(p.maturity), sy(p.yield));
+    else ctx.lineTo(sx(p.maturity), sy(p.yield));
+  });
+  ctx.stroke();
+  // points
+  points.forEach(p => {
+    ctx.fillStyle = '#06b6d4';
+    ctx.beginPath(); ctx.arc(sx(p.maturity), sy(p.yield), 4, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#cbd5e1'; ctx.textAlign = 'center'; ctx.font = '10px monospace';
+    ctx.fillText(p.yield.toFixed(2), sx(p.maturity), sy(p.yield) - 8);
+  });
+}
+
+async function loadBonds() {
+  try {
+    const d = await getJson('/api/macro/bonds');
+    if (d.error) {
+      document.getElementById('bond-etfs').innerHTML = `<div class="err-banner">${d.error}</div>`;
+      return;
+    }
+    drawYieldCurve(document.getElementById('yc-chart'), d.yield_curve || []);
+    const sp  = d.spread_3m_10y;
+    const inv = d.inverted;
+    const sig = d.signal || 'NEUTRAL';
+    document.getElementById('yc-meta').innerHTML = `
+      <span>3M-10Y spread: <strong style="color: ${inv ? 'var(--m-red)' : 'var(--text-primary)'};">${sp !== null ? sp.toFixed(3) + '%' : '—'}</strong></span>
+      <span>Inverted: <strong style="color: ${inv ? 'var(--m-red)' : 'var(--m-green)'};">${inv === null ? '—' : inv ? 'YES' : 'no'}</strong></span>
+      <span class="yc-pill ${sig}">${sig}</span>
+    `;
+    const etfs = d.bond_etfs || [];
+    document.getElementById('bond-etfs').innerHTML = etfs.length ? etfs.map(e => `
+      <div class="etf-card">
+        <div class="nm">${e.name}</div>
+        <div class="px">$${fmtNum(e.price)}</div>
+        <div class="ch ${chColor(e.change_pct)}">${fmtPct(e.change_pct)}</div>
+      </div>
+    `).join('') : '<div class="mini-loading">no etf data</div>';
+  } catch (e) {
+    document.getElementById('bond-etfs').innerHTML = `<div class="err-banner">${e.message}</div>`;
+  }
+}
+
+// ============== FRED ==============
+async function loadFred() {
+  try {
+    const d = await getJson('/api/macro/fred');
+    if (d.error === 'missing_fred_key') {
+      document.getElementById('fred-body').innerHTML =
+        `<div class="info-banner">FRED key not configured. Set <code>FRED_API_KEY</code> env-var to enable. Free at fred.stlouisfed.org.<br><span style="opacity:0.7;">${d.hint || ''}</span></div>`;
+      return;
+    }
+    if (d.error) {
+      document.getElementById('fred-body').innerHTML = `<div class="err-banner">${d.error}</div>`;
+      return;
+    }
+    const tiles = Object.keys(d).map(k => {
+      const obs = d[k] || [];
+      const latest = obs[0];
+      if (!latest) return `<div class="fred-tile"><div class="nm">${k}</div><div class="v">—</div><div class="d">no data</div></div>`;
+      return `<div class="fred-tile">
+        <div class="nm">${k.replace(/_/g, ' ')}</div>
+        <div class="v">${Number(latest.value).toLocaleString()}</div>
+        <div class="d">${latest.date}</div>
+      </div>`;
+    }).join('');
+    document.getElementById('fred-body').innerHTML = `<div class="fred-grid">${tiles}</div>`;
+  } catch (e) {
+    document.getElementById('fred-body').innerHTML = `<div class="err-banner">${e.message}</div>`;
+  }
+}
+
+// ============== SECTORS ==============
+function heatColor(v) {
+  // Diverging green/red gradient by 1m return
+  const max = 8;  // saturation at ±8%
+  const t   = Math.max(-1, Math.min(1, v / max));
+  if (t > 0) return `rgba(34,197,94,${0.10 + t * 0.30})`;
+  if (t < 0) return `rgba(239,68,68,${0.10 + Math.abs(t) * 0.30})`;
+  return 'rgba(160,160,160,0.10)';
+}
+async function loadSectors() {
+  try {
+    const d = await getJson('/api/macro/sectors');
+    if (d.error) {
+      document.getElementById('sector-body').innerHTML = `<div class="err-banner">${d.error}</div>`;
+      return;
+    }
+    const arr = (d.sectors || []).slice().sort((a,b) => (b.change_1m||0) - (a.change_1m||0));
+    document.getElementById('sector-body').innerHTML = `
+      <div class="heat-grid">
+        ${arr.map(s => `
+          <div class="heat-cell" style="background: ${heatColor(s.change_1m)};">
+            <div class="nm">${s.name}</div>
+            <div class="tk">${s.ticker} · $${fmtNum(s.price)}</div>
+            <div class="stat"><span style="color: var(--text-tertiary);">1d</span><span class="${chColor(s.change_1d)}">${fmtPct(s.change_1d)}</span></div>
+            <div class="stat"><span style="color: var(--text-tertiary);">5d</span><span class="${chColor(s.change_5d)}">${fmtPct(s.change_5d)}</span></div>
+            <div class="stat"><span style="color: var(--text-tertiary);">1m</span><span class="${chColor(s.change_1m)}" style="font-weight:700;">${fmtPct(s.change_1m)}</span></div>
+          </div>
+        `).join('')}
+      </div>`;
+  } catch (e) {
+    document.getElementById('sector-body').innerHTML = `<div class="err-banner">${e.message}</div>`;
+  }
+}
+
+// ============== COMMODITIES ==============
+async function loadCommodities() {
+  try {
+    const d = await getJson('/api/macro/commodities');
+    if (d.error) {
+      document.getElementById('commodity-body').innerHTML = `<div class="err-banner">${d.error}</div>`;
+      return;
+    }
+    const cats = ['metals', 'energy', 'agriculture'];
+    const html = cats.map(cat => {
+      const items = d[cat] || [];
+      return `
+        <div style="margin-top: 14px;">
+          <div style="font-family: var(--font-mono); font-size: 11px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px;">${cat}</div>
+          <div class="com-row">
+            ${items.map(i => `
+              <div class="com-tile">
+                <div class="nm">${i.name}</div>
+                <div class="px">$${fmtNum(i.price)}</div>
+                <div class="ch"><span class="${chColor(i.change_1d)}">${fmtPct(i.change_1d)}</span> · 1d</div>
+                <div class="ch"><span class="${chColor(i.change_1m)}">${fmtPct(i.change_1m)}</span> · 1m</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>`;
+    }).join('');
+    document.getElementById('commodity-body').innerHTML = html;
+  } catch (e) {
+    document.getElementById('commodity-body').innerHTML = `<div class="err-banner">${e.message}</div>`;
+  }
+}
+
+// Boot all in parallel
+loadRegime();
+loadBonds();
+loadFred();
+loadSectors();
+loadCommodities();
+
+// Auto-refresh every 5 minutes
+setInterval(() => {
+  loadRegime(); loadBonds(); loadSectors(); loadCommodities();
+}, 5 * 60 * 1000);
+</script>
+</body>
+</html>

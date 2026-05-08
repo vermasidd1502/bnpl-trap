@@ -1,0 +1,28 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="hexGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c4b5fd"/>
+      <stop offset="50%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#6d28d9"/>
+    </linearGradient>
+    <linearGradient id="hexInner" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a78bfa" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#7c3aed" stop-opacity="0.4"/>
+    </linearGradient>
+  </defs>
+  <!-- Outer hexagon -->
+  <polygon points="50,4 91,27 91,73 50,96 9,73 9,27"
+           fill="url(#hexGrad)"
+           stroke="#a78bfa"
+           stroke-width="1.5"
+           stroke-linejoin="round"/>
+  <!-- Inner hexagon for depth -->
+  <polygon points="50,18 78,34 78,66 50,82 22,66 22,34"
+           fill="none"
+           stroke="#ddd6fe"
+           stroke-width="1"
+           stroke-opacity="0.5"
+           stroke-linejoin="round"/>
+  <!-- Center dot -->
+  <circle cx="50" cy="50" r="4" fill="#f5f3ff" opacity="0.9"/>
+</svg>
