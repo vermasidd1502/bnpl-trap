@@ -105,24 +105,11 @@ bnpl-trap/
 
 ## 🏗 Architecture in One Picture
 
-```
-   8 alt-data pillars         BSI composite          5 compliance gates
-   ─────────────────          ────────────           ──────────────────
-   CFPB complaints       ┐                      ┌──  G1 BSI    z ≥ 2.0
-   App Store reviews     ┤                      │
-   Reddit posts          ┤                      ├──  G2 SCP    spread + vol z ≥ 1.5
-   Bluesky posts         ┤      winsorise       │
-   Google Trends         ┼──── EWMA-30d ──── ───┼──  G3 MOVE   MOVE z ≤ 1.0
-   ABS tranche signals   ┤      z-score(252d)   │
-   Macro confound layer  ┤                      ├──  G4 CCD    divergence ≥ 0.30
-   Firm vitality         ┘                      │
-                                                 └──  G5 FDS    NCO+provisions z ≥ 1.5
-                            ↓                                      ↓
-                     Daily z-score                       ALL FIVE must fire
-                     per firm (BSI z)                    before trade goes live
-```
+![BSI Architecture Diagram](docs/architecture.png)
 
-All weights, thresholds, and gate-firing logic are **pre-registered constants** in `bnpl-pod/signals/gates.py`. They are deliberately not learned from data — to prevent in-sample HARKing.
+Eight alt-data pillars feed the BSI composite (winsorise → EWMA-30d → z-score against 252-day baseline → pre-registered weighted sum). The composite is then evaluated against five compliance gates, and **all five must fire simultaneously** before any trade goes live.
+
+All weights, thresholds, and gate-firing logic are **pre-registered constants** in `bnpl-pod/signals/gates.py`. They are deliberately not learned from data — to prevent in-sample HARKing. The diagram above is rendered by `scripts/render_architecture_diagram.py`.
 
 ---
 
