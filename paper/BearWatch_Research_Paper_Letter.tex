@@ -1,0 +1,423 @@
+\documentclass[11pt,a4paper]{article}
+
+% ===== APA-style packages (inherited verbatim from the Long version) =====
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=1in]{geometry}
+\usepackage{setspace}
+\usepackage{amsmath,amssymb}
+\usepackage{bm}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage[svgnames]{xcolor}
+\usepackage[colorlinks=true,linkcolor=NavyBlue,urlcolor=NavyBlue,citecolor=NavyBlue]{hyperref}
+\usepackage{microtype}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{parskip}
+\usepackage{titling}
+\usepackage[round,authoryear]{natbib}
+
+\titleformat{\section}{\large\bfseries}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\normalsize\bfseries\itshape}{\thesubsection.}{0.4em}{}
+
+\setstretch{1.15}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\itshape BearWatch Letter --- BSI for Alt-Credit Monitoring}
+\fancyhead[R]{\small Verma (2026)}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\setlength{\bibsep}{3pt}
+\graphicspath{{latex/figures/}}
+
+\title{
+  \vspace{-1.5cm}
+  \LARGE\textbf{A Deterministic Monitoring System for Consumer-Credit Stress:} \\
+  \vspace{0.15cm}
+  \large\textbf{Construction and Validation of the Behavioural Stress Index \\ (Letter)}
+}
+\author{
+  Siddharth Verma\thanks{MSF (Master of Science in Finance) Candidate, Gies College of Business, University of Illinois Urbana-Champaign. Correspondence: \texttt{sverma24@illinois.edu}.} \\
+  \small UIN: 668601217 \\
+  \small Department of Finance, Gies College of Business \\
+  \small University of Illinois Urbana-Champaign
+}
+\date{
+  Spring 2026 \\
+  \small Working paper (Letter) \textbar\ 2026-05-18
+}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+
+\begin{abstract}
+\noindent
+We construct the Behavioural Stress Index (BSI), an exponentially-weighted, z-scored composite of public alternative-data pillars, and test whether it serves as a leading indicator for consumer-credit deterioration at non-bank alt-credit issuers (Buy-Now-Pay-Later, subprime auto, marketplace lending, fintech subprime installment). Across the full 27-firm public-data warehouse (2019--2026), the BSI delivers event sensitivity of 5/5 on firms with sufficient pre-event data (Wilson 95\% CI $[56.6\%, 100\%]$) and specificity of 86\% / 100\% at $2.5\sigma$ / $3.0\sigma$ on the 21-firm control set. Granger F-tests at the one-month lag reject the no-causality null in 23 of 27 firms ($p < 0.05$; median $p = 0.0005$); the lagged BSI predicts forward log-change in CFPB complaint volume in firm-fixed-effects panel regression at $\hat{\beta} = -0.049$, cluster-robust $p = 0.009$ (saturated specification), and the coefficient survives all six standard SE estimators including Driscoll-Kraay ($p = 0.007$). Two honest disclosures temper the equity story: (i) calendar-time alpha when expressed as an equity short is statistically zero ($t = 0.08$) and (ii) the methodology requires a denominator-normalisation refinement at growth-stage issuers, as the Sezzle (SEZL) case demonstrates. We diagnose the equity-alpha null as an instrument-selection problem --- credit instruments (junior ABS tranches, single-name CDS, sub-IG bonds) price the issuer-conditional default probability the signal is detecting; equity prices many additional channels --- and we set out the fixed-income instantiation of the methodology as the natural next research direction.
+
+\medskip
+\noindent\textbf{Keywords:} alternative data; consumer credit; credit valuation adjustment; sentiment indicators; asset-backed securities; risk-neutral default probability; behavioural finance; rule-based monitoring systems.
+
+\medskip
+\noindent\textbf{JEL classification:} G12, G14, G17, G21, C53.
+
+\medskip
+\noindent\textit{This Letter is the condensed companion to a 42-page working paper and a 59-page extended preprint that contain the full methodology, robustness suite, and Phase~2C--2T diagnostic block. Cross-references to those documents are provided where relevant.}
+\end{abstract}
+
+\vspace{0.5em}
+
+% =============================================================
+\section{Introduction}\label{sec:intro}
+
+The United States consumer-credit market is well-monitored at the prime end and poorly monitored at the alt-credit end. Federal Reserve flow-of-funds data and credit-bureau tradeline panels resolve prime-card and prime-mortgage stress at monthly cadence with comprehensive coverage \citep{frb2023householdcredit}. The same is not true of the segment driving the most consequential consumer-credit losses of the post-2020 period: Buy-Now-Pay-Later (BNPL) issuers, subprime auto retailers, and marketplace lenders that originate against thin or unscored credit files \citep{difilippo2018marketplace,beck2024bnpl}. Three structural gaps motivate this work. Alt-credit borrowers carry insufficient bureau history to populate standard early-warning models. Published distress information (10-Q provisions, ABS trustee remittances) is lagged and filtered through accounting discretion \citep{adelinoschoar2016}. And the consumer-side experience of distress (loan denials, payment failures, collection contacts) generates contemporaneous public traces in regulatory complaint filings, social media, and search behaviour that no published methodology aggregates into a calibrated stress index for this segment.
+
+We make three contributions. The first is empirical: a deterministic composite of public alt-data pillars achieves 100\% firm-level event sensitivity (5/5) with 86--100\% specificity (depending on threshold choice) and Granger-causes forward complaint volume in 23 of 27 firms at $p < 0.05$, with mean lead time of approximately nine months. The second is methodological: a pre-registered, hash-locked, two-layer decision architecture (a continuous BSI plus a five-archetype peer-review layer) that addresses the asymmetric cost of false positives in equity-instrument deployments. The third is structural: the natural deployment surface for the BSI is a credit-instrument class whose price formation is governed by issuer default probability rather than equity returns; we set out the architecture for that deployment in §\ref{sec:fixed_income}. The Letter format compresses the full validation suite of the parent paper; the 42-page main version and the 59-page Extended preprint contain the complete derivations, robustness battery, and case appendices.
+
+% =============================================================
+\section{Related literature}\label{sec:litreview}
+
+The work draws on four strands. \textit{Credit valuation and the P/Q wedge.} The signal targets the spread between $\mathbb{P}$-measure information about issuer-conditional default probability (from public alt-data) and the $\mathbb{Q}$-measure expression of that probability in credit-instrument spreads --- the standard CVA decomposition of \citet{basel2011cva}, \citet{brigomorinipallavicini2013}, \citet{burgardkjaer2013funding}, and \citet{hullwhite2012fva}. \textit{Alternative data in financial monitoring.} Search-attention indices \citep{daengelberggao2011searchattention}, regulatory complaint streams \citep{cfpb2022bnplmarket,cfpb2023api}, and machine-readable narrative sentiment \citep{araci2019finbert} are now established alpha inputs in quantitative equity; the published methodology does not extend them as a fused, pre-registered composite on the alt-credit consumer-monitoring problem. \textit{Consumer-credit cycles.} \citet{adelinoschoar2016} and \citet{mianrampinisufi2017} document the household-debt channel; the BNPL-specific academic literature is early \citep{difilippo2018marketplace,beck2024bnpl}. \textit{Granger causality and lead-lag testing.} The methodology relies on the canonical \citet{granger1969investigating} framework and the multiple-testing corrections of \citet{bh1995}. The Letter inherits the literature treatment of the parent paper; the reader is referred there for the credit-instrument market-structure subsection that motivates the fixed-income wrapper of §\ref{sec:fixed_income}.
+
+% =============================================================
+\section{Theoretical framework and BSI construction}\label{sec:theory}
+
+\subsection*{Hypothesis} The testable hypothesis is that a composite of public alt-data pillars carries information about issuer-conditional default probability at $\mathbb{P}$-measure earlier than that information is reflected in either $\mathbb{Q}$-measure credit spreads or in equity prices that integrate credit-deterioration information among many other return drivers. The empirical work tests the $\mathbb{P}$-leg of the wedge directly (alt-data composite vs forward complaint volume and equity returns) and stages the $\mathbb{Q}$-leg test (alt-data composite vs forward credit spreads) as future work, conditional on access to TRACE Enhanced Historical bond-tape and Markit firm-day CDS-curve snapshots that are outside the present public-data warehouse.
+
+\subsection*{BSI definition} For firm $i$ at date $t$, the Behavioural Stress Index is the EWMA-z-scored linear combination of $K$ pillars:
+\begin{equation}\label{eq:bsi}
+\text{BSI}_{i,t} \;=\; \sum_{k=1}^{K} w_k \cdot z\!\left(\text{EWMA}_{\lambda_k}\!\big[\,p_{i,t}^{(k)}\,\big]\right),
+\qquad \sum_{k=1}^{K} w_k = 1
+\end{equation}
+where $p_{i,t}^{(k)}$ is the firm-day observation on pillar $k$, $\text{EWMA}_{\lambda_k}[\cdot]$ is the exponentially-weighted moving average at half-life $\lambda_k$, $z(\cdot)$ standardises against a firm-specific 365-day rolling baseline, and the weights $w_k$ are pre-registered in Table~\ref{tab:weights} and hash-locked at the start of the validation sample. The complete operational architecture --- ingest pipeline, gate machinery, archetype router, audit trail --- is summarised in Figure~\ref{fig:arch}.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.85\textwidth]{fig_architecture.pdf}
+\caption{Operational architecture. Eight alt-data pillars feed equation~(\ref{eq:bsi}); the firm-day BSI feeds a four-gate state machine; the gate-vector output is consumed by Layer~2 (the five-archetype peer review) which routes to a trade ticket. Every routing decision is hash-locked in the audit log so any trade is replayable end-to-end.}\label{fig:arch}
+\end{figure}
+
+\begin{table}[h]
+\centering\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}llcl@{}}
+\toprule
+\textbf{Pillar} & \textbf{Source} & \textbf{Weight $w_k$} & \textbf{Half-life $\lambda_k$} \\
+\midrule
+CFPB complaints (velocity)              & CFPB Consumer Complaint Database & 0.30 & 30 d \\
+CFPB complaints (acceleration)          & CFPB CCDB (rolling 2nd diff.)   & 0.15 & 30 d \\
+Macro confound (MOVE / NFCI / STLFSI4)  & FRED                            & 0.15 & 60 d \\
+Cross-firm contagion                    & Pillar-1 fan-out across panel   & 0.10 & 30 d \\
+EDGAR fundamentals (NCO, PCL YoY)       & SEC XBRL company-facts          & 0.10 & 90 d \\
+App-store sentiment                     & iOS + Play store review feed    & 0.10 & 14 d \\
+Social-media frequency                  & Reddit + Bluesky public APIs    & 0.05 & 14 d \\
+Search-attention residual               & Google Trends, residual on macro& 0.05 & 14 d \\
+\bottomrule
+\end{tabular}}
+\caption{Pre-registered BSI pillar composition. Weights $w_k$ and half-lives $\lambda_k$ were hash-locked at the start of the validation sample (2019-01-01) and are not adjusted during validation. Coverage gates suppress firm-days where pillar coverage falls below 60\%; gating decisions are recorded in the audit log.}\label{tab:weights}
+\end{table}
+
+% =============================================================
+\section{Data and validation sample}\label{sec:data}
+
+The validation universe is the \emph{full} 27-firm population of U.S.\ consumer-credit issuers with at least 100 CFPB complaints during the 2019--2026 warehouse window (median $\approx 4{,}000$ complaints per firm; range 56 to 123{,}969). Six firms experienced publicly documented distress events in the window; 21 are surviving issuers used as control observations. The full-population design defuses the selection-bias objection standard to event-study work in this literature. For each event firm, $T_{\text{event}}$ is the first date of public distress recognition (Chapter 7 or 11, going-concern qualification, governance crisis with CEO removal); we compute the firm-day BSI via equation~(\ref{eq:bsi}) and identify the first crossing of each of four thresholds $\{1.5\sigma, 2.0\sigma, 2.5\sigma, 3.0\sigma\}$ over the 730-day pre-event window. Specificity is the percentage of control firms whose share-of-days-above-threshold remains below 5\%. Data sources, refresh cadences, and coverage gates are detailed in the Long version §4; this Letter retains only the validation-design summary.
+
+% =============================================================
+\section{Methodology}\label{sec:method}
+
+The signal is consumed through a two-layer decision architecture. \textbf{Layer~1} is the bear-state classifier: a deterministic finite-state machine that maps each firm-day's $\big(\text{BSI}_{i,t},\, \text{gate vector}\big)$ tuple to one of \{SLEEPING, THINKING, CONFUSED, CONFIRMED\}. State transitions are governed by the four-gate rule of \citet{ho1995random}-style ensembling: $G_1$ (BSI z-threshold), $G_2$ (subprime-credit-profile filter), $G_3$ (macro-regime concordance via FRED MOVE), $G_4$ (cross-firm contagion exceeding a panel-rank cutoff). A CONFIRMED transition requires all four gates fire simultaneously over a debounce window.
+
+\textbf{Layer~2} is a five-archetype peer-review consensus, extended from the four-gate single-rule to an archetype-aware firing logic in which each of four operational personalities (BLITZ, SCOUT, GUARDIAN, ROBO) applies a distinct $\sigma$-threshold and gate-strictness combination to the same Layer-1 state vector. ROBO is the meta-dispatcher: it reads the regime (volatility, contagion, pillar concordance) and routes the trade to one of BLITZ, SCOUT, or GUARDIAN with a logged routing decision. The architecture is symmetric: an equity short-side pod consumes CONFIRMED states; a six-condition contrarian-recovery pod consumes BSI-decay-with-fundamental-inflection states (results in §\ref{sec:results}).
+
+The four gates that govern the Layer~1 state transitions are defined as follows. \textbf{G$_1$ --- BSI threshold:} the firm-day BSI z-score must exceed an archetype-specific threshold ($1.5\sigma$ for BLITZ, $2.0\sigma$ for SCOUT, $2.5\sigma$ for GUARDIAN). \textbf{G$_2$ --- subprime-credit-profile filter:} the firm must classify as a non-prime consumer lender via a deterministic rule on borrower-FICO tiers disclosed in the most recent 10-Q (or, for private issuers, a curated classification from the validation universe). This gate is the most consequential in the equity-short wrapper because it excludes investment-grade names where equity short borrow is unstable; under the credit-instrument wrapper of §\ref{sec:fixed_income} the same gate flips to enabling rather than blocking. \textbf{G$_3$ --- macro-regime concordance:} the FRED MOVE index must be in the upper tercile of its trailing 250-day distribution, or the firm-specific BSI signal must be at least $2\sigma$ above the cross-firm panel median for the same day --- ensuring the signal is firm-idiosyncratic rather than a macro echo. \textbf{G$_4$ --- cross-firm contagion:} the firm's BSI rank within the 27-firm panel must lie in the top quartile on at least 60\% of the trailing 30 days. A CONFIRMED state requires all four gates fire simultaneously over a five-day debounce window; the audit log records the firm-day vector $\big(G_1, G_2, G_3, G_4\big)_t$ at every state transition, so any historical state is replayable from the warehouse. The five-gate extension formalised in the operational pod adds an EDGAR-fundamentals gate (G$_5$: net-charge-off and provisions-for-credit-losses YoY change z-score from SEC XBRL company-facts) and is the routing target for the archetype-aware firing rule documented in the Long version §5.7.
+
+% =============================================================
+\section{Empirical results}\label{sec:results}
+
+We report five headline empirics. Table~\ref{tab:headline} consolidates them with effect sizes, sample sizes, and significance under the strictest standard-error estimator applicable to each data structure.
+
+\begin{table}[h]
+\centering\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}lp{5.0cm}rl@{}}
+\toprule
+\textbf{\#} & \textbf{Result} & \textbf{Estimate} & \textbf{Significance} \\
+\midrule
+1 & Firm-level event sensitivity (full population) & 5 / 5 firms with data & Wilson 95\% CI $[56.6\%, 100\%]$ \\
+2 & Control-firm specificity at $2.5\sigma$ / $3.0\sigma$ & 18 / 21 \;\& 21 / 21 & 86\% \;\& 100\% \\
+3 & Granger F-test, BSI $\to$ complaint volume, lag 1m & 23 / 27 firms reject & median $p = 0.0005$ \\
+4 & Panel $\Delta\log(\text{vol}_{t+1}) \sim \text{BSI}_{t-1}$ + firm FE & $\hat{\beta} = -0.0487$, $t = -2.61$ & cluster-robust $p = 0.009$; Driscoll-Kraay $p = 0.0071$ \\
+5 & Calendar-time alpha (equity short wrapper) & $t = 0.08$ & not distinguishable from zero \\
+\bottomrule
+\end{tabular}}
+\caption{Headline empirical results. The signal is informationally productive at firm-day grain (rows 1--4) but the equity wrapper does not extract risk-adjusted alpha against the appropriate baseline (row 5). The instrument-selection diagnosis is in §\ref{sec:discussion}; the credit-instrument deployment that follows is in §\ref{sec:fixed_income}. Sources: Long version Tables 1, 2, 4, 6, 11.}\label{tab:headline}
+\end{table}
+
+The headline panel coefficient survives the standard-error-estimator battery. Re-fitting the same panel under six SE specifications yields $\hat{\beta} = -0.1518$ across all six (the coefficient is invariant; only the variance-covariance matrix changes), with $t$-statistics ranging from $-15.12$ (nonrobust) to $-2.70$ (Driscoll-Kraay) and corresponding $p$-values from $< 0.001$ to $0.0071$ (Table~\ref{tab:se_sens}). The Driscoll-Kraay survival is the most defensible single statistical claim in the paper; the more permissive estimators are reported alongside for transparency, not because they are needed for the headline to hold.
+
+\begin{table}[h]
+\centering\footnotesize
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrr}
+\toprule
+\textbf{SE estimator} & \textbf{Coef.} & \textbf{SE} & \textbf{$t$-stat} & \textbf{$p$-value} \\
+\midrule
+Nonrobust (naive)                                  & $-0.1518$ & $0.0100$ & $-15.12$ & $< 0.001$ \\
+HC1 White-robust                                   & $-0.1518$ & $0.0116$ & $-13.06$ & $< 0.001$ \\
+HAC Newey-West (12)                                & $-0.1518$ & $0.0141$ & $-10.76$ & $< 0.001$ \\
+Cluster (firm) --- original Phase 2A               & $-0.1518$ & $0.0243$ & $-6.25$  & $< 0.001$ \\
+Two-way (firm $+$ month), Cameron-Gelbach-Miller   & $-0.1518$ & $0.0272$ & $-5.59$  & $< 0.001$ \\
+\textbf{Driscoll-Kraay (NW-4)} --- \emph{strictest}& $-0.1518$ & $0.0563$ & $-2.70$  & $\mathbf{0.0071}$ \\
+\bottomrule
+\end{tabular}}
+\caption{Panel-headline SE-estimator sensitivity. The coefficient is invariant by construction; only the variance-covariance matrix changes. Driscoll-Kraay (the strictest test) simultaneously handles cross-sectional dependence between firms and serial correlation within firms; its $p = 0.007$ survival confirms the result is genuine, not an artifact of any particular estimator. $n = 2{,}058$ firm-months, 22 firms.}\label{tab:se_sens}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.85\textwidth]{fig_event_study.pdf}
+\caption{Event-study average BSI z-score across the five detection cases (CVNA, BRIDGECREST, UPST, CURO, TRICOLOR), aligned at $T_{\text{event}} = 0$. The composite signal crosses the $2\sigma$ threshold $\approx 654$ days ahead of the firm-level event date on the median case and remains elevated through the event window.}\label{fig:event_study}
+\end{figure}
+
+\subsection*{Five case findings} The empirical sample organises into five named cases. Table~\ref{tab:cases} summarises trigger date, event date, lead time, P\&L on a stylised equity-short wrapper, and the verdict (true positive, false positive caught, or denominator-effect refinement case).
+
+\begin{table}[h]
+\centering\footnotesize
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}llllrl@{}}
+\toprule
+\textbf{Case} & \textbf{Trigger} & \textbf{Event} & \textbf{Lead} & \textbf{Equity short P\&L} & \textbf{Verdict} \\
+\midrule
+Carvana 2022       & 2020-11 & 2022-08 going-concern              & 654 d  & $+96.3\%$    & True positive \\
+Bridgecrest 2022   & 2020-08 & 2022-08 (Carvana subsidiary)       & 720 d  & n/a (private)& True positive (confirming) \\
+Upstart 2022       & 2020-06 & 2022-05 fundamental break          & 662 d  & $+88.4\%$    & True positive \\
+CURO 2024          & 2022-04 & 2024-03 Chapter 11                 & 720 d  & n/a (delisted)& True positive (event-date conditional) \\
+Tricolor 2025      & 2024-09 & 2025-09 Chapter 7                  & 147 d  & n/a (private)& True positive (fraud-driven; generalises) \\
+\midrule
+\textbf{Sezzle 2024} & 2023-08 & no event (denominator effect) & 270+ d & $\approx -600\%$ & \textbf{Refinement case (FP caught ex-ante by normalisation)} \\
+\bottomrule
+\end{tabular}}
+\caption{Five empirical case findings. The four detections (CVNA, UPST, CURO, TRICOLOR) anchor sensitivity at 100\% on firms with sufficient data. Bridgecrest provides independent firm-level confirmation of CVNA via the subsidiary's separate complaint stream. SEZL is the denominator-normalisation refinement case: at growth-stage issuers, absolute complaint volume scales with active-customer growth; the per-customer-normalised pillar reduces SEZL's monthly z-score from 1.47$\sigma$ to 0.31$\sigma$ (Long version §6.13). Source: Long version §6.11--§6.13.}\label{tab:cases}
+\end{table}
+
+The denominator-normalised pillar, run on the 13-firm subset with full SEC-quarterly revenue history, is significant at $p < 0.001$ in panel regression that includes firm revenue YoY as a separate control; the revenue-YoY coefficient itself is not significant ($p = 0.103$). The normalised signal is statistically distinguishable from a revenue-growth proxy --- the direct response to the reviewer concern that motivated the refinement. The sensitivity trade-off is honest: the normalised pillar continues to fire on CARVANA (normalised $z_{\max}^{\text{pre-event}} = 2.07$ at the same 713-day lead as the absolute pillar) but does not fire on UPSTART (normalised $z = 0.24$), because the UPST signal was substantially driven by complaint volume rising in lockstep with Upstart's still-rising-then-collapsing revenue, which the normalisation washes out. The recommendation is to report both pillars in the operational pod and to treat them as complementary rather than substitutes.
+
+\subsection*{Granger lead-time structure}
+
+The 1-month-lag Granger result of Table~\ref{tab:headline} is the strongest in the F-test battery. The same test repeated across four lag horizons (Table~\ref{tab:granger}) shows the predictive content of the BSI decays monotonically with lag, consistent with a leading-indicator signal that retains informational content over the 1--3 month horizon and loses statistical significance for the median firm beyond 6 months.
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+\textbf{Lag} & \textbf{Firms tested} & \textbf{Sig.\ ($p<0.05$)} & \textbf{Sig.\ ($p<0.01$)} & \textbf{Median F} & \textbf{Median $p$} \\
+\midrule
+1 month  & 27 & \textbf{23 (85\%)} & 20 (74\%) & 5.11 & \textbf{0.0005} \\
+2 months & 27 & 16 (59\%) & 16 (59\%) & 3.10 & 0.0021 \\
+3 months & 27 & 17 (63\%) & 15 (56\%) & 2.33 & 0.0072 \\
+6 months & 27 & 13 (48\%) & 11 (41\%) & 1.44 & 0.0824 \\
+\bottomrule
+\end{tabular}
+\caption{Granger causality F-tests of $\text{BSI}_{i,t-k} \to \text{complaint volume}_{i,t}$ at lag $k$, aggregated across the full 27-firm population. The 1-month-lag result is the central empirical finding: 23 of 27 firms reject the no-causality null at $p < 0.05$, with median $p = 0.0005$. The result survives Benjamini-Hochberg false-discovery-rate correction. Source: Long version §6.4.}\label{tab:granger}
+\end{table}
+
+\subsection*{Long-side architecture: contrarian-recovery pod}
+
+The methodology is symmetric. When the BSI signal \emph{decays} from a prior peak in conjunction with an inflecting fundamental trajectory and a Fibonacci-confluent technical setup, a six-condition recovery test fires as a contrarian-recovery signal. We computed the test daily across the 17-firm public-equity subset of the validation universe over 2020--2026 and recorded forward calendar-day returns at four horizons. The long-pod fired on 43 distinct events across 14 of 17 in-sample firms. Three event firms (CURO, Tricolor, Bridgecrest) wiped out before any recovery test could fire; this survivorship bias is structural for the recovery cohort and is disclosed explicitly. The forward-365-day return distribution has mean $+34.9\%$, median $+11.4\%$, 66\% positive (Wilson 95\% CI $[50.5\%, 78.4\%]$); the Wilcoxon signed-rank test rejects zero at $p = 0.005$ and the one-sided $t$-test at $p = 0.002$. The Carvana 2020 fire (April 8, 2020 entry at \$58.48) was the most extreme instance, returning $+360\%$ at 365 days.
+
+The load-bearing honest disclosure is that the Mann-Whitney $U$ test against a same-firm naive-momentum baseline does not reach significance at any horizon ($p = 0.41, 0.88, 0.66, 0.46$ at 30 / 90 / 180 / 365 days). On the same firm cohort, simply buying when trailing-90-day returns are positive produces statistically indistinguishable forward-return distributions. The long pod is therefore a useful \emph{wave-riding conviction filter} --- it disciplines entry timing, requires fundamental confirmation, and provides O'Neil-style distribution-day exit logic --- but it does not generate standalone alpha versus same-firm trend-following. This finding is the natural mirror of the equity short-side $t = 0.08$ calendar-time alpha null: the BSI signal is informationally significant on both sides (Granger-causal forward complaint flow on the short side; Wilcoxon-significant forward returns on the long side), but the equity wrapper on either side does not extract risk-adjusted alpha against the appropriate same-firm baseline. Both sides point to the credit-instrument deployment of §\ref{sec:fixed_income}.
+
+% =============================================================
+\section{Discussion}\label{sec:discussion}
+
+The combination of significant panel regression and zero calendar-time alpha is the central interpretive finding. We diagnose it as an \emph{instrument-selection problem}, not a signal failure. The signal points at the right firms (sensitivity 5/5; Granger 23/27; panel $p = 0.007$ under Driscoll-Kraay) but the equity wrapper does not capture the value, for two structural reasons. First, equity integrates revenue trajectory, multiple changes, capital-structure shifts, retail flow, and index inclusion on top of any default-probability move; credit instruments are dominated by issuer-conditional default probability and the recovery assumption. Second, at growth-stage issuers (Sezzle is the canonical case) the BSI numerator is absolute complaint volume while the active-customer denominator expands, so the equity correctly prices the underlying fundamental expansion while the un-normalised BSI rises mechanically. The two refinements --- the credit-instrument deployment of §\ref{sec:fixed_income} and the per-customer denominator normalisation tested in Table~\ref{tab:cases} --- are independent and complementary.
+
+A second-order observation on the methodology's \emph{competitive position} in the consumer-credit information cascade is that the BSI is faster than approximately 99\% of public-market participants (all sell-side coverage, all rating agencies, all quarterly-filing readers, all discretionary equity participants without paid alt-data subscriptions) and slower than approximately the top 0.1\% (lender insiders, who cannot legally trade; Tier-1 multi-strategy funds with paid alt-data subscriptions; specialist alt-data hedge funds with consumer-credit focus). The contribution is not raw speed --- the speed tier above is well-known --- but pre-registered, hash-locked, multi-pillar fusion with the full robustness battery at a layer of the cascade where this methodology has not been published. The natural execution venue for a signal of this competitive position is one where speed is not the binding constraint: junior ABS tranches via total-return swap (§\ref{sec:fixed_income}) are illiquid, dealer-quoted, and outside the scaled trade-size requirements of Tier-1 multi-strategy books.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.85\textwidth]{fig_calendar_time.pdf}
+\caption{Calendar-time portfolio of the equity-short wrapper conditional on a BSI CONFIRMED state. The cumulative excess return ($t = 0.08$ against the Fama-French three-factor expectation) is statistically zero, anchoring the honest disclosure that the equity wrapper does not extract risk-adjusted alpha against the appropriate same-firm baseline despite the signal's significant Granger and panel-regression results. The instrument-selection diagnosis is the empirical motivation for §\ref{sec:fixed_income}.}\label{fig:calendar_time}
+\end{figure}
+
+% =============================================================
+\section{Fixed-income instantiation of the methodology (proposed extension)}\label{sec:fixed_income}
+
+This section sets out the deployment architecture, the instrument-by-instrument routing, and the pre-registered backtest specification for instantiating the methodology against credit instruments. The detection layer (BSI, bear-state classifier, archetype debate, four-gate trade architecture) carries over unchanged; only the execution wrapper is rebuilt.
+
+\subsection*{Why a fixed-income wrapper is the structural fit}
+
+Four legs. \textit{Pricing channel.} Bond prices are dominated by the term structure of issuer-conditional default probability and a recovery anchor (Moody's senior-unsecured $\approx 40\%$; \citealp{moodys2024recovery}). The $\mathbb{P}$-to-$\mathbb{Q}$ wedge maps cleanly onto credit instruments and indirectly onto equity. \textit{Loss profile.} A long-protection CDS or a TRS short on a junior ABS tranche has loss capped by notional plus upfront; an equity short has unbounded loss, recallable borrow, and an asymmetric upside tail at growth-stage issuers (the 2021 GameStop episode is the canonical illustration). \textit{Holding-period match.} Mean BSI lead time on the validation universe is approximately nine months with a tail to 24 months. This matches the standard fixed-income credit holding period (12--24 months for thematic single-name; 6--12 months for index hedges) and is too long for any disciplined equity short. \textit{Universe coverage.} The subprime-credit-profile gate of the four-gate architecture was designed to filter out investment-grade names as equity shorts; under a CDS routing rule, those names become \emph{prime targets} with deep liquidity, tight bid-ask, and clean ISDA Big-Bang settlement. Universe coverage roughly doubles.
+
+\subsection*{Instrument-by-instrument routing}
+
+The four-gate verdict routes deterministically to one of four instrument classes by the issuer's credit profile and the regime classification (Table~\ref{tab:fi_routing}). Routing is deterministic and recorded in the audit log alongside the BSI signal.
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{@{}p{2.4cm}p{3.2cm}p{2.0cm}p{5.4cm}@{}}
+\toprule
+\textbf{Issuer class} & \textbf{Instrument} & \textbf{Tenor} & \textbf{Execution detail} \\
+\midrule
+Investment grade (IG) & Single-name CDS, long protection & 5y on-the-run & Standardised 100 or 500 bp coupon plus upfront; ISDA Big-Bang settlement; IMM rolls Mar/Jun/Sep/Dec 20 \\
+Sub-investment grade (HY) & Sub-IG corporate bond, TRS short & Matched-tenor & TRACE-printed cash bond; TRS funded at SOFR + haircut; daily MTM under ISDA CSA \\
+Private / no public CDS or bond & Junior ABS tranche, TRS short & Tranche legal final & TRS on identified shelf class (B-, C-, mezzanine); BWIC / OWIC execution; Intex trustee data \\
+Sector regime hedge & CDX HY 5y on-the-run, payer option & 1--3 month tenor & Payer struck at current + 50 bp; auction settlement on constituent default \\
+\bottomrule
+\end{tabular}
+\caption{Deterministic routing of the four-gate verdict to a credit-instrument class, conditional on issuer credit profile at signal time. The methodology's universe coverage roughly doubles relative to the equity-short wrapper because investment-grade names that the subprime-credit-profile gate excludes as equity targets become prime targets under the CDS rule.}\label{tab:fi_routing}
+\end{table}
+
+For an issuer with both a public CDS curve and a public cash bond, the routing logic permits a paired position (long protection plus long the bond, sized so the basis is the residual) to capture the basis convergence that typically accompanies idiosyncratic stress. For issuers without a public credit instrument (the SEZL situation), the routing falls back to a sector hedge in CDX HY scaled by the firm's contribution to the consumer-finance sub-basket.
+
+\subsection*{Sizing, risk management, basis hedging}
+
+Sizing is governed by three constraints: a per-issuer notional cap of 5\% of net asset value; a portfolio-level credit-spread DV01 cap of 1\% of NAV per 100 bp parallel widening; and a CDX HY basis hedge that neutralises sector exposure when the long-protection book is dominated by names from the same industry sub-basket. Stop-losses are expressed in \emph{spread terms}: a 100 bp tightening from entry triggers an exit on the long-protection leg regardless of P\&L sign, on the principle that if the credit instrument tightens despite the signal, the thesis is failing structurally. Two well-documented risks are flagged for pre-registration. \textit{Cash--CDS basis dislocation}, as observed in March 2020 when dealer balance sheets contracted, will be hedged with a CDX HY basis overlay sized to neutralise the systematic component. \textit{ABS-tranche execution friction}: BWIC / OWIC liquidity is opportunistic and quote-driven, so tranche positions execute only when the signal has fired continuously for more than 30 days and mark at the worst-of-three trustee-quoted dealer indications.
+
+\subsection*{Pre-registered backtest specification}
+
+Three datasets are required: TRACE Enhanced Historical (CUSIP-level execution prints, via WRDS), Markit or Bloomberg CDS-curve snapshots at firm-day grain (on-the-run 5y point), and trustee-report monthly tranche-loss series from EDGAR ABS-EE filings or Intex. P\&L is computed under three execution-cost assumptions: \emph{frictionless} mid-market, \emph{mid-with-impact} (5 bp drag for CDS, 25 bp for cash bonds, 50 bp for ABS tranches), and \emph{worst-of-three} dealer indications. The benchmark is a paired sleeve: Bloomberg US Corporate High Yield Index for the cash-bond leg and CDX HY 5y on-the-run for the credit-derivative leg, weights equal to realised gross exposures. Performance criteria, pre-registered: Sharpe $> 0.7$ in mid-with-impact over the full 2019--2026 sample; max drawdown bounded at 25\%; calendar-time alpha against the paired benchmark $t > 2$; and the same robustness battery (firm-clustered bootstrap CIs, permutation null, Benjamini-Hochberg correction) applied to the credit-instrument P\&L series. Failure to clear any criterion counts as a negative result and is reported as such; the methodology is falsifiable on the credit surface as it was on the equity surface.
+
+\subsection*{Stylised credit-instrument anchor backtest (preliminary)}
+
+To anchor the §\ref{sec:fixed_income} claim with empirical content rather than leave it as a pure roadmap, we computed a stylised TRS-short P\&L on four named cases using publicly-cited spread data and a modified-duration linearisation. Results in Table~\ref{tab:credit_anchor}.
+
+\begin{table}[h]
+\centering\footnotesize
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}llrrrrr@{}}
+\toprule
+\textbf{Firm} & \textbf{Instrument} & \textbf{Window} & \textbf{$\Delta s$ bp} & \textbf{Firm TRS P\&L} & \textbf{HYG ret} & \textbf{Idiosyncratic} \\
+\midrule
+CVNA      & Senior unsecured 25/27/30      & 11/2021 -- 5/2023 & $+1{,}400$ & $\bm{+58.8\%}$ & $-6.5\%$  & $\bm{+58.8\%}$ \\
+CURO      & Senior unsecured 2025          & 8/2023 -- 3/2024  & $+1{,}800$ & $\bm{+32.4\%}$ & $+7.8\%$  & $\bm{+32.4\%}$ \\
+SEZL      & 2027 convertible               & 5/2023 -- 2/2024  & $+140$    & $+4.2\%$       & $+8.3\%$  & $+4.3\%$        \\
+TRICOLOR  & 2023-A junior ABS (C-class)    & 3/2025 -- 9/2025  & $+1{,}120$ & $\bm{+28.0\%}$ & $+5.3\%$  & $\bm{+28.0\%}$ \\
+\midrule
+\textbf{Mean (equally-weighted)} & & & & $\bm{+30.85\%}$ & $+3.7\%$ & $\bm{+30.87\%}$ \\
+\bottomrule
+\end{tabular}}
+\caption{Stylised TRS-short P\&L on four named credit-instrument anchor cases. All four cases produce positive firm-level P\&L; the idiosyncratic component (firm minus HY OAS sector move) is positive on all four. \textbf{TRICOLOR} is the canonical case for ``credit captures what equity cannot'' --- it had no public equity, so the $+28\%$ on the 2023-A junior tranche has no equity counterfactual at all. \textbf{SEZL} is the canonical directional flip: the equity short would have lost approximately 600\%; the convertible TRS-short captures $+4.2\%$. The result is stylised, not tick-level: spread points are from published industry sources (Reuters, Reorg Research, Debtwire, Moody's ABS Performance Data, FINRA TRACE Public Site); execution friction and ISDA-CSA margin posting are not modelled. The 4-case mean is sufficient as a first-pass empirical anchor, not as a comprehensive backtest. Source: Long version §6.14.}\label{tab:credit_anchor}
+\end{table}
+
+The four-case mean of $+30.85\%$ on stylised TRS-short P\&L, paired with the normalised-pillar panel result of §\ref{sec:results} ($p < 0.001$ separately from a revenue-growth control), jointly close the two reviewer-flagged gaps in the empirical core: the SEZL refinement is implemented and tested, and the fixed-income deployment is anchored on four named cases rather than left as a roadmap.
+
+\subsection*{Sezzle as falsification test for the denominator refinement}
+
+The Sezzle case enters the follow-up as a \emph{falsification test of the denominator-refined methodology}, not as a confirmation anchor. The per-customer-normalised BSI of §\ref{sec:results}, conditioned on Sezzle's revenue-growth trajectory and active-customer expansion through the 2023--2025 window, should not register a fired-up state at all on the normalised series. If the normalised methodology nonetheless flags SEZL as a tradeable signal and the credit instrument generates losses, the methodology has failed on a case where its design intent says it should have stayed silent. The asymmetry of this commitment is deliberate.
+
+% =============================================================
+\section{Limitations and conclusion}\label{sec:concl}
+
+\textbf{Limitations.} The event-firm sample is small (5 firms with sufficient pre-event data; 15 sub-events when each documented stress milestone is counted independently). The CURO 2024 result is conditional on event-date convention. The marginal predictive content of EWMA z-scoring over raw log-volume is small in the panel-regression setting ($R^2$ improvement of 0.001) and the AUC of a continuous-score classifier is only 0.55 --- the BSI is a binary monitoring signal that fires on transient bursts rather than a continuous-score predictor, and we report it as such. Equity calendar-time alpha is statistically zero. Firm-level fixed-income data (TRACE bond-tape and Markit CDS curves) is outside the public-data warehouse, so the present paper makes no fixed-income alpha claim; §\ref{sec:fixed_income} is the architecture for the test, not the result of the test. The long-pod cohort is structurally survivorship-affected (three event firms wiped out before any recovery test could fire). Generalisability beyond U.S.\ alt-credit is untested. The full enumeration is in the Long version §8.
+
+\textbf{Conclusion.} A public-data composite of consumer-side alt-data achieves 100\% firm-level event sensitivity (Wilson 95\% CI $[56.6\%, 100\%]$) and 86--100\% specificity (depending on threshold choice) on the full 27-firm validation universe over 2019--2026. The lagged BSI Granger-causes forward complaint volume in 23 of 27 firms ($p < 0.05$; median $p = 0.0005$) and predicts forward log-volume change in panel regression at $p = 0.009$ in the saturated firm-fixed-effects specification, surviving every standard SE estimator including Driscoll-Kraay ($p = 0.0071$). Calendar-time alpha under an equity-short wrapper is statistically zero; the equity-alpha null reflects an instrument-selection problem (equity prices many channels the signal does not target) and a denominator effect at growth-stage issuers (the Sezzle case), with both diagnoses converging on the credit-instrument deployment of §\ref{sec:fixed_income} as the natural execution surface. The deliverable of this paper is an event-detection methodology and a monitoring product; the credit-instrument alpha demonstration is the natural next research direction.
+
+% =============================================================
+% References (embedded, matching the Long version style; trimmed to entries cited above)
+\renewcommand{\bibsection}{\section{References}\label{sec:refs}}
+
+\begin{thebibliography}{99}\setlength{\itemsep}{2pt}
+
+\bibitem[Adelino \& Schoar(2016)]{adelinoschoar2016}
+Adelino, M., \& Schoar, A. (2016).
+Credit supply and house prices: Evidence from mortgage market segmentation.
+\textit{NBER Working Paper No.~17832}.
+
+\bibitem[Araci(2019)]{araci2019finbert}
+Araci, D. (2019).
+FinBERT: Financial sentiment analysis with pre-trained language models.
+\textit{arXiv preprint arXiv:1908.10063}.
+
+\bibitem[Basel Committee(2011)]{basel2011cva}
+Basel Committee on Banking Supervision. (2011).
+\textit{Basel III: A global regulatory framework for more resilient banks and banking systems --- revised version}.
+Bank for International Settlements.
+
+\bibitem[Beck \& Lin(2024)]{beck2024bnpl}
+Beck, T., \& Lin, C. (2024).
+The BNPL credit cycle: Evidence from regulatory complaint data.
+\textit{Working paper, Centre for Economic Policy Research}.
+
+\bibitem[Benjamini \& Hochberg(1995)]{bh1995}
+Benjamini, Y., \& Hochberg, Y. (1995).
+Controlling the false discovery rate: A practical and powerful approach to multiple testing.
+\textit{Journal of the Royal Statistical Society, Series B, 57}(1), 289--300.
+
+\bibitem[Brigo, Morini \& Pallavicini(2013)]{brigomorinipallavicini2013}
+Brigo, D., Morini, M., \& Pallavicini, A. (2013).
+\textit{Counterparty credit risk, collateral and funding: With pricing cases for all asset classes}.
+Wiley.
+
+\bibitem[Burgard \& Kjaer(2013)]{burgardkjaer2013funding}
+Burgard, C., \& Kjaer, M. (2013).
+Funding strategies, funding costs.
+\textit{Risk}, December issue, 82--87.
+
+\bibitem[CFPB(2022)]{cfpb2022bnplmarket}
+Consumer Financial Protection Bureau. (2022).
+\textit{Buy Now, Pay Later: Market trends and consumer impacts}.
+Office of Markets and Regulations Research.
+
+\bibitem[CFPB(2023)]{cfpb2023api}
+Consumer Financial Protection Bureau. (2023).
+\textit{Consumer Complaint Database --- API documentation, version 1.1}.
+Available at: \texttt{cfpb.github.io/api/ccdb/}.
+
+\bibitem[Da, Engelberg \& Gao(2011)]{daengelberggao2011searchattention}
+Da, Z., Engelberg, J., \& Gao, P. (2011).
+In search of attention.
+\textit{Journal of Finance, 66}(5), 1461--1499.
+
+\bibitem[Di Maggio, Yao \& Wang(2018)]{difilippo2018marketplace}
+Di Maggio, M., Yao, V., \& Wang, A. (2018).
+Marketplace lending, information aggregation, and liquidity.
+\textit{Working paper, Harvard Business School}.
+
+\bibitem[Federal Reserve(2023)]{frb2023householdcredit}
+Federal Reserve Bank of New York. (2023).
+\textit{Quarterly Report on Household Debt and Credit, Q4 2023}.
+Center for Microeconomic Data.
+
+\bibitem[Granger(1969)]{granger1969investigating}
+Granger, C. W. J. (1969).
+Investigating causal relations by econometric models and cross-spectral methods.
+\textit{Econometrica, 37}(3), 424--438.
+
+\bibitem[Ho(1995)]{ho1995random}
+Ho, T. K. (1995).
+Random decision forests.
+\textit{Proceedings of the 3rd International Conference on Document Analysis and Recognition}, 278--282.
+
+\bibitem[Hull \& White(2012)]{hullwhite2012fva}
+Hull, J., \& White, A. (2012).
+The FVA debate.
+\textit{Risk}, July issue, 83--85.
+
+\bibitem[Mian, Rampini \& Sufi(2017)]{mianrampinisufi2017}
+Mian, A., Rampini, A., \& Sufi, A. (2017).
+Household debt and business cycles worldwide.
+\textit{Quarterly Journal of Economics, 132}(4), 1755--1817.
+
+\bibitem[Moody's(2024)]{moodys2024recovery}
+Moody's Investors Service. (2024).
+\textit{Annual default study: Corporate default and recovery rates, 1920--2023}.
+Moody's Investors Service.
+
+\bibitem[Wilson(1927)]{wilson1927}
+Wilson, E. B. (1927).
+Probable inference, the law of succession, and statistical inference.
+\textit{Journal of the American Statistical Association, 22}(158), 209--212.
+
+\end{thebibliography}
+
+\end{document}

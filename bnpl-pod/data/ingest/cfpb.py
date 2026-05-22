@@ -167,12 +167,38 @@ def ingest_all(*, start: str = "2019-01-01",
     return results
 
 
+def _incremental_start(overlap_days: int = 21) -> str:
+    """Pick the ingest start date for a daily run.
+
+    The full 2019-onward history already lives in the warehouse; re-pulling it
+    every day is what made this ingester time out. For a daily run we only need
+    recent complaints. We re-pull a trailing `overlap_days` window because CFPB
+    back-dates complaints (a complaint can appear in the API days after its
+    received date); INSERT OR REPLACE de-duplicates the overlap harmlessly.
+
+    Falls back to the full 2019-01-01 backfill if the table is empty/unreadable.
+    """
+    try:
+        con = duckdb.connect(str(settings.duckdb_path), read_only=True)
+        mx = con.execute("SELECT MAX(received_at) FROM cfpb_complaints").fetchone()[0]
+        con.close()
+        if mx:
+            mx_date = date.fromisoformat(str(mx)[:10])
+            return (mx_date - timedelta(days=overlap_days)).isoformat()
+    except Exception as e:  # noqa: BLE001
+        log.warning("cfpb | could not read warehouse max date (%s); full backfill", e)
+    return "2019-01-01"
+
+
 if __name__ == "__main__":
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s %(levelname)s %(name)s | %(message)s",
     )
-    summary = ingest_all()
+    start = _incremental_start()
+    print(f"CFPB ingest window: {start} .. today  "
+          f"({'full backfill' if start == '2019-01-01' else 'incremental'})")
+    summary = ingest_all(start=start)
     print("\nCFPB complaint ingest summary:")
     for c, n in summary.items():
         status = "OK " if n >= 0 else "ERR"

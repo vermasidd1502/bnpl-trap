@@ -60,9 +60,12 @@ The equity-α null is reported openly: this signal's natural instrument is fixed
 
 ```
 bnpl-trap/
-├── paper/                      Final research paper (PDF + LaTeX source)
-│   ├── BearWatch_Research_Paper.pdf
-│   ├── BearWatch_Research_Paper.tex
+├── paper/                      Final research paper (Letter + Long + Extended PDFs + LaTeX source)
+│   ├── BearWatch_Research_Paper_Letter.pdf     Letter — 12p — journal short-format, senior-reviewer first-look
+│   ├── BearWatch_Research_Paper.pdf            Long — 42p — main journal-length version
+│   ├── BearWatch_Research_Paper_Extended.pdf   Extended — 59p — full diagnostic suite
+│   ├── BearWatch_Research_Paper.tex            (Extended source)
+│   ├── BearWatch_Research_Paper_Letter.tex     (Letter source)
 │   └── README.md
 ├── working_demo/               Self-contained Apollo Hermes × BSI pod (Flask)
 │   ├── app.py                  All eight routes, real risk engine
@@ -165,11 +168,15 @@ See `working_demo/README.md` for endpoint reference and the full demo walkthroug
 
 ## 📚 Paper
 
-The 59-page research paper (`paper/BearWatch_Research_Paper.pdf`) covers:
+Three parallel versions ship together. Read the **Letter** for a 10-minute overview, the **Long** for a 1-hour journal-format treatment, the **Extended** for full statistical depth.
 
-§1 Introduction · §2 Literature review · §3 Theoretical framework (CVA decomposition + P→Q wedge) · §4 Data architecture (27 firms, 2018–2026, eight pillars) · §5 Methodology (BSI v3 spec + leading-indicator chain + 5-gate trade architecture) · §6–§10 Empirical results (sensitivity, specificity, Granger, panel regression, robustness suite, case findings, denominator-normalised, credit-instrument anchor, archetype backtest, ROBO Monte Carlo, pillar-weight robustness, warehouse back-fill, BNPL event study, Phase 2 capstone) · §11 Discussion (calendar-time alpha null, instrument-selection problem, symmetric architecture, denominator refinement, competitive position) · §12 Limitations · §13 Conclusion · §14 Future research (fixed-income instantiation + cross-asset BNPL/credit-card contagion) · References · Appendices (pre-registration hash log, formula legend, data inventory).
+- **`paper/BearWatch_Research_Paper_Letter.pdf`** — **Letter** · 13 pages · 558 KB. Journal letter-format companion. Headline empirics in two tables, dedicated section on fixed-income instantiation, embedded references. Designed for senior-reviewer first-look (e.g.\ derivatives / fixed-income professors).
+- **`paper/BearWatch_Research_Paper.pdf`** — **Long** · 42 pages · 708 KB. Targeted journal-submission length. Full methodology, headline empirics, all five case findings, discussion, limitations, conclusion, future scope.
+- **`paper/BearWatch_Research_Paper_Extended.pdf`** — **Extended** · 59 pages · 921 KB. Full preprint with the Phase 2C–2T diagnostic suite (archetype backtest, ROBO Monte Carlo, pillar-weight regularised regression, warehouse back-fill, BNPL event study, Phase 2 capstone, Phase 2A v2 six-estimator SE-sensitivity).
 
-To rebuild from source: `cd paper && latexmk -pdf BearWatch_Research_Paper.tex`. Requires MiKTeX or TeX Live with `amsmath`, `booktabs`, `tabularx`, `graphicx`, `natbib`, `hyperref`.
+Section coverage (Extended): §1 Introduction · §2 Literature review · §3 Theoretical framework (CVA decomposition + P→Q wedge) · §4 Data architecture (27 firms, 2018–2026, eight pillars) · §5 Methodology (BSI v3 spec + leading-indicator chain + 5-gate trade architecture) · §6 Empirical results (sensitivity, specificity, Granger, panel regression, robustness suite, case findings, denominator-normalised, credit-instrument anchor, Phase 2C–2T suite) · §7 Discussion (calendar-time alpha null, instrument-selection problem, symmetric architecture, denominator refinement, competitive position) · §8 Limitations · §9 Conclusion + Future research (fixed-income instantiation + cross-asset BNPL/credit-card contagion) · §10 References · Appendices A–D.
+
+To rebuild the Extended version from source: `cd paper && latexmk -pdf BearWatch_Research_Paper.tex`. Requires MiKTeX or TeX Live with `amsmath`, `booktabs`, `tabularx`, `graphicx`, `natbib`, `hyperref`.
 
 ---
 
