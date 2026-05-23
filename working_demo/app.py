@@ -3404,27 +3404,37 @@ def api_live_bsi():
 
 @app.route("/api/live/firms")
 def api_live_firms():
-    """Per-firm CFPB complaint volumes — last 90 days vs prior 90 days."""
-    rows = warehouse_query("""
-        WITH recent AS (
+    """Per-firm CFPB complaint volumes — settled 90-day windows.
+
+    CFPB publishes complaints with a long lag: the most recent ~45-60 days are
+    badly under-counted. Ending the 'recent' window at MAX(received_at) drags it
+    below the settled 'prior' window for every firm and shows a false decline.
+    Both windows therefore end at a settled cutoff (MAX - SETTLE_LAG_DAYS)."""
+    SETTLE_LAG_DAYS = 60
+    rows = warehouse_query(f"""
+        WITH bounds AS (
+            SELECT (SELECT MAX(received_at) FROM cfpb_complaints)
+                   - INTERVAL '{SETTLE_LAG_DAYS} days' AS settle_end
+        ),
+        recent AS (
             SELECT UPPER(company) AS company, COUNT(*) AS n
-            FROM cfpb_complaints
-            WHERE received_at > (SELECT MAX(received_at) FROM cfpb_complaints) - INTERVAL '90 days'
-              AND received_at <= (SELECT MAX(received_at) FROM cfpb_complaints)
+            FROM cfpb_complaints, bounds
+            WHERE received_at >  bounds.settle_end - INTERVAL '90 days'
+              AND received_at <= bounds.settle_end
             GROUP BY UPPER(company)
         ),
         prior AS (
             SELECT UPPER(company) AS company, COUNT(*) AS n
-            FROM cfpb_complaints
-            WHERE received_at > (SELECT MAX(received_at) FROM cfpb_complaints) - INTERVAL '180 days'
-              AND received_at <= (SELECT MAX(received_at) FROM cfpb_complaints) - INTERVAL '90 days'
+            FROM cfpb_complaints, bounds
+            WHERE received_at >  bounds.settle_end - INTERVAL '180 days'
+              AND received_at <= bounds.settle_end - INTERVAL '90 days'
             GROUP BY UPPER(company)
         )
         SELECT
           r.company,
           r.n AS n_recent,
           COALESCE(p.n, 0) AS n_prior,
-          (SELECT MAX(received_at) FROM cfpb_complaints) AS asof
+          (SELECT settle_end FROM bounds) AS asof
         FROM recent r LEFT JOIN prior p USING(company)
         WHERE r.n >= 5
         ORDER BY r.n DESC
@@ -3741,39 +3751,81 @@ def api_live_pod_run():
         })
 
     # ---- 5-gate archetype-aware firing (paper §10) ---------------------------
-    # Compute per-archetype fire/no-fire status using the pre-registered
-    # gate_required_count[] + gate_mandatory[] tables in signals/gates.py.
-    # G2 SCP: derived from delta_pct (firm-specific complaint acceleration as
-    # a market-stress proxy until ABS spread feed is wired in).
-    # G3 MOVE: comes from z_macro["c_move"] threshold (paper §10 Table 10.1).
-    # G4 CCD: cross-firm contagion — currently approximated by macro composite
-    # z_bsi as a placeholder until CCD II module ships.
-    # G5 FDS: PENDING (EDGAR XBRL pipeline extension to NCO/provisions/DPD).
+    # Per-archetype fire/no-fire status via the pre-registered gate tables in
+    # signals/gates.py. Gate inputs and their provenance:
+    #   G1 BSI  -- REAL  : CFPB complaint-acceleration z-score (live_z)
+    #   G2 SCP  -- PROXY : complaint acceleration as a firm-stress stand-in
+    #              until a firm-level ABS-spread / equity-vol feed is wired
+    #   G3 MOVE -- REAL  : the live MOVE index level pulled from FRED
+    #   G4 CCD  -- REAL  : cross-firm contagion = share of the live universe
+    #              currently carrying an elevated complaint signal
+    #   G5 FDS  -- PENDING: EDGAR XBRL extension (NCO / provisions / DPD)
     archetype_block = None
     if _GATES_AVAILABLE:
         try:
-            move_lvl = (z_macro.get("c_move") or 0.0)   # macro MOVE z (proxy until live MOVE level wired)
-            scp_proxy = (delta or 0.0) / 25.0            # 25% accel → z=1.0 (rough scale)
-            ccd_proxy = abs(z_macro.get("z_bsi") or 0.0) # macro composite |z| as contagion proxy
+            # G3 MOVE -- real MOVE index level from FRED (was a binary proxy)
+            _move_rows = warehouse_query(
+                "SELECT value FROM fred_series WHERE series_id='MOVE' "
+                "ORDER BY observed_at DESC LIMIT 1", cache_key="live_move_level")
+            move_level_real = float(_move_rows[0]["value"]) if _move_rows else None
+            # G4 CCD -- real cross-firm contagion: share of the live universe
+            # carrying an elevated complaint-acceleration signal (live_z >= 1.0)
+            _all_z = [(s.get("live_z") or 0.0) for s in live.values()]
+            ccd_real = (sum(1 for z in _all_z if z >= 1.0) / len(_all_z)) if _all_z else 0.0
+            # G2 SCP -- still a proxy: complaint acceleration as a market-stress
+            # stand-in until a firm-level ABS-spread / equity-vol feed is wired.
+            scp_proxy = (delta or 0.0) / 25.0            # 25% accel -> z=1.0
+            # G5 FDS -- interim fundamentals-distress z from quarterly margins
+            fds_z = _get_fds(top_ticker)
             gs = gate_states_from_signals(
                 bsi_z      = bsi_z,
                 scp_z      = scp_proxy,
-                move_level = 120.0 if move_lvl >= 1.0 else 80.0,  # binary proxy until live MOVE level wired
-                ccd_index  = ccd_proxy,
-                fds_z      = None,   # G5 FDS pending — see TODO in signals/gates.py
+                move_level = move_level_real,
+                ccd_index  = ccd_real,
+                fds_z      = fds_z,
             )
+            # ---- deliberate, recorded gate overrides --------------------------
+            # ?override=G3_MOVE,G5_FDS forces those gates to PASS. This is a
+            # documented discretionary action -- e.g. firing on a firm-specific
+            # signal while the macro gate (G3) is calm, or while the fundamentals
+            # gate (G5) has no data feed yet. Every override is echoed back and
+            # journaled with the trade so the decision is auditable.
+            _valid_gates = {"G1_BSI", "G2_SCP", "G3_MOVE", "G4_CCD", "G5_FDS"}
+            overrides_applied = []
+            _ov_arg = (request.args.get("override") or "").strip()
+            if _ov_arg:
+                for _g in [x.strip().upper() for x in _ov_arg.split(",") if x.strip()]:
+                    if _g in _valid_gates and gs.get(_g) != "PASS":
+                        gs[_g] = "PASS"
+                        overrides_applied.append(_g)
             results = evaluate_all_archetypes(gs)
             archetype_block = {
                 "gate_states": gs,
+                "gate_inputs": {
+                    "G1_BSI":  round(bsi_z, 2) if bsi_z is not None else None,
+                    "G2_SCP":  round(scp_proxy, 2),
+                    "G3_MOVE": round(move_level_real, 1) if move_level_real is not None else None,
+                    "G4_CCD":  round(ccd_real, 2),
+                    "G5_FDS":  fds_z,
+                },
+                "gate_provenance": {
+                    "G1_BSI":  "real",
+                    "G2_SCP":  "proxy",
+                    "G3_MOVE": "real",
+                    "G4_CCD":  "real",
+                    "G5_FDS":  ("interim" if fds_z is not None else "pending"),
+                },
                 "results": {a: r.to_dict() for a, r in results.items()},
+                "overrides_applied": overrides_applied,
                 "summary": {
                     "n_firing": sum(1 for r in results.values() if r.fires),
                     "firing_archetypes": [a for a, r in results.items() if r.fires],
                     "g5_fds_pending": True,
                     "note_g5": ("G5 FDS (Fundamentals Distress Score) not yet ingested. "
-                                "Until EDGAR XBRL extension lands, SCOUT and GUARDIAN are "
-                                "structurally blocked (mandatory G5 missing). BLITZ and "
-                                "ROBO can still fire on the 4 available gates."),
+                                "Until the EDGAR XBRL extension lands, SCOUT and GUARDIAN are "
+                                "structurally blocked (mandatory G5 missing) unless G5 is "
+                                "manually overridden. BLITZ and ROBO can still fire on the "
+                                "4 available gates."),
                 },
             }
         except Exception as _e:
@@ -4420,6 +4472,69 @@ def _get_market_proxy_z(ticker: str) -> dict | None:
         return None
 
 
+# --------------------------------------------------------------------------- #
+# G5 FDS -- Fundamentals Distress Score (interim).
+# Computes an operating-margin deterioration z-score from quarterly income
+# statements (yfinance). Positive = the most recent quarter's operating margin
+# is below its trailing average -> fundamentals under stress. This is a genuine
+# fundamentals signal; the deeper EDGAR XBRL credit-metric version (NCO /
+# provisions / DPD migration) is the Phase-2 extension. Cached 6h; falls back
+# to None (gate UNKNOWN) for private firms or any uncomputable case.
+# --------------------------------------------------------------------------- #
+_FDS_CACHE: dict = {}
+_FDS_TTL = 6 * 3600
+_FDS_TICKER_REMAP = {"SQ": "XYZ"}   # Block reticked SQ -> XYZ in 2025
+
+
+def _compute_fds(ticker: str):
+    try:
+        import yfinance as yf
+        import pandas as pd
+        tk = _FDS_TICKER_REMAP.get(ticker.upper(), ticker.upper())
+        qf = yf.Ticker(tk).quarterly_income_stmt
+        if qf is None or qf.empty:
+            return None
+        def _row(*names):
+            for n in names:
+                if n in qf.index:
+                    return qf.loc[n]
+            return None
+        # numerator: best available profitability line (finance issuers often
+        # lack a clean "Operating Income" row -> fall back to pretax / net income)
+        oi = _row("Operating Income", "OperatingIncome", "EBIT",
+                  "Pretax Income", "PretaxIncome", "Net Income",
+                  "NetIncome", "Net Income Common Stockholders")
+        rev = _row("Total Revenue", "TotalRevenue", "Operating Revenue",
+                   "OperatingRevenue")
+        if oi is None or rev is None:
+            return None
+        margin = (oi.astype(float) / rev.astype(float)).dropna()
+        if len(margin) < 4:
+            return None
+        margin = margin.sort_index()                 # oldest -> newest
+        latest = float(margin.iloc[-1])
+        prior = margin.iloc[:-1]
+        mu, sd = float(prior.mean()), float(prior.std())
+        if not sd or pd.isna(sd):
+            return None
+        return round(-(latest - mu) / sd, 2)         # margin below trend -> +distress
+    except Exception:
+        return None
+
+
+def _get_fds(ticker: str):
+    """Cached FDS lookup. Returns a float z-score or None."""
+    tk = (ticker or "").upper()
+    if not tk:
+        return None
+    hit = _FDS_CACHE.get(tk)
+    if hit and (time.time() - hit[1] < _FDS_TTL):
+        return hit[0]
+    val = _compute_fds(tk)
+    _FDS_CACHE[tk] = (val, time.time())
+    return val
+
+
 def _get_live_cfpb_signals() -> dict:
     """
     Return {ticker: {n_recent_90d, n_prior_90d, delta_pct, live_z, as_of}} from the
@@ -4465,23 +4580,36 @@ def _get_live_cfpb_signals() -> dict:
         "ALLY": (["ALLY FINANCIAL"], "public"),
         "AXP":  (["AMERICAN EXPRESS"], "public"),  # reference IG
     }
-    rows = warehouse_query("""
-        WITH recent AS (
+    # CFPB publishes complaints with a long lag -- the most recent ~45-60 days
+    # are badly under-counted (a month can show <20% of its eventual total until
+    # ~2 months out). If the "recent 90d" window ends at MAX(received_at) it is
+    # dragged down by that unpublished tail, so recent < prior for EVERY firm and
+    # live_z collapses to 0 across the board. Fix: end BOTH windows at a settled
+    # cutoff, MAX(received_at) - SETTLE_LAG_DAYS, so the comparison is settled vs
+    # settled. The signal is then honestly ~2 months delayed, not structurally
+    # wrong. as_of reports the settled cutoff so the UI does not imply it is live.
+    SETTLE_LAG_DAYS = 60
+    rows = warehouse_query(f"""
+        WITH bounds AS (
+            SELECT (SELECT MAX(received_at) FROM cfpb_complaints)
+                   - INTERVAL '{SETTLE_LAG_DAYS} days' AS settle_end
+        ),
+        recent AS (
             SELECT UPPER(company) AS company, COUNT(*) AS n
-            FROM cfpb_complaints
-            WHERE received_at > (SELECT MAX(received_at) FROM cfpb_complaints) - INTERVAL '90 days'
-              AND received_at <= (SELECT MAX(received_at) FROM cfpb_complaints)
+            FROM cfpb_complaints, bounds
+            WHERE received_at >  bounds.settle_end - INTERVAL '90 days'
+              AND received_at <= bounds.settle_end
             GROUP BY UPPER(company)
         ),
         prior AS (
             SELECT UPPER(company) AS company, COUNT(*) AS n
-            FROM cfpb_complaints
-            WHERE received_at > (SELECT MAX(received_at) FROM cfpb_complaints) - INTERVAL '180 days'
-              AND received_at <= (SELECT MAX(received_at) FROM cfpb_complaints) - INTERVAL '90 days'
+            FROM cfpb_complaints, bounds
+            WHERE received_at >  bounds.settle_end - INTERVAL '180 days'
+              AND received_at <= bounds.settle_end - INTERVAL '90 days'
             GROUP BY UPPER(company)
         )
         SELECT r.company, r.n AS n_recent, COALESCE(p.n, 0) AS n_prior,
-               (SELECT MAX(received_at) FROM cfpb_complaints) AS asof
+               (SELECT settle_end FROM bounds) AS asof
         FROM recent r LEFT JOIN prior p USING(company)
     """, cache_key="live_firms_cfpb_raw")
     if not rows:
@@ -5344,6 +5472,136 @@ def api_risk_check():
     return jsonify({"quote": quote, "verdict": verdict})
 
 
+# ============================================================
+# Cross-source exposure cap — reads BOTH BearWatch trades (event_id IS NOT NULL)
+# AND equity-monitor trades (event_id IS NULL) on the same ticker, sums combined
+# notional, and warns if total exceeds CROSS_SOURCE_EXPOSURE_PCT of equity.
+#
+# Architectural rationale: BearWatch (alt-data pod) and the equity-monitor
+# (technical/macro pod) are separate decision logics. Each pod has its own
+# position-cap inside its own logic. But if BOTH pods fire on the same name,
+# the combined exposure could exceed either pod's individual cap. This endpoint
+# is the joint-portfolio safeguard.
+# ============================================================
+CROSS_SOURCE_EXPOSURE_PCT = 0.20  # 20% of starting equity max combined per ticker
+
+
+def _cross_source_exposure(ticker: str, user: str | None = None) -> dict:
+    """Return combined open exposure on a ticker across both sources."""
+    with db() as c:
+        if user:
+            rows = c.execute(
+                """SELECT event_id, side, shares, entry_price, notional_usd, status
+                   FROM journal
+                   WHERE UPPER(ticker) = ? AND username = ?
+                     AND COALESCE(status, 'OPEN') = 'OPEN'""",
+                (ticker.upper(), user)
+            ).fetchall()
+        else:
+            rows = c.execute(
+                """SELECT event_id, side, shares, entry_price, notional_usd, status
+                   FROM journal
+                   WHERE UPPER(ticker) = ?
+                     AND COALESCE(status, 'OPEN') = 'OPEN'""",
+                (ticker.upper(),)
+            ).fetchall()
+
+    bearwatch_notional = 0.0
+    equity_monitor_notional = 0.0
+    n_bearwatch = n_equity = 0
+    for r in rows:
+        notional = float(r["notional_usd"] or 0)
+        eid = (r["event_id"] or "")
+        # Equity-monitor synthesises event IDs like "equity_monitor_<timestamp>"
+        # so we use the prefix to discriminate sources. BearWatch alerts use
+        # their own UUID format (e.g. "bw_28432" or similar).
+        if eid.startswith("equity_monitor_"):
+            equity_monitor_notional += notional
+            n_equity += 1
+        else:                                   # came from BearWatch alert (or legacy NULL)
+            bearwatch_notional += notional
+            n_bearwatch += 1
+    return {
+        "ticker": ticker.upper(),
+        "bearwatch_notional": round(bearwatch_notional, 2),
+        "equity_monitor_notional": round(equity_monitor_notional, 2),
+        "combined_notional": round(bearwatch_notional + equity_monitor_notional, 2),
+        "n_bearwatch_positions": n_bearwatch,
+        "n_equity_monitor_positions": n_equity,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Corporate actions + news layer (Investopedia simulator parity)
+# Splits + dividends auto-detected from yfinance, applied to OPEN positions,
+# audit-logged to corporate_actions + news_events tables.
+# ---------------------------------------------------------------------------
+try:
+    import corporate_actions as _ca_mod
+    CA_AVAILABLE = True
+except Exception as _e:
+    print(f"[corporate_actions] module unavailable: {_e}")
+    _ca_mod = None
+    CA_AVAILABLE = False
+
+
+@app.route("/api/corporate_actions/scan", methods=["POST", "GET"])
+def api_corporate_actions_scan():
+    """Detect splits + dividends for all OPEN-position tickers and apply them.
+    Adjusts shares/entry/stop/target (splits) and credits/debits cash (dividends).
+    Investopedia-simulator-style auto-handling. Audit trail in corporate_actions
+    + news_events tables."""
+    if not CA_AVAILABLE:
+        return jsonify({"error": "corporate_actions module not available"}), 503
+    ticker = (request.args.get("ticker") or "").upper().strip()
+    lookback = int(request.args.get("lookback_days") or 365)
+    with sqlite3.connect(str(DB_PATH)) as con:
+        tickers = [ticker] if ticker else None
+        try:
+            summary = _ca_mod.scan_and_apply(con, tickers=tickers, lookback_days=lookback)
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+    return jsonify(summary)
+
+
+@app.route("/api/news_events")
+def api_news_events():
+    """GET /api/news_events?ticker=CVNA&limit=20 — recent news/CA events for a ticker
+    (or all tickers if none specified)."""
+    ticker = (request.args.get("ticker") or "").upper().strip()
+    limit = max(1, min(int(request.args.get("limit") or 25), 200))
+    with sqlite3.connect(str(DB_PATH)) as con:
+        con.row_factory = sqlite3.Row
+        if ticker:
+            rows = con.execute(
+                "SELECT ticker, event_type, headline, ts, severity, url "
+                "FROM news_events WHERE ticker = ? ORDER BY ts DESC LIMIT ?",
+                (ticker, limit)
+            ).fetchall()
+        else:
+            rows = con.execute(
+                "SELECT ticker, event_type, headline, ts, severity, url "
+                "FROM news_events ORDER BY ts DESC LIMIT ?",
+                (limit,)
+            ).fetchall()
+    return jsonify({"events": [dict(r) for r in rows], "count": len(rows)})
+
+
+@app.route("/api/portfolio/exposure")
+def api_portfolio_exposure():
+    """GET /api/portfolio/exposure?ticker=CVNA — returns combined cross-source exposure."""
+    ticker = (request.args.get("ticker") or "").upper().strip()
+    if not ticker:
+        return jsonify({"error": "ticker_required"}), 400
+    user = (session.get("username") or "").lower() or None
+    info = _cross_source_exposure(ticker, user)
+    info["cap_pct_of_equity"] = CROSS_SOURCE_EXPOSURE_PCT
+    info["cap_usd"] = round(STARTING_CAPITAL * CROSS_SOURCE_EXPOSURE_PCT, 2)
+    info["headroom_usd"] = round(info["cap_usd"] - info["combined_notional"], 2)
+    info["over_cap"] = info["combined_notional"] > info["cap_usd"]
+    return jsonify(info)
+
+
 @app.route("/api/journal/log", methods=["POST"])
 def api_journal_log():
     body = request.get_json(force=True, silent=True) or {}
@@ -5356,6 +5614,7 @@ def api_journal_log():
     target = body.get("target_price")
     notional = float(body.get("notional_usd") or shares * entry)
     verdict = body.get("verdict")
+    force = bool(body.get("force_cross_source_override"))   # frontend sets this if user explicitly accepts the warning
     if session.get("username"):
         log_activity(session["username"], "trade_executed", {
             "ticker": ticker, "side": side, "shares": shares,
@@ -5377,6 +5636,33 @@ def api_journal_log():
         }), 400
 
     user = (session.get("username") or "").lower()
+
+    # ---- Cross-source exposure cap ----
+    # Reads existing OPEN positions across BearWatch and equity-monitor sources.
+    # If adding this trade would push combined exposure above the cap, return a
+    # 409 so the frontend can prompt the user. Frontend can re-submit with
+    # force_cross_source_override=true if the user explicitly accepts the risk.
+    if not force:
+        existing = _cross_source_exposure(ticker, user or None)
+        cap_usd = STARTING_CAPITAL * CROSS_SOURCE_EXPOSURE_PCT
+        projected = existing["combined_notional"] + notional
+        if projected > cap_usd:
+            return jsonify({
+                "error": "cross_source_exposure_exceeded",
+                "message": (
+                    f"Combined open exposure on {ticker} would reach "
+                    f"${projected:,.0f} after this trade — exceeds the cross-source cap "
+                    f"of ${cap_usd:,.0f} ({CROSS_SOURCE_EXPOSURE_PCT*100:.0f}% of equity).\n\n"
+                    f"Current open: ${existing['combined_notional']:,.0f} "
+                    f"(${existing['bearwatch_notional']:,.0f} from BearWatch + "
+                    f"${existing['equity_monitor_notional']:,.0f} from equity-monitor)."
+                ),
+                "existing": existing,
+                "this_trade_notional": round(notional, 2),
+                "projected_combined": round(projected, 2),
+                "cap_usd": round(cap_usd, 2),
+            }), 409
+
     with db() as c:
         c.execute(
             """INSERT INTO journal
@@ -5410,7 +5696,7 @@ _AUTOBOT_STATE = {
     "max_trades_per_day": 5,         # safety cap
     "fired_today": 0,
     "fired_today_date": None,        # YYYY-MM-DD, resets daily
-    "user": "sid",                   # which account the layer trades under
+    "user": "siddharth",             # which account the layer trades under
     "active_mascot": None,           # READ DYNAMICALLY from user profile each scan
     "last_scan_at": None,
     "last_scan_result": None,        # summary of most recent scan
@@ -5773,6 +6059,24 @@ def _prewarm_pod_cache():
         print(f"[prewarm] partial failure: {e}")
 
 
+def _ca_startup_scan():
+    """Run a corporate-actions sweep on boot. Quiet on success, prints on hits."""
+    if not CA_AVAILABLE:
+        return
+    try:
+        with sqlite3.connect(str(DB_PATH)) as con:
+            summary = _ca_mod.scan_and_apply(con)
+        if summary["positions_touched"] > 0 or summary["new_to_db"] > 0:
+            print(f"[corporate_actions] startup scan: "
+                  f"{summary['new_to_db']} new actions detected, "
+                  f"{summary['splits_processed']} splits + {summary['dividends_processed']} dividends applied, "
+                  f"{summary['positions_touched']} positions touched")
+        else:
+            print("[corporate_actions] startup scan: no new actions")
+    except Exception as e:
+        print(f"[corporate_actions] startup scan failed: {e}")
+
+
 if __name__ == "__main__":
     init_db()
     print("=" * 60)
@@ -5782,5 +6086,6 @@ if __name__ == "__main__":
     print("=" * 60)
     threading.Thread(target=_open_browser, daemon=True).start()
     threading.Thread(target=_prewarm_pod_cache, daemon=True).start()
+    threading.Thread(target=_ca_startup_scan, daemon=True).start()
     _autobot_start()  # auto-trade layer daemon — disabled until /api/autobot/toggle is hit
     app.run(host="127.0.0.1", port=5000, debug=False)

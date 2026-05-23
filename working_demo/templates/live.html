@@ -313,6 +313,7 @@
     // Fire 🔥 — fires the API immediately, then renders. In FAST mode all 4 stages
     // pop in together (~200ms total). In CINEMATIC mode they stage with narration (~1.5s).
     window.fireLivePod = async function(ticker) {
+      window._CURRENT_POD_TICKER = ticker;   // pin the view to this firm so the 60s auto-refresh stays on it
       const asof = document.getElementById('pod-asof');
       const _t = (window.term || function(){});
       const sleep = (ms) => new Promise(r => setTimeout(r, ms));
@@ -403,6 +404,8 @@
       // STAGE 4
       pods[3].classList.remove('computing'); pods[3].classList.add('done');
       if (typeof _renderStage4 === 'function') _renderStage4(d);
+      // 5-gate panel — render on fire too (not just on the 60s refresh)
+      if (typeof _renderArchetypeGates === 'function') _renderArchetypeGates(d);
       _t(`✓ pipeline complete (api ${fetchMs} ms, total ${Math.round(performance.now() - fetchStart)} ms)`, 'fire');
 
       if (asof) {
@@ -1285,6 +1288,11 @@
     <div class="panel-head">
       <div class="panel-title">⚡ Live 4-stage pod walkthrough <span style="font-size: 10px; color: var(--success); font-family: var(--font-mono); margin-left: 6px; text-transform: uppercase; letter-spacing: 0.06em;">REAL SIGNAL · DETERMINISTIC PIPELINE</span></div>
       <div style="display:flex;align-items:center;gap:10px;">
+        <select id="pod-firm-select" onchange="if(this.value){ fireLivePod(this.value); }"
+                title="Analyze any covered firm — switches the pod instantly"
+                style="background:var(--bg-card);border:1px solid rgba(34,197,94,0.4);color:var(--text);font-family:var(--font-mono);font-size:11px;padding:4px 9px;border-radius:5px;cursor:pointer;">
+          <option value="">▼ analyze firm…</option>
+        </select>
         <div style="display:inline-flex;gap:0;border:1px solid var(--border);border-radius:5px;overflow:hidden;font-family:var(--font-mono);font-size:10px;">
           <button data-speed-btn="fast" onclick="setPodSpeed('fast')" class="active" style="background:transparent;border:0;color:var(--text-secondary);padding:4px 9px;cursor:pointer;text-transform:uppercase;letter-spacing:0.05em;">⚡ fast</button>
           <button data-speed-btn="cinematic" onclick="setPodSpeed('cinematic')" style="background:transparent;border:0;color:var(--text-secondary);padding:4px 9px;cursor:pointer;text-transform:uppercase;letter-spacing:0.05em;border-left:1px solid var(--border);">🎬 cinematic</button>
@@ -1832,8 +1840,16 @@
 
   async function loadPodRun() {
     // Honor a forced ticker if user clicked 🔥 on a watchlist row
-    const forced = window._FORCED_LIVE_TICKER ? `?ticker=${window._FORCED_LIVE_TICKER}` : '';
-    const r = await fetch('/api/live/pod_run' + forced);
+    // pinned firm: an explicit fire selection sticks across the 60s auto-refresh
+    const _podTk = window._FORCED_LIVE_TICKER || window._CURRENT_POD_TICKER || null;
+    const forced = _podTk ? `?ticker=${_podTk}` : '';
+    // carry active gate overrides through the refresh so they don't get wiped
+    let _ovSuffix = '';
+    if (window._GATE_OVERRIDES && window._GATE_OVERRIDES.size &&
+        window._OV_TICKER && window._OV_TICKER === _podTk) {
+      _ovSuffix = (forced ? '&' : '?') + 'override=' + [...window._GATE_OVERRIDES].join(',');
+    }
+    const r = await fetch('/api/live/pod_run' + forced + _ovSuffix);
     if (!r.ok) {
       const err = await r.json().catch(() => ({}));
       document.getElementById('pod-asof').innerHTML =
@@ -1940,13 +1956,18 @@
         const ex = pod.stage3_execute;
         if (!confirm(`Execute SHORT ${ex.shares} ${pod.ticker} @ $${ex.entry.toFixed(2)} ?\nStop $${ex.stop.toFixed(2)} · Target $${ex.target.toFixed(2)} · Hold ${ex.horizon_days}d`)) return;
         eb.disabled = true; eb.textContent = 'Journaling…';
+        // record any active gate overrides into the trade verdict (auditable)
+        const _ovList = (window._GATE_OVERRIDES && window._OV_TICKER === pod.ticker)
+          ? [...window._GATE_OVERRIDES] : [];
+        const _verdict = ex.verdict + (_ovList.length ? ' · OVR:' + _ovList.join('+') : '');
         const r = await fetch('/api/journal', {
           method: 'POST', headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({
             ticker: pod.ticker, side: 'SHORT', shares: ex.shares,
             entry_price: ex.entry, stop_price: ex.stop, target_price: ex.target,
             event_id: 'live_' + Date.now(),
-            verdict: ex.verdict, source: 'live_pod',
+            verdict: _verdict, source: 'live_pod',
+            gate_overrides: _ovList.join(','),
           }),
         });
         if (r.ok) {
@@ -1968,6 +1989,11 @@
         Add ${d.ticker} to a watchlist → <a href="/monitor" class="ticker-link">/monitor</a>
       </div>
     `;
+
+    // ---- 5-GATE PANEL ---- render the gate breakdown on every pod_run path.
+    // The staged-animation wrapper also calls this; the default path did not,
+    // which left the gate panel blank on initial load and on the 60s refresh.
+    _renderArchetypeGates(d);
   }
 
   async function loadWatchlist() {
@@ -2153,13 +2179,35 @@
   loadPillars();
   loadPodRun();
   loadWatchlist();
+  loadFirmSelector();
+
+  // ====== Firm selector — instant switch to any covered firm ======
+  async function loadFirmSelector() {
+    try {
+      const r = await fetch('/api/live/firms');
+      if (!r.ok) return;
+      const d = await r.json();
+      const sel = document.getElementById('pod-firm-select');
+      if (!sel) return;
+      const cur = sel.value;
+      const firms = (d.firms || []).slice()
+        .sort((a, b) => (b.delta_pct || 0) - (a.delta_pct || 0));
+      sel.innerHTML = '<option value="">▼ analyze firm…</option>' +
+        firms.map(f => {
+          const dp = (f.delta_pct == null) ? '—'
+                   : (f.delta_pct >= 0 ? '+' : '') + f.delta_pct + '%';
+          return `<option value="${f.ticker}">${f.ticker} · CFPB Δ ${dp}</option>`;
+        }).join('');
+      if (cur) sel.value = cur;
+    } catch (e) { /* silent — selector stays as-is */ }
+  }
 
   // Auto-load the technical panel with AFRM by default so the Fibonacci charts
   // are visible immediately on page load (without requiring the user to fire first).
   // The panel updates when 🔥 is clicked on any watchlist row.
   setTimeout(() => { loadTechnicalPanel('AFRM'); }, 800);
   // refresh every 60s (matches server cache TTL)
-  setInterval(() => { loadBSI(); loadFirms(); loadFreshness(); loadPillars(); loadPodRun(); loadWatchlist(); }, 60000);
+  setInterval(() => { loadBSI(); loadFirms(); loadFreshness(); loadPillars(); loadPodRun(); loadWatchlist(); loadFirmSelector(); }, 60000);
 </script>
 
 {% include '_hf_modal.html' %}
@@ -2299,8 +2347,16 @@
     await _sleep(200);
 
     // Hit the API
-    const forced = window._FORCED_LIVE_TICKER ? `?ticker=${window._FORCED_LIVE_TICKER}` : '';
-    const r = await fetch('/api/live/pod_run' + forced);
+    // pinned firm: an explicit fire selection sticks across the 60s auto-refresh
+    const _podTk = window._FORCED_LIVE_TICKER || window._CURRENT_POD_TICKER || null;
+    const forced = _podTk ? `?ticker=${_podTk}` : '';
+    // carry active gate overrides through the refresh so they don't get wiped
+    let _ovSuffix = '';
+    if (window._GATE_OVERRIDES && window._GATE_OVERRIDES.size &&
+        window._OV_TICKER && window._OV_TICKER === _podTk) {
+      _ovSuffix = (forced ? '&' : '?') + 'override=' + [...window._GATE_OVERRIDES].join(',');
+    }
+    const r = await fetch('/api/live/pod_run' + forced + _ovSuffix);
 
     if (!r.ok) {
       const err = await r.json().catch(() => ({}));
@@ -2802,6 +2858,36 @@
   }
 
   // ===== 5-GATE ARCHETYPE PANEL (paper §10) =====
+  // ====== Gate override — deliberate, recorded discretionary override ======
+  // Lets the user fire on a firm-specific signal while a market-wide gate
+  // (e.g. G3 MOVE) is calm, or while a gate has no data feed (G5 FDS). Every
+  // override is sent to the backend, re-evaluates the archetypes, and is
+  // carried into the trade record on Execute.
+  window._GATE_OVERRIDES = window._GATE_OVERRIDES || new Set();
+  window._OV_TICKER = window._OV_TICKER || null;
+  async function toggleGateOverride(g) {
+    const d0 = window._LIVE_POD_RUN;
+    if (!d0 || !d0.ticker) return;
+    // overrides are per-ticker — reset if the firm changed
+    if (window._OV_TICKER !== d0.ticker) {
+      window._GATE_OVERRIDES = new Set();
+      window._OV_TICKER = d0.ticker;
+    }
+    if (window._GATE_OVERRIDES.has(g)) window._GATE_OVERRIDES.delete(g);
+    else window._GATE_OVERRIDES.add(g);
+    const ov = [...window._GATE_OVERRIDES].join(',');
+    try {
+      const r = await fetch(`/api/live/pod_run?ticker=${d0.ticker}` +
+                            (ov ? `&override=${encodeURIComponent(ov)}` : ''));
+      if (r.ok) {
+        const d = await r.json();
+        window._LIVE_POD_RUN = d;
+        _renderArchetypeGates(d);
+      }
+    } catch (e) { /* keep UI responsive on a transient fetch error */ }
+  }
+  window.toggleGateOverride = toggleGateOverride;
+
   function _renderArchetypeGates(d) {
     const panel = document.getElementById('archetype-gates-panel');
     if (!panel || !d.archetype_gates) { if (panel) panel.style.display = 'none'; return; }
@@ -2816,9 +2902,16 @@
     panel.style.display = 'block';
     document.getElementById('arch-ticker').textContent  = d.ticker;
     const fa = (A.summary && A.summary.firing_archetypes) || [];
+    const _gs = A.gate_states || {};
+    const _passed  = Object.keys(_gs).filter(k => _gs[k] === 'PASS');
+    const _missing = Object.keys(_gs).filter(k => _gs[k] !== 'PASS');
     document.getElementById('arch-summary').innerHTML =
-      `<span style="color:${fa.length ? '#4ade80' : '#f87171'};">${fa.length}/4 archetypes fire</span>` +
-      (fa.length ? ` · <span style="color:var(--text-tertiary);">${fa.join(' · ')}</span>` : '');
+      `<span style="color:${_passed.length >= 3 ? '#4ade80' : '#f87171'};">${_passed.length}/5 gates fired</span>` +
+      (_missing.length
+        ? ` &nbsp;·&nbsp; <span style="color:#f87171;">missing: ${_missing.join(', ')}</span>`
+        : ` &nbsp;·&nbsp; <span style="color:#4ade80;">all gates fired</span>`) +
+      ` &nbsp;·&nbsp; <span style="color:${fa.length ? '#4ade80' : 'var(--text-tertiary)'};">` +
+      `${fa.length}/4 archetypes fire${fa.length ? ' (' + fa.join(', ') + ')' : ''}</span>`;
 
     // Gate-state strip — 5 colored chips
     const GATE_LABELS = {
@@ -2826,19 +2919,42 @@
       G2_SCP:   {label:'G2 SCP',  desc:'firm-specific market stress'},
       G3_MOVE:  {label:'G3 MOVE', desc:'macro rates-vol regime'},
       G4_CCD:   {label:'G4 CCD',  desc:'cross-firm contagion'},
-      G5_FDS:   {label:'G5 FDS',  desc:'fundamentals distress (PENDING)'},
+      G5_FDS:   {label:'G5 FDS',  desc:'fundamentals distress'},
     };
     const STATE_COL = {PASS:'#4ade80', FAIL:'#f87171', UNKNOWN:'#a1a1aa'};
+    const PROV_COL  = {real:'#4ade80', proxy:'#facc15', interim:'#22d3ee', pending:'#a1a1aa'};
+    const _ovApplied = new Set(A.overrides_applied || []);
     document.getElementById('arch-gate-strip').innerHTML =
       Object.keys(GATE_LABELS).map(g => {
         const s = (A.gate_states || {})[g] || 'UNKNOWN';
-        const col = STATE_COL[s];
+        const isOv = _ovApplied.has(g);
+        const col = isOv ? '#f59e0b' : STATE_COL[s];
+        const stateLabel = isOv ? 'PASS · OVERRIDE' : s;
+        const inp = (A.gate_inputs || {})[g];
+        const inpStr = (inp === null || inp === undefined) ? '—' : inp;
+        const prov = (A.gate_provenance || {})[g] || '';
+        const provBadge = prov
+          ? `<span style="font-size:8px;color:${PROV_COL[prov]||'#a1a1aa'};font-family:var(--font-mono);text-transform:uppercase;">${prov}</span>`
+          : '';
+        const ovBtn = `<div onclick="toggleGateOverride('${g}')" title="Manually override this gate — recorded with the trade"
+                  style="margin-top:6px;cursor:pointer;font-size:8px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.04em;padding:3px 0;border-radius:3px;text-align:center;border:1px solid ${isOv?'#f59e0b':'var(--border)'};color:${isOv?'#f59e0b':'var(--text-tertiary)'};background:${isOv?'rgba(245,158,11,0.14)':'transparent'};">${isOv?'✓ overridden · undo':'override'}</div>`;
         return `<div style="padding:8px 10px;background:var(--bg-card);border:1px solid var(--border);border-left:3px solid ${col};border-radius:4px;">
-                  <div style="font-size:9px;color:var(--text-tertiary);font-family:var(--font-mono);text-transform:uppercase;">${GATE_LABELS[g].label}</div>
-                  <div style="font-size:13px;font-weight:700;color:${col};font-family:var(--font-mono);margin-top:2px;">${s}</div>
+                  <div style="display:flex;justify-content:space-between;align-items:baseline;">
+                    <span style="font-size:9px;color:var(--text-tertiary);font-family:var(--font-mono);text-transform:uppercase;">${GATE_LABELS[g].label}</span>
+                    ${provBadge}
+                  </div>
+                  <div style="font-size:12px;font-weight:700;color:${col};font-family:var(--font-mono);margin-top:2px;">${stateLabel}</div>
+                  <div style="font-size:10px;color:var(--text-secondary);font-family:var(--font-mono);margin-top:2px;">input: ${inpStr}</div>
                   <div style="font-size:9px;color:var(--text-tertiary);margin-top:3px;">${GATE_LABELS[g].desc}</div>
+                  ${ovBtn}
                 </div>`;
       }).join('');
+    // surface any active overrides in the summary line
+    if (_ovApplied.size) {
+      document.getElementById('arch-summary').innerHTML +=
+        ` &nbsp;·&nbsp; <span style="color:#f59e0b;">override: ${[...
+          _ovApplied].join(', ')}</span>`;
+    }
 
     // Per-archetype cards
     const ARCH_COL = {BLITZ:'#dc2626', SCOUT:'#d4a574', GUARDIAN:'#0f766e', ROBO:'#8b5cf6'};
@@ -2948,6 +3064,22 @@
   // Initial boot message
   term('warehouse: bnpl-experimental/data/warehouse.duckdb (read-only) · 8 pillars cached 60s', 'info');
   term('🔥 click any LIVE row to fire the 4-stage pod against it', '');
+
+  // === Deep-link handler — /live?ticker=CVNA auto-fires the pod for that ticker ===
+  // Used by the equity-monitor BSI cross-link banner so that clicking "LIVE POD →"
+  // lands the user directly on the running pod for the same ticker.
+  (function autoFireFromQuery() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const tk = (params.get('ticker') || '').toUpperCase().trim();
+      if (!tk) return;
+      term(`deep-link from equity-monitor → auto-firing ${tk}`, 'info');
+      // Wait a beat so the universe loads first, then fire
+      setTimeout(() => {
+        try { window.fireLivePod(tk); } catch (e) { term('auto-fire failed: ' + e.message, 'err'); }
+      }, 800);
+    } catch (e) { /* no-op */ }
+  })();
 </script>
 </body>
 </html>
