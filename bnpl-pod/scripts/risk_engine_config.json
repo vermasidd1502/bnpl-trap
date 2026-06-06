@@ -1,0 +1,40 @@
+{
+  "portfolio_cvar_budget_pct": 0.03,
+  "cvar_confidence": 0.95,
+  "cash_buffer_pct": 0.1,
+  "single_name_cap_pct": 0.25,
+  "garch_lookback_days": 252,
+  "ewma_lambda": 0.94,
+  "min_history_days": 60,
+  "sector_fallback_sigma": 0.035,
+  "downside_beta_window": 60,
+  "downside_beta_floor": 0.5,
+  "trail_activation_mfe": 0.2,
+  "mfe_lock_pct": 0.25,
+  "archetype_k_base": {
+    "BLITZ": 1.5,
+    "SCOUT": 2.0,
+    "ROBO": 2.5,
+    "GUARDIAN": 3.5
+  },
+  "bsi_trend_multiplier": {
+    "rising": 1.5,
+    "stable": 1.0,
+    "falling": 0.5
+  },
+  "bsi_trend_threshold": 0.3,
+  "milestone_levels_pct": [
+    0.5,
+    1.0
+  ],
+  "milestone_partial_fraction": 0.3333333333333333,
+  "regime_short_window": 20,
+  "regime_long_window": 60,
+  "regime_panic_ratio": 2.0,
+  "regime_normal_ratio": 1.5,
+  "regime_panic_size_multiplier": 0.5,
+  "regime_panic_stop_multiplier": 0.5,
+  "conviction_z_floor": 1.0,
+  "conviction_z_ceiling": 4.0,
+  "conviction_default": 0.5
+}
