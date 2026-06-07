@@ -709,6 +709,32 @@ class RiskEngine:
             except ImportError:
                 pass  # exit_engine optional
 
+        # Task #23: BSI -> auto-suggest synthetic options entry for high-conviction
+        # fires where the equity short faces high squeeze risk (CRMT/KLAR/WRLD).
+        # Long puts cap the downside the equity short cannot.
+        try:
+            from execution_gates import adverse_selection_check
+            for p in enriched:
+                if p["side"] != "SHORT":
+                    continue
+                z = p.get("z_score") or 0
+                if z is None or z < 2.0:
+                    continue
+                adv = adverse_selection_check(p["ticker"], "SHORT")
+                if adv.squeeze_risk in ("HIGH", "ELEVATED"):
+                    actions.append({
+                        "trade_id": p["id"], "ticker": p["ticker"],
+                        "type": "SUGGEST_OPTION",
+                        "reason": f"BSI z={z:.2f} + squeeze {adv.squeeze_risk}; "
+                                  f"consider long put for capped downside",
+                        "underlying_price": p.get("price"),
+                        "suggested_target_delta": -0.30,
+                        "suggested_dte": 60,
+                        "size_multiplier": adv.size_multiplier,
+                    })
+        except ImportError:
+            pass
+
         # HHI on open notional
         total_notl = sum(p["notional"] for p in enriched) or 1.0
         hhi = sum((p["notional"] / total_notl) ** 2 for p in enriched)
@@ -959,6 +985,33 @@ class RiskEngine:
                           f"${w.get('after'):.2f}  -- {w.get('reason')}  (trade #{w['trade_id']}){extra}")
         elif not self.dry_run and r["actions"]:
             print(f"  WRITEBACKS: 0 (actions were advisory-only this pass)")
+        # ---- Task #24: Unified Greeks (equity book + synthetic options book) ----
+        try:
+            from synthetic_options import OptionsBook
+            book = OptionsBook(self.db_path, self.username)
+            opts_report = book.monitor_book(journal=False)
+            opt_agg = opts_report["aggregate"]
+            # Equity delta: +1 per long share, -1 per short
+            eq_delta = sum(
+                p["shares"] * (1 if p["side"] == "LONG" else -1)
+                for p in r["positions"]
+            )
+            total_delta = eq_delta + opt_agg.get("delta", 0)
+            print("-" * 78)
+            print(f"  UNIFIED PORTFOLIO GREEKS  (equity book + synthetic options book)")
+            print(f"    Equity delta              : {eq_delta:+,.0f} share-equivalents")
+            print(f"    Options delta              : {opt_agg.get('delta', 0):+,.2f}")
+            print(f"    TOTAL DELTA               : {total_delta:+,.2f}")
+            print(f"    Options gamma              : {opt_agg.get('gamma', 0):+,.4f}")
+            print(f"    Options theta              : ${opt_agg.get('theta', 0):+,.2f}/day")
+            print(f"    Options vega               : ${opt_agg.get('vega', 0):+,.2f}/vol-pt")
+            if opt_agg.get("n_positions", 0):
+                print(f"    Options positions          : {opt_agg['n_positions']} open  "
+                      f"(unrealized ${opt_agg.get('pnl_usd', 0):+,.2f})")
+            book.con.close()
+        except Exception:
+            pass
+
         # ---- HFT discipline summary ----
         if self.cfg.enable_pretrade_gate or self.cfg.enable_borrow_drag:
             print("-" * 78)

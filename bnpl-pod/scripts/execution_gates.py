@@ -368,6 +368,180 @@ def tca_record(
 
 
 # ---------------------------------------------------------------------------
+# Bundle 4 -- VWAP execution algorithm (slice the order)
+# ---------------------------------------------------------------------------
+
+@dataclass
+class VWAPFill:
+    """Result of a VWAP slicing simulation."""
+    ticker: str
+    side: str
+    shares_total: int
+    n_slices: int
+    avg_fill: float           # volume-weighted average fill price
+    worst_slice_fill: float
+    best_slice_fill: float
+    duration_minutes: int
+    slippage_bps: float       # avg_fill vs arrival_mid
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+
+URGENCY_PARTICIPATION = {
+    "low":    (60, 12, 0.05),   # (duration_min, slices, half_spread_pay_per_slice)
+    "normal": (30, 6,  0.30),
+    "high":   (10, 3,  0.60),
+}
+
+
+def simulate_vwap_fill(
+    ticker: str,
+    side: str,
+    shares_total: int,
+    arrival_mid: float,
+    *,
+    urgency: str = "normal",
+    realized_vol_pct: Optional[float] = None,
+) -> VWAPFill:
+    """Simulate a VWAP-style fill: shares sliced into N orders over a duration.
+
+    Each slice is filled at a price drawn from (mid + noise) where noise reflects
+    typical intraday drift over the window. The average is the volume-weighted
+    fill the user would have realized. Compared to a market-on-arrival fill,
+    VWAP captures realistic slippage including price drift during execution.
+    """
+    duration_min, n_slices, half_spread_factor = URGENCY_PARTICIPATION.get(
+        urgency, URGENCY_PARTICIPATION["normal"]
+    )
+    spread_bps = estimate_spread_bps(ticker, arrival_mid)
+    half_spread_pct = (spread_bps / 10_000.0) / 2.0
+    base_pay = half_spread_factor * half_spread_pct
+
+    # Drift model: assume realized 1-day vol of 2% (or override) -> sigma per slice
+    vol_per_slice = (realized_vol_pct or 0.020) * math.sqrt(duration_min / (6.5 * 60))
+    # deterministic micro-drift per slice; mid skews against the trade as it absorbs liquidity
+    drift_per_slice = vol_per_slice / n_slices
+
+    slice_fills: list[float] = []
+    for i in range(n_slices):
+        # accumulated drift moves against the side
+        if side.upper() == "LONG":
+            mid_i = arrival_mid * (1.0 + drift_per_slice * (i + 0.5))
+            fill_i = mid_i * (1.0 + base_pay)
+        else:
+            mid_i = arrival_mid * (1.0 - drift_per_slice * (i + 0.5))
+            fill_i = mid_i * (1.0 - base_pay)
+        slice_fills.append(fill_i)
+
+    avg_fill = sum(slice_fills) / len(slice_fills)
+    slippage_bps = abs(avg_fill - arrival_mid) / arrival_mid * 10_000.0
+
+    return VWAPFill(
+        ticker=ticker,
+        side=side.upper(),
+        shares_total=int(shares_total),
+        n_slices=n_slices,
+        avg_fill=round(avg_fill, 4),
+        worst_slice_fill=round(max(slice_fills) if side.upper() == "LONG"
+                                else min(slice_fills), 4),
+        best_slice_fill=round(min(slice_fills) if side.upper() == "LONG"
+                               else max(slice_fills), 4),
+        duration_minutes=duration_min,
+        slippage_bps=round(slippage_bps, 1),
+    )
+
+
+# ---------------------------------------------------------------------------
+# Bundle 6 -- adverse-selection awareness
+# ---------------------------------------------------------------------------
+
+# yfinance shortName / sharesShort / shortRatio coverage varies; these heuristic
+# tiers fill the gap when fields are missing.
+HARD_TO_BORROW_TICKERS = {
+    "KLAR", "CURO", "RILY", "OPRT",   # IPOs, distressed, low float
+}
+
+
+@dataclass
+class AdverseSelectionView:
+    ticker: str
+    short_interest_pct: Optional[float]   # SI / float
+    days_to_cover: Optional[float]        # SI / avg_volume
+    short_ratio_yf: Optional[float]
+    is_htb: bool
+    squeeze_risk: str                     # LOW / ELEVATED / HIGH
+    size_multiplier: float                # recommended max-size scaler
+    reasons: list
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+
+def adverse_selection_check(ticker: str, side: str = "SHORT") -> AdverseSelectionView:
+    """Returns short-side adverse-selection diagnostics + recommended sizing scaler.
+
+    The size_multiplier defaults to 1.0 (full size) and reduces as squeeze risk
+    rises. WRLD with 25% SI and 8 days-to-cover => 0.5x. KLAR HTB => 0.4x.
+    """
+    info = _get_info(ticker)
+    shares_short = info.get("sharesShort")
+    float_shares = info.get("floatShares") or info.get("sharesOutstanding")
+    avg_vol = info.get("averageVolume10days") or info.get("averageVolume") or 0
+    short_ratio = info.get("shortRatio")
+
+    si_pct = (shares_short / float_shares) if (shares_short and float_shares and float_shares > 0) else None
+    days_to_cover = (shares_short / avg_vol) if (shares_short and avg_vol and avg_vol > 0) else None
+    is_htb = ticker in HARD_TO_BORROW_TICKERS or get_borrow_rate_annual(ticker) > 0.10
+
+    reasons: list[str] = []
+    score = 0
+    if si_pct is not None:
+        if si_pct > 0.25:
+            score += 2; reasons.append(f"SI {si_pct*100:.0f}% > 25%")
+        elif si_pct > 0.10:
+            score += 1; reasons.append(f"SI {si_pct*100:.0f}% > 10%")
+    if days_to_cover is not None:
+        if days_to_cover > 7:
+            score += 2; reasons.append(f"days-to-cover {days_to_cover:.1f} > 7")
+        elif days_to_cover > 3:
+            score += 1; reasons.append(f"days-to-cover {days_to_cover:.1f} > 3")
+    if is_htb:
+        score += 1; reasons.append("hard-to-borrow")
+    if short_ratio and short_ratio > 5:
+        score += 1; reasons.append(f"yf short-ratio {short_ratio:.1f}")
+
+    if score >= 4:
+        squeeze_risk = "HIGH"; multiplier = 0.4
+    elif score >= 2:
+        squeeze_risk = "ELEVATED"; multiplier = 0.6
+    elif score >= 1:
+        squeeze_risk = "MODERATE"; multiplier = 0.8
+    else:
+        squeeze_risk = "LOW"; multiplier = 1.0
+
+    # adverse-selection only meaningful for the short side
+    if side.upper() == "LONG":
+        return AdverseSelectionView(
+            ticker=ticker, short_interest_pct=si_pct, days_to_cover=days_to_cover,
+            short_ratio_yf=short_ratio, is_htb=is_htb,
+            squeeze_risk="N/A (long)", size_multiplier=1.0,
+            reasons=["adverse-selection check N/A for long positions"],
+        )
+
+    return AdverseSelectionView(
+        ticker=ticker,
+        short_interest_pct=round(si_pct, 4) if si_pct is not None else None,
+        days_to_cover=round(days_to_cover, 2) if days_to_cover is not None else None,
+        short_ratio_yf=round(short_ratio, 2) if short_ratio is not None else None,
+        is_htb=is_htb,
+        squeeze_risk=squeeze_risk,
+        size_multiplier=multiplier,
+        reasons=reasons,
+    )
+
+
+# ---------------------------------------------------------------------------
 # CLI -- standalone sanity check
 # ---------------------------------------------------------------------------
 
