@@ -254,6 +254,26 @@ def main() -> int:
     log(f"  {detail}")
     results.append(("refresh_bsi", status))
 
+    # 3b. Per-firm BSI snapshot (Task #4: closed-loop wiring)
+    log("--- Step 3b: per-firm BSI snapshot ---")
+    status, detail = run_step(
+        "refresh_bsi_snapshot",
+        [PYTHON, "scripts/refresh_bsi_snapshot.py"], cwd=POD_DIR, timeout=300,
+    )
+    log(f"  {detail}")
+    results.append(("refresh_bsi_snapshot", status))
+
+    # 3c. Risk engine morning pass (per account)
+    log("--- Step 3c: risk engine morning pass ---")
+    for account in ("sid", "siddharth"):
+        status, detail = run_step(
+            f"risk_engine_{account}",
+            [PYTHON, "scripts/risk_engine.py", "--username", account],
+            cwd=POD_DIR, timeout=300,
+        )
+        log(f"  {detail}")
+        results.append((f"risk_engine_{account}", status))
+
     # 4. pod restart
     log("--- Step 4: pod restart ---")
     pod_status = restart_pod()

@@ -139,6 +139,24 @@ class RiskConfig:
     earnings_shield_days: int = 2                  # flatten T-N trading days before earnings
     earnings_shield_enabled: bool = True
 
+    # ---- HFT-style execution discipline ----
+    enable_pretrade_gate: bool = True              # run liquidity gate on each open name
+    enable_borrow_drag: bool = True                # subtract borrow cost from short P&L display
+    enable_round_number_stops: bool = True         # offset stops from whole-dollar levels
+    enable_tca_logging: bool = True                # log arrival mid + simulated fill on writebacks
+
+    # ---- Strategy C policy (Task #7: backtest showed C dominates A & B at 90d) ----
+    # Empirically derived from backtest_stops_compare.py:
+    #   Strategy A (raw): high mean, high vol, Sharpe 0.78 at 90d
+    #   Strategy B (stops): lower mean and vol, Sharpe 0.83 at 90d
+    #   Strategy C (stops + re-entry + GUARDIAN-no-trail): Sharpe 0.94 at 90d  <- winner
+    # GUARDIAN archetype trades the long-horizon thesis; clipping its tail via
+    # trail costs ~22% in mean return at 365d. Hold without trail for that archetype.
+    archetypes_no_trail: list = field(default_factory=lambda: ["GUARDIAN"])
+    enable_reentry: bool = True                    # re-fire if BSI z still saturated
+    reentry_z_threshold: float = 2.5               # require GUARDIAN-level z to re-enter
+    reentry_cooldown_days: int = 3                 # min days between exit and re-entry
+
     @classmethod
     def load(cls, path: Optional[Path] = None) -> "RiskConfig":
         """Hot-reload from JSON if available; otherwise use defaults."""
@@ -198,8 +216,21 @@ SCHEMA_DDL = [
         regime        TEXT,
         PRIMARY KEY (trade_id, ts)
     )""",
+    """CREATE TABLE IF NOT EXISTS tca_log (
+        ts            TEXT NOT NULL,
+        trade_id      INTEGER,
+        ticker        TEXT,
+        side          TEXT,
+        shares        INTEGER,
+        arrival_mid   REAL,
+        spread_bps    REAL,
+        simulated_fill REAL,
+        slippage_bps  REAL,
+        action_type   TEXT
+    )""",
     """CREATE INDEX IF NOT EXISTS idx_risk_log_ts ON risk_engine_log(ts)""",
     """CREATE INDEX IF NOT EXISTS idx_pos_sizing_ts ON position_sizing(ts)""",
+    """CREATE INDEX IF NOT EXISTS idx_tca_log_ts ON tca_log(ts)""",
 ]
 
 
@@ -540,9 +571,11 @@ class RiskEngine:
         else:
             mfe_pct = 0.0
 
-        # trailing stop
+        # trailing stop (Strategy C: GUARDIAN holds without trail)
         trail_stop = None
-        if mfe_pct >= self.cfg.trail_activation_mfe and price is not None and best_ext is not None:
+        skip_trail = archetype in (self.cfg.archetypes_no_trail or [])
+        if (not skip_trail and mfe_pct >= self.cfg.trail_activation_mfe
+                and price is not None and best_ext is not None):
             k_base = self.cfg.archetype_k_base.get(archetype, 2.0)
             k_eff = k_base * self.cfg.bsi_trend_multiplier.get(trend, 1.0) * regime["stop_mult"]
             trail_stop = chandelier_trail(
@@ -570,6 +603,23 @@ class RiskEngine:
             if mfe_pct >= level and tag not in pos["verdict"]:
                 milestones_due.append(tag)
 
+        # ---- HFT-style execution discipline overlay ----
+        liq_verdict = None
+        borrow_rate = None
+        borrow_drag = 0.0
+        if self.cfg.enable_pretrade_gate or self.cfg.enable_borrow_drag:
+            try:
+                from execution_gates import (
+                    liquidity_gate_check, get_borrow_rate_annual, compute_borrow_drag_usd
+                )
+                if self.cfg.enable_pretrade_gate:
+                    liq_verdict = liquidity_gate_check(tk, pos["notional"]).to_dict()
+                if self.cfg.enable_borrow_drag and side.upper() == "SHORT":
+                    borrow_rate = get_borrow_rate_annual(tk)
+                    borrow_drag = compute_borrow_drag_usd(pos["notional"], holding, borrow_rate)
+            except ImportError:
+                pass
+
         return {
             **pos,
             "price": price, "sigma": sigma, "sigma_method": sigma_method,
@@ -578,6 +628,9 @@ class RiskEngine:
             "holding_days": holding, "best_extreme": best_ext,
             "mfe_pct": mfe_pct, "trail_stop": trail_stop,
             "milestones_due": milestones_due,
+            "liquidity_gate": liq_verdict,
+            "borrow_rate_annual": borrow_rate,
+            "borrow_drag_usd": borrow_drag,
         }
 
     # -- main pass -------------------------------------------------------
@@ -618,13 +671,22 @@ class RiskEngine:
                     "current_notional": p["notional"],
                     "target_notional": target_notional,
                 })
-            # action: milestone partials
+            # action: milestone partials (Task #6 fix: append tag to verdict so the
+            # same milestone does NOT re-fire on the next morning pass, regardless of
+            # whether apply_trim is enabled. The verdict-tag is the recognition record.)
             for ms in p["milestones_due"]:
                 actions.append({
                     "trade_id": p["id"], "ticker": tk, "type": "PARTIAL_EXIT",
                     "reason": ms,
                     "fraction": self.cfg.milestone_partial_fraction,
                 })
+                # mark recognition immediately so it doesn't re-fire next pass
+                if not self.dry_run:
+                    self.con.execute(
+                        "UPDATE journal SET verdict=verdict || ' [' || ? || ']' "
+                        "WHERE id=? AND verdict NOT LIKE '%' || ? || '%'",
+                        (ms, p["id"], ms),
+                    )
             # action: trail tightening
             if p["trail_stop"] is not None and p["stop"] is not None:
                 tightened = (
@@ -697,31 +759,68 @@ class RiskEngine:
                 continue
             if a["type"] == "UPDATE_STOP" and self.cfg.apply_writeback:
                 old = a.get("old_stop")
-                new = a["new_stop"]
+                new_raw = a["new_stop"]
+                # Round-number-aware adjustment
+                new = new_raw
+                rn_adjusted = False
+                if self.cfg.enable_round_number_stops:
+                    try:
+                        from execution_gates import round_number_aware_stop
+                        side = next((p["side"] for p in report["positions"]
+                                     if p["id"] == tid), "SHORT")
+                        new = round_number_aware_stop(new_raw, side)
+                        rn_adjusted = (abs(new - new_raw) > 0.001)
+                    except ImportError:
+                        pass
                 cur.execute(
                     "UPDATE journal SET stop_price=? WHERE id=? AND status='OPEN'",
                     (new, tid),
                 )
-                applied.append({
+                row = {
                     "action": "UPDATE_STOP", "trade_id": tid, "ticker": a["ticker"],
                     "before": old, "after": new,
                     "status": "applied" if cur.rowcount else "skipped_no_row",
-                })
+                }
+                if rn_adjusted:
+                    row["rn_adjusted_from"] = round(new_raw, 4)
+                applied.append(row)
+                # TCA log for the stop update (treat as a planned execution)
+                if self.cfg.enable_tca_logging:
+                    self._tca_log(cur, now, tid, a["ticker"], side,
+                                   shares=0, arrival_mid=new, action_type="STOP_UPDATE")
             elif a["type"] == "FLATTEN" and self.cfg.apply_flatten:
                 px = px_by_tid.get(tid)
                 if px is None:
                     applied.append({"action": "FLATTEN", "trade_id": tid,
                                     "ticker": a["ticker"], "status": "skipped_no_price"})
                     continue
+                # TCA the FLATTEN against simulated fill so realized P&L
+                # reflects realistic execution rather than mid-mark.
+                exit_px = px
+                if self.cfg.enable_tca_logging:
+                    try:
+                        from execution_gates import tca_record
+                        pos_side = next((p["side"] for p in report["positions"]
+                                         if p["id"] == tid), "SHORT")
+                        pos_shares = next((int(p["shares"]) for p in report["positions"]
+                                           if p["id"] == tid), 0)
+                        # On a FLATTEN of a short, you are BUYING to cover -> pay the ask
+                        cover_side = "LONG" if pos_side.upper() == "SHORT" else "SHORT"
+                        tca = tca_record(a["ticker"], cover_side, pos_shares, px)
+                        exit_px = tca.simulated_fill
+                        self._tca_log_record(cur, tid, tca, action_type="FLATTEN")
+                    except ImportError:
+                        pass
                 cur.execute(
                     "UPDATE journal SET status='CLOSED', exit_price=?, exit_ts=?, "
                     "verdict=verdict || ' [FLATTEN:' || ? || ']' "
                     "WHERE id=? AND status='OPEN'",
-                    (px, now, a.get("reason", "flatten"), tid),
+                    (exit_px, now, a.get("reason", "flatten"), tid),
                 )
                 applied.append({
                     "action": "FLATTEN", "trade_id": tid, "ticker": a["ticker"],
-                    "after": px, "reason": a.get("reason"),
+                    "after": exit_px, "mid_at_decision": px,
+                    "reason": a.get("reason"),
                     "status": "applied" if cur.rowcount else "skipped_no_row",
                 })
         self.con.commit()
@@ -736,6 +835,35 @@ class RiskEngine:
             )
             self.con.commit()
         return applied
+
+    # -- TCA logging helpers ---------------------------------------------
+
+    def _tca_log(self, cur, ts, trade_id, ticker, side, *, shares, arrival_mid, action_type):
+        """Light TCA log for stop updates (no fill simulation, just plan record)."""
+        try:
+            from execution_gates import estimate_spread_bps
+            spread_bps = estimate_spread_bps(ticker, arrival_mid)
+        except ImportError:
+            spread_bps = 0.0
+        cur.execute(
+            """INSERT INTO tca_log
+               (ts, trade_id, ticker, side, shares, arrival_mid, spread_bps,
+                simulated_fill, slippage_bps, action_type)
+               VALUES (?,?,?,?,?,?,?,?,?,?)""",
+            (ts, trade_id, ticker, side, int(shares), float(arrival_mid),
+             float(spread_bps), None, None, action_type),
+        )
+
+    def _tca_log_record(self, cur, trade_id, tca, *, action_type):
+        """Full TCA log for actual executions (FLATTEN, ENTRY, COVER)."""
+        cur.execute(
+            """INSERT INTO tca_log
+               (ts, trade_id, ticker, side, shares, arrival_mid, spread_bps,
+                simulated_fill, slippage_bps, action_type)
+               VALUES (?,?,?,?,?,?,?,?,?,?)""",
+            (tca.ts, trade_id, tca.ticker, tca.side, tca.shares, tca.arrival_mid,
+             tca.spread_bps, tca.simulated_fill, tca.slippage_bps, action_type),
+        )
 
     # -- journaling ------------------------------------------------------
 
@@ -817,13 +945,42 @@ class RiskEngine:
             print(f"  WRITEBACKS ({len(wb)}) -- live journal updates applied:")
             for w in wb:
                 if w["action"] == "UPDATE_STOP":
+                    extra = ""
+                    if "rn_adjusted_from" in w:
+                        extra = f"  [round-number offset from ${w['rn_adjusted_from']:.2f}]"
                     print(f"    [{w['status']}] {w['ticker']} stop "
-                          f"${w.get('before')} -> ${w['after']:.2f}  (trade #{w['trade_id']})")
+                          f"${w.get('before')} -> ${w['after']:.2f}  (trade #{w['trade_id']}){extra}")
                 elif w["action"] == "FLATTEN":
+                    extra = ""
+                    if "mid_at_decision" in w and w.get("mid_at_decision") != w.get("after"):
+                        slip_bps = abs(w["after"] - w["mid_at_decision"]) / w["mid_at_decision"] * 10_000
+                        extra = f"  [mid ${w['mid_at_decision']:.2f}, slippage {slip_bps:.0f}bps]"
                     print(f"    [{w['status']}] {w['ticker']} FLATTENED @ "
-                          f"${w.get('after')}  -- {w.get('reason')}  (trade #{w['trade_id']})")
+                          f"${w.get('after'):.2f}  -- {w.get('reason')}  (trade #{w['trade_id']}){extra}")
         elif not self.dry_run and r["actions"]:
             print(f"  WRITEBACKS: 0 (actions were advisory-only this pass)")
+        # ---- HFT discipline summary ----
+        if self.cfg.enable_pretrade_gate or self.cfg.enable_borrow_drag:
+            print("-" * 78)
+            print(f"  EXECUTION DISCIPLINE")
+            # Per-name liquidity gate + borrow drag
+            print(f"  {'TICKER':<7} {'GATE':<6} {'SPREAD':>7} {'%ADV':>7} "
+                  f"{'BORROW%':>8} {'DRAG$':>8} {'NOTES':<24}")
+            for p in r["positions"]:
+                lg = p.get("liquidity_gate") or {}
+                gate = lg.get("verdict", "-")
+                spread = f"{lg.get('spread_bps', 0):.0f}bps" if lg else "-"
+                pct_adv = f"{lg.get('pct_of_adv', 0)*100:.2f}%" if lg else "-"
+                br = p.get("borrow_rate_annual")
+                br_pct = f"{br*100:.1f}%" if br else "-"
+                drag = p.get("borrow_drag_usd") or 0
+                drag_s = f"${drag:.0f}"
+                notes = ",".join((lg.get("reasons") or [])[:1])[:24] if lg else ""
+                print(f"  {p['ticker']:<7} {gate:<6} {spread:>7} {pct_adv:>7} "
+                      f"{br_pct:>8} {drag_s:>8} {notes:<24}")
+            # Aggregate borrow drag (real money you're paying for the privilege of shorting)
+            total_drag = sum(p.get("borrow_drag_usd", 0) or 0 for p in r["positions"])
+            print(f"  Total borrow drag on open book: ${total_drag:,.0f}")
         print("=" * 78)
 
         if explain:

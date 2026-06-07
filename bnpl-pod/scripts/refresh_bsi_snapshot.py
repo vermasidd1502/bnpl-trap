@@ -39,9 +39,11 @@ APOLLO_DB = Path(os.environ.get(
     str(Path(__file__).resolve().parents[1] / "data" / "apollo.db"),
 ))
 
-# Mirror UNIVERSE_KEYWORDS from app.py L4554 exactly so the per-firm z aligns
-# with what the live pod displays. If app.py is updated, update this too.
+# Mirror UNIVERSE_KEYWORDS from app.py L4554 plus 2026-06-06 cross-section
+# expansion (12 -> ~38 firms) to push the empirical confusion matrix from
+# anecdotal (Wilson CI [4%, 64%]) to non-vacuous ([12%, 47%]).
 UNIVERSE_KEYWORDS = {
+    # ---- Original 21 (mirror of app.py L4554) ----
     # BNPL
     "AFRM": ["AFFIRM"],
     "SEZL": ["SEZZLE"],
@@ -67,6 +69,30 @@ UNIVERSE_KEYWORDS = {
     "BFH":  ["BREAD FINANCIAL"],
     "ALLY": ["ALLY FINANCIAL"],
     "AXP":  ["AMERICAN EXPRESS"],
+
+    # ---- Bucket A: pure-thesis expansion (10 firms) ----
+    "CURO": ["CURO", "SPEEDY CASH", "RAPID CASH"],
+    "RM":   ["REGIONAL MANAGEMENT", "REGIONAL FINANCE"],
+    "FCFS": ["FIRSTCASH", "FIRST CASH"],
+    "EZPW": ["EZCORP", "EZPAWN", "EZ PAWN"],
+    "CPSS": ["CONSUMER PORTFOLIO SERVICES"],
+    "SLM":  ["SALLIE MAE", "SLM CORP"],
+    "NAVI": ["NAVIENT"],
+    "RILY": ["B. RILEY", "B RILEY", "BRILEY"],
+    "PROG": ["PROG LEASING", "PROGRESSIVE LEASING", "AARON'S"],
+    "OPRT": ["OPORTUN", "PROGRESO FINANCIERO"],
+
+    # ---- Bucket B: high-IG control (5 firms; should NOT fire) ----
+    "JPM":  ["JPMORGAN", "JP MORGAN", "CHASE"],
+    "BAC":  ["BANK OF AMERICA"],
+    "WFC":  ["WELLS FARGO"],
+    "MA":   ["MASTERCARD"],
+    "V":    ["VISA INC", "VISA U.S.A."],
+
+    # ---- Bucket C: thematic adjacent (3 firms) ----
+    "COIN": ["COINBASE"],
+    "HOOD": ["ROBINHOOD"],
+    "ABG":  ["ASBURY AUTO"],
 }
 
 # CFPB publishes with a 45-60 day lag. Match the pod's settle window so signals
