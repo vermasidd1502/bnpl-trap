@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Options / F&O · Marle-G</title>
+<style>
+  :root{ --bg:#080a0e;--bg2:#0e1116;--card:#14171e;--border:rgba(255,255,255,.08);
+    --ink:#eef1f6;--muted:#9aa3b4;--dim:#646c7a;--mono:'SF Mono',ui-monospace,Consolas,monospace;
+    --saffron:#ff9933;--india-green:#138808;--green:#22c55e;--red:#ef4444;--amber:#fbbf24;--call:#22c55e;--put:#f87171;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(1100px 520px at 50% -10%,rgba(255,153,51,.05),transparent 60%),var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--border);background:rgba(8,10,14,.8);backdrop-filter:blur(10px);position:sticky;top:0;z-index:10}
+  .brand{font-family:var(--mono);font-weight:800;letter-spacing:.18em;font-size:13px;display:flex;align-items:center;gap:9px}
+  .brand .mark{width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,var(--saffron),var(--india-green))}
+  .brand .w{background:linear-gradient(90deg,var(--saffron),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tabs{display:flex;gap:16px;font-family:var(--mono);font-size:11px;flex-wrap:wrap}
+  .tabs a{color:var(--dim);text-decoration:none} .tabs a.on{color:var(--saffron)} .tabs a:hover{color:var(--ink)}
+  .preview-tag{font-family:var(--mono);font-size:9px;color:#0a0b0f;background:var(--amber);padding:3px 8px;border-radius:5px;font-weight:800}
+  .wrap{max-width:1240px;margin:0 auto;padding:22px 24px 70px}
+  .selrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:18px}
+  .selrow select{background:var(--bg2);border:1px solid var(--border);color:var(--ink);border-radius:9px;padding:10px 12px;font-family:var(--mono);font-size:12px}
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+  .tile{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px}
+  .tile .n{font-family:var(--mono);font-size:9.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.05em}
+  .tile .v{font-family:var(--mono);font-size:22px;font-weight:800;margin-top:5px}
+  .tile .d{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:3px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:16px}
+  .sh{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-bottom:12px}
+  table.oc{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11.5px}
+  .oc th{font-size:9px;text-transform:uppercase;letter-spacing:.04em;color:var(--dim);padding:8px 8px;border-bottom:1px solid var(--border)}
+  .oc td{padding:7px 8px;text-align:right;border-bottom:1px solid rgba(255,255,255,.04)}
+  .oc .strike{text-align:center;font-weight:800;background:rgba(255,255,255,.03)}
+  .oc tr.atm{background:rgba(255,153,51,.10)} .oc tr.atm .strike{color:var(--saffron)}
+  .callside{color:#a7f3c0} .putside{color:#fcaca9}
+  .oiwall-c{box-shadow:inset 3px 0 0 var(--call)} .oiwall-p{box-shadow:inset -3px 0 0 var(--put)}
+  .depth{display:grid;grid-template-columns:1fr 1fr;gap:14px} @media(max-width:760px){.depth{grid-template-columns:1fr}}
+  .wallbar{display:flex;align-items:center;gap:8px;margin:5px 0;font-family:var(--mono);font-size:11px}
+  .wallbar .k{width:64px;text-align:right;color:var(--muted)} .wallbar .b{flex:1;height:14px;border-radius:3px;overflow:hidden;background:rgba(255,255,255,.05)} .wallbar .b>span{display:block;height:100%}
+  .legend{font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:8px;line-height:1.5}
+  .buildtag{font-family:var(--mono);font-size:9.5px;font-weight:800;padding:3px 8px;border-radius:5px}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span></span></div>
+  <div class="tabs">
+    <a href="marle_g_pod.html">home</a><a href="marle_g_equity.html">equity</a><a href="marle_g_volume.html">volume</a><a href="#" class="on">options</a>
+    <a href="marle_g_funds.html">funds</a><a href="marle_g_portfolio.html">portfolio</a>
+    <a href="marle_g_macro_preview.html">macro</a><a href="marle_g_dashboard.html">dashboard</a><a href="marle_g_profile.html">profile</a>
+  </div>
+  <span class="preview-tag">PREVIEW</span>
+</div>
+
+<main class="wrap">
+  <div class="selrow">
+    <select id="underlying" onchange="build()">
+      <option value="NIFTY">NIFTY 50</option><option value="BANKNIFTY">BANK NIFTY</option>
+      <option value="RELIANCE">RELIANCE</option><option value="HDFCBANK">HDFCBANK</option><option value="TCS">TCS</option>
+    </select>
+    <select id="expiry" onchange="build()">
+      <option>26 Jun 2026 (weekly)</option><option>03 Jul 2026 (weekly)</option><option>31 Jul 2026 (monthly)</option>
+    </select>
+  </div>
+
+  <div class="tiles" id="tiles"></div>
+
+  <div class="card">
+    <div class="sh">Option chain · OI · IV · LTP (strikes around ATM)</div>
+    <table class="oc" id="chain"></table>
+    <div class="legend">Green left-border = highest Call OI (resistance wall) · red right-border = highest Put OI (support wall) · saffron row = ATM.</div>
+  </div>
+
+  <div class="card">
+    <div class="sh">OI-wall depth proxy · the free "orderbook"</div>
+    <div class="depth">
+      <div><div style="font-family:var(--mono);font-size:10px;color:var(--call);margin-bottom:6px">CALL OI — resistance above</div><div id="callwalls"></div></div>
+      <div><div style="font-family:var(--mono);font-size:10px;color:var(--put);margin-bottom:6px">PUT OI — support below</div><div id="putwalls"></div></div>
+    </div>
+    <div class="legend">No true L2 book on a free/no-broker stack. Standing option OI is the closest free proxy: large OI strikes act as soft support/resistance where dealers are pinned. Max-pain = strike where most option value expires worthless.</div>
+  </div>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+function _seed(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return ((h>>>0)%100000)/100000;}
+const SPOTS={NIFTY:24180,BANKNIFTY:51230,RELIANCE:2980,HDFCBANK:1685,TCS:3920};
+const STEPS={NIFTY:50,BANKNIFTY:100,RELIANCE:20,HDFCBANK:10,TCS:20};
+
+function build(){
+  const u=$('underlying').value, exp=$('expiry').value, spot=SPOTS[u], step=STEPS[u];
+  const base=_seed(u+exp);
+  const atm=Math.round(spot/step)*step;
+  const rows=[]; const N=10;
+  let callTot=0,putTot=0,maxCall={oi:0},maxPut={oi:0},pain=[];
+  for(let i=-N;i<=N;i++){
+    const k=atm+i*step;
+    const cOI=Math.round((Math.max(0,(N-Math.abs(i+2))+_seed(u+k+'c')*6))* (u==='BANKNIFTY'?52000:u==='NIFTY'?68000:1800));
+    const pOI=Math.round((Math.max(0,(N-Math.abs(i-2))+_seed(u+k+'p')*6))* (u==='BANKNIFTY'?52000:u==='NIFTY'?68000:1800));
+    const cChg=Math.round((_seed(u+k+'cc')-0.4)*cOI*0.3);
+    const pChg=Math.round((_seed(u+k+'pc')-0.4)*pOI*0.3);
+    const iv=Math.round((12+Math.abs(i)*0.4+_seed(u+k+'iv')*6)*10)/10;
+    const intrC=Math.max(0,spot-k), intrP=Math.max(0,k-spot);
+    const cLTP=Math.round((intrC+ (1+_seed(u+k+'cl')*1.5)*step*0.6*Math.exp(-Math.abs(i)/6))*100)/100;
+    const pLTP=Math.round((intrP+ (1+_seed(u+k+'pl')*1.5)*step*0.6*Math.exp(-Math.abs(i)/6))*100)/100;
+    callTot+=cOI;putTot+=pOI;
+    if(cOI>maxCall.oi)maxCall={k,oi:cOI}; if(pOI>maxPut.oi)maxPut={k,oi:pOI};
+    rows.push({k,cOI,pOI,cChg,pChg,iv,cLTP,pLTP});
+  }
+  // max pain: strike minimising total ITM payout
+  let mp={k:atm,loss:Infinity};
+  rows.forEach(r=>{let loss=0;rows.forEach(s=>{loss+=Math.max(0,r.k-s.k)*s.pOI+Math.max(0,s.k-r.k)*s.cOI;});if(loss<mp.loss)mp={k:r.k,loss};});
+  const pcr=Math.round(putTot/callTot*100)/100;
+  const iv_atm=rows.find(r=>r.k===atm)?.iv||15;
+  // tiles
+  const sentiment = pcr>1.3?'Bullish (high PCR)':pcr<0.7?'Bearish (low PCR)':'Neutral';
+  $('tiles').innerHTML=[
+    ['Spot','₹'+spot.toLocaleString(),u],
+    ['PCR (OI)',pcr,sentiment],
+    ['Max Pain','₹'+mp.k.toLocaleString(),(mp.k>spot?'+':'')+((mp.k/spot-1)*100).toFixed(1)+'% vs spot'],
+    ['ATM IV',iv_atm+'%','implied vol'],
+    ['Call wall','₹'+maxCall.k.toLocaleString(),'resistance'],
+    ['Put wall','₹'+maxPut.k.toLocaleString(),'support'],
+  ].map(t=>`<div class="tile"><div class="n">${t[0]}</div><div class="v">${t[1]}</div><div class="d">${t[2]}</div></div>`).join('');
+  // chain table
+  const fmtOI=v=>v>=1e5?(v/1e5).toFixed(1)+'L':(v/1e3).toFixed(0)+'k';
+  $('chain').innerHTML=`<thead><tr><th>Call OI</th><th>Chg</th><th>IV</th><th>Call LTP</th><th class="strike" style="text-align:center">Strike</th><th>Put LTP</th><th>IV</th><th>Chg</th><th>Put OI</th></tr></thead><tbody>`+
+    rows.map(r=>`<tr class="${r.k===atm?'atm':''}">
+      <td class="callside ${r.k===maxCall.k?'oiwall-c':''}">${fmtOI(r.cOI)}</td>
+      <td class="${r.cChg>0?'callside':''}" style="color:${r.cChg>0?'var(--green)':'var(--red)'}">${r.cChg>0?'+':''}${fmtOI(r.cChg)}</td>
+      <td style="color:var(--dim)">${r.iv}</td>
+      <td>${r.cLTP}</td>
+      <td class="strike">${r.k.toLocaleString()}</td>
+      <td>${r.pLTP}</td>
+      <td style="color:var(--dim)">${r.iv}</td>
+      <td style="color:${r.pChg>0?'var(--green)':'var(--red)'}">${r.pChg>0?'+':''}${fmtOI(r.pChg)}</td>
+      <td class="putside ${r.k===maxPut.k?'oiwall-p':''}">${fmtOI(r.pOI)}</td>
+    </tr>`).join('')+`</tbody>`;
+  // walls
+  const topC=rows.slice().sort((a,b)=>b.cOI-a.cOI).slice(0,5), topP=rows.slice().sort((a,b)=>b.pOI-a.pOI).slice(0,5);
+  const mc=topC[0].cOI, mpx=topP[0].pOI;
+  $('callwalls').innerHTML=topC.map(r=>`<div class="wallbar"><span class="k">${r.k}</span><div class="b"><span style="width:${r.cOI/mc*100}%;background:var(--call)"></span></div><span style="width:46px;color:var(--muted)">${fmtOI(r.cOI)}</span></div>`).join('');
+  $('putwalls').innerHTML=topP.map(r=>`<div class="wallbar"><span class="k">${r.k}</span><div class="b"><span style="width:${r.pOI/mpx*100}%;background:var(--put)"></span></div><span style="width:46px;color:var(--muted)">${fmtOI(r.pOI)}</span></div>`).join('');
+}
+build();
+</script>
+</body>
+</html>

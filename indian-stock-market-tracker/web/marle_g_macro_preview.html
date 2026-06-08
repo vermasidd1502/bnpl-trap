@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Macro Tracker · Marle-G (India) — PREVIEW</title>
+<style>
+  /* ---- self-contained theme (mirrors Apollo macro_tracker look) ---- */
+  :root{
+    --bg:#0a0b0f; --bg-elevated:#14161c; --border:rgba(255,255,255,.08);
+    --text-primary:#e7eaf0; --text-secondary:#9aa3b4; --text-tertiary:#6b7382;
+    --font-mono:'SF Mono',ui-monospace,'Cascadia Code',Consolas,monospace;
+    --m-cyan:#ff9933; --m-teal:#15a34a; --m-amber:#fbbf24; --m-green:#22c55e;
+    --m-red:#ef4444; --m-purple:#a78bfa; --saffron:#ff9933; --india-green:#138808;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text-primary);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 22px;border-bottom:1px solid var(--border);background:rgba(10,11,15,.8);position:sticky;top:0;z-index:10;backdrop-filter:blur(8px)}
+  .topbar .brand{font-family:var(--font-mono);font-weight:800;letter-spacing:.22em;font-size:13px}
+  .topbar .brand .g{color:var(--saffron)}
+  .topbar .tabs{display:flex;gap:18px;font-family:var(--font-mono);font-size:11px;color:var(--text-tertiary)}
+  .topbar .tabs a{color:var(--text-tertiary);text-decoration:none}
+  .topbar .tabs a.on{color:var(--m-cyan)}
+  .preview-tag{font-family:var(--font-mono);font-size:9.5px;letter-spacing:.1em;color:#0a0b0f;background:var(--m-amber);padding:3px 8px;border-radius:5px;font-weight:800}
+
+  .mt-page{max-width:1320px;margin:0 auto;padding:0 22px 70px}
+  .mt-hero{padding:30px 0 18px;border-bottom:1px solid var(--border);margin-bottom:22px}
+  .mt-kicker{font-family:var(--font-mono);font-size:10px;letter-spacing:.12em;color:var(--m-cyan);text-transform:uppercase;font-weight:700}
+  .mt-hero h1{font-size:38px;line-height:1.15;margin:6px 0 8px;background:linear-gradient(90deg,var(--saffron),#fff 55%,var(--india-green));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .mt-hero .sub{color:var(--text-secondary);font-size:13.5px;max-width:940px;line-height:1.6}
+
+  .mt-grid-2{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
+  .mt-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .mt-grid-4{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+  .mt-section{margin-top:24px}
+  @media(max-width:900px){.mt-grid-2{grid-template-columns:1fr}}
+
+  .mt-card{background:var(--bg-elevated);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .mt-card.accent{border-left:3px solid var(--m-cyan)}
+  .mt-section-h{font-family:var(--font-mono);font-size:10px;letter-spacing:.10em;text-transform:uppercase;color:var(--text-tertiary);font-weight:700;margin-bottom:8px}
+  .mt-h2{font-size:18px;margin:0 0 12px;font-weight:700}
+  .legend{font-size:11px;color:var(--text-tertiary);line-height:1.55;margin-top:8px}
+  .legend code{color:var(--m-cyan);font-family:var(--font-mono)}
+
+  /* regime */
+  .regime-card{padding:22px 24px;border-radius:14px;position:relative;overflow:hidden}
+  .regime-card.RISK-ON{background:linear-gradient(135deg,rgba(34,197,94,.10),rgba(34,197,94,.02));border:1px solid rgba(34,197,94,.25)}
+  .regime-card.RISK-OFF{background:linear-gradient(135deg,rgba(239,68,68,.10),rgba(239,68,68,.02));border:1px solid rgba(239,68,68,.25)}
+  .regime-card.TRANSITIONAL{background:linear-gradient(135deg,rgba(251,191,36,.10),rgba(251,191,36,.02));border:1px solid rgba(251,191,36,.25)}
+  .regime-label{font-size:11px;font-family:var(--font-mono);letter-spacing:.10em;color:var(--text-tertiary);text-transform:uppercase}
+  .regime-name{font-family:var(--font-mono);font-weight:800;font-size:36px;letter-spacing:.04em;margin-top:4px}
+  .regime-name.RISK-ON{color:var(--m-green)} .regime-name.RISK-OFF{color:var(--m-red)} .regime-name.TRANSITIONAL{color:var(--m-amber)}
+  .regime-rec{font-size:13px;color:var(--text-secondary);margin-top:10px;line-height:1.55}
+  .regime-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
+  .regime-stat{background:rgba(0,0,0,.18);border-radius:8px;padding:10px;text-align:center}
+  .regime-stat .lbl{font-size:9.5px;font-family:var(--font-mono);color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.05em}
+  .regime-stat .val{font-family:var(--font-mono);font-weight:800;font-size:18px;margin-top:4px}
+  .conf-bar{background:rgba(255,255,255,.06);border-radius:4px;height:6px;overflow:hidden;margin-top:6px}
+  .conf-bar>span{display:block;height:100%;background:linear-gradient(90deg,var(--m-cyan),var(--m-teal))}
+
+  canvas.chart{width:100%;display:block}
+  .curve-meta{display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;font-family:var(--font-mono);font-size:11px;margin-top:8px;color:var(--text-secondary)}
+  .pill{display:inline-block;padding:3px 8px;font-size:9.5px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.06em;border-radius:4px;font-weight:700}
+  .pill.RISK-OFF{background:rgba(239,68,68,.15);color:var(--m-red)} .pill.NEUTRAL{background:rgba(251,191,36,.15);color:var(--m-amber)} .pill.RISK-ON{background:rgba(34,197,94,.15);color:var(--m-green)}
+
+  .tile{background:rgba(0,0,0,.18);border-radius:8px;padding:10px 12px;font-family:var(--font-mono)}
+  .tile .nm{font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.05em}
+  .tile .v{font-weight:800;font-size:17px;margin-top:4px}
+  .tile .d{font-size:10px;color:var(--text-tertiary);margin-top:2px}
+  .pos{color:var(--m-green)} .neg{color:var(--m-red)} .neu{color:var(--text-tertiary)}
+
+  .corridor{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:6px}
+  .rate{background:rgba(6,182,212,.06);border:1px solid rgba(6,182,212,.18);border-radius:10px;padding:12px;text-align:center}
+  .rate .lbl{font-family:var(--font-mono);font-size:9.5px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.05em}
+  .rate .v{font-family:var(--font-mono);font-weight:800;font-size:22px;margin-top:4px;color:var(--m-cyan)}
+
+  .heat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px}
+  .heat-cell{padding:10px 12px;border-radius:8px;font-family:var(--font-mono)}
+  .heat-cell .nm{font-size:11px;font-weight:700} .heat-cell .tk{font-size:9.5px;opacity:.8}
+  .heat-cell .stat{font-size:11px;margin-top:4px;display:flex;justify-content:space-between}
+
+  .com-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px}
+  .com-tile{background:rgba(0,0,0,.18);border-radius:6px;padding:8px 10px;font-family:var(--font-mono);font-size:11px}
+  .com-tile .nm{font-size:10px;color:var(--text-tertiary)} .com-tile .px{font-weight:700;font-size:13px;margin-top:2px} .com-tile .ch{font-size:10px;margin-top:2px}
+  @media(max-width:700px){.com-row,.corridor,.regime-stats{grid-template-columns:repeat(2,1fr)}}
+
+  .bridge{border-left:3px solid var(--saffron);background:rgba(255,153,51,.05);border-radius:6px;padding:12px 14px;font-size:11.5px;color:var(--text-secondary);line-height:1.6}
+  .bridge code{color:var(--saffron);font-family:var(--font-mono)}
+  .footer{text-align:center;font-size:11px;color:var(--text-tertiary);padding:30px 0 18px}
+
+  /* ---- multi-layer drill: sector → stocks → watchlist ---- */
+  .heat-cell.drill{cursor:pointer;transition:.14s}
+  .heat-cell.drill:hover{outline:1px solid var(--saffron);transform:translateY(-1px)}
+  .drill-hint{font-size:9px;color:var(--saffron);margin-top:6px;letter-spacing:.03em;opacity:.9}
+  .modal-overlay{position:fixed;inset:0;background:rgba(4,5,8,.72);backdrop-filter:blur(4px);z-index:50;display:none;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:auto}
+  .modal-overlay.show{display:flex}
+  .modal{background:var(--bg-elevated);border:1px solid var(--border);border-radius:14px;width:min(840px,100%);box-shadow:0 30px 80px rgba(0,0,0,.6)}
+  .modal-head{display:flex;justify-content:space-between;align-items:flex-start;padding:18px 20px;border-bottom:1px solid var(--border)}
+  .modal-title{font-size:18px;font-weight:700}
+  .modal-sub{font-family:var(--font-mono);font-size:11px;color:var(--text-secondary);margin-top:5px}
+  .modal-head .x{background:none;border:1px solid var(--border);color:var(--text-secondary);border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:13px}
+  .modal-head .x:hover{border-color:var(--m-red);color:var(--m-red)}
+  .modal-tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:14px 20px;border-bottom:1px solid var(--border)}
+  .modal-tools input,.modal-tools select{background:var(--bg);border:1px solid var(--border);color:var(--text-primary);border-radius:8px;padding:8px 10px;font-family:var(--font-mono);font-size:11.5px}
+  .modal-tools input{flex:1;min-width:150px}
+  .btn-primary{background:linear-gradient(135deg,var(--saffron),var(--india-green));color:#0a0b0f;font-weight:800;border:none;border-radius:8px;padding:9px 14px;cursor:pointer;font-family:var(--font-mono);font-size:11.5px}
+  .btn-primary:hover{filter:brightness(1.08)}
+  .toast{font-family:var(--font-mono);font-size:11px;color:var(--m-green);opacity:0;transition:opacity .25s;margin-left:auto}
+  .modal-body{padding:6px 8px 14px;max-height:60vh;overflow:auto}
+  table.ctable{width:100%;border-collapse:collapse;font-size:12.5px}
+  .ctable th{font-family:var(--font-mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-tertiary);text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg-elevated)}
+  .ctable td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.04)}
+  .ctable td.r,.ctable th.r{text-align:right}
+  .ctable .mono{font-family:var(--font-mono)}
+  .ctable .sym{font-weight:700} .ctable .nm2{font-size:10px;color:var(--text-tertiary)}
+  .ctable tr:hover td{background:rgba(255,153,51,.05)}
+  .vpill{font-family:var(--font-mono);font-size:9.5px;font-weight:800;padding:3px 8px;border-radius:5px}
+  .vpill.LONG{background:rgba(34,197,94,.16);color:var(--m-green)} .vpill.SHORT{background:rgba(239,68,68,.16);color:var(--m-red)} .vpill.FLAT{background:rgba(255,255,255,.06);color:var(--text-tertiary)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">MARLE<span class="g">·G</span> &nbsp;<span style="color:var(--text-tertiary);font-weight:400">macro tracker</span></div>
+  <div class="tabs">
+    <a href="marle_g_pod.html">home</a><a href="#">equity</a><a href="marle_g_volume.html">volume</a><a href="#">funds</a><a href="marle_g_dashboard.html">dashboard <span id="wl-badge">★</span></a><a href="#" class="on">macro</a>
+  </div>
+  <span class="preview-tag">PREVIEW · representative figures, not live</span>
+</div>
+
+<main class="mt-page">
+
+  <section class="mt-hero">
+    <div class="mt-kicker">🇮🇳 Macro Tracker · India · live</div>
+    <h1>India in one screen.</h1>
+    <p class="sub">
+      NIFTY regime, India-VIX, FII/DII flows, the G-Sec curve, the RBI policy corridor, the India macro stream
+      (CPI · IIP · GDP · GST · PMI), NSE sector rotation, the rupee, and commodities — the full macro context
+      before you act on any equity or fund signal. Streamed from yfinance + FRED-India + custom NSE/RBI scrapers;
+      cached server-side at 5 min per endpoint, graceful-degrade on every source.
+    </p>
+  </section>
+
+  <!-- NEXT-DAY OUTLOOK (written analysis) -->
+  <section style="margin-bottom:22px">
+    <div class="mt-card accent" style="border-left-color:var(--saffron)">
+      <div class="mt-section-h">📋 Next-day outlook · 5-day trend + sector rotation + live news</div>
+      <div id="outlook-meta" style="font-family:var(--font-mono);font-size:11px;color:var(--text-secondary);margin-bottom:12px"></div>
+      <div id="outlook-body"><div style="font-family:var(--font-mono);color:var(--text-tertiary);font-size:12px">Synthesising market analysis…</div></div>
+      <div id="outlook-news" style="margin-top:14px"></div>
+    </div>
+  </section>
+
+  <!-- ROW 1: REGIME + VOL -->
+  <section class="mt-grid-2">
+    <div class="mt-card accent" id="regime-wrap"><div class="mt-section-h">SECTION 01 · risk regime</div><div id="regime-body"></div></div>
+    <div class="mt-card"><div class="mt-section-h">SECTION 02 · vol &amp; trend</div><div id="vol-body"></div></div>
+  </section>
+
+  <!-- FII/DII bridge -->
+  <section class="mt-section">
+    <div class="bridge">
+      <strong>The India signal Apollo never had:</strong> foreign (FII) vs domestic (DII) institutional cash flows
+      drive the index more than earnings on most days. When FIIs sell hard into DII absorption — like the
+      <code>₹-12,400 Cr</code> FII sell-off below — the regime engine routes Marle-G to its defensive posture and
+      flags rupee/curve stress before price confirms.
+    </div>
+  </section>
+
+  <!-- ROW 2: FII/DII FLOWS -->
+  <section class="mt-section mt-grid-2">
+    <div class="mt-card">
+      <div class="mt-section-h">SECTION 03 · FII / DII flows</div>
+      <h3 class="mt-h2">Institutional cash flows · last 10 sessions (₹ Cr)</h3>
+      <canvas id="flow-chart" class="chart" height="220"></canvas>
+      <div class="curve-meta" id="flow-meta"></div>
+      <div class="legend">Net cash-segment buy/sell. <code>FII</code> = foreign portfolio investors (green/red bars), <code>DII</code> = domestic institutions (mutual funds, insurers — saffron). Persistent DII-absorbs-FII is the classic Indian floor signal.</div>
+    </div>
+    <div class="mt-card">
+      <div class="mt-section-h">SECTION 04 · G-Sec yield curve</div>
+      <h3 class="mt-h2">India G-Sec · 3M / 1Y / 5Y / 10Y / 30Y</h3>
+      <canvas id="yc-chart" class="chart" height="200"></canvas>
+      <div class="curve-meta" id="yc-meta"></div>
+      <div class="legend">10Y benchmark vs repo anchors the term spread. Steep curve = growth/liquidity easing; flat/inverted = tightening stress. India 10Y from CCIL; repo from RBI.</div>
+    </div>
+  </section>
+
+  <!-- ROW 3: RBI CORRIDOR + DEBT ETFs -->
+  <section class="mt-section mt-grid-2">
+    <div class="mt-card">
+      <div class="mt-section-h">SECTION 05 · RBI policy corridor</div>
+      <h3 class="mt-h2">Repo · SDF · MSF · CRR</h3>
+      <div class="corridor" id="rbi-body"></div>
+      <div class="legend">SDF (Standing Deposit Facility) is the floor, MSF the ceiling, repo the policy rate; CRR sets banking-system liquidity. Last MPC stance shown below.</div>
+      <div id="mpc-stance" style="margin-top:12px;font-family:var(--font-mono);font-size:12px"></div>
+    </div>
+    <div class="mt-card">
+      <div class="mt-section-h">SECTION 06 · debt instruments</div>
+      <h3 class="mt-h2">Bharat Bond &amp; gilt ETFs</h3>
+      <div id="debt-etfs" class="mt-grid-4"></div>
+      <div class="legend">Target-maturity Bharat Bond ETFs + liquid/gilt funds — the India fixed-income proxies for the portfolio's debt sleeve.</div>
+    </div>
+  </section>
+
+  <!-- ROW 4: INDIA MACRO STREAM -->
+  <section class="mt-section">
+    <div class="mt-card">
+      <div class="mt-section-h">SECTION 07 · India macro stream</div>
+      <h3 class="mt-h2">CPI · WPI · IIP · GDP · GST · PMI · FX reserves</h3>
+      <div id="macro-stream" class="mt-grid-4"></div>
+      <div class="legend">Latest print per series. CPI/repo drive the rate path; GST collections + PMI are the high-frequency growth pulse. FRED-India series + MOSPI/RBI scrapers.</div>
+    </div>
+  </section>
+
+  <!-- ROW 5: SECTOR ROTATION -->
+  <section class="mt-section">
+    <div class="mt-card">
+      <div class="mt-section-h">SECTION 08 · NSE sector rotation</div>
+      <h3 class="mt-h2">NIFTY sectoral indices · 1d / 5d / 1m</h3>
+      <div id="sector-body"></div>
+      <div class="legend">Heatmap shades by 1m return. Defensives (FMCG, Pharma, IT) leading cyclicals (Auto, Realty, Metal, PSU Bank) is the textbook India risk-off rotation. <strong style="color:var(--saffron)">Click any sector</strong> → drill into its stocks (volume verdict · RVOL · delivery %) and build a watchlist.</div>
+    </div>
+  </section>
+
+  <!-- ROW 6: CURRENCY + COMMODITIES -->
+  <section class="mt-section mt-grid-2">
+    <div class="mt-card">
+      <div class="mt-section-h">SECTION 09 · currency</div>
+      <h3 class="mt-h2">Rupee &amp; the dollar</h3>
+      <div id="fx-body" class="mt-grid-4"></div>
+      <div class="legend">USD/INR is the master valve for FII flows and the import bill. A weakening rupee + rising DXY is a double headwind for Indian equities.</div>
+    </div>
+    <div class="mt-card">
+      <div class="mt-section-h">SECTION 10 · commodities</div>
+      <h3 class="mt-h2">Gold (₹) · energy · metals</h3>
+      <div id="com-body"></div>
+      <div class="legend">Gold-in-rupees matters for India (household demand + import bill). Brent feeds the current-account & inflation path.</div>
+    </div>
+  </section>
+
+  <!-- METHOD -->
+  <section class="mt-section">
+    <div class="mt-card">
+      <div class="mt-section-h">METHOD &amp; PROVENANCE</div>
+      <div style="font-size:12px;color:var(--text-secondary);line-height:1.65">
+        <strong>Data:</strong> NIFTY/India-VIX/sector indices/INR/commodities via <code style="color:var(--m-cyan);font-family:var(--font-mono)">yfinance</code>;
+        India CPI/IIP/GDP/10Y via <code style="color:var(--m-cyan);font-family:var(--font-mono)">FRED</code> India series; FII/DII, RBI corridor, GST, PMI, FX reserves via
+        <strong>custom NSE/RBI/MOSPI scrapers</strong> (cached hard, graceful-degrade).
+        <strong>Regime classifier:</strong> NIFTY 20d realised vol vs 60d, NIFTY vs SMA-50, India-VIX threshold at 18 (recalibrated from Apollo's VIX-25 — India VIX sits lower).
+        <strong>This is research-grade plumbing</strong> — no SLA, no broker feed (user is USA-based → no Indian broker API). Free stack only.
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div id="sector-modal" class="modal-overlay" onclick="if(event.target===this)closeSector()">
+  <div class="modal">
+    <div class="modal-head">
+      <div><div id="sm-title" class="modal-title"></div><div id="sm-sub" class="modal-sub"></div></div>
+      <button class="x" onclick="closeSector()">✕</button>
+    </div>
+    <div class="modal-tools">
+      <input id="wl-name" placeholder="watchlist name…" value="My Watchlist" spellcheck="false">
+      <select id="sm-sort" onchange="renderConstituents()">
+        <option value="verdict">sort · verdict</option>
+        <option value="chg">sort · % change</option>
+        <option value="rvol">sort · rel volume</option>
+        <option value="deliv">sort · delivery %</option>
+      </select>
+      <button class="btn-primary" onclick="addSelected()">＋ Add selected to watchlist</button>
+      <span id="wl-toast" class="toast"></span>
+    </div>
+    <div class="modal-body"><table class="ctable" id="sm-table"></table></div>
+  </div>
+</div>
+
+<footer class="footer">
+  <div>Marle-G · Macro Tracker · India · sibling of Apollo (US)</div>
+  <div style="font-family:var(--font-mono);margin-top:4px">Siddharth Verma · UIUC FIN 580 · 2026</div>
+</footer>
+
+<script>
+// ============ MOCK DATA (representative; the real page fetches /api/macro/*) ============
+const DATA = {
+  regime: {
+    regime:'RISK-OFF', confidence:71, india_vix:17.8, nifty:24180.5, sma_50:24710.2, trend:'BEARISH',
+    return_20d:-3.4, vol:{current:14.6, long_term:11.2, regime:'ELEVATED', expanding:true},
+    signals:{price_above_sma50:false, vol_expanding:true, vix_elevated:false},
+    rec:'Reduce equity beta. Favour large-cap defensives + DII-supported names. Tighten stops; watch USD/INR.'
+  },
+  flows:[ // last 10 sessions, ₹ Cr
+    {d:'23 May',fii:-8420,dii:6210},{d:'26 May',fii:-3110,dii:4580},{d:'27 May',fii:1240,dii:-820},
+    {d:'28 May',fii:-5670,dii:7010},{d:'29 May',fii:-9980,dii:8240},{d:'30 May',fii:2110,dii:-1340},
+    {d:'02 Jun',fii:-12400,dii:10880},{d:'03 Jun',fii:-4520,dii:5120},{d:'04 Jun',fii:980,dii:340},{d:'05 Jun',fii:-6310,dii:5870}
+  ],
+  curve:[ {name:'3M',maturity:0.25,yield:6.42},{name:'1Y',maturity:1,yield:6.55},{name:'5Y',maturity:5,yield:6.71},{name:'10Y',maturity:10,yield:6.84},{name:'30Y',maturity:30,yield:7.05} ],
+  repo:6.00,
+  rbi:{repo:6.00, sdf:5.75, msf:6.25, crr:4.00, stance:'NEUTRAL', last_mpc:'06 Jun 2026 · held repo at 6.00%, stance neutral'},
+  debt:[ {nm:'Bharat Bond 2030',px:1212.4,ch:0.08},{nm:'Bharat Bond 2032',px:1098.7,ch:0.11},{nm:'Bharat Bond 2033',px:1042.1,ch:0.14},{nm:'LIQUIDBEES',px:1000.0,ch:0.00},{nm:'GILT 10Y ETF',px:24.18,ch:0.21},{nm:'SDL 2027 ETF',px:108.6,ch:0.05} ],
+  stream:[
+    {nm:'CPI inflation',v:'4.6%',d:'Apr 2026 · MOSPI'},{nm:'WPI',v:'2.1%',d:'Apr 2026'},
+    {nm:'IIP growth',v:'5.2%',d:'Mar 2026'},{nm:'GDP (YoY)',v:'6.7%',d:'Q4 FY26'},
+    {nm:'GST collections',v:'₹2.04 L Cr',d:'May 2026'},{nm:'PMI Mfg',v:'57.4',d:'May 2026'},
+    {nm:'PMI Services',v:'59.1',d:'May 2026'},{nm:'FX reserves',v:'$691 B',d:'30 May 2026 · RBI'}
+  ],
+  sectors:[
+    {nm:'Nifty IT',tk:'^CNXIT',px:38420,c1:-0.4,c5:1.2,c1m:3.1},{nm:'Nifty FMCG',tk:'^CNXFMCG',px:58210,c1:0.3,c5:0.9,c1m:2.4},
+    {nm:'Nifty Pharma',tk:'^CNXPHARMA',px:22140,c1:0.1,c5:0.4,c1m:1.8},{nm:'Nifty Bank',tk:'^NSEBANK',px:51230,c1:-0.9,c5:-1.8,c1m:-2.2},
+    {nm:'Nifty Auto',tk:'^CNXAUTO',px:24870,c1:-1.4,c5:-2.9,c1m:-4.1},{nm:'Nifty Metal',tk:'^CNXMETAL',px:9120,c1:-2.1,c5:-3.6,c1m:-5.7},
+    {nm:'Nifty Realty',tk:'^CNXREALTY',px:1042,c1:-1.8,c5:-4.2,c1m:-6.3},{nm:'Nifty PSU Bank',tk:'^CNXPSUBANK',px:7240,c1:-1.1,c5:-2.4,c1m:-3.9},
+    {nm:'Nifty FinServ',tk:'NIFTY_FIN',px:24010,c1:-0.7,c5:-1.2,c1m:-1.5},{nm:'Nifty Energy',tk:'^CNXENERGY',px:41200,c1:-0.5,c5:0.2,c1m:0.6},
+    {nm:'Nifty Infra',tk:'^CNXINFRA',px:9210,c1:-0.6,c5:-1.0,c1m:-1.1},{nm:'Nifty Media',tk:'^CNXMEDIA',px:1840,c1:-1.2,c5:-2.0,c1m:-3.2},
+    {nm:'Nifty Cons Dur',tk:'CONSUMDUR',px:38900,c1:0.2,c5:0.5,c1m:1.0},{nm:'Nifty Oil&Gas',tk:'OILGAS',px:11800,c1:-0.4,c5:-0.3,c1m:0.4}
+  ],
+  fx:[ {nm:'USD / INR',v:'85.92',ch:0.34},{nm:'DXY',v:'104.8',ch:0.28},{nm:'EUR / INR',v:'92.41',ch:0.12},{nm:'Crude (₹/bbl)',v:'6,720',ch:1.4} ],
+  com:{
+    metals:[{nm:'Gold (₹/10g)',px:'74,820',c1:0.6,c1m:3.2},{nm:'Silver (₹/kg)',px:'92,100',c1:0.9,c1m:4.1},{nm:'Copper',px:'4.82',c1:-1.2,c1m:-3.4},{nm:'Platinum',px:'998',c1:0.2,c1m:1.1}],
+    energy:[{nm:'Brent',px:'82.4',c1:1.1,c1m:5.3},{nm:'WTI',px:'78.1',c1:1.0,c1m:4.8},{nm:'Nat Gas',px:'3.12',c1:-0.8,c1m:-2.1},{nm:'Crude (₹)',px:'6,720',c1:1.4,c1m:5.6}]
+  }
+};
+
+// ============ helpers ============
+const $=id=>document.getElementById(id);
+const pct=(x,dp=2)=> (x==null||isNaN(x))?'—':(x>0?'+':'')+Number(x).toFixed(dp)+'%';
+const cls=x=> (x==null||isNaN(x))?'neu':x>0?'pos':x<0?'neg':'neu';
+
+// ============ MULTI-LAYER: sector → constituents → watchlist ============
+const SECTOR_CONSTITUENTS = {
+  'Nifty Bank':[['HDFCBANK','HDFC Bank'],['ICICIBANK','ICICI Bank'],['SBIN','State Bank of India'],['KOTAKBANK','Kotak Mahindra'],['AXISBANK','Axis Bank'],['INDUSINDBK','IndusInd Bank'],['BANKBARODA','Bank of Baroda'],['PNB','Punjab National Bank']],
+  'Nifty IT':[['TCS','Tata Consultancy'],['INFY','Infosys'],['HCLTECH','HCL Tech'],['WIPRO','Wipro'],['TECHM','Tech Mahindra'],['LTIM','LTIMindtree'],['PERSISTENT','Persistent Sys'],['COFORGE','Coforge']],
+  'Nifty Auto':[['MARUTI','Maruti Suzuki'],['M&M','Mahindra & Mahindra'],['TATAMOTORS','Tata Motors'],['BAJAJ-AUTO','Bajaj Auto'],['EICHERMOT','Eicher Motors'],['HEROMOTOCO','Hero MotoCorp'],['TVSMOTOR','TVS Motor'],['ASHOKLEY','Ashok Leyland']],
+  'Nifty Pharma':[['SUNPHARMA','Sun Pharma'],['DRREDDY','Dr Reddy Labs'],['CIPLA','Cipla'],['DIVISLAB','Divi Labs'],['AUROPHARMA','Aurobindo'],['LUPIN','Lupin'],['TORNTPHARM','Torrent Pharma'],['ALKEM','Alkem Labs']],
+  'Nifty FMCG':[['HINDUNILVR','Hindustan Unilever'],['ITC','ITC'],['NESTLEIND','Nestle India'],['BRITANNIA','Britannia'],['TATACONSUM','Tata Consumer'],['DABUR','Dabur'],['GODREJCP','Godrej Consumer'],['VBL','Varun Beverages']],
+  'Nifty Metal':[['TATASTEEL','Tata Steel'],['JSWSTEEL','JSW Steel'],['HINDALCO','Hindalco'],['VEDL','Vedanta'],['JINDALSTEL','Jindal Steel'],['NMDC','NMDC'],['SAIL','SAIL'],['COALINDIA','Coal India']],
+  'Nifty Realty':[['DLF','DLF'],['MACROTECH','Lodha'],['GODREJPROP','Godrej Properties'],['OBEROIRLTY','Oberoi Realty'],['PRESTIGE','Prestige Estates'],['PHOENIXLTD','Phoenix Mills'],['BRIGADE','Brigade Enterprises']],
+  'Nifty PSU Bank':[['SBIN','State Bank of India'],['BANKBARODA','Bank of Baroda'],['PNB','Punjab National Bank'],['CANBK','Canara Bank'],['UNIONBANK','Union Bank'],['INDIANB','Indian Bank'],['BANKINDIA','Bank of India']],
+  'Nifty FinServ':[['HDFCBANK','HDFC Bank'],['ICICIBANK','ICICI Bank'],['BAJFINANCE','Bajaj Finance'],['BAJAJFINSV','Bajaj Finserv'],['SBILIFE','SBI Life'],['HDFCLIFE','HDFC Life'],['KOTAKBANK','Kotak Mahindra'],['AXISBANK','Axis Bank']],
+  'Nifty Energy':[['RELIANCE','Reliance'],['NTPC','NTPC'],['POWERGRID','Power Grid'],['ONGC','ONGC'],['COALINDIA','Coal India'],['BPCL','BPCL'],['IOC','Indian Oil'],['ADANIGREEN','Adani Green']],
+  'Nifty Infra':[['LT','Larsen & Toubro'],['RELIANCE','Reliance'],['BHARTIARTL','Bharti Airtel'],['NTPC','NTPC'],['ONGC','ONGC'],['ULTRACEMCO','UltraTech'],['GRASIM','Grasim']],
+  'Nifty Media':[['ZEEL','Zee Entertainment'],['SUNTV','Sun TV'],['PVRINOX','PVR Inox'],['NETWORK18','Network18'],['TV18BRDCST','TV18'],['NAZARA','Nazara Tech']],
+  'Nifty Cons Dur':[['TITAN','Titan'],['HAVELLS','Havells'],['VOLTAS','Voltas'],['CROMPTON','Crompton'],['DIXON','Dixon Tech'],['BLUESTARCO','Blue Star']],
+  'Nifty Oil&Gas':[['RELIANCE','Reliance'],['ONGC','ONGC'],['IOC','Indian Oil'],['BPCL','BPCL'],['GAIL','GAIL'],['HINDPETRO','HPCL'],['PETRONET','Petronet LNG'],['IGL','Indraprastha Gas']]
+};
+function _seed(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return ((h>>>0)%10000)/10000;}
+function deriveStock(sym,name,bias){
+  const b=_seed(sym),r=_seed(sym+'~r'),d=_seed(sym+'~d'),p=_seed(sym+'~p');
+  const chg=Math.round(((b-0.5)*5+bias*0.6)*100)/100;
+  const rvol=Math.round((0.6+r*2.4)*100)/100;
+  const deliv=Math.round(32+d*50);
+  const ltp=Math.round((80+p*3500)*100)/100;
+  const vcs=chg*0.5+(rvol-1.2)*1.4+(deliv-50)/22;
+  const verdict=vcs>0.9?'LONG':vcs<-0.7?'SHORT':'FLAT';
+  return {sym,name,chg,rvol,deliv,ltp,verdict,vcs:Math.round(vcs*100)/100};
+}
+let _smState={sector:null,rows:[]};
+function openSector(nm){
+  const list=SECTOR_CONSTITUENTS[nm]||[];
+  const sec=DATA.sectors.find(s=>s.nm===nm)||{c1:0,c1m:0,px:0};
+  _smState={sector:nm,rows:list.map(([sym,name])=>deriveStock(sym,name,sec.c1))};
+  $('sm-title').textContent=nm+' — constituents';
+  $('sm-sub').innerHTML=`${list.length} stocks · index ${sec.px?sec.px.toLocaleString():'—'} · 1d <span class="${cls(sec.c1)}">${pct(sec.c1)}</span> · 1m <span class="${cls(sec.c1m)}">${pct(sec.c1m)}</span> · <span style="color:var(--text-tertiary)">verdict = volume-conviction proxy</span>`;
+  renderConstituents();
+  $('sector-modal').classList.add('show');
+}
+function renderConstituents(){
+  const k=$('sm-sort').value, rank={LONG:2,FLAT:1,SHORT:0};
+  const rows=_smState.rows.slice().sort((a,b)=> k==='chg'?b.chg-a.chg : k==='rvol'?b.rvol-a.rvol : k==='deliv'?b.deliv-a.deliv : (rank[b.verdict]-rank[a.verdict])||b.vcs-a.vcs);
+  $('sm-table').innerHTML=`
+    <thead><tr><th><input type="checkbox" onclick="document.querySelectorAll('.sm-pick').forEach(x=>x.checked=this.checked)"></th><th>Symbol</th><th class="r">LTP</th><th class="r">%chg</th><th class="r">RVOL</th><th class="r">Deliv%</th><th>Verdict</th></tr></thead>
+    <tbody>${rows.map(s=>`<tr>
+      <td><input type="checkbox" class="sm-pick" data-sym="${s.sym}" data-name="${s.name.replace(/"/g,'&quot;')}"></td>
+      <td><div class="sym">${s.sym}</div><div class="nm2">${s.name}</div></td>
+      <td class="r mono">${s.ltp.toLocaleString()}</td>
+      <td class="r mono ${cls(s.chg)}">${pct(s.chg)}</td>
+      <td class="r mono" style="color:${s.rvol>1.5?'var(--m-green)':'var(--text-secondary)'}">${s.rvol.toFixed(2)}×</td>
+      <td class="r mono" style="color:${s.deliv>55?'var(--m-green)':s.deliv<40?'var(--m-red)':'var(--text-secondary)'}">${s.deliv}%</td>
+      <td><span class="vpill ${s.verdict}">${s.verdict}</span></td></tr>`).join('')}</tbody>`;
+}
+function getWL(){try{return JSON.parse(localStorage.getItem('marleg_watchlists')||'{}');}catch(e){return {};}}
+function setWL(o){localStorage.setItem('marleg_watchlists',JSON.stringify(o));updateWLBadge();}
+function addSelected(){
+  const name=($('wl-name').value||'My Watchlist').trim()||'My Watchlist';
+  const picks=[...document.querySelectorAll('.sm-pick:checked')].map(x=>({sym:x.dataset.sym,name:x.dataset.name}));
+  if(!picks.length){toast('select at least one stock');return;}
+  const wl=getWL(), cur=wl[name]||[], seen=new Set(cur.map(s=>s.sym));
+  picks.forEach(p=>{if(!seen.has(p.sym)){cur.push(p);seen.add(p.sym);}});
+  wl[name]=cur; setWL(wl);
+  toast(`✓ ${picks.length} added to "${name}" (${cur.length} total) — see Dashboard`);
+}
+function toast(m){const t=$('wl-toast');t.textContent=m;t.style.opacity='1';setTimeout(()=>t.style.opacity='0',2800);}
+function closeSector(){$('sector-modal').classList.remove('show');}
+function updateWLBadge(){const n=Object.keys(getWL()).length,b=$('wl-badge');if(b)b.textContent=n?('★ '+n):'★';}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSector();});
+setTimeout(updateWLBadge,0);
+
+// ============ regime + vol ============
+(function(){
+  const d=DATA.regime; const w=$('regime-wrap'); w.classList.add('regime-card',d.regime);
+  $('regime-body').innerHTML=`
+    <div class="regime-label">Current regime</div>
+    <div class="regime-name ${d.regime}">${d.regime}</div>
+    <div class="regime-rec">${d.rec}</div>
+    <div style="margin-top:14px">
+      <div style="font-size:10px;font-family:var(--font-mono);color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.06em">Confidence</div>
+      <div class="conf-bar"><span style="width:${d.confidence}%"></span></div>
+      <div style="font-family:var(--font-mono);font-size:11px;text-align:right;margin-top:4px">${d.confidence}%</div>
+    </div>
+    <div class="regime-stats">
+      <div class="regime-stat"><div class="lbl">NIFTY 50</div><div class="val">${d.nifty.toLocaleString()}</div></div>
+      <div class="regime-stat"><div class="lbl">India VIX</div><div class="val" style="color:${d.india_vix>18?'var(--m-red)':'var(--text-primary)'}">${d.india_vix}</div></div>
+      <div class="regime-stat"><div class="lbl">SMA-50</div><div class="val">${d.sma_50.toLocaleString()}</div></div>
+      <div class="regime-stat"><div class="lbl">Trend</div><div class="val" style="color:${d.trend==='BULLISH'?'var(--m-green)':'var(--m-red)'}">${d.trend}</div></div>
+    </div>`;
+  $('vol-body').innerHTML=`
+    <div style="font-size:36px;font-family:var(--font-mono);font-weight:800;color:${d.vol.expanding?'var(--m-red)':'var(--m-green)'}">${d.vol.current}<span style="font-size:18px;color:var(--text-tertiary)">% vol</span></div>
+    <div style="font-size:11px;color:var(--text-tertiary);font-family:var(--font-mono);margin-top:4px">20d realised · vs ${d.vol.long_term}% long-term · regime <strong style="color:var(--text-primary)">${d.vol.regime}</strong></div>
+    <div style="margin-top:14px">
+      ${[['NIFTY 20d return',pct(d.return_20d),cls(d.return_20d)],
+         ['Vol expanding?',d.signals.vol_expanding?'YES':'no',d.signals.vol_expanding?'neg':'pos'],
+         ['India VIX elevated (&gt;18)?',d.signals.vix_elevated?'YES':'no',d.signals.vix_elevated?'neg':'pos'],
+         ['Price &gt; SMA-50?',d.signals.price_above_sma50?'YES':'no',d.signals.price_above_sma50?'pos':'neg']]
+        .map(r=>`<div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:11px;margin-top:6px"><span>${r[0]}</span><span class="${r[2]}">${r[1]}</span></div>`).join('')}
+    </div>`;
+})();
+
+// ============ FII/DII grouped bar ============
+(function(){
+  const c=$('flow-chart'), f=DATA.flows; const dpr=devicePixelRatio||1;
+  const W=c.clientWidth,H=220; c.width=W*dpr;c.height=H*dpr; const x=c.getContext('2d'); x.scale(dpr,dpr);
+  const pad={l:46,r:12,t:14,b:30}; const all=f.flatMap(o=>[o.fii,o.dii]);
+  const max=Math.max.apply(null,all.map(Math.abs))*1.1; const mid=pad.t+(H-pad.t-pad.b)/2;
+  const sy=v=> mid - v/max*((H-pad.t-pad.b)/2);
+  // zero line + grid
+  x.strokeStyle='rgba(255,255,255,.06)';x.beginPath();x.moveTo(pad.l,mid);x.lineTo(W-pad.r,mid);x.stroke();
+  x.fillStyle='#666';x.font='9px monospace';x.textAlign='right';
+  [max,0,-max].forEach((v,i)=>{const y=pad.t+i*(H-pad.t-pad.b)/2;x.fillText((v/1000).toFixed(0)+'k',pad.l-6,y+3);});
+  const bw=(W-pad.l-pad.r)/f.length;
+  f.forEach((o,i)=>{
+    const cx=pad.l+i*bw+bw*0.5; const w2=bw*0.34;
+    // FII
+    x.fillStyle=o.fii>=0?'rgba(34,197,94,.85)':'rgba(239,68,68,.85)';
+    x.fillRect(cx-w2-2, Math.min(mid,sy(o.fii)), w2, Math.abs(sy(o.fii)-mid));
+    // DII
+    x.fillStyle='rgba(255,153,51,.85)';
+    x.fillRect(cx+2, Math.min(mid,sy(o.dii)), w2, Math.abs(sy(o.dii)-mid));
+    x.fillStyle='#7c8596';x.font='8.5px monospace';x.textAlign='center';x.fillText(o.d,cx,H-pad.b+16);
+  });
+  const lastFii=f[f.length-1].fii, sumFii=f.reduce((a,o)=>a+o.fii,0), sumDii=f.reduce((a,o)=>a+o.dii,0);
+  $('flow-meta').innerHTML=`<span>FII 10d net: <strong class="${cls(sumFii)}">₹${sumFii.toLocaleString()} Cr</strong></span>
+    <span>DII 10d net: <strong class="pos">₹${sumDii.toLocaleString()} Cr</strong></span>
+    <span class="pill ${sumFii<0?'RISK-OFF':'RISK-ON'}">${sumFii<0?'FII OUTFLOW':'FII INFLOW'}</span>`;
+})();
+
+// ============ yield curve ============
+(function(){
+  const c=$('yc-chart'),pts=DATA.curve; const dpr=devicePixelRatio||1;
+  const W=c.clientWidth,H=200;c.width=W*dpr;c.height=H*dpr;const x=c.getContext('2d');x.scale(dpr,dpr);
+  const pad={l:48,r:16,t:16,b:30};
+  const xs=pts.map(p=>Math.sqrt(p.maturity)),ys=pts.map(p=>p.yield);
+  const xmax=Math.max.apply(null,xs),ymin=Math.min.apply(null,ys)-0.25,ymax=Math.max.apply(null,ys)+0.25;
+  const sx=m=>pad.l+Math.sqrt(m)/xmax*(W-pad.l-pad.r), sy=y=>H-pad.b-(y-ymin)/(ymax-ymin)*(H-pad.t-pad.b);
+  x.strokeStyle='rgba(255,255,255,.05)';
+  for(let i=0;i<=4;i++){const y=pad.t+i*(H-pad.t-pad.b)/4;x.beginPath();x.moveTo(pad.l,y);x.lineTo(W-pad.r,y);x.stroke();
+    x.fillStyle='#666';x.font='9px monospace';x.textAlign='right';x.fillText((ymax-i*(ymax-ymin)/4).toFixed(2)+'%',pad.l-6,y+3);}
+  x.fillStyle='#888';x.textAlign='center';pts.forEach(p=>x.fillText(p.name,sx(p.maturity),H-pad.b+16));
+  x.strokeStyle='#ff9933';x.lineWidth=2.5;x.beginPath();pts.forEach((p,i)=>{const X=sx(p.maturity),Y=sy(p.yield);i?x.lineTo(X,Y):x.moveTo(X,Y);});x.stroke();
+  pts.forEach(p=>{x.fillStyle='#ff9933';x.beginPath();x.arc(sx(p.maturity),sy(p.yield),4,0,7);x.fill();
+    x.fillStyle='#cbd5e1';x.font='9px monospace';x.fillText(p.yield.toFixed(2),sx(p.maturity),sy(p.yield)-8);});
+  const y10=pts.find(p=>p.maturity===10).yield, spread=(y10-DATA.repo);
+  const sig=spread<0?'RISK-OFF':spread<0.5?'NEUTRAL':'RISK-ON';
+  $('yc-meta').innerHTML=`<span>10Y: <strong>${y10}%</strong></span><span>Repo: <strong>${DATA.repo.toFixed(2)}%</strong></span>
+    <span>10Y−repo: <strong class="${cls(spread)}">${spread.toFixed(2)}%</strong></span><span class="pill ${sig}">${sig}</span>`;
+})();
+
+// ============ RBI corridor + debt ============
+(function(){
+  const r=DATA.rbi;
+  $('rbi-body').innerHTML=[['Repo',r.repo],['SDF',r.sdf],['MSF',r.msf],['CRR',r.crr]]
+    .map(o=>`<div class="rate"><div class="lbl">${o[0]}</div><div class="v">${o[1].toFixed(2)}%</div></div>`).join('');
+  $('mpc-stance').innerHTML=`Stance: <strong style="color:var(--m-amber)">${r.stance}</strong> &nbsp;·&nbsp; <span style="color:var(--text-tertiary)">${r.last_mpc}</span>`;
+  $('debt-etfs').innerHTML=DATA.debt.map(e=>`<div class="tile"><div class="nm">${e.nm}</div><div class="v" style="font-size:14px">${e.px.toLocaleString()}</div><div class="d ${cls(e.ch)}">${pct(e.ch)}</div></div>`).join('');
+})();
+
+// ============ macro stream ============
+$('macro-stream').innerHTML=DATA.stream.map(s=>`<div class="tile"><div class="nm">${s.nm}</div><div class="v">${s.v}</div><div class="d">${s.d}</div></div>`).join('');
+
+// ============ sectors ============
+(function(){
+  const heat=v=>{const t=Math.max(-1,Math.min(1,v/7));return t>0?`rgba(34,197,94,${.10+t*.30})`:t<0?`rgba(239,68,68,${.10+Math.abs(t)*.30})`:'rgba(160,160,160,.10)';};
+  const arr=DATA.sectors.slice().sort((a,b)=>b.c1m-a.c1m);
+  $('sector-body').innerHTML=`<div class="heat-grid">${arr.map(s=>`
+    <div class="heat-cell drill" style="background:${heat(s.c1m)}" onclick="openSector('${s.nm}')" title="Click for ${s.nm} stocks">
+      <div class="nm">${s.nm}</div><div class="tk">${s.tk} · ${s.px.toLocaleString()}</div>
+      <div class="stat"><span style="color:var(--text-tertiary)">1d</span><span class="${cls(s.c1)}">${pct(s.c1)}</span></div>
+      <div class="stat"><span style="color:var(--text-tertiary)">5d</span><span class="${cls(s.c5)}">${pct(s.c5)}</span></div>
+      <div class="stat"><span style="color:var(--text-tertiary)">1m</span><span class="${cls(s.c1m)}" style="font-weight:700">${pct(s.c1m)}</span></div>
+      <div class="drill-hint">▸ ${(SECTOR_CONSTITUENTS[s.nm]||[]).length} stocks · build watchlist</div>
+    </div>`).join('')}</div>`;
+})();
+
+// ============ fx ============
+$('fx-body').innerHTML=DATA.fx.map(f=>`<div class="tile"><div class="nm">${f.nm}</div><div class="v">${f.v}</div><div class="d ${cls(f.ch)}">${pct(f.ch)} 1d</div></div>`).join('');
+
+// ============ commodities ============
+(function(){
+  const cat=(t,items)=>`<div style="margin-top:14px"><div style="font-family:var(--font-mono);font-size:11px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">${t}</div>
+    <div class="com-row">${items.map(i=>`<div class="com-tile"><div class="nm">${i.nm}</div><div class="px">${i.px}</div>
+      <div class="ch"><span class="${cls(i.c1)}">${pct(i.c1)}</span> · 1d</div><div class="ch"><span class="${cls(i.c1m)}">${pct(i.c1m)}</span> · 1m</div></div>`).join('')}</div></div>`;
+  $('com-body').innerHTML=cat('metals',DATA.com.metals)+cat('energy',DATA.com.energy);
+})();
+
+// ============ LIVE MACRO OVERLAY (real data from backend) ============
+(async function liveMacro(){
+  try{
+    const r=await fetch('/api/macro'); const m=await r.json(); if(m.error||!m.regime) return;
+    const reg=m.regime;
+    const w=$('regime-wrap'); w.className='mt-card accent regime-card '+reg.regime;
+    $('regime-body').innerHTML=`<div class="regime-label">Current regime · <span style="color:var(--m-green)">● LIVE</span></div>
+      <div class="regime-name ${reg.regime}">${reg.regime}</div>
+      <div class="regime-rec">NIFTY ${reg.nifty.toLocaleString()} · India VIX ${reg.vix} · ${reg.trend}. ${reg.regime==='RISK-OFF'?'Reduce equity beta; favour large-cap defensives.':reg.regime==='RISK-ON'?'Risk appetite supportive — full allocation.':'Mixed signals — neutral, wait for confirmation.'}</div>
+      <div class="regime-stats">
+        <div class="regime-stat"><div class="lbl">NIFTY 50</div><div class="val">${reg.nifty.toLocaleString()}</div></div>
+        <div class="regime-stat"><div class="lbl">India VIX</div><div class="val" style="color:${reg.vix>18?'var(--m-red)':'var(--text-primary)'}">${reg.vix}</div></div>
+        <div class="regime-stat"><div class="lbl">SMA-50</div><div class="val">${reg.sma50.toLocaleString()}</div></div>
+        <div class="regime-stat"><div class="lbl">Trend</div><div class="val" style="color:${reg.trend==='BULLISH'?'var(--m-green)':'var(--m-red)'}">${reg.trend}</div></div>
+      </div>`;
+    $('vol-body').innerHTML=`<div style="font-size:36px;font-family:var(--font-mono);font-weight:800;color:${reg.vol20>reg.vol60?'var(--m-red)':'var(--m-green)'}">${reg.vol20}<span style="font-size:18px;color:var(--text-tertiary)">% vol</span></div>
+      <div style="font-size:11px;color:var(--text-tertiary);font-family:var(--font-mono);margin-top:4px">NIFTY 20d realised · vs ${reg.vol60}% (60d) · 20d return ${pct(reg.ret20)} · <span style="color:var(--m-green)">● live</span></div>`;
+    if(m.sectors&&m.sectors.length){
+      DATA.sectors=m.sectors;
+      const heat=v=>{const t=Math.max(-1,Math.min(1,v/7));return t>0?`rgba(34,197,94,${.10+t*.30})`:t<0?`rgba(239,68,68,${.10+Math.abs(t)*.30})`:'rgba(160,160,160,.10)';};
+      const arr=m.sectors.slice().sort((a,b)=>b.c1m-a.c1m);
+      $('sector-body').innerHTML=`<div class="heat-grid">${arr.map(s=>`
+        <div class="heat-cell drill" style="background:${heat(s.c1m)}" onclick="openSector('${s.nm}')" title="Click for ${s.nm} stocks">
+          <div class="nm">${s.nm}</div><div class="tk">${s.tk} · ${s.px.toLocaleString()}</div>
+          <div class="stat"><span style="color:var(--text-tertiary)">1d</span><span class="${cls(s.c1)}">${pct(s.c1)}</span></div>
+          <div class="stat"><span style="color:var(--text-tertiary)">5d</span><span class="${cls(s.c5)}">${pct(s.c5)}</span></div>
+          <div class="stat"><span style="color:var(--text-tertiary)">1m</span><span class="${cls(s.c1m)}" style="font-weight:700">${pct(s.c1m)}</span></div>
+          <div class="drill-hint">▸ ${(SECTOR_CONSTITUENTS[s.nm]||[]).length} stocks · build watchlist</div>
+        </div>`).join('')}</div>`;
+    }
+    if(m.indices&&m.indices.USDINR){
+      const fx=$('fx-body'); if(fx) fx.innerHTML=[['USD / INR',m.indices.USDINR.v,m.indices.USDINR.chg],['India VIX',m.indices.VIX?m.indices.VIX.v:'—',0],['NIFTY',m.indices.NIFTY.v,m.indices.NIFTY.chg],['Sensex',m.indices.SENSEX?m.indices.SENSEX.v:'—',m.indices.SENSEX?m.indices.SENSEX.chg:0]]
+        .map(f=>`<div class="tile"><div class="nm">${f[0]}</div><div class="v">${(+f[1]).toLocaleString?(+f[1]).toLocaleString():f[1]}</div><div class="d ${cls(f[2])}">${pct(f[2])} 1d · ● live</div></div>`).join('');
+    }
+    // flip the PREVIEW tag to indicate live sections
+    const pv=document.querySelector('.preview-tag'); if(pv){pv.textContent='LIVE regime·sectors·FX · FII-DII/G-sec/RBI illustrative';pv.style.background='var(--m-green)';}
+  }catch(e){ /* backend offline → keep representative data */ }
+})();
+
+// ============ NEXT-DAY OUTLOOK (written analysis) ============
+(async function loadOutlook(){
+  try{
+    const r=await fetch('/api/outlook'); const o=await r.json();
+    if(o.error){ $('outlook-body').innerHTML='<div style="color:var(--m-red);font-family:var(--font-mono);font-size:12px">'+o.error+'</div>'; return; }
+    const rc=o.regime==='RISK-ON'?'var(--m-green)':o.regime==='RISK-OFF'?'var(--m-red)':'var(--m-amber)';
+    $('outlook-meta').innerHTML=`as of ${o.asof} · NIFTY ${o.nifty.toLocaleString()} (${pct(o.chg1)} 1d · ${pct(o.chg5)} 5d) · regime <b style="color:${rc}">${o.regime}</b> · VIX ${o.vix==null?'—':o.vix} · <span style="color:var(--m-green)">● live</span>`;
+    $('outlook-body').innerHTML=(o.narrative||[]).map(s=>`
+      <div style="margin-bottom:15px">
+        <div style="font-family:var(--font-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--saffron);font-weight:700;margin-bottom:5px">${s.h}</div>
+        <div style="font-size:13.5px;line-height:1.72;color:var(--text-secondary)">${s.p}</div>
+      </div>`).join('');
+    if(o.news&&o.news.length){
+      $('outlook-news').innerHTML=`<div style="font-family:var(--font-mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-tertiary);font-weight:700;margin:6px 0 8px">Live news flow</div>`+
+        o.news.map(n=>`<div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:12px">
+          <span style="color:var(--saffron)">▸</span><span style="flex:1;color:var(--text-secondary)">${n.title}</span>
+          <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-tertiary);white-space:nowrap">${n.source||''}</span></div>`).join('');
+    }
+  }catch(e){ $('outlook-body').innerHTML='<div style="color:var(--text-tertiary);font-family:var(--font-mono);font-size:12px">Outlook unavailable — backend offline.</div>'; }
+})();
+</script>
+</body>
+</html>

@@ -12,6 +12,24 @@
       "runtimeExecutable": "python",
       "runtimeArgs": ["bnpl-pod/web/serve_nocache.py", "8765"],
       "port": 8765
+    },
+    {
+      "name": "marle-g-arch",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "8777"],
+      "port": 8777
+    },
+    {
+      "name": "marle-g",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["indian-stock-market-tracker/marleg_server.py"],
+      "port": 8777
+    },
+    {
+      "name": "apollo-pod",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["working_demo/app.py"],
+      "port": 5000
     }
   ]
 }

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marle-G · Pod Architecture · 3D</title>
+<style>
+  :root{ --bg:#070a08; --ink:#e9f0ea; --muted:#8ea08f; --mono:'SF Mono',ui-monospace,'Cascadia Code',Consolas,monospace; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:var(--bg);overflow:hidden;color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  #app{position:fixed;inset:0}
+  canvas{display:block}
+  #labels{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+  .node-label{font-family:var(--mono);font-size:10px;letter-spacing:.02em;white-space:nowrap;color:#d4dcd5;text-shadow:0 0 6px rgba(0,0,0,.9),0 1px 2px #000;transform:translate(-50%,-180%);transition:opacity .25s}
+  .layer-label{font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;transform:translate(-50%,-50%);text-shadow:0 0 10px rgba(0,0,0,.9);opacity:.92}
+  .hud{position:fixed;pointer-events:none}
+  #title{top:20px;left:50%;transform:translateX(-50%);text-align:center}
+  #title h1{font-size:22px;font-weight:800;letter-spacing:.32em;background:linear-gradient(90deg,#ff9933,#fde047 45%,#22c55e);-webkit-background-clip:text;background-clip:text;color:transparent}
+  #title .sub{margin-top:5px;font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.12em}
+  #legend{top:20px;left:20px;background:rgba(10,14,11,.62);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:13px 15px;backdrop-filter:blur(8px)}
+  #legend .lh{font-family:var(--mono);font-size:9px;letter-spacing:.16em;color:var(--muted);margin-bottom:9px;text-transform:uppercase}
+  .leg-row{display:flex;align-items:center;gap:9px;margin:5px 0;font-family:var(--mono);font-size:10.5px;color:#c2cdc3}
+  .dot{width:9px;height:9px;border-radius:50%;box-shadow:0 0 9px currentColor;flex:none}
+  #caption{bottom:16px;left:50%;transform:translateX(-50%);text-align:center;font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.05em;line-height:1.7;max-width:90vw}
+  #caption b{color:#a9c2ad}
+  #controls{bottom:16px;right:16px;display:flex;gap:8px;pointer-events:auto}
+  .btn{font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;color:#c2cdc3;background:rgba(16,22,18,.7);border:1px solid rgba(255,255,255,.1);border-radius:9px;padding:8px 12px;cursor:pointer;transition:.18s;backdrop-filter:blur(6px)}
+  .btn:hover{border-color:rgba(255,153,51,.6);color:#fff;box-shadow:0 0 14px rgba(255,153,51,.25)}
+  .btn.off{opacity:.45}
+  #hint{bottom:16px;left:20px;font-family:var(--mono);font-size:10px;color:#566658;letter-spacing:.04em}
+  #loader{position:fixed;inset:0;display:grid;place-items:center;background:var(--bg);z-index:50;transition:opacity .5s}
+  #loader .l{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.2em}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="labels"></div>
+<div id="loader"><div class="l">BUILDING POD GRAPH…</div></div>
+
+<div class="hud" id="title">
+  <h1>M A R L E &middot; G</h1>
+  <div class="sub">POD ARCHITECTURE · 3 MONITORS · MACRO · HEDGE-FUND LAYER · ACCOUNT · INDIA OVERLAY</div>
+</div>
+
+<div class="hud" id="legend">
+  <div class="lh">Tiers</div>
+  <div class="leg-row"><span class="dot" style="color:#ff9933"></span>Data sources</div>
+  <div class="leg-row"><span class="dot" style="color:#fb923c"></span>Adapters</div>
+  <div class="leg-row"><span class="dot" style="color:#fde047"></span>Dispatch</div>
+  <div class="leg-row"><span class="dot" style="color:#a3e635"></span>Monitors (stocks/ETF · options · MF · macro)</div>
+  <div class="leg-row"><span class="dot" style="color:#ea580c"></span>India overlay (FII-DII · circuits · delivery · OI proxy)</div>
+  <div class="leg-row"><span class="dot" style="color:#4ade80"></span>Hedge-fund / decision</div>
+  <div class="leg-row"><span class="dot" style="color:#22c55e"></span>Account (profile · watchlists · portfolio)</div>
+  <div class="leg-row"><span class="dot" style="color:#16a34a"></span>Interface</div>
+</div>
+
+<div class="hud" id="caption">
+  <b>Free no-broker stack</b> · monitor + paper portfolio · USA-based (no Indian broker API)<br>
+  India sibling of Apollo (US) — profile/auth + hedge-fund debate ported · 3 monitors + macro net-new · orderbook = OI-wall proxy
+</div>
+
+<div id="hint" class="hud">drag · orbit&nbsp;&nbsp;|&nbsp;&nbsp;scroll · zoom&nbsp;&nbsp;|&nbsp;&nbsp;right-drag · pan</div>
+
+<div id="controls">
+  <button class="btn" id="btnSpin">⏸ spin</button>
+  <button class="btn" id="btnLabels">labels</button>
+  <button class="btn" id="btnReset">reset view</button>
+</div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+}}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+// ---------------------------------------------------------------- architecture
+const LAYERS = [
+  { id:'data', name:'Data', color:0xff9933, nodes:[
+    {id:'yf',label:'yfinance .NS/.BO'},{id:'fno',label:'NSE F&O · chain/OI'},{id:'deliv',label:'NSE delivery / bhavcopy'},
+    {id:'flows',label:'FII / DII flows'},{id:'mfsrc',label:'AMFI + mfapi.in'},{id:'amc',label:'AMC factsheets'},
+    {id:'macrosrc',label:'RBI · MOSPI · FRED-India'},{id:'preopen',label:'NSE pre-open 09:00'},
+  ]},
+  { id:'adapt', name:'Adapters', color:0xfb923c, nodes:[
+    {id:'a_eq',label:'equity_adapter'},{id:'a_fno',label:'fno_adapter'},{id:'a_deliv',label:'delivery_adapter'},
+    {id:'a_flows',label:'flows_adapter'},{id:'a_mf',label:'mf_adapter'},{id:'a_scr',label:'mf_fundamentals_scraper'},
+    {id:'a_macro',label:'macro_adapter'},{id:'instr',label:'instruments master'},
+  ]},
+  { id:'disp', name:'Dispatch', color:0xfde047, nodes:[
+    {id:'dispatch',label:'dispatch · asset-class resolver',hub:true},
+  ]},
+  { id:'mon', name:'Monitors', color:0xa3e635, nodes:[
+    {id:'eq',label:'Equity Monitor · volume-primary'},{id:'opt',label:'Options / F&O Monitor'},
+    {id:'mf',label:'MF Analytics'},{id:'macro',label:'Macro pod · drill-down'},
+  ]},
+  { id:'ovl', name:'India overlay', color:0xea580c, nodes:[
+    {id:'o_flows',label:'FII-DII / SIP bid'},{id:'o_deliv',label:'delivery% accumulation'},
+    {id:'circuit',label:'circuit-limit guard'},{id:'pledge',label:'promoter pledge'},{id:'obproxy',label:'OI-wall depth proxy'},
+  ]},
+  { id:'dec', name:'Hedge-fund', color:0x4ade80, nodes:[
+    {id:'debate',label:'6-archetype debate'},{id:'squad',label:'Squad personas'},{id:'risk',label:'risk / exposure caps'},
+  ]},
+  { id:'acct', name:'Account', color:0x22c55e, nodes:[
+    {id:'onboard',label:'onboarding · risk profile'},{id:'profile',label:'profile · auth'},
+    {id:'watch',label:'watchlists'},{id:'book',label:'portfolio book · XIRR · tax'},
+  ]},
+  { id:'ui', name:'Interface', color:0x16a34a, nodes:[
+    {id:'u_home',label:'/pod'},{id:'u_macro',label:'/macro'},{id:'u_dash',label:'/dashboard'},{id:'u_eq',label:'/equity'},
+    {id:'u_opt',label:'/options'},{id:'u_funds',label:'/funds'},{id:'u_port',label:'/portfolio'},{id:'u_prof',label:'/profile'},
+  ]},
+];
+
+const EDGES = [
+  // data → adapters
+  ['yf','a_eq'],['preopen','a_eq'],['yf','instr'],['fno','a_fno'],['deliv','a_deliv'],
+  ['flows','a_flows'],['mfsrc','a_mf'],['amc','a_scr'],['macrosrc','a_macro'],
+  // adapters → dispatch
+  ['a_eq','dispatch'],['a_fno','dispatch'],['a_mf','dispatch'],['a_scr','dispatch'],['a_macro','dispatch'],['instr','dispatch'],
+  // adapters → overlay (direct feeds)
+  ['a_deliv','o_deliv'],['a_flows','o_flows'],['a_fno','obproxy'],
+  // dispatch → monitors
+  ['dispatch','eq'],['dispatch','opt'],['dispatch','mf'],['dispatch','macro'],
+  // monitors ↔ overlay
+  ['eq','circuit'],['eq','o_deliv'],['eq','pledge'],['opt','obproxy'],['macro','o_flows'],
+  // overlay → decision
+  ['o_deliv','debate'],['o_flows','debate'],['circuit','risk'],['pledge','risk'],['obproxy','risk'],
+  // monitors → decision
+  ['eq','debate'],['opt','debate'],['mf','squad'],['macro','squad'],
+  // decision → account
+  ['debate','book'],['squad','book'],['risk','book'],
+  // account internal
+  ['onboard','profile'],['profile','watch'],['watch','book'],
+  // account → interface
+  ['book','u_port'],['profile','u_prof'],['watch','u_dash'],['book','u_home'],
+  // monitors → interface
+  ['eq','u_eq'],['opt','u_opt'],['mf','u_funds'],['macro','u_macro'],['macro','u_dash'],
+  // decision → interface
+  ['debate','u_eq'],
+];
+
+// ---------------------------------------------------------------- scene
+const app = document.getElementById('app');
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x070a08, 0.0026);
+const W=innerWidth||1280, H=innerHeight||800;
+const camera = new THREE.PerspectiveCamera(52, W/H, 0.1, 3000);
+const CAM0 = new THREE.Vector3(195, 96, 215);
+camera.position.copy(CAM0);
+const renderer = new THREE.WebGLRenderer({ antialias:true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(W, H);
+app.appendChild(renderer.domElement);
+const labelRenderer = new CSS2DRenderer();
+labelRenderer.setSize(W, H);
+document.getElementById('labels').appendChild(labelRenderer.domElement);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.dampingFactor = 0.06;
+controls.autoRotate = true; controls.autoRotateSpeed = 0.5;
+controls.minDistance = 70; controls.maxDistance = 720; controls.target.set(0,0,0);
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(W, H), 0.9, 0.55, 0.12);
+composer.addPass(bloom);
+composer.addPass(new OutputPass());
+
+// starfield
+(function(){
+  const g=new THREE.BufferGeometry(); const N=900,p=new Float32Array(N*3); let s=987654321;
+  const rnd=()=> (s=(s*16807)%2147483647)/2147483647;
+  for(let i=0;i<N;i++){const r=420+rnd()*560,th=rnd()*Math.PI*2,ph=Math.acos(2*rnd()-1);
+    p[i*3]=r*Math.sin(ph)*Math.cos(th);p[i*3+1]=r*Math.sin(ph)*Math.sin(th);p[i*3+2]=r*Math.cos(ph);}
+  g.setAttribute('position',new THREE.BufferAttribute(p,3));
+  scene.add(new THREE.Points(g,new THREE.PointsMaterial({color:0x2f3a30,size:1.1,transparent:true,opacity:.7})));
+})();
+
+// layout
+const LAYER_GAP=46, ROW_GAP=14;
+const nodeById=new Map(); const labelEls=[];
+LAYERS.forEach((layer,li)=>{
+  const x=(li-(LAYERS.length-1)/2)*LAYER_GAP, n=layer.nodes.length;
+  const lt=document.createElement('div'); lt.className='layer-label'; lt.textContent=layer.name;
+  lt.style.color='#'+layer.color.toString(16).padStart(6,'0');
+  const ltObj=new CSS2DObject(lt); ltObj.position.set(x,((n-1)/2)*ROW_GAP+22,0); scene.add(ltObj);
+  layer.nodes.forEach((node,j)=>{
+    const y=(j-(n-1)/2)*ROW_GAP, z=n===1?0:(j%2?11:-11);
+    const pos=new THREE.Vector3(x,y,z), R=node.hub?4.0:2.3;
+    const core=new THREE.Mesh(new THREE.SphereGeometry(R,24,24),new THREE.MeshBasicMaterial({color:layer.color}));
+    core.position.copy(pos); scene.add(core);
+    const halo=new THREE.Mesh(new THREE.SphereGeometry(R*2.3,18,18),new THREE.MeshBasicMaterial({color:layer.color,transparent:true,opacity:.12,depthWrite:false}));
+    halo.position.copy(pos); scene.add(halo);
+    if(node.hub){ const ring=new THREE.Mesh(new THREE.TorusGeometry(R*2.6,0.32,12,64),new THREE.MeshBasicMaterial({color:layer.color})); ring.position.copy(pos); node.ring=ring; scene.add(ring); }
+    const el=document.createElement('div'); el.className='node-label'; el.textContent=node.label;
+    const lObj=new CSS2DObject(el); lObj.position.copy(pos); scene.add(lObj); labelEls.push(el);
+    node.pos=pos; node.core=core; node.halo=halo; node.color=layer.color; node.phase=li*7+j*3.1;
+    nodeById.set(node.id,node);
+  });
+});
+
+// edges + pulses
+const pulses=[]; const pulseGeo=new THREE.SphereGeometry(0.8,12,12);
+EDGES.forEach((e,idx)=>{
+  const a=nodeById.get(e[0]),b=nodeById.get(e[1]); if(!a||!b)return;
+  const geo=new THREE.BufferGeometry().setFromPoints([a.pos,b.pos]);
+  scene.add(new THREE.Line(geo,new THREE.LineBasicMaterial({color:a.color,transparent:true,opacity:.20,depthWrite:false})));
+  const m=new THREE.Mesh(pulseGeo,new THREE.MeshBasicMaterial({color:0xffffff})); scene.add(m);
+  pulses.push({a:a.pos,b:b.pos,m,off:(idx*0.113)%1,speed:0.17+(idx%5)*0.011,colA:new THREE.Color(a.color),colB:new THREE.Color(b.color)});
+});
+
+// controls
+const btnSpin=document.getElementById('btnSpin'),btnLabels=document.getElementById('btnLabels'),btnReset=document.getElementById('btnReset');
+let labelsOn=true;
+btnSpin.onclick=()=>{controls.autoRotate=!controls.autoRotate;btnSpin.textContent=controls.autoRotate?'⏸ spin':'▶ spin';btnSpin.classList.toggle('off',!controls.autoRotate);};
+btnLabels.onclick=()=>{labelsOn=!labelsOn;labelEls.forEach(el=>el.style.opacity=labelsOn?'1':'0');btnLabels.classList.toggle('off',!labelsOn);};
+btnReset.onclick=()=>{camera.position.copy(CAM0);controls.target.set(0,0,0);};
+addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();btnSpin.click();}});
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);composer.setSize(innerWidth,innerHeight);labelRenderer.setSize(innerWidth,innerHeight);});
+
+// animate
+const clock=new THREE.Clock(); const tmp=new THREE.Color();
+function tick(){
+  const t=clock.getElapsedTime();
+  nodeById.forEach(n=>{const s=1+Math.sin(t*1.6+n.phase)*0.06;n.core.scale.setScalar(s);n.halo.material.opacity=0.10+0.06*(0.5+0.5*Math.sin(t*1.6+n.phase));if(n.ring){n.ring.rotation.z+=0.012;n.ring.rotation.x+=0.006;}});
+  for(const p of pulses){let u=(t*p.speed+p.off)%1;p.m.position.lerpVectors(p.a,p.b,u);tmp.copy(p.colA).lerp(p.colB,u);p.m.material.color.copy(tmp);p.m.scale.setScalar(0.5+Math.sin(u*Math.PI)*1.1);}
+  controls.update();
+  try{ composer.render(); }catch(e){}
+  labelRenderer.render(scene,camera);
+  requestAnimationFrame(tick);
+}
+// paint the first frame synchronously so labels appear even in a backgrounded tab
+// (rAF is throttled when hidden; WebGL render is guarded above for 0-size tabs).
+labelRenderer.render(scene, camera);
+const _l=document.getElementById('loader'); if(_l){_l.style.opacity='0';setTimeout(()=>{ if(_l.parentNode)_l.remove(); },500);}
+tick();
+</script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+{
+  "ADANIPORTS:short": {
+    "symbol": "ADANIPORTS",
+    "side": "short",
+    "qty": 100,
+    "entry": 1821.2,
+    "product": "MTF",
+    "atr": 34.39,
+    "k": 2.5,
+    "hwm": null,
+    "lwm": 1819.5,
+    "stop": 1905.46
+  },
+  "TITAN:short": {
+    "symbol": "TITAN",
+    "side": "short",
+    "qty": 100,
+    "entry": 4223.92,
+    "product": "MTF",
+    "atr": 84.54,
+    "k": 2.5,
+    "hwm": null,
+    "lwm": 4223.92,
+    "stop": 4435.27
+  }
+}

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CAN SLIM verdict · Marle-G</title>
+<style>
+  :root{ --bg:#080a0e;--bg2:#0e1116;--card:#14171e;--border:rgba(255,255,255,.08);
+    --ink:#eef1f6;--muted:#9aa3b4;--dim:#646c7a;--mono:'SF Mono',ui-monospace,Consolas,monospace;
+    --saffron:#ff9933;--india-green:#138808;--green:#22c55e;--red:#ef4444;--amber:#fbbf24;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(1100px 520px at 50% -10%,rgba(255,153,51,.05),transparent 60%),var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--border)}
+  .brand{font-family:var(--mono);font-weight:800;letter-spacing:.18em;font-size:13px;display:flex;align-items:center;gap:9px}
+  .brand .mark{width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,var(--saffron),var(--india-green))}
+  .brand .w{background:linear-gradient(90deg,var(--saffron),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tabs{display:flex;gap:16px;font-family:var(--mono);font-size:11px;flex-wrap:wrap}
+  .tabs a{color:var(--dim);text-decoration:none}.tabs a.on{color:var(--saffron)}.tabs a:hover{color:var(--ink)}
+  .wrap{max-width:1080px;margin:0 auto;padding:20px 24px 70px}
+  .top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+  .top input{background:var(--bg2);border:1px solid var(--border);color:var(--ink);border-radius:9px;padding:9px 13px;font-family:var(--mono);font-size:13px;width:160px}
+  .top button{background:linear-gradient(135deg,var(--saffron),var(--india-green));color:#0a0b0f;font-weight:800;border:none;border-radius:9px;padding:0 16px;cursor:pointer;font-family:var(--mono);font-size:12px;height:38px}
+  .verdict{border-radius:16px;padding:22px;margin-bottom:16px;position:relative;overflow:hidden}
+  .verdict.LONG{background:linear-gradient(135deg,rgba(34,197,94,.14),rgba(34,197,94,.02));border:1px solid rgba(34,197,94,.35)}
+  .verdict.SHORT{background:linear-gradient(135deg,rgba(239,68,68,.14),rgba(239,68,68,.02));border:1px solid rgba(239,68,68,.35)}
+  .verdict.NEUTRAL,.verdict.AVOID{background:linear-gradient(135deg,rgba(251,191,36,.10),rgba(251,191,36,.02));border:1px solid rgba(251,191,36,.3)}
+  .vh{font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:.08em;text-transform:uppercase}
+  .vname{font-size:20px;font-weight:800;margin:2px 0 8px}
+  .vbig{font-family:var(--mono);font-weight:900;font-size:42px;line-height:1}
+  .vbig.LONG{color:var(--green)}.vbig.SHORT{color:var(--red)}.vbig.NEUTRAL,.vbig.AVOID{color:var(--amber)}
+  .vmeta{font-family:var(--mono);font-size:13px;color:var(--muted);margin-top:6px}
+  .vlevels{display:flex;gap:18px;margin-top:12px;font-family:var(--mono);font-size:13px;flex-wrap:wrap}
+  .vthesis{font-size:13.5px;line-height:1.6;color:var(--ink);margin-top:12px;background:rgba(0,0,0,.18);border-radius:9px;padding:11px 13px}
+  .gates{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+  .gate{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:13px}
+  .gate.bull{border-left:3px solid var(--green)}.gate.bear{border-left:3px solid var(--red)}.gate.neu{border-left:3px solid var(--dim)}
+  .gate .gl{display:flex;align-items:center;gap:9px}
+  .gate .letter{font-family:var(--mono);font-weight:900;font-size:18px;width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;background:var(--bg2)}
+  .gate .gn{font-size:13px;font-weight:700} .gate .tag{margin-left:auto;font-family:var(--mono);font-size:10px;font-weight:800;padding:2px 7px;border-radius:5px}
+  .gate.bull .tag{background:rgba(34,197,94,.18);color:var(--green)}.gate.bear .tag{background:rgba(239,68,68,.18);color:var(--red)}.gate.neu .tag{background:rgba(255,255,255,.06);color:var(--dim)}
+  .gate .gnote{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:8px}
+  .sh{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-weight:700;margin:18px 0 10px}
+  .links{margin-top:16px;display:flex;gap:16px;font-family:var(--mono);font-size:12px}
+  .links a{color:var(--saffron);text-decoration:none}
+  .loading{text-align:center;color:var(--muted);padding:50px;font-family:var(--mono)}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span></span></div>
+  <div class="tabs">
+    <a href="marle_g_pod.html">home</a><a href="marle_g_equity.html">equity</a><a href="marle_g_volume.html">volume</a><a href="#" class="on">canslim</a><a href="marle_g_portfolio.html">portfolio</a><a href="marle_g_macro_preview.html">macro</a>
+  </div>
+</div>
+<main class="wrap">
+  <div class="top">
+    <input id="q" placeholder="symbol…" spellcheck="false" onkeydown="if(event.key==='Enter')go()">
+    <button onclick="go()">🧬 Run CAN SLIM</button>
+    <span style="font-family:var(--mono);font-size:11px;color:var(--dim)">C·A·N·S·L·I·M + structure → one fused trade verdict</span>
+  </div>
+  <div id="out"><div class="loading">⟳ running all gates…</div></div>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+const qp=new URLSearchParams(location.search);
+let SYM=(qp.get('q')||'TCS').toUpperCase();
+function go(){const v=$('q').value.trim().toUpperCase();if(v)location.href='marle_g_canslim.html?q='+encodeURIComponent(v);}
+const j=async u=>{try{return await (await fetch(u)).json();}catch(e){return null;}};
+const num=x=>(x==null||isNaN(x))?null:+x;
+
+function mapSector(f, sectors){
+  const s=((f&&f.sector)||'').toLowerCase()+' '+((f&&f.industry)||'').toLowerCase();
+  const map=[['it|software|technolog','Nifty IT'],['bank','Nifty Bank'],['financ|insur|nbfc|capital','Nifty FinServ'],
+    ['pharma|health|drug|hospital','Nifty Pharma'],['auto|vehicle','Nifty Auto'],['metal|steel|mining|alumin','Nifty Metal'],
+    ['oil|gas|energy|coal|power|petro','Nifty Energy'],['fmcg|consumer defensive|food|beverage|tobacco','Nifty FMCG'],
+    ['real|realty','Nifty Realty'],['media|entertain','Nifty Media']];
+  for(const [re,nm] of map){ if(new RegExp(re).test(s)){ const m=(sectors||[]).find(x=>x.nm===nm); if(m) return {nm, c1m:m.c1m, c5:m.c5}; } }
+  return null;
+}
+function fib(cd){
+  const c=cd&&cd.candles; if(!c||c.length<60) return null;
+  const n=c.length>800?25:c.length>350?18:12, H=c.map(d=>d.high),L=c.map(d=>d.low); let hh=-1e9,ll=1e9;
+  for(let i=n;i<c.length-n;i++){let isH=true,isL=true;for(let k=i-n;k<=i+n;k++){if(H[k]>H[i])isH=false;if(L[k]<L[i])isL=false;}if(isH)hh=Math.max(hh,H[i]);if(isL)ll=Math.min(ll,L[i]);}
+  if(hh<0||ll>1e8) return null; const cur=c[c.length-1].close, pos=(cur-ll)/(hh-ll);
+  return {hh:+hh.toFixed(1),ll:+ll.toFixed(1),pos,cur};
+}
+
+async function run(){
+  $('q').value=SYM;
+  const [eq,f,sc,vp,mac,cd]=await Promise.all([
+    j('/api/equity/'+SYM), j('/api/fundamentals/'+SYM), j('/api/stock_score/'+SYM),
+    j('/api/volume_position/'+SYM), j('/api/macro'), j('/api/candles/'+SYM+'?period=2y')]);
+  if(!eq||eq.error){ $('out').innerHTML='<div class="loading">No data for '+SYM+'.</div>'; return; }
+  const H=(f&&f.health)||{}, reg=(mac&&mac.regime)||{}, sec=mapSector(f,mac&&mac.sectors), fb=fib(cd);
+  const gates=[];
+  const G=(letter,name,lean,note)=>gates.push({letter,name,lean,note});
+
+  // C — current/quarterly earnings (EPS growth proxy)
+  const eps=num(H['EPS growth']);
+  G('C','Current earnings', eps==null?0:eps>=20?1:eps<=0?-1:0, eps==null?'EPS growth n/a':`EPS growth ${eps}%`);
+  // A — annual earnings & quality
+  const roe=num(H['ROE']), rev=num(H['Rev growth']);
+  const qa=((roe>=15?1:roe!=null&&roe<8?-1:0)+(rev>=12?1:rev!=null&&rev<0?-1:0));
+  G('A','Annual earnings + quality', qa>0?1:qa<0?-1:0, `ROE ${roe??'?'}% · rev ${rev??'?'}% · Q ${f&&f.qscore!=null?f.qscore:'?'}/100`);
+  // N — new high / catalyst
+  const pos=fb?fb.pos:null;
+  G('N','New-high / catalyst', pos==null?0:pos>=0.786?1:pos<=0.4?-1:0,
+    (pos==null?'structure n/a':`${(pos*100).toFixed(0)}% of 2y range`)+((sc&&sc.spike)?' · ⚡ spike catalyst':''));
+  // S — supply/demand (VOLUME, our edge)
+  const sLean=(vp&&vp.control==='bulls'&&vp.direction==='rising')?1:(vp&&vp.control==='bears'&&vp.direction==='falling')?-1:(eq.verdict==='LONG'?1:eq.verdict==='SHORT'?-1:0);
+  G('S','Supply/Demand (volume)', sLean, vp&&!vp.error?`U/D ${vp.ud} vs 50d ${vp.ud_sma50??'?'} · ${vp.quadrant}${vp.ceiling?' · CEILING':''}`:`U/D ${eq.ud} · VCS ${eq.vcs}`);
+  // L — leader or laggard (sector RS)
+  G('L','Leader / Laggard (sector RS)', sec?(sec.c1m>1?1:sec.c1m<-1?-1:0):0, sec?`${sec.nm} 1m ${sec.c1m>0?'+':''}${sec.c1m?.toFixed?sec.c1m.toFixed(1):sec.c1m}%`:'sector RS n/a');
+  // I — institutional accumulation (OBV / A-D)
+  const obv=num(eq.obvSlope);
+  G('I','Institutional flow', obv==null?0:obv>0.1?1:obv<-0.1?-1:0, `OBV slope ${eq.obvSlope} · A/D ${eq.adSlope}`);
+  // M — market direction
+  G('M','Market direction', reg.trend==='BULLISH'?1:reg.trend==='BEARISH'?-1:0, `${reg.regime||'?'} · NIFTY ${reg.trend||'?'} · VIX ${reg.vix??'?'}`);
+
+  // ---- fuse (weight S volume + M macro higher — the gates that backtested as the edge) ----
+  const w=l=>({S:1.6,M:1.4,L:1.2}[l]||1);
+  let score=gates.reduce((a,g)=>a+g.lean*w(g.letter),0);
+  let dir = score>=1.8?'LONG':score<=-1.8?'SHORT':'NEUTRAL';
+  // ceiling override — don't go long into an over-extended U/D ceiling
+  let ceilNote='';
+  if(dir==='LONG' && vp && vp.ceiling){ dir='NEUTRAL'; ceilNote=' (downgraded: U/D at its ceiling — poor R/R for a fresh long)'; }
+  const bull=gates.filter(g=>g.lean>0).length, bear=gates.filter(g=>g.lean<0).length;
+  const conv=Math.min(96, 42+Math.abs(score)*7);
+
+  // trade levels in the verdict's direction
+  const ltp=num(eq.ltp), atr=num(eq.atr)||(ltp*0.02);
+  let target=null,stop=null,tpct=null;
+  if(dir==='LONG'){ target=+(ltp+2*atr).toFixed(1); stop=+(ltp-atr).toFixed(1); }
+  else if(dir==='SHORT'){ target=+(ltp-2*atr).toFixed(1); stop=+(ltp+atr).toFixed(1); }
+  if(target) tpct=+((target/ltp-1)*100).toFixed(1);
+
+  // thesis
+  const pos_g=gates.filter(g=>g.lean>0).map(g=>g.letter), neg_g=gates.filter(g=>g.lean<0).map(g=>g.letter);
+  const thesis = (dir==='NEUTRAL'?'No alignment':dir+' bias')+` — bullish gates [${pos_g.join('')||'—'}], bearish gates [${neg_g.join('')||'—'}]. `+
+    (dir==='SHORT'?`Distribution/weak demand + ${neg_g.includes('L')?'lagging sector':'soft tape'} → fade strength.`:
+     dir==='LONG'?`Accumulation + leadership aligned with the tape → buy strength.`:`Gates conflict — stand aside until S (volume) and M (market) agree.`)+ceilNote;
+
+  $('out').innerHTML=`
+    <div class="verdict ${dir}">
+      <div class="vh">★ CAN SLIM fused verdict · all gates + structure</div>
+      <div class="vname">${SYM} · ${f&&f.name||eq.name||''} ${sec?'· '+sec.nm:''}</div>
+      <div class="vbig ${dir}">${dir}</div>
+      <div class="vmeta">conviction ${conv.toFixed(0)}/100 · gate score ${score>0?'+':''}${score.toFixed(1)} · ${bull} bullish / ${bear} bearish gates</div>
+      ${target?`<div class="vlevels"><span>LTP <b>₹${ltp.toLocaleString('en-IN')}</b></span><span>🎯 target <b style="color:${dir==='LONG'?'var(--green)':'var(--red)'}">₹${target.toLocaleString('en-IN')}</b> (${tpct>0?'+':''}${tpct}%)</span><span>stop <b>₹${stop.toLocaleString('en-IN')}</b></span><span>R:R 2:1</span></div>`:''}
+      <div class="vthesis">${thesis}</div>
+    </div>
+    <div class="sh">The 7 gates · C·A·N·S·L·I·M</div>
+    <div class="gates">
+      ${gates.map(g=>`<div class="gate ${g.lean>0?'bull':g.lean<0?'bear':'neu'}"><div class="gl"><span class="letter">${g.letter}</span><span class="gn">${g.name}</span><span class="tag">${g.lean>0?'BULL':g.lean<0?'BEAR':'NEU'}</span></div><div class="gnote">${g.note}</div></div>`).join('')}
+    </div>
+    ${fb?`<div class="sh">Structure · Fibonacci (2y range)</div><div class="gate neu"><div class="gnote">HH ₹${fb.hh.toLocaleString('en-IN')} · LL ₹${fb.ll.toLocaleString('en-IN')} · price at <b>${(fb.pos*100).toFixed(0)}%</b> · 0.618 = ₹${(fb.ll+0.618*(fb.hh-fb.ll)).toFixed(1)}</div></div>`:''}
+    <div class="links"><a href="marle_g_chart.html?q=${SYM}">📈 interactive chart →</a><a href="marle_g_equity.html?q=${SYM}">full equity breakdown →</a></div>`;
+}
+run();
+</script>
+</body>
+</html>

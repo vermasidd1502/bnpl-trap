@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Volume Pod · Marle-G</title>
+<style>
+  :root{ --bg:#080a0e;--bg2:#0e1116;--card:#14171e;--border:rgba(255,255,255,.08);
+    --ink:#eef1f6;--muted:#9aa3b4;--dim:#646c7a;--mono:'SF Mono',ui-monospace,Consolas,monospace;
+    --saffron:#ff9933;--india-green:#138808;--green:#22c55e;--red:#ef4444;--amber:#fbbf24;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(1100px 520px at 50% -10%,rgba(255,153,51,.05),transparent 60%),var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--border);background:rgba(8,10,14,.8);backdrop-filter:blur(10px);position:sticky;top:0;z-index:10}
+  .brand{font-family:var(--mono);font-weight:800;letter-spacing:.18em;font-size:13px;display:flex;align-items:center;gap:9px}
+  .brand .mark{width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,var(--saffron),var(--india-green))}
+  .brand .w{background:linear-gradient(90deg,var(--saffron),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tabs{display:flex;gap:16px;font-family:var(--mono);font-size:11px;flex-wrap:wrap}
+  .tabs a{color:var(--dim);text-decoration:none} .tabs a.on{color:var(--saffron)} .tabs a:hover{color:var(--ink)}
+  .preview-tag{font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--saffron);border:1px solid var(--saffron);border-radius:5px;padding:3px 7px}
+  .wrap{max-width:1240px;margin:0 auto;padding:22px 24px 70px}
+  .head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+  .head h1{font-size:22px;font-weight:800} .head .sub{font-family:var(--mono);font-size:11px;color:var(--dim)}
+  .bar2{display:flex;gap:10px;align-items:center;margin:14px 0 18px;flex-wrap:wrap}
+  .bar2 input{flex:1;min-width:200px;background:var(--bg2);border:1px solid var(--border);color:var(--ink);border-radius:10px;padding:11px 14px;font-family:var(--mono);font-size:13px}
+  .seg{display:flex;gap:6px} .seg button{font-family:var(--mono);font-size:11px;color:var(--muted);background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;cursor:pointer}
+  .seg button.on{background:var(--saffron);color:#160f02;border-color:var(--saffron);font-weight:700}
+  .legend{font-family:var(--mono);font-size:10.5px;color:var(--dim);margin-bottom:16px}
+  .legend b.g{color:var(--green)} .legend b.r{color:var(--red)}
+  .sector{background:var(--card);border:1px solid var(--border);border-radius:13px;margin-bottom:11px;overflow:hidden}
+  .sh{display:flex;align-items:center;gap:14px;padding:14px 18px;cursor:pointer;user-select:none}
+  .sh:hover{background:rgba(255,255,255,.02)}
+  .sh .nm{font-size:15px;font-weight:700;min-width:160px}
+  .sh .udwrap{flex:1;display:flex;align-items:center;gap:10px;max-width:340px}
+  .sh .track{flex:1;height:8px;background:rgba(255,255,255,.06);border-radius:6px;overflow:hidden}
+  .sh .track span{display:block;height:100%;border-radius:6px}
+  .sh .udn{font-family:var(--mono);font-size:14px;font-weight:800;width:52px;text-align:right}
+  .sh .meta{font-family:var(--mono);font-size:10.5px;color:var(--dim);margin-left:auto;text-align:right}
+  .sh .caret{color:var(--dim);font-family:var(--mono);transition:transform .15s} .sector.open .caret{transform:rotate(90deg)}
+  .body{display:none;border-top:1px solid var(--border)} .sector.open .body{display:block}
+  .ind{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--saffron);font-weight:700;padding:10px 18px 4px;background:rgba(255,153,51,.04)}
+  table{width:100%;border-collapse:collapse}
+  th{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);text-align:right;padding:6px 18px;font-weight:600}
+  th:first-child{text-align:left}
+  td{padding:9px 18px;font-size:13px;border-top:1px solid rgba(255,255,255,.03);text-align:right;font-family:var(--mono)}
+  td:first-child{text-align:left}
+  tr.stk{cursor:pointer} tr.stk:hover{background:rgba(255,153,51,.07)}
+  .sym{font-weight:700;color:var(--ink)} .cmp{color:var(--dim);font-size:11px;margin-left:8px}
+  .udcell{display:inline-flex;align-items:center;gap:8px;justify-content:flex-end;width:100%}
+  .udcell .t{width:70px;height:7px;background:rgba(255,255,255,.06);border-radius:5px;overflow:hidden}
+  .udcell .t span{display:block;height:100%}
+  .pos{color:var(--green)} .neg{color:var(--red)} .neu{color:var(--amber)}
+  .empty{text-align:center;color:var(--muted);padding:50px}
+  .addb{font-family:var(--mono);font-size:11px;color:var(--saffron);background:var(--bg2);border:1px solid var(--saffron);border-radius:8px;padding:8px 12px;cursor:pointer}
+  #addform{background:var(--card);border:1px solid var(--saffron);border-radius:12px;padding:14px;margin-bottom:14px}
+  #gatedpanel{background:var(--card);border:1px solid var(--green);border-radius:12px;padding:14px;margin-bottom:14px}
+  .gatedb{font-family:var(--mono);font-size:11px;color:var(--green);background:var(--bg2);border:1px solid var(--green);border-radius:8px;padding:8px 12px;cursor:pointer}
+  .af-f{display:flex;flex-direction:column;gap:4px}
+  .af-f label{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--dim)}
+  .af-f input,.af-f select{background:var(--bg2);border:1px solid var(--border);color:var(--ink);border-radius:8px;padding:8px 10px;font-family:var(--mono);font-size:12px;min-width:160px}
+  .af-go{background:linear-gradient(135deg,var(--saffron),var(--india-green));color:#0a0b0f;font-weight:800;border:none;border-radius:8px;padding:9px 16px;cursor:pointer;font-family:var(--mono);font-size:12px;height:35px}
+  .edit{margin-left:8px;color:var(--dim);cursor:pointer;font-size:11px}.edit:hover{color:var(--saffron)}
+  .vb{font-family:var(--mono);font-size:9.5px;font-weight:800;padding:2px 7px;border-radius:5px}
+  .vb.LONG{background:rgba(34,197,94,.18);color:var(--green)} .vb.SHORT{background:rgba(239,68,68,.18);color:var(--red)} .vb.FLAT{background:rgba(255,255,255,.06);color:var(--dim)}
+  .tgt{font-family:var(--mono);font-size:9.5px;color:var(--muted);margin-top:3px}
+  .cons{font-weight:800;font-family:var(--mono)}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span></span></div>
+  <div class="tabs">
+    <a href="marle_g_pod.html">home</a><a href="marle_g_equity.html">equity</a><a href="marle_g_volume.html" class="on">volume</a><a href="marle_g_options.html">options</a><a href="marle_g_funds.html">funds</a><a href="marle_g_portfolio.html">portfolio</a><a href="marle_g_macro_preview.html">macro</a><a href="marle_g_dashboard.html">dashboard</a><a href="marle_g_profile.html">profile</a>
+  </div>
+  <span class="preview-tag">PREVIEW</span>
+</div>
+
+<main class="wrap">
+  <div class="head"><h1>Volume Pod</h1><span class="sub" id="sub"></span></div>
+  <div class="bar2">
+    <input id="q" placeholder="filter by symbol or company…" spellcheck="false">
+    <div class="seg"><button id="byud" class="on" onclick="setSort('ud')">sort: U/D</button><button id="byrvol" onclick="setSort('rvol')">RVOL</button></div>
+    <button class="gatedb" onclick="toggleGated()">🎯 Gated longs</button>
+    <button class="addb" onclick="toggleAdd()">➕ Add / edit stock</button>
+  </div>
+  <div class="legend">Up/Down volume ratio over 20 sessions &nbsp;·&nbsp; <b class="g">≥1.5 accumulation</b> &nbsp; <b class="r">≤0.7 distribution</b> &nbsp;·&nbsp; sectors ranked by median U/D &nbsp;·&nbsp; click a stock for full analysis</div>
+  <div id="addform" style="display:none">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+      <div class="af-f"><label>Symbol</label><input id="af-sym" placeholder="e.g. ETERNAL" spellcheck="false"></div>
+      <div class="af-f"><label>Sector</label><select id="af-sec" onchange="afSecChange()"></select></div>
+      <div class="af-f" id="af-newsec-wrap" style="display:none"><label>New sector</label><input id="af-newsec" placeholder="new sector name"></div>
+      <div class="af-f"><label>Industry (sub-sector)</label><select id="af-ind" onchange="afIndChange()"></select></div>
+      <div class="af-f" id="af-newind-wrap" style="display:none"><label>New industry</label><input id="af-newind" placeholder="new sub-sector name"></div>
+      <button class="af-go" onclick="afSubmit()">Add / Update</button>
+    </div>
+    <div id="af-msg" style="font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:9px"></div>
+  </div>
+  <div id="gatedpanel" style="display:none"></div>
+  <div id="out"></div>
+</main>
+
+<script src="marleg_stockmodal.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+let DATA={sectors:[]}, SORT='ud', Q='';
+const udcolor=u=>u>=1.5?'var(--green)':u<=0.7?'var(--red)':'var(--amber)';
+const cls=x=>x>0?'pos':x<0?'neg':'neu';
+const pct=x=>(x>0?'+':'')+(+x).toFixed(2)+'%';
+
+async function load(){
+  try{const r=await fetch('/api/volume_pod');DATA=await r.json();}catch(e){DATA={sectors:[]};}
+  $('sub').textContent=DATA.error?DATA.error:`${DATA.universe||0} stocks · ${(DATA.sectors||[]).length} sectors · as of ${DATA.asof||'—'}`;
+  render();
+}
+function setSort(s){SORT=s;$('byud').classList.toggle('on',s==='ud');$('byrvol').classList.toggle('on',s==='rvol');render();}
+$ && ($('q')?.addEventListener('input',e=>{Q=e.target.value.trim().toUpperCase();render();}));
+
+function render(){
+  const sectors=(DATA.sectors||[]).map(sec=>{
+    let stocks=sec.stocks.filter(s=>!Q||s.s.includes(Q)||(s.n||'').toUpperCase().includes(Q));
+    stocks=stocks.slice().sort((a,b)=> SORT==='rvol'?((b.rvol||0)-(a.rvol||0)):(b.ud-a.ud));
+    return {...sec,_stocks:stocks};
+  }).filter(sec=>sec._stocks.length);
+  if(!sectors.length){$('out').innerHTML=`<div class="empty">${DATA.error||'No matches.'}</div>`;return;}
+  const openAll=!!Q;
+  $('out').innerHTML=sectors.map((sec,i)=>{
+    const w=Math.max(4,Math.min(100,sec.ud/3*100));
+    // group stocks by industry
+    const byInd={}; sec._stocks.forEach(s=>{(byInd[s.industry]=byInd[s.industry]||[]).push(s);});
+    const inds=Object.entries(byInd).sort((a,b)=>b[1].length-a[1].length);
+    const rows=inds.map(([ind,list])=>`
+      <div class="ind">${ind} · ${list.length}</div>
+      <table><thead><tr><th>Symbol</th><th>U/D</th><th>RVOL</th><th>Chg</th><th>Price</th><th>Bias · target</th></tr></thead><tbody>
+      ${list.map(s=>`<tr class="stk" onclick="openStock('${s.s}')">
+        <td><span class="sym">${s.s}</span><span class="cmp">${s.n||''}</span><span class="edit" title="open interactive chart" onclick="event.stopPropagation();location.href='marle_g_chart.html?q=${s.s}'">📈</span><span class="edit" title="edit sector/industry" onclick="event.stopPropagation();editStock('${s.s}','${sec.sector}','${(s.industry||'').replace(/'/g,'')}')">✎</span></td>
+        <td><span class="udcell"><span class="t"><span style="width:${Math.max(4,Math.min(100,s.ud/3*100))}%;background:${udcolor(s.ud)}"></span></span><b style="color:${udcolor(s.ud)}">${s.ud}</b></span></td>
+        <td>${s.rvol==null?'—':s.rvol+'×'}</td>
+        <td class="${cls(s.chg)}">${pct(s.chg)}</td>
+        <td>₹${(s.price||0).toLocaleString('en-IN')}</td>
+        <td><span class="vb ${s.verdict||'FLAT'}">${s.verdict||'—'}</span>${s.target?`<div class="tgt">→ ₹${s.target.toLocaleString('en-IN')} (${s.tgtpct>0?'+':''}${s.tgtpct}%)</div>`:''}</td></tr>`).join('')}
+      </tbody></table>`).join('');
+    return `<div class="sector${openAll||i===0?' open':''}">
+      <div class="sh" onclick="this.parentNode.classList.toggle('open')">
+        <span class="caret">▶</span>
+        <span class="nm">${sec.sector}</span>
+        <span class="udwrap"><span class="track"><span style="width:${w}%;background:${udcolor(sec.ud)}"></span></span><span class="udn" style="color:${udcolor(sec.ud)}">${sec.ud}</span></span>
+        <span class="meta">${sec.consensus?`<span class="cons" style="color:${sec.consensus==='LONG'?'var(--green)':sec.consensus==='SHORT'?'var(--red)':'var(--amber)'}">▸ ${sec.consensus}</span> ${sec.longs||0}L/${sec.shorts||0}S · `:''}${sec._stocks.length} stk · ${sec.strong} strong</span>
+      </div>
+      <div class="body">${rows}</div>
+    </div>`;
+  }).join('');
+}
+// ---- add / edit stocks (features: choose existing or create new sector/industry) ----
+function taxonomy(){ const t={}; (DATA.sectors||[]).forEach(sec=>{ t[sec.sector]=t[sec.sector]||new Set(); sec.stocks.forEach(s=>t[sec.sector].add(s.industry)); }); return t; }
+function opt(v,sel){ return `<option ${v===sel?'selected':''}>${v}</option>`; }
+function populateSectors(selSec,selInd){
+  const t=taxonomy(), secs=Object.keys(t).filter(s=>s!=='Others').sort();
+  $('af-sec').innerHTML = secs.map(s=>opt(s,selSec)).join('') + opt('Others',selSec) + '<option value="__new">➕ New sector…</option>';
+  if(selSec==='__new') $('af-sec').value='__new';
+  afSecChange(selInd);
+}
+function afSecChange(selInd){
+  const sec=$('af-sec').value;
+  $('af-newsec-wrap').style.display = sec==='__new'?'block':'none';
+  const inds = sec==='__new' ? [] : [...(taxonomy()[sec]||[])].sort();
+  $('af-ind').innerHTML = inds.map(i=>opt(i,selInd)).join('') + '<option value="__new">➕ New industry…</option>';
+  afIndChange();
+}
+function afIndChange(){ $('af-newind-wrap').style.display = $('af-ind').value==='__new'?'block':'none'; }
+function toggleAdd(){ const f=$('addform'); const sh=f.style.display==='none'; f.style.display=sh?'block':'none'; if(sh) populateSectors(); }
+function editStock(sym,sec,ind){ $('addform').style.display='block'; $('af-sym').value=sym; populateSectors(sec,ind); window.scrollTo(0,0); }
+async function afSubmit(){
+  const sym=$('af-sym').value.trim().toUpperCase();
+  if(!sym){ $('af-msg').textContent='enter a symbol'; return; }
+  let sector=$('af-sec').value; if(sector==='__new') sector=$('af-newsec').value.trim();
+  let industry=$('af-ind').value; if(industry==='__new') industry=$('af-newind').value.trim();
+  sector=sector||'Others'; industry=industry||sector;
+  $('af-msg').textContent='saving '+sym+'…';
+  try{
+    const r=await fetch('/api/volume_pod/add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({symbol:sym,sector,industry})});
+    const j=await r.json();
+    $('af-msg').textContent = j.error ? ('error: '+j.error) : (j.warn ? (sym+': '+j.warn) : (sym+' → '+sector+' / '+industry+'  ✓'));
+    if(!j.error) await load();
+  }catch(e){ $('af-msg').textContent='failed'; }
+}
+// ---- gated longs (O'Neil/CAN-SLIM confluence: leading sector + U/D>MA & rising + price>0.618 fib) ----
+function toggleGated(){ const f=$('gatedpanel'); const sh=f.style.display==='none'; f.style.display=sh?'block':'none'; if(sh) loadGated(); }
+async function loadGated(){
+  const f=$('gatedpanel'); f.innerHTML='<span style="color:var(--dim);font-family:var(--mono);font-size:12px">⟳ loading gated longs…</span>';
+  try{
+    const d=await (await fetch('/api/gated')).json();
+    if(d.error){ f.innerHTML='<span style="color:var(--dim)">'+d.error+'</span>'; return; }
+    f.innerHTML=`<div class="sh" style="color:var(--green)">🎯 GATED LONGS · ${d.n}/${d.universe} pass all 3 gates · leading sector + U/D&gt;MA&rising + price&gt;0.618 fib · as of ${d.asof||''}</div>`+
+      (d.picks&&d.picks.length?`<table><thead><tr><th>Symbol</th><th>Sector</th><th>U/D vs MA</th><th>Fib</th><th>Price</th><th>Target</th></tr></thead><tbody>`+
+        d.picks.map(p=>`<tr class="stk" onclick="openStock('${p.s}')"><td><span class="sym">${p.s}</span><span class="cmp">${p.n||''}</span><span class="edit" title="chart" onclick="event.stopPropagation();location.href='marle_g_chart.html?q=${p.s}'">📈</span></td>
+          <td style="text-align:left;color:var(--muted)">${p.sector}</td>
+          <td><b style="color:var(--green)">${p.ud}</b> &gt; ${p.ud_ma}</td><td>${p.fib}</td>
+          <td>₹${(p.price||0).toLocaleString('en-IN')}</td>
+          <td><b style="color:var(--green)">₹${(p.target||0).toLocaleString('en-IN')}</b> (+${p.tgtpct}%)</td></tr>`).join('')+`</tbody></table>`
+        :'<div style="color:var(--muted);padding:12px">No stocks pass all gates right now — the gates are strict by design.</div>');
+  }catch(e){ f.innerHTML='<span style="color:var(--dim)">unavailable</span>'; }
+}
+load();
+</script>
+</body>
+</html>

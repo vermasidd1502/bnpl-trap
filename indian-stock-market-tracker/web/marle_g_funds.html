@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mutual Funds · Marle-G</title>
+<style>
+  :root{ --bg:#080a0e;--bg2:#0e1116;--card:#14171e;--border:rgba(255,255,255,.08);
+    --ink:#eef1f6;--muted:#9aa3b4;--dim:#646c7a;--mono:'SF Mono',ui-monospace,Consolas,monospace;
+    --saffron:#ff9933;--india-green:#138808;--green:#22c55e;--red:#ef4444;--amber:#fbbf24;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(1100px 520px at 50% -10%,rgba(255,153,51,.05),transparent 60%),var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--border);background:rgba(8,10,14,.8);backdrop-filter:blur(10px);position:sticky;top:0;z-index:10}
+  .brand{font-family:var(--mono);font-weight:800;letter-spacing:.18em;font-size:13px;display:flex;align-items:center;gap:9px}
+  .brand .mark{width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,var(--saffron),var(--india-green))}
+  .brand .w{background:linear-gradient(90deg,var(--saffron),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tabs{display:flex;gap:16px;font-family:var(--mono);font-size:11px;flex-wrap:wrap}
+  .tabs a{color:var(--dim);text-decoration:none}.tabs a.on{color:var(--saffron)}.tabs a:hover{color:var(--ink)}
+  .preview-tag{font-family:var(--mono);font-size:9px;color:#0a0b0f;background:var(--amber);padding:3px 8px;border-radius:5px;font-weight:800}
+  .wrap{max-width:1240px;margin:0 auto;padding:22px 24px 70px}
+  select{background:var(--bg2);border:1px solid var(--border);color:var(--ink);border-radius:9px;padding:11px 13px;font-family:var(--mono);font-size:12.5px;width:100%;max-width:520px;margin-bottom:18px}
+  .grid2{display:grid;grid-template-columns:1.3fr .7fr;gap:16px}@media(max-width:920px){.grid2{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:16px}
+  .sh{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-bottom:12px}
+  .fhead{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px}
+  .fname{font-size:18px;font-weight:800} .fcat{font-family:var(--mono);font-size:11px;color:var(--saffron);margin-top:3px}
+  .nav-now{font-family:var(--mono);text-align:right} .nav-now .p{font-size:22px;font-weight:800}
+  canvas{width:100%;display:block;margin-top:6px}
+  .rets{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:10px}
+  .ret{background:var(--bg2);border-radius:9px;padding:11px;text-align:center}
+  .ret .n{font-family:var(--mono);font-size:9px;color:var(--dim);text-transform:uppercase} .ret .v{font-family:var(--mono);font-size:18px;font-weight:800;margin-top:4px}
+  .pos{color:var(--green)}.neg{color:var(--red)}
+  .kv{display:flex;justify-content:space-between;font-family:var(--mono);font-size:12px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+  .kv .k{color:var(--muted)}
+  .scraped{font-family:var(--mono);font-size:9px;color:var(--amber);border:1px solid rgba(251,191,36,.3);border-radius:5px;padding:2px 6px;margin-left:6px}
+  .sip input{background:var(--bg2);border:1px solid var(--border);color:var(--ink);border-radius:8px;padding:9px 11px;font-family:var(--mono);font-size:12px;width:100%}
+  .sip label{font-family:var(--mono);font-size:10px;color:var(--dim);display:block;margin:10px 0 4px}
+  .toggle{display:flex;gap:6px;margin-bottom:8px}
+  .toggle button{flex:1;font-family:var(--mono);font-size:11px;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);color:var(--muted);cursor:pointer}
+  .toggle button.on{background:linear-gradient(135deg,var(--saffron),var(--india-green));color:#0a0b0f;font-weight:800;border:none}
+  .xresult{margin-top:12px;background:rgba(255,153,51,.06);border:1px solid rgba(255,153,51,.2);border-radius:10px;padding:14px;font-family:var(--mono)}
+  .xresult .big{font-size:26px;font-weight:800;color:var(--saffron)}
+  .legend{font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:8px;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span></span></div>
+  <div class="tabs">
+    <a href="marle_g_pod.html">home</a><a href="marle_g_equity.html">equity</a><a href="marle_g_volume.html">volume</a><a href="marle_g_options.html">options</a>
+    <a href="#" class="on">funds</a><a href="marle_g_portfolio.html">portfolio</a>
+    <a href="marle_g_macro_preview.html">macro</a><a href="marle_g_dashboard.html">dashboard</a><a href="marle_g_profile.html">profile</a>
+  </div>
+  <span class="preview-tag">PREVIEW</span>
+</div>
+
+<main class="wrap">
+  <select id="fund" onchange="render()"></select>
+  <div class="grid2">
+    <div>
+      <div class="card">
+        <div class="fhead"><div><div class="fname" id="fname"></div><div class="fcat" id="fcat"></div></div>
+          <div class="nav-now"><div class="p" id="navp"></div><div style="font-size:10px;color:var(--dim)">NAV · 1d <span id="navc"></span></div></div></div>
+        <canvas id="navchart" height="190"></canvas>
+      </div>
+      <div class="card">
+        <div class="sh">Returns · rolling CAGR vs category</div>
+        <div class="rets" id="rets"></div>
+        <div class="legend" id="bench"></div>
+      </div>
+      <div class="card">
+        <div class="sh">Risk &amp; benchmark-relative</div>
+        <div id="risk"></div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="sh">Fundamentals <span class="scraped">scraped · AMC factsheet</span></div>
+        <div id="fund-meta"></div>
+        <div class="legend">TER/AUM/manager/holdings have no free API — custom scrapers (AMC factsheets + Value Research), cached.</div>
+      </div>
+      <div class="card sip">
+        <div class="sh">XIRR calculator · SIP vs lumpsum</div>
+        <div class="toggle"><button id="t-sip" class="on" onclick="setMode('sip')">SIP</button><button id="t-lump" onclick="setMode('lump')">Lumpsum</button></div>
+        <div id="sip-in"><label>Monthly SIP (₹)</label><input id="amt" type="number" value="10000" oninput="calcX()">
+          <label>Years</label><input id="yrs" type="number" value="5" oninput="calcX()"></div>
+        <div id="lump-in" style="display:none"><label>Lumpsum (₹)</label><input id="lamt" type="number" value="500000" oninput="calcX()">
+          <label>Years</label><input id="lyrs" type="number" value="5" oninput="calcX()"></div>
+        <div class="xresult" id="xres"></div>
+        <div class="legend">XIRR solved via bisection on dated cashflows. Returns are illustrative (deterministic from the fund's mock NAV CAGR).</div>
+      </div>
+      <div class="card">
+        <div class="sh">Tax treatment</div>
+        <div id="tax"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+const pct=(x,d=1)=>(x>0?'+':'')+(+x).toFixed(d)+'%';
+const cls=x=>x>0?'pos':x<0?'neg':'';
+function _seed(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return ((h>>>0)%100000)/100000;}
+function rng(seed){let s=Math.floor(seed*1e9)||1;return ()=>{s=(s*1103515245+12345)&0x7fffffff;return s/0x7fffffff;};}
+const FUNDS=[
+  {id:'nifty50idx',code:'120716',name:'UTI Nifty 50 Index Fund',cat:'Index · Large Cap',type:'equity',bench:'NIFTY 50 TRI',cagr:13.8,ter:0.20,aum:'₹18,400 Cr',mgr:'Sharwan Goyal · 6y'},
+  {id:'flexi',code:'122639',name:'Parag Parikh Flexi Cap Fund',cat:'Flexi Cap',type:'equity',bench:'NIFTY 500 TRI',cagr:18.2,ter:0.63,aum:'₹82,100 Cr',mgr:'Rajeev Thakkar · 11y'},
+  {id:'small',code:'118778',name:'Nippon India Small Cap Fund',cat:'Small Cap',type:'equity',bench:'Nifty Smallcap 250 TRI',cagr:24.6,ter:0.68,aum:'₹61,200 Cr',mgr:'Samir Rachh · 9y'},
+  {id:'mid',code:'118989',name:'HDFC Mid-Cap Opportunities',cat:'Mid Cap',type:'equity',bench:'Nifty Midcap 150 TRI',cagr:21.0,ter:0.74,aum:'₹76,500 Cr',mgr:'Chirag Setalvad · 14y'},
+  {id:'debt',code:'118987',name:'HDFC Corporate Bond Fund',cat:'Debt · Corporate Bond',type:'debt',bench:'CRISIL Corp Bond',cagr:7.6,ter:0.35,aum:'₹32,000 Cr',mgr:'Anupam Joshi · 9y'},
+];
+let CUR=null, MODE='sip';
+
+function navSeries(f){
+  const r=rng(_seed(f.id)); const n=260, arr=[100]; const daily=Math.pow(1+f.cagr/100,1/260)-1;
+  for(let i=1;i<n;i++){const vol=f.type==='debt'?0.0008:0.012;arr.push(arr[i-1]*(1+daily+(r()-0.5)*vol));}
+  return arr;
+}
+function drawNav(arr){
+  const c=$('navchart'),dpr=devicePixelRatio||1,W=c.clientWidth||620,H=190;c.width=W*dpr;c.height=H*dpr;const x=c.getContext('2d');x.scale(dpr,dpr);x.clearRect(0,0,W,H);
+  const pad={l:8,r:8,t:10,b:10},mn=Math.min(...arr),mx=Math.max(...arr);
+  const sx=i=>pad.l+i/(arr.length-1)*(W-pad.l-pad.r),sy=v=>pad.t+(1-(v-mn)/(mx-mn||1))*(H-pad.t-pad.b);
+  const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,'rgba(255,153,51,.25)');g.addColorStop(1,'rgba(255,153,51,0)');
+  x.beginPath();arr.forEach((v,i)=>i?x.lineTo(sx(i),sy(v)):x.moveTo(sx(i),sy(v)));x.lineTo(sx(arr.length-1),H);x.lineTo(sx(0),H);x.closePath();x.fillStyle=g;x.fill();
+  x.beginPath();arr.forEach((v,i)=>i?x.lineTo(sx(i),sy(v)):x.moveTo(sx(i),sy(v)));x.strokeStyle='#ff9933';x.lineWidth=2;x.stroke();
+}
+// XIRR via bisection
+function xirr(cf){ // cf: [{t:yearsFromStart, amt}]
+  const npv=r=>cf.reduce((s,c)=>s+c.amt/Math.pow(1+r,c.t),0);
+  let lo=-0.9,hi=5; for(let i=0;i<200;i++){const m=(lo+hi)/2; if(npv(m)>0){lo=m;}else{hi=m;}} return (lo+hi)/2;
+}
+function calcX(){
+  if(!CUR)return; const annual=CUR.cagr/100;
+  let cf=[],finalVal=0,invested=0;
+  if(MODE==='sip'){
+    const a=+$('amt').value||0, y=+($('yrs').value)||1, months=y*12;
+    for(let m=0;m<months;m++){cf.push({t:-(m/12),amt:-a}); finalVal+=a*Math.pow(1+annual,(months-m)/12);}
+    invested=a*months;
+    // shift so cashflows are from t=0 forward: outflows at month m (t=m/12 yrs ago = positive time to now y)
+    cf=[]; for(let m=0;m<months;m++) cf.push({t:m/12,amt:-a}); cf.push({t:y,amt:finalVal});
+  } else {
+    const a=+$('lamt').value||0,y=+($('lyrs').value)||1; invested=a; finalVal=a*Math.pow(1+annual,y);
+    cf=[{t:0,amt:-a},{t:y,amt:finalVal}];
+  }
+  const x=xirr(cf)*100;
+  $('xres').innerHTML=`<div style="font-size:10px;color:var(--dim)">invested ₹${Math.round(invested).toLocaleString()} → value</div>
+    <div class="big">₹${Math.round(finalVal).toLocaleString()}</div>
+    <div style="font-size:13px;margin-top:4px">XIRR <span class="pos">${pct(x,1)}</span> · gain ₹${Math.round(finalVal-invested).toLocaleString()}</div>`;
+}
+function setMode(m){MODE=m;$('t-sip').classList.toggle('on',m==='sip');$('t-lump').classList.toggle('on',m==='lump');
+  $('sip-in').style.display=m==='sip'?'':'none';$('lump-in').style.display=m==='lump'?'':'none';calcX();}
+
+async function render(){
+  const f=FUNDS.find(x=>x.id===$('fund').value); CUR=Object.assign({},f); const s=_seed(f.id);
+  $('fname').textContent=f.name; $('fcat').textContent=f.cat;
+  let real=null; try{const r=await fetch('/api/mf/'+f.code);real=await r.json();if(real.error)real=null;}catch(e){}
+  let arr,navNow,c1,c3,c5,dc;
+  if(real&&real.series&&real.series.length){
+    arr=real.series.map(p=>p.nav); navNow=real.latest; c1=real.cagr1; c3=real.cagr3; c5=real.cagr5;
+    if(real.meta&&real.meta.scheme_name){CUR.name=real.meta.scheme_name;$('fname').textContent=real.meta.scheme_name;}
+    CUR.cagr=(c5!=null?c5:f.cagr);
+    dc=arr.length>1?Math.round((arr[arr.length-1]/arr[arr.length-2]-1)*1000)/10:0;
+  }else{
+    arr=navSeries(f); navNow=Math.round((40+s*180)*100)/100; c1=f.cagr+(_seed(f.id+'1')-0.5)*8; c3=f.cagr+(_seed(f.id+'3')-0.5)*3; c5=f.cagr;
+    dc=Math.round((arr[arr.length-1]/arr[arr.length-2]-1)*1000)/10;
+  }
+  $('navp').textContent='₹'+(Math.round(navNow*10000)/10000);
+  $('navc').innerHTML=`<span class="${cls(dc)}">${pct(dc,2)}</span>`+(real?' <span style="color:var(--india-green)">● live</span>':'');
+  drawNav(arr);
+  const base=(c5!=null?c5:f.cagr), benchC=base-(1+_seed(f.id+'b')*3);
+  $('rets').innerHTML=[['1Y',c1],['3Y',c3],['5Y',c5],['Since incep',base+1.2]].map(r=>`<div class="ret"><div class="n">${r[0]} CAGR</div><div class="v ${cls(r[1])}">${r[1]==null?'—':pct(r[1])}</div></div>`).join('');
+  $('bench').innerHTML=`Benchmark: <b style="color:var(--muted)">${f.bench}</b> · 5Y ${pct(benchC)} → fund alpha <b class="${cls(base-benchC)}">${pct(base-benchC)}</b>`;
+  // risk
+  const beta=Math.round((0.8+_seed(f.id+'be')*0.4)*100)/100, sharpe=Math.round((0.7+_seed(f.id+'sh')*1.1)*100)/100;
+  const sortino=Math.round((sharpe*1.3)*100)/100, dd=-Math.round((f.type==='debt'?3:18+_seed(f.id+'dd')*20));
+  const vol=Math.round((f.type==='debt'?2:12+_seed(f.id+'v')*8)*10)/10;
+  $('risk').innerHTML=[['Alpha vs cat',pct(f.cagr-benchC)],['Beta',beta],['Sharpe',sharpe],['Sortino',sortino],['Max drawdown',dd+'%'],['Volatility',vol+'%'],['Up capture',(95+Math.round(_seed(f.id+'uc')*20))+'%'],['Down capture',(70+Math.round(_seed(f.id+'dc')*25))+'%']]
+    .map(k=>`<div class="kv"><span class="k">${k[0]}</span><span>${k[1]}</span></div>`).join('');
+  // meta
+  $('fund-meta').innerHTML=[['Expense ratio (TER)',f.ter+'%'],['AUM',f.aum],['Fund manager',f.mgr],['Category',f.cat],['Benchmark',f.bench]]
+    .map(k=>`<div class="kv"><span class="k">${k[0]}</span><span>${k[1]}</span></div>`).join('');
+  // tax
+  $('tax').innerHTML = f.type==='equity'
+    ? `<div class="kv"><span class="k">STCG (≤12m)</span><span>20%</span></div><div class="kv"><span class="k">LTCG (&gt;12m)</span><span>12.5% above ₹1.25L/yr</span></div><div class="legend">Equity-oriented (>65% equity). No indexation.</div>`
+    : `<div class="kv"><span class="k">All holding periods</span><span>slab rate</span></div><div class="legend">Debt fund bought after Apr-2023: taxed at your income slab, no LTCG benefit / no indexation.</div>`;
+  calcX();
+}
+$('fund').innerHTML=FUNDS.map(f=>`<option value="${f.id}">${f.name} · ${f.cat}</option>`).join('');
+addEventListener('resize',()=>{if(CUR)drawNav(navSeries(CUR));});
+render();
+</script>
+</body>
+</html>

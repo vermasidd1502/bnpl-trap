@@ -1,0 +1,5 @@
+groww-secrets/
+__pycache__/
+*.pyc
+.env
+*.output

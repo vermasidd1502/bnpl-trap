@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marle-G · India Equity &amp; Portfolio Intelligence</title>
+<style>
+  :root{
+    --bg:#080a0e; --bg2:#0e1116; --card:#14171e; --border:rgba(255,255,255,.08);
+    --ink:#eef1f6; --muted:#9aa3b4; --dim:#646c7a;
+    --saffron:#ff9933; --saffron-deep:#f97316; --green:#22c55e; --green-deep:#15a34a; --india-green:#138808;
+    --red:#ef4444; --mono:'SF Mono',ui-monospace,'Cascadia Code',Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(1200px 600px at 50% -10%,rgba(255,153,51,.06),transparent 60%),var(--bg);
+    color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
+
+  /* top bar */
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 26px;border-bottom:1px solid var(--border);
+    background:rgba(8,10,14,.7);backdrop-filter:blur(10px);position:sticky;top:0;z-index:20}
+  .brand{font-family:var(--mono);font-weight:800;letter-spacing:.18em;font-size:15px;display:flex;align-items:center;gap:10px}
+  .brand .mark{width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,var(--saffron),var(--india-green));display:inline-block;box-shadow:0 0 14px rgba(255,153,51,.4)}
+  .brand .w{background:linear-gradient(90deg,var(--saffron),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .nav .meta{font-family:var(--mono);font-size:10.5px;color:var(--dim);letter-spacing:.1em}
+
+  /* ticker strip */
+  .ticker{display:flex;gap:26px;flex-wrap:wrap;padding:9px 26px;border-bottom:1px solid var(--border);background:var(--bg2);font-family:var(--mono);font-size:11.5px}
+  .ticker .t{color:var(--muted)} .ticker .t b{color:var(--ink)} .up{color:var(--green)} .down{color:var(--red)}
+  .ticker .chip{color:var(--saffron)}
+
+  /* hero */
+  .hero{position:relative;overflow:hidden;padding:64px 26px 40px;text-align:center}
+  .chakra{position:absolute;width:520px;height:520px;left:50%;top:-200px;transform:translateX(-50%);pointer-events:none;
+    border-radius:50%;border:1px solid rgba(255,153,51,.10);
+    background:radial-gradient(circle, rgba(255,153,51,.10), rgba(19,136,8,.05) 45%, transparent 62%)}
+  .hero h1{font-size:60px;line-height:1;font-weight:900;letter-spacing:.02em;position:relative}
+  .hero h1 .a{background:linear-gradient(90deg,var(--saffron),#fff 55%,var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero .tag{margin-top:14px;font-size:15px;color:var(--muted);max-width:680px;margin-left:auto;margin-right:auto;line-height:1.6;position:relative}
+  .hero .kick{font-family:var(--mono);font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--saffron);font-weight:700;position:relative}
+  .flag-bar{height:4px;width:120px;margin:20px auto 0;border-radius:3px;background:linear-gradient(90deg,var(--saffron) 0 33%,#e8ecf2 33% 66%,var(--india-green) 66% 100%);position:relative}
+
+  /* tiles */
+  .wrap{max-width:1180px;margin:0 auto;padding:18px 26px 70px}
+  .sec-h{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin:26px 4px 12px;font-weight:700}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+  .tile{display:block;text-decoration:none;color:inherit;background:var(--card);border:1px solid var(--border);border-radius:14px;
+    padding:18px 18px 16px;position:relative;transition:.18s;overflow:hidden}
+  .tile::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--saffron);opacity:.0;transition:.18s}
+  a.tile:hover{transform:translateY(-3px);border-color:rgba(255,153,51,.5);box-shadow:0 10px 30px rgba(0,0,0,.4),0 0 0 1px rgba(255,153,51,.15)}
+  a.tile:hover::before{opacity:1}
+  .tile.green::before{background:var(--green)}
+  .tile .ic{font-size:26px}
+  .tile .ttl{font-size:16px;font-weight:700;margin-top:10px;display:flex;align-items:center;gap:8px}
+  .tile .ds{font-size:12.5px;color:var(--muted);margin-top:6px;line-height:1.5}
+  .tile .meta{font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:12px;letter-spacing:.04em}
+  .tile.dim{opacity:.62}
+  .badge{font-family:var(--mono);font-size:9px;font-weight:800;letter-spacing:.08em;padding:3px 7px;border-radius:5px;text-transform:uppercase}
+  .b-live{background:rgba(34,197,94,.16);color:var(--green)}
+  .b-prev{background:rgba(255,153,51,.16);color:var(--saffron)}
+  .b-plan{background:rgba(255,255,255,.06);color:var(--dim)}
+
+  .foot{max-width:1180px;margin:0 auto;padding:24px 26px 50px;border-top:1px solid var(--border);font-family:var(--mono);font-size:11px;color:var(--dim);line-height:1.9}
+  .foot b{color:var(--muted)}
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span></span></div>
+  <div class="meta">INDIA · NSE/BSE · paper pod</div>
+</div>
+
+<div class="ticker">
+  <span class="t">NIFTY 50 <b>24,180.5</b> <span class="down">−1.42%</span></span>
+  <span class="t">SENSEX <b>79,420</b> <span class="down">−1.28%</span></span>
+  <span class="t">INDIA VIX <b>17.8</b> <span class="up">+6.1%</span></span>
+  <span class="t">USD/INR <b>85.92</b> <span class="down">+0.34%</span></span>
+  <span class="t">REPO <b>6.00%</b></span>
+  <span class="t">REGIME <span class="chip">RISK-OFF</span></span>
+  <span class="t" style="color:var(--dim)">· representative figures</span>
+</div>
+
+<section class="hero">
+  <div class="chakra"></div>
+  <div class="kick">India Equity &amp; Portfolio Intelligence</div>
+  <h1><span class="a">Marle·G</span></h1>
+  <p class="tag">Stocks, ETFs, options &amp; mutual funds on one screen — a volume-first equity engine,
+    a deep India macro tracker, and a tax-aware paper portfolio. Built on a free, no-broker stack.</p>
+  <div class="flag-bar"></div>
+</section>
+
+<main class="wrap">
+
+  <div class="sec-h">The three monitors</div>
+  <div class="grid">
+    <a class="tile" href="marle_g_equity.html">
+      <div class="ic">📈</div>
+      <div class="ttl">Equity Monitor <span class="badge b-live">live</span></div>
+      <div class="ds">Stocks &amp; ETFs. <b style="color:var(--saffron)">Volume-primary</b> LONG/SHORT verdict — U/D, OBV/ADL, CMF, VSA signatures, delivery %. Price TA confirms.</div>
+      <div class="meta">NSE/BSE · yfinance + delivery-% scraper</div>
+    </a>
+
+    <a class="tile" href="marle_g_options.html">
+      <div class="ic">⚙️</div>
+      <div class="ttl">Options / F&amp;O <span class="badge b-live">live</span></div>
+      <div class="ds">NSE option chain — OI, PCR, max-pain, IV, OI-buildup. The OI-wall panel doubles as a free positioning "book".</div>
+      <div class="meta">NSE F&amp;O scrape · fragile from US IP</div>
+    </a>
+
+    <a class="tile" href="marle_g_funds.html">
+      <div class="ic">🪙</div>
+      <div class="ttl">Mutual Funds <span class="badge b-live">live</span></div>
+      <div class="ds">NAV analytics — rolling CAGR, alpha/beta vs category, Sharpe, drawdown, SIP vs lumpsum XIRR, fund overlap.</div>
+      <div class="meta">AMFI + mfapi.in · custom factsheet scrapers</div>
+    </a>
+  </div>
+
+  <div class="sec-h">Context &amp; account</div>
+  <div class="grid">
+    <a class="tile green" href="marle_g_macro_preview.html">
+      <div class="ic">🌐</div>
+      <div class="ttl">Macro Tracker <span class="badge b-live">live preview</span></div>
+      <div class="ds">10 sections — NIFTY regime, FII/DII flows, G-Sec curve, RBI corridor, sector rotation, the rupee. <b style="color:var(--saffron)">Click a sector → its stocks → build a watchlist.</b></div>
+      <div class="meta">open →</div>
+    </a>
+
+    <a class="tile green" href="marle_g_dashboard.html">
+      <div class="ic">⭐</div>
+      <div class="ttl">Dashboard <span class="badge b-live">live</span></div>
+      <div class="ds">Your saved watchlists + opening-bell analysis — pre-open gap, opening RVOL, delivery %, and the volume verdict for each name at the open.</div>
+      <div class="meta">open →</div>
+    </a>
+
+    <a class="tile" href="marle_g_portfolio.html">
+      <div class="ic">💼</div>
+      <div class="ttl">Portfolio <span class="badge b-live">live</span></div>
+      <div class="ds">Tax-aware paper book — shares + MF units, mark-to-market, P&amp;L history, STCG/LTCG lots. Ports from Apollo.</div>
+      <div class="meta">SQLite · XIRR · India tax engine</div>
+    </a>
+
+    <a class="tile" href="marle_g_profile.html">
+      <div class="ic">👤</div>
+      <div class="ttl">Profile / User <span class="badge b-live">live</span></div>
+      <div class="ds">Login, risk-profile onboarding survey, watchlists, saved selections. Session-based users. Ports from Apollo.</div>
+      <div class="meta">accounts · onboarding</div>
+    </a>
+
+    <a class="tile green" href="marle_g_architecture_3d.html">
+      <div class="ic">🧠</div>
+      <div class="ttl">Architecture (3D) <span class="badge b-live">live</span></div>
+      <div class="ds">The pod as a neural graph — Data → Adapters → Dispatch → Analytics → Portfolio → Interface, with live signal pulses.</div>
+      <div class="meta">open →</div>
+    </a>
+  </div>
+
+</main>
+
+<div class="foot">
+  <div><b>Stack:</b> Flask · SQLite · yfinance .NS/.BO · AMFI / mfapi.in · custom NSE/RBI scrapers · QuantLib/CVXPY (portfolio).</div>
+  <div><b>Constraint:</b> USA-based — no Indian broker API → monitor + paper portfolio. Free sources only. India sibling of Apollo (US).</div>
+  <div style="margin-top:6px">Marle·G · Siddharth Verma · UIUC FIN 580 · 2026</div>
+</div>
+
+</body>
+</html>

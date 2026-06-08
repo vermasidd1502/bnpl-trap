@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chart · Marle-G</title>
+<script src="lightweight-charts.js"></script>
+<style>
+  :root{ --bg:#080a0e;--bg2:#0e1116;--card:#14171e;--border:rgba(255,255,255,.08);
+    --ink:#eef1f6;--muted:#9aa3b4;--dim:#646c7a;--mono:'SF Mono',ui-monospace,Consolas,monospace;
+    --saffron:#ff9933;--india-green:#138808;--green:#22c55e;--red:#ef4444;--amber:#fbbf24;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--border)}
+  .brand{font-family:var(--mono);font-weight:800;letter-spacing:.18em;font-size:13px;display:flex;align-items:center;gap:9px}
+  .brand .mark{width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,var(--saffron),var(--india-green))}
+  .brand .w{background:linear-gradient(90deg,var(--saffron),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tabs{display:flex;gap:16px;font-family:var(--mono);font-size:11px;flex-wrap:wrap}
+  .tabs a{color:var(--dim);text-decoration:none}.tabs a.on{color:var(--saffron)}.tabs a:hover{color:var(--ink)}
+  .wrap{max-width:1240px;margin:0 auto;padding:18px 24px 50px}
+  .top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+  .top h1{font-size:20px;font-weight:800;font-family:var(--mono)}
+  .top .nm{font-size:12px;color:var(--muted)}
+  .top input{background:var(--bg2);border:1px solid var(--border);color:var(--ink);border-radius:9px;padding:9px 13px;font-family:var(--mono);font-size:13px;width:170px}
+  .top button{background:linear-gradient(135deg,var(--saffron),var(--india-green));color:#0a0b0f;font-weight:800;border:none;border-radius:9px;padding:0 16px;cursor:pointer;font-family:var(--mono);font-size:12px}
+  .legend{font-family:var(--mono);font-size:10.5px;color:var(--dim);margin:4px 0 8px;display:flex;gap:14px;flex-wrap:wrap}
+  .legend b{font-weight:700}
+  .panel{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:8px 10px 4px;margin-bottom:12px}
+  .plabel{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);padding:4px 6px 6px;display:flex;gap:12px;align-items:center}
+  .plabel .vp{margin-left:auto;font-size:11px}
+  #price{height:430px} #udc{height:210px}
+  .cbtn{background:#0e1116;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:0 12px;cursor:pointer;font-family:var(--mono);font-size:11px;height:38px}
+  .cbtn:hover{border-color:var(--saffron);color:var(--ink)}
+  .assess{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:10px;font-size:12.5px;display:none}
+  .assess:not(:empty){display:block}
+  .assess .ah{font-weight:700} .assess .al{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:5px} .assess .an{color:var(--saffron);font-size:11.5px;margin-top:6px}
+  .err{text-align:center;color:var(--muted);padding:60px;font-family:var(--mono)}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span></span></div>
+  <div class="tabs">
+    <a href="marle_g_pod.html">home</a><a href="marle_g_equity.html">equity</a><a href="marle_g_volume.html">volume</a><a href="#" class="on">chart</a><a href="marle_g_portfolio.html">portfolio</a><a href="marle_g_macro_preview.html">macro</a><a href="marle_g_dashboard.html">dashboard</a>
+  </div>
+</div>
+<main class="wrap">
+  <div class="top">
+    <h1 id="sym">—</h1><span class="nm" id="nm"></span>
+    <span style="margin-left:auto"></span>
+    <input id="q" placeholder="symbol…" spellcheck="false" onkeydown="if(event.key==='Enter')go()">
+    <button onclick="go()">▶ Load</button>
+    <button id="p2y" class="cbtn" onclick="setPeriod('2y')">2Y</button><button id="p5y" class="cbtn" onclick="setPeriod('5y')">5Y</button>
+    <button class="cbtn" onclick="autoHHLL()" title="auto-detect dominant swing HH/LL + ladder">🔍 Auto HH/LL</button>
+    <button id="pickbtn" class="cbtn" onclick="startPick()" title="click your own HIGH then LOW on the chart">✏️ Pick HH/LL</button>
+    <button class="cbtn" onclick="clearFib();CANDLE&&CANDLE.setMarkers([]);document.getElementById('assess').innerHTML=''" title="clear">✕</button>
+  </div>
+  <div class="legend">
+    <span><b style="color:var(--saffron)">━</b> SMA 50</span>
+    <span><b style="color:#60a5fa">━</b> SMA 250</span>
+    <span>candles · volume · drag to pan · scroll to zoom</span>
+  </div>
+  <div id="assess" class="assess"></div>
+  <div class="panel"><div class="plabel">Price</div><div id="price"></div></div>
+  <div class="panel"><div class="plabel">Up/Down volume ratio (20d) <span class="vp" id="vpread"></span></div><div id="udc"></div></div>
+  <div id="err"></div>
+</main>
+
+<script>
+const LC = window.LightweightCharts;
+let CANDLE=null, PC=null, CANDLES=[], fibLines=[], pickMode=false, picks=[], swingsCache=null;
+let PERIOD = new URLSearchParams(location.search).get('period') || '2y';
+const FIBS=[[0,'LL','#cbd5e1'],[0.236,'0.236','#646c7a'],[0.382,'0.382','#8b93a7'],[0.5,'0.5','#9aa3b4'],[0.618,'φ 0.618','#ff9933'],[0.786,'0.786','#8b93a7'],[1.0,'HH','#cbd5e1'],[1.272,'1.272','#646c7a'],[1.618,'φ 1.618','#ff9933'],[2.618,'φ² 2.618','#ef4444']];
+function clearFib(){ fibLines.forEach(pl=>{try{CANDLE.removePriceLine(pl)}catch(e){}}); fibLines=[]; }
+function drawFib(lo,hi){ clearFib(); if(!CANDLE||!(hi>lo))return; const rng=hi-lo;
+  FIBS.forEach(([r,lbl,col])=>{ fibLines.push(CANDLE.createPriceLine({price:+(lo+r*rng).toFixed(2),color:col,lineWidth:(r===0.618||r===1.618||r===0||r===1)?2:1,lineStyle:(r===0||r===1)?0:2,axisLabelVisible:true,title:lbl})); }); }
+function detectSwings(){
+  const n = CANDLES.length>800?25:(CANDLES.length>350?18:12);
+  const H=CANDLES.map(d=>d.high), L=CANDLES.map(d=>d.low), highs=[], lows=[];
+  for(let i=n;i<CANDLES.length-n;i++){ let isH=true,isL=true;
+    for(let j=i-n;j<=i+n;j++){ if(H[j]>H[i])isH=false; if(L[j]<L[i])isL=false; }
+    if(isH)highs.push({t:CANDLES[i].time,p:H[i]}); if(isL)lows.push({t:CANDLES[i].time,p:L[i]}); }
+  return {highs,lows, hh:highs.reduce((a,b)=>!a||b.p>a.p?b:a,null), ll:lows.reduce((a,b)=>!a||b.p<a.p?b:a,null)};
+}
+function markSwings(s){ if(!CANDLE)return; const m=[];
+  s.highs.forEach(h=>m.push({time:h.t,position:'aboveBar',color:'#7a8194',shape:'arrowDown'}));
+  s.lows.forEach(l=>m.push({time:l.t,position:'belowBar',color:'#7a8194',shape:'arrowUp'}));
+  if(s.hh)m.push({time:s.hh.t,position:'aboveBar',color:'#fbbf24',shape:'arrowDown',text:'HH'});
+  if(s.ll)m.push({time:s.ll.t,position:'belowBar',color:'#fbbf24',shape:'arrowUp',text:'LL'});
+  m.sort((a,b)=>a.time<b.time?-1:1); CANDLE.setMarkers(m); }
+function setRange(lo,hi,src,note){
+  drawFib(lo,hi); const cur=CANDLES.length?CANDLES[CANDLES.length-1].close:hi, rng=hi-lo, rr=(cur-lo)/rng, lvl=r=>+(lo+r*rng).toFixed(1);
+  const zone = rr<0.236?'below 0.236 (deep)':rr<0.382?'0.236–0.382':rr<0.5?'0.382–0.5':rr<0.618?'0.5–0.618':rr<0.786?'golden pocket 0.618–0.786':rr<=1.0?'0.786–1.0 (near high)':'above the high (extension)';
+  document.getElementById('assess').innerHTML=
+    `<div class="ah">${src} — HH ₹${hi.toLocaleString('en-IN')} / LL ₹${lo.toLocaleString('en-IN')} · price ₹${cur.toLocaleString('en-IN')} = <b>${(rr*100).toFixed(0)}%</b> of range · in <b>${zone}</b></div>`+
+    `<div class="al">ladder: 0.382 ₹${lvl(0.382)} · 0.5 ₹${lvl(0.5)} · <b style="color:#ff9933">0.618 ₹${lvl(0.618)}</b> · 0.786 ₹${lvl(0.786)} · 1.0 ₹${lvl(1.0)} · 1.618 ₹${lvl(1.618)}</div>`+
+    (note?`<div class="an">${note}</div>`:'');
+}
+function autoHHLL(){ if(!CANDLES.length)return; const s=detectSwings(); swingsCache=s; markSwings(s);
+  if(s.hh&&s.ll) setRange(s.ll.p,s.hh.p,'AUTO-DETECTED','Yellow HH/LL = the engine\'s dominant pivots. Hit "Pick HH/LL" to set your own and it\'ll concur.'); }
+function startPick(){ pickMode=true; picks=[]; const b=document.getElementById('pickbtn'); if(b){b.style.background='#ff9933';b.style.color='#160f02';} document.getElementById('assess').innerHTML='<div class="an">Click the HIGH on the chart, then the LOW…</div>'; }
+function onChartClick(param){ if(!pickMode||!param.point||!CANDLE)return; const price=CANDLE.coordinateToPrice(param.point.y); if(price==null)return; picks.push(price);
+  if(picks.length<2){ document.getElementById('assess').innerHTML='<div class="an">Point 1 = ₹'+price.toFixed(1)+'. Now click the other extreme…</div>'; return; }
+  pickMode=false; const b=document.getElementById('pickbtn'); if(b){b.style.background='#0e1116';b.style.color='#9aa3b4';}
+  const hi=Math.max(...picks), lo=Math.min(...picks); let note='Your pick.';
+  if(swingsCache&&swingsCache.hh&&swingsCache.ll){ const dH=swingsCache.hh.p,dL=swingsCache.ll.p, okH=Math.abs(hi-dH)/dH<0.03, okL=Math.abs(lo-dL)/dL<0.03;
+    note='CONCUR — HH '+(okH?`✓ matches engine ₹${dH.toFixed(0)}`:`✗ engine's dominant high is ₹${dH.toFixed(0)}`)+' · LL '+(okL?`✓ matches ₹${dL.toFixed(0)}`:`✗ engine's dominant low is ₹${dL.toFixed(0)}`); }
+  setRange(lo,hi,'YOUR PICK',note); }
+function setPeriod(p){ location.href='marle_g_chart.html?q='+encodeURIComponent(SYM)+'&period='+p; }
+const qp = new URLSearchParams(location.search);
+let SYM = (qp.get('q') || 'RELIANCE').toUpperCase();
+function go(){ const v=document.getElementById('q').value.trim().toUpperCase(); if(v) location.href='marle_g_chart.html?q='+encodeURIComponent(v); }
+
+function sma(arr, n){ const out=[]; let s=0; for(let i=0;i<arr.length;i++){ s+=arr[i].value; if(i>=n) s-=arr[i-n].value; if(i>=n-1) out.push({time:arr[i].time, value:+(s/n).toFixed(3)}); } return out; }
+
+const theme = {
+  layout:{background:{color:'#0e1116'},textColor:'#9aa3b4',fontFamily:'monospace'},
+  grid:{vertLines:{color:'rgba(255,255,255,.04)'},horzLines:{color:'rgba(255,255,255,.04)'}},
+  rightPriceScale:{borderColor:'rgba(255,255,255,.1)'},
+  timeScale:{borderColor:'rgba(255,255,255,.1)',rightOffset:4},
+  crosshair:{mode:LC.CrosshairMode.Normal}
+};
+
+async function load(){
+  document.getElementById('sym').textContent = SYM;
+  document.getElementById('q').value = SYM;
+  ['2y','5y'].forEach(p=>{const b=document.getElementById('p'+p);if(b){const on=p===PERIOD;b.style.background=on?'#ff9933':'#0e1116';b.style.color=on?'#160f02':'#9aa3b4';}});
+  let data, vp=null;
+  try{ data = await (await fetch('/api/candles/'+encodeURIComponent(SYM)+'?period='+PERIOD)).json(); }catch(e){ data={error:'offline'}; }
+  try{ vp = await (await fetch('/api/volume_position/'+encodeURIComponent(SYM))).json(); }catch(e){}
+  if(!data || data.error || !data.candles || !data.candles.length){
+    document.getElementById('err').innerHTML = `<div class="err">No chart data for ${SYM}.</div>`; return;
+  }
+  const c = data.candles;
+
+  // ---- price chart: candles + volume + SMA50/250 ----
+  const pc = LC.createChart(document.getElementById('price'), {...theme, height:430});
+  const candle = pc.addCandlestickSeries({upColor:'#22c55e',downColor:'#ef4444',borderVisible:false,wickUpColor:'#22c55e',wickDownColor:'#ef4444'});
+  candle.setData(c.map(d=>({time:d.time,open:d.open,high:d.high,low:d.low,close:d.close})));
+  CANDLE=candle; CANDLES=c; PC=pc; pc.subscribeClick(onChartClick);
+  const vol = pc.addHistogramSeries({priceFormat:{type:'volume'},priceScaleId:''});
+  vol.priceScale().applyOptions({scaleMargins:{top:0.82,bottom:0}});
+  vol.setData(c.map((d,i)=>({time:d.time,value:d.vol,color:(i>0&&d.close>=c[i-1].close)?'rgba(34,197,94,.45)':'rgba(239,68,68,.45)'})));
+  const closes = c.map(d=>({time:d.time,value:d.close}));
+  pc.addLineSeries({color:'#ff9933',lineWidth:1.5,priceLineVisible:false,lastValueVisible:false}).setData(sma(closes,50));
+  pc.addLineSeries({color:'#60a5fa',lineWidth:1.5,priceLineVisible:false,lastValueVisible:false}).setData(sma(closes,250));
+
+  // ---- U/D ratio series ----
+  const ud=[];
+  for(let i=0;i<c.length;i++){
+    if(i<20) continue;
+    let up=0,dn=0;
+    for(let j=i-19;j<=i;j++){ const dir=j>0?Math.sign(c[j].close-c[j-1].close):0; if(dir>0)up+=c[j].vol; else if(dir<0)dn+=c[j].vol; }
+    ud.push({time:c[i].time, value: dn>0? +(up/dn).toFixed(3):3});
+  }
+  const uc = LC.createChart(document.getElementById('udc'), {...theme, height:210});
+  const udLine = uc.addLineSeries({color:'#e7eaf0',lineWidth:2,priceLineVisible:false});
+  udLine.setData(ud);
+  uc.addLineSeries({color:'#ff9933',lineWidth:1,priceLineVisible:false,lastValueVisible:false}).setData(sma(ud,50));
+  uc.addLineSeries({color:'#60a5fa',lineWidth:1,priceLineVisible:false,lastValueVisible:false}).setData(sma(ud,250));
+  [[1.0,'#646c7a','neutral 1.0'],[1.618,'#ff9933','φ 1.618'],[2.618,'#ef4444','φ² 2.618 ceiling']].forEach(([p,col,t])=>
+    udLine.createPriceLine({price:p,color:col,lineWidth:1,lineStyle:2,axisLabelVisible:true,title:t}));
+
+  // ---- sync the two time scales ----
+  let lock=false;
+  const sync=(a,b)=>a.timeScale().subscribeVisibleLogicalRangeChange(r=>{ if(lock||!r)return; lock=true; b.timeScale().setVisibleLogicalRange(r); lock=false; });
+  sync(pc,uc); sync(uc,pc);
+  pc.timeScale().fitContent();
+
+  // ---- resize ----
+  const fit=()=>{ const w=document.getElementById('price').clientWidth; pc.applyOptions({width:w}); uc.applyOptions({width:w}); };
+  fit(); addEventListener('resize',fit);
+
+  // ---- VP read line ----
+  if(vp && !vp.error){
+    const col = (vp.bias==='long'||vp.bias==='long-trail'||vp.bias==='watch')?'#22c55e':(vp.bias==='wait'||vp.bias==='trim')?'#fbbf24':'#ef4444';
+    document.getElementById('vpread').innerHTML =
+      `<b style="color:${col}">U/D ${vp.ud}</b> · 50d ${vp.ud_sma50??'—'} · 250d ${vp.ud_sma250??'—'} · ${vp.percentile}th pctile · <b style="color:${col}">${vp.quadrant}</b>${vp.ceiling?' · <b style="color:#ef4444">CEILING</b>':''}`;
+  }
+  autoHHLL();
+}
+load();
+</script>
+</body>
+</html>
