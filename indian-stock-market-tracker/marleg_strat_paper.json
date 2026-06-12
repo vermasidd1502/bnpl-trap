@@ -1,0 +1,39 @@
+{
+ "cash": 74093.0,
+ "start": 100000.0,
+ "positions": [
+  {
+   "id": "momentum_breakout-DIVISLAB-1",
+   "strategy": "momentum_breakout",
+   "name": "Momentum Breakout",
+   "sym": "DIVISLAB",
+   "side": "LONG",
+   "qty": 2,
+   "entry": 6638.5,
+   "stop": 6107.42,
+   "target": 7833.43,
+   "horizon_days": 40,
+   "opened": "2026-06-10 23:04",
+   "why": "above 50d MA; above 200d MA; within 15% of 52w high (95%); +3% 6m"
+  },
+  {
+   "id": "momentum_breakout-VBL-2",
+   "strategy": "momentum_breakout",
+   "name": "Momentum Breakout",
+   "sym": "VBL",
+   "side": "LONG",
+   "qty": 24,
+   "entry": 526.25,
+   "stop": 484.15,
+   "target": 620.98,
+   "horizon_days": 40,
+   "opened": "2026-06-10 23:05",
+   "why": "above 50d MA; above 200d MA; within 15% of 52w high (98%); +12% 6m"
+  }
+ ],
+ "closed": [],
+ "log": [
+  "2026-06-10 23:04 OPEN Momentum Breakout 2 DIVISLAB @ 6638.5",
+  "2026-06-10 23:05 OPEN Momentum Breakout 24 VBL @ 526.25"
+ ]
+}

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trading Strategies · Marle-G</title>
+<style>
+  :root{--bg:#080a0e;--card:#14171e;--bg2:#0e1116;--border:rgba(255,255,255,.08);--ink:#eef1f6;--muted:#9aa3b4;--dim:#646c7a;
+    --mono:'SF Mono',ui-monospace,Consolas,monospace;--saffron:#ff9933;--green:#22c55e;--red:#ef4444;--amber:#fbbf24;--india-green:#138808;--blue:#60a5fa;--violet:#a78bfa;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(1100px 520px at 50% -10%,rgba(255,153,51,.05),transparent 60%),var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--border);background:rgba(8,10,14,.8);position:sticky;top:0;z-index:10}
+  .brand{font-family:var(--mono);font-weight:800;letter-spacing:.18em;font-size:13px;display:flex;align-items:center;gap:9px}
+  .brand .mark{width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,var(--saffron),var(--india-green))}
+  .brand .w{background:linear-gradient(90deg,var(--saffron),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tabs{display:flex;gap:13px;font-family:var(--mono);font-size:11px;flex-wrap:wrap}
+  .tabs a{color:var(--dim);text-decoration:none}.tabs a.on{color:var(--saffron)}.tabs a:hover{color:var(--ink)}
+  .wrap{max-width:1080px;margin:0 auto;padding:22px 22px 70px}
+  h1{font-size:22px;margin-bottom:3px} .sub{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:14px}
+  .caveat{background:rgba(251,191,36,.10);border:1px solid var(--amber);border-radius:11px;padding:10px 13px;font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:14px}
+  .filters{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
+  .fchip{font-family:var(--mono);font-size:11px;color:var(--muted);background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:6px 13px;cursor:pointer}
+  .fchip.on{color:#0b0b0b;background:var(--saffron);border-color:var(--saffron);font-weight:700}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:13px}
+  .s{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:15px;cursor:pointer;transition:border-color .15s}
+  .s:hover{border-color:rgba(255,153,51,.4)}
+  .s .top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+  .s .nm{font-size:15px;font-weight:800}
+  .badge{font-family:var(--mono);font-size:8.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:5px}
+  .b-equity{background:rgba(34,197,94,.15);color:var(--green)} .b-options{background:rgba(167,139,250,.15);color:var(--violet)}
+  .b-event{background:rgba(96,165,250,.15);color:var(--blue)} .b-mutual_fund{background:rgba(251,191,36,.15);color:var(--amber)}
+  .b-mtf{background:rgba(239,68,68,.15);color:var(--red)}
+  .tag{font-size:12px;color:var(--muted);margin:7px 0 10px;line-height:1.45}
+  .score{font-family:var(--mono);text-align:center;min-width:48px}
+  .score .v{font-size:20px;font-weight:900;line-height:1}.score .l{font-size:8px;color:var(--dim);text-transform:uppercase;letter-spacing:.05em}
+  .stats{display:flex;gap:13px;font-family:var(--mono);font-size:11px;flex-wrap:wrap}
+  .stats .k{color:var(--dim)} .stats b{font-size:12.5px}
+  .guide{font-family:var(--mono);font-size:10.5px;color:var(--blue)}
+  .exp{margin-top:13px;border-top:1px solid var(--border);padding-top:12px;display:none}
+  .exp.show{display:block}
+  .pb{font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--saffron);font-weight:800;margin:11px 0 5px}
+  .exp p{font-size:12px;color:var(--muted);line-height:1.55;margin-bottom:4px}
+  .exp ul{margin:0 0 4px 16px} .exp li{font-size:12px;color:var(--muted);line-height:1.55}
+  .rules{display:grid;grid-template-columns:1fr;gap:6px;margin-top:4px}
+  .rule{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:11.5px;color:var(--muted)}
+  .rule b{color:var(--ink);font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:2px;color:var(--dim)}
+  .try{margin-top:12px;background:linear-gradient(135deg,rgba(255,153,51,.07),rgba(19,136,8,.05));border:1px solid rgba(255,153,51,.25);border-radius:11px;padding:12px}
+  .try .h{font-family:var(--mono);font-size:11px;font-weight:800;color:var(--ink);margin-bottom:8px}
+  .tryrow{display:flex;gap:8px}
+  .tryrow input{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--ink);font-family:var(--mono);font-size:12px;outline:none;text-transform:uppercase}
+  .tryrow input:focus{border-color:var(--saffron)}
+  .tryrow button{background:linear-gradient(135deg,var(--saffron),var(--india-green));border:none;border-radius:9px;color:#0b0b0b;font-weight:800;font-family:var(--mono);font-size:11px;padding:0 16px;cursor:pointer;white-space:nowrap}
+  .res{margin-top:9px;font-family:var(--mono);font-size:11px;line-height:1.55;color:var(--muted)}
+  .res .ok{color:var(--green)} .res .no{color:var(--amber)}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin:18px 0}
+  .sh{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-bottom:10px}
+  table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11.5px}
+  th{font-size:9px;text-transform:uppercase;color:var(--dim);text-align:right;padding:5px 7px;border-bottom:1px solid var(--border)}
+  th.l,td.l{text-align:left} td{padding:6px 7px;text-align:right;border-bottom:1px solid rgba(255,255,255,.04)}
+  .mc{display:flex;gap:18px;font-family:var(--mono);margin-bottom:10px;flex-wrap:wrap}
+  .mc div span{font-size:9px;color:var(--dim);text-transform:uppercase;display:block}.mc div b{font-size:17px}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span></span></div>
+  <div class="tabs"></div>
+</div>
+<main class="wrap">
+  <h1>📈 Trading Strategies</h1>
+  <div class="sub">a guide + a library — every strategy with its playbook, honest backtested stats, and a "try it on a stock" paper trade. Ranked by defensible edge.</div>
+  <div class="caveat">⚠ <b>Paper / educational only.</b> Stats are net of costs where a real backtest runs; options/event/fund strategies carry full playbooks and link to their dedicated pods for P&L. "Try it" opens a <b>paper</b> position only — never a real order. Not advice.</div>
+  <div class="filters" id="filters"></div>
+  <div class="grid" id="grid"></div>
+
+  <div class="card">
+    <div class="sh">📓 Strategy paper book — positions opened by "try it"</div>
+    <div class="mc" id="pmc"></div>
+    <div id="pbook"></div>
+  </div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const col=x=>x>0?'var(--green)':x<0?'var(--red)':'var(--muted)';
+const sc=x=>x>=60?'var(--green)':x>=45?'var(--amber)':x>0?'var(--red)':'var(--dim)';
+const ASSETS=[["all","all"],["equity","equity"],["options","options"],["event","event"],["mutual_fund","mutual fund"],["mtf","MTF"]];
+let CAT=[], FILTER="all", DETAIL={};
+
+function statsRow(st){
+  if(!st||st.sharpe===undefined||st.sharpe===null) return '<span class="guide">▸ guide + playbook (see note)</span>';
+  const w=st.win_rate_pct!=null?` · <span class="k">win</span> <b>${st.win_rate_pct}%</b>`:'';
+  return `<div class="stats"><span><span class="k">Sharpe</span> <b style="color:${col(st.sharpe)}">${st.sharpe}</b></span>
+    <span><span class="k">CAGR</span> <b style="color:${col(st.cagr_pct)}">${st.cagr_pct}%</b></span>
+    ${w}<span><span class="k">maxDD</span> <b style="color:var(--red)">${st.maxdd_pct}%</b></span></div>`;
+}
+function card(s){
+  const stat=s.stats;
+  return `<div class="s" data-id="${s.id}" onclick="toggle('${s.id}')">
+    <div class="top">
+      <div><div class="nm">${esc(s.name)}</div>
+        <span class="badge b-${s.asset}">${s.asset.replace('_',' ')}</span>
+        <span class="badge" style="background:rgba(255,255,255,.06);color:var(--dim)">${s.difficulty}</span></div>
+      <div class="score"><div class="v" style="color:${sc(s.defensibility)}">${s.defensibility||'—'}</div><div class="l">edge</div></div>
+    </div>
+    <div class="tag">${esc(s.tagline)}</div>
+    ${statsRow(stat)}
+    <div class="exp" id="exp-${s.id}"></div>
+  </div>`;
+}
+function render(){
+  const rows=CAT.filter(s=>FILTER==='all'||s.asset===FILTER);
+  $('grid').innerHTML=rows.map(card).join('')||'<span style="color:var(--dim)">none</span>';
+  $('filters').innerHTML=ASSETS.map(a=>`<span class="fchip ${FILTER===a[0]?'on':''}" onclick="FILTER='${a[0]}';render()">${a[1]}</span>`).join('');
+}
+function listBlock(title,arr){ if(!arr||!arr.length)return ''; return `<div class="pb">${title}</div><ul>${arr.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`; }
+async function toggle(id){
+  const ex=$('exp-'+id); if(!ex)return;
+  if(ex.classList.contains('show')){ ex.classList.remove('show'); return; }
+  document.querySelectorAll('.exp.show').forEach(e=>e.classList.remove('show'));
+  ex.classList.add('show'); ex.innerHTML='<span style="color:var(--dim);font-family:var(--mono);font-size:11px">⟳ loading playbook…</span>';
+  let d=DETAIL[id];
+  if(!d){ try{ d=await(await fetch('/api/strategies/'+id)).json(); DETAIL[id]=d; }catch(e){ ex.innerHTML='<span style="color:var(--red)">failed</span>'; return; } }
+  const st=d.stats;
+  const tryBox = d.tradeable ? `<div class="try">
+      <div class="h">▶ Try this on a stock you like</div>
+      <div class="tryrow"><input id="tk-${id}" placeholder="e.g. RELIANCE" autocomplete="off">
+        <button onclick="event.stopPropagation();tryIt('${id}')">Paper-trade it</button></div>
+      <div class="res" id="res-${id}"></div>
+    </div>` : `<div class="try"><div class="h">▸ Not a single-stock strategy</div>
+      <div class="res">${esc(d.bt_note||'See its dedicated pod for live signals + P&L.')}</div></div>`;
+  ex.innerHTML=`
+    <p>${esc(d.thesis)}</p>
+    ${st?`<div class="pb">backtest (${st.net_of_costs?'net of costs':'illustrative'})</div>
+      <div class="stats"><span><span class="k">Sharpe</span> <b style="color:${col(st.sharpe)}">${st.sharpe}</b></span>
+      <span><span class="k">CAGR</span> <b>${st.cagr_pct}%</b></span>${st.win_rate_pct!=null?`<span><span class="k">win</span> <b>${st.win_rate_pct}%</b></span>`:''}
+      <span><span class="k">maxDD</span> <b style="color:var(--red)">${st.maxdd_pct}%</b></span>${st.n_trades?`<span><span class="k">trades</span> <b>${st.n_trades}</b></span>`:''}</div>
+      ${st.note?`<p style="font-size:10.5px;color:var(--dim);margin-top:4px">${esc(st.note)}</p>`:''}`
+      :(d.bt_note?`<div class="pb">backtest</div><p style="color:var(--blue)">${esc(d.bt_note)}</p>`:'')}
+    ${listBlock('When it works',d.when_works)}
+    <div class="pb">Why</div><p>${esc(d.why)}</p>
+    ${listBlock('Prerequisites',d.prereqs)}
+    ${listBlock('Confirm the setup',d.confirm)}
+    <div class="pb">Rules</div>
+    <div class="rules">
+      <div class="rule"><b>Entry</b>${esc(d.entry)}</div>
+      <div class="rule"><b>Exit</b>${esc(d.exit)}</div>
+      <div class="rule"><b>Risk</b>${esc(d.risk)}</div>
+    </div>
+    ${listBlock('Pitfalls',d.pitfalls)}
+    ${tryBox}`;
+}
+async function tryIt(id){
+  const tk=($('tk-'+id).value||'').trim().toUpperCase(); const res=$('res-'+id);
+  if(!tk){ res.innerHTML='<span class="no">enter a ticker</span>'; return; }
+  res.innerHTML='⟳ checking the setup on '+esc(tk)+'…';
+  try{
+    const r=await(await fetch('/api/strategies/try',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,ticker:tk})})).json();
+    if(r.error){ res.innerHTML='<span class="no">'+esc(r.error)+'</span>'; return; }
+    if(r.opened){
+      const p=r.position;
+      res.innerHTML=`<span class="ok">✓ Setup confirmed — paper position opened.</span><br>
+        LONG ${p.qty} ${esc(p.sym)} @ ${p.entry} · stop ${p.stop} · target ${p.target} · ~${p.horizon_days}d<br>
+        <span style="color:var(--dim)">${esc(p.why)}</span>`;
+      loadPaper();
+    } else if(r.signal){
+      const note=(r.eval&&r.eval.note)||r.msg||'';
+      res.innerHTML=`<span class="${r.fires?'ok':'no'}">◆ ${r.fires?'Signal ON':'Signal off'}</span> — <span style="color:var(--muted)">${esc(note)}</span>`;
+    } else {
+      const why=(r.eval&&r.eval.reasons||[]).map(esc).join(' · ');
+      res.innerHTML=`<span class="no">✗ ${esc(r.msg||'not confirmed')}</span>${why?'<br><span style="color:var(--dim)">'+why+'</span>':''}`;
+    }
+  }catch(e){ res.innerHTML='<span class="no">backend error</span>'; }
+}
+async function loadPaper(){
+  try{
+    const b=await(await fetch('/api/strategies/paper')).json();
+    $('pmc').innerHTML=`<div><span>Equity</span><b>₹${Math.round(b.equity||b.start).toLocaleString('en-IN')}</b></div>
+      <div><span>Return</span><b style="color:${col(b.ret_pct)}">${b.ret_pct>0?'+':''}${b.ret_pct||0}%</b></div>
+      <div><span>Open P&L</span><b style="color:${col(b.open_upnl)}">${b.open_upnl>0?'+':''}${b.open_upnl||0}</b></div>
+      <div><span>Cash</span><b>₹${Math.round(b.cash||0).toLocaleString('en-IN')}</b></div>
+      <div><span>Open</span><b>${(b.positions||[]).length}</b></div>`;
+    const rows=(b.positions||[]).map(p=>`<tr><td class="l">${esc(p.name)}</td><td class="l">${esc(p.sym)}</td><td>${p.qty}</td>
+      <td>${p.entry}</td><td>${p.now??'—'}</td><td style="color:${col(p.upnl)}">${p.upnl>0?'+':''}${p.upnl??'—'} (${p.upnl_pct>0?'+':''}${p.upnl_pct??'—'}%)</td>
+      <td style="color:var(--dim)">${p.stop}/${p.target}</td></tr>`).join('');
+    $('pbook').innerHTML=rows?`<table><thead><tr><th class="l">Strategy</th><th class="l">Sym</th><th>Qty</th><th>Entry</th><th>Now</th><th>uP&L</th><th>Stop/Tgt</th></tr></thead><tbody>${rows}</tbody></table>`
+      :'<span style="color:var(--dim);font-family:var(--mono);font-size:11px">empty — pick a strategy above, enter a stock, and "try it"</span>';
+  }catch(e){ $('pbook').innerHTML='<span style="color:var(--red)">backend offline?</span>'; }
+}
+async function load(){
+  try{ const r=await(await fetch('/api/strategies')).json(); CAT=r.strategies||[]; render(); }
+  catch(e){ $('grid').innerHTML='<span style="color:var(--red)">backend offline? run: python marleg_server.py</span>'; }
+  loadPaper();
+}
+load();
+</script>
+  <script src="marle_g_nav.js"></script>
+</body>
+</html>

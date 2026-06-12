@@ -3,3 +3,31 @@ __pycache__/
 *.pyc
 .env
 *.output
+
+# runtime logs (detached server / guardian / recorder)
+*.log
+*.err
+
+# account-specific runtime state — NEVER push (contains live positions / P&L / watchlist)
+_var_book.json
+marleg_guardian_state.json
+marleg_tick_store.json
+marleg_tick_focus.json
+marleg_gtt_plan.json
+marleg_buy_plan.json
+marleg_engine.json
+marleg_engine_trades.csv
+marleg_autotrader_book.json
+marleg_gatebot_book.json
+token_cache.json
+TOTP_SETUP_GUIDE.txt
+
+# big local datastore
+*.duckdb
+*.duckdb.wal
+
+# more account-specific runtime state
+marleg_paper_book.json
+my_positions.json
+marleg_paper_*.json
+marleg_stop_check.json

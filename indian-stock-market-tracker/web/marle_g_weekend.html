@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weekend · Marle-G</title>
+<style>
+  :root{ --bg:#080a0e;--bg2:#0e1116;--card:#14171e;--border:rgba(255,255,255,.08);
+    --ink:#eef1f6;--muted:#9aa3b4;--dim:#646c7a;--mono:'SF Mono',ui-monospace,Consolas,monospace;
+    --saffron:#ff9933;--india-green:#138808;--green:#22c55e;--red:#ef4444;--amber:#fbbf24;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(1100px 520px at 50% -10%,rgba(255,153,51,.05),transparent 60%),var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--border);background:rgba(8,10,14,.8);backdrop-filter:blur(10px);position:sticky;top:0;z-index:10}
+  .brand{font-family:var(--mono);font-weight:800;letter-spacing:.18em;font-size:13px;display:flex;align-items:center;gap:9px}
+  .brand .mark{width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,var(--saffron),var(--india-green))}
+  .brand .w{background:linear-gradient(90deg,var(--saffron),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tabs{display:flex;gap:16px;font-family:var(--mono);font-size:11px;flex-wrap:wrap}
+  .tabs a{color:var(--dim);text-decoration:none}.tabs a.on{color:var(--saffron)}.tabs a:hover{color:var(--ink)}
+  .wrap{max-width:1180px;margin:0 auto;padding:22px 24px 70px}
+  .head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px;flex-wrap:wrap;gap:10px}
+  .head h1{font-size:21px;font-weight:800}
+  .clock{font-family:var(--mono);font-size:11px;color:var(--muted);text-align:right;line-height:1.6}.clock b{color:var(--saffron)}
+  .toggle{display:inline-flex;background:var(--bg2);border:1px solid var(--border);border-radius:11px;padding:4px;gap:4px;margin-bottom:8px}
+  .toggle button{font-family:var(--mono);font-size:12.5px;font-weight:700;border:none;background:transparent;color:var(--muted);padding:9px 18px;border-radius:8px;cursor:pointer}
+  .toggle button.on{background:linear-gradient(135deg,var(--saffron),var(--india-green));color:#140d02}
+  .sub{font-family:var(--mono);font-size:11px;color:var(--dim);margin-bottom:16px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px}
+  .sh{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-bottom:12px}
+  table.h{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11.5px}
+  .h th{font-size:9px;text-transform:uppercase;letter-spacing:.04em;color:var(--dim);text-align:right;padding:8px 9px;border-bottom:1px solid var(--border)}
+  .h th:first-child,.h td:first-child{text-align:left}
+  .h td{padding:9px;text-align:right;border-bottom:1px solid rgba(255,255,255,.04)}
+  .h tr:hover td{background:rgba(255,255,255,.02)}
+  .h .sym{font-weight:700;cursor:pointer}.h .sym:hover{color:var(--saffron)}.h .nm{font-size:9px;color:var(--dim)}
+  .pos{color:var(--green)}.neg{color:var(--red)}.neu{color:var(--dim)}
+  .acc-ac{color:var(--green)}.acc-di{color:var(--red)}.acc-ne{color:var(--muted)}
+  .favbar{display:inline-block;width:54px;height:7px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden;vertical-align:middle;margin-left:6px}
+  .favbar i{display:block;height:100%}
+  .badge{font-family:var(--mono);font-size:8.5px;font-weight:800;padding:2px 6px;border-radius:4px;white-space:nowrap}
+  details{background:var(--bg2);border:1px solid var(--border);border-radius:11px;padding:12px 15px;margin-bottom:14px}
+  summary{font-family:var(--mono);font-size:11px;color:var(--saffron);cursor:pointer;font-weight:700}
+  details p{font-size:12.5px;color:#cbd5e1;line-height:1.6;margin-top:9px}
+  details b{color:var(--ink)}
+  .empty{text-align:center;padding:40px;color:var(--muted)}
+  .inrow{display:flex;gap:9px;margin-bottom:14px}
+  #q{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--ink);font-family:var(--mono);font-size:13px;outline:none;text-transform:uppercase}
+  #q:focus{border-color:var(--saffron)}
+  #go{background:linear-gradient(135deg,var(--saffron),var(--india-green));border:none;border-radius:10px;color:#0b0b0b;font-weight:800;font-family:var(--mono);font-size:13px;padding:0 20px;cursor:pointer}
+  .wcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:11px;margin:4px 0 12px}
+  .wc{background:var(--bg2);border:1px solid var(--border);border-radius:11px;padding:13px}
+  .wc .n{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--dim)}
+  .wc .v{font-family:var(--mono);font-size:18px;font-weight:800;margin-top:4px}
+  .wc .s{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:2px}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span></span></div>
+  <div class="tabs"></div>
+</div>
+<main class="wrap">
+  <div class="head">
+    <div>
+      <h1>🗓️ Weekend strategy</h1>
+      <div class="sub" id="sub">accumulation ✕ Friday strength ✕ room-to-run — which stocks to long over the weekend</div>
+    </div>
+    <div class="clock" id="clock"></div>
+  </div>
+
+  <div class="inrow">
+    <input id="q" placeholder="check any stock for the weekend… e.g. TEJASNET" autocomplete="off">
+    <button id="go" onclick="searchStock()">Check</button>
+  </div>
+  <div id="stockres"></div>
+
+  <div class="toggle">
+    <button id="b-fri" class="on" onclick="setMode('friday')">📥 Friday · accumulate &amp; select</button>
+    <button id="b-mon" onclick="setMode('monday')">📤 Monday · manage</button>
+  </div>
+
+  <details>
+    <summary>ℹ️ The theory — accumulation/distribution &amp; the weekend effect</summary>
+    <p><b>Weekend / Monday effect:</b> historically Mondays printed the lowest (often negative) returns, Fridays the highest (French 1980, Gibbons–Hess) — driven by bad news after the Friday close, settlement timing, and dealers flattening into the weekend. It has <b>faded in modern markets</b>, so the raw effect is a weak edge — *unconditional* weekend-holds lose.</p>
+    <p><b>Accumulation vs distribution</b> is the institutional footprint. <b>Accumulation</b> = up-closes in the upper range on rising volume (Chaikin A/D &amp; OBV rising, few distribution days). <b>Distribution</b> = weak/down closes on higher volume (O'Neil "distribution days"; ≥5 in 25 sessions = institutions selling). Buying Friday strength only pays when the name is being <b>accumulated, not distributed</b>.</p>
+    <p><b>India:</b> day-of-week effects are mixed and weakening; weekly expiry adds noise. The anchor is our own backtest: <b>strong-Friday momentum → +0.70% Monday</b>, while extended/at-ceiling names show no edge. So the favorable weekend long = <b>accumulation + Friday strength + room-to-run + a positive weekend-edge history</b>.</p>
+  </details>
+
+  <div id="board"><div class="card"><span style="color:var(--dim);font-family:var(--mono);font-size:12px">⟳ scoring candidates (accumulation + edge + don't-chase)… first load ~30–60s</span></div></div>
+</main>
+
+<script src="marleg_stockmodal.js"></script>
+<script src="marle_g_nav.js"></script>
+<script>
+window.MG_SELF_REFRESH=true;   // self-manages refresh
+const $=id=>document.getElementById(id);
+const esc=s=>(s||'').replace(/[<>]/g,'');
+function openSym(s){try{window.openStock&&window.openStock(s);}catch(e){}}
+let MODE='friday';
+function clocks(){const now=new Date(),o={weekday:'short',hour:'2-digit',minute:'2-digit',hour12:true};
+  $('clock').innerHTML='IST <b>'+now.toLocaleString('en-US',{timeZone:'Asia/Kolkata',...o})+'</b><br>US-CT '+now.toLocaleString('en-US',{timeZone:'America/Chicago',...o});}
+setInterval(clocks,1000);clocks();
+function accCls(l){return l==='Under accumulation'?'acc-ac':l==='Under distribution'?'acc-di':'acc-ne';}
+function favCol(f){return f>=65?'var(--green)':f>=50?'var(--amber)':'var(--dim)';}
+function vbadge(v){const c=/✅/.test(v)?'var(--green)':/🟡/.test(v)?'var(--amber)':/🔴/.test(v)?'var(--red)':'var(--dim)';
+  return `<span class="badge" style="color:${c};background:${c}1f">${esc(v)}</span>`;}
+
+function setMode(m){MODE=m;$('b-fri').className=m==='friday'?'on':'';$('b-mon').className=m==='monday'?'on':'';
+  $('sub').textContent=m==='friday'?'accumulation ✕ Friday strength ✕ room-to-run — which stocks to long over the weekend':'manage the book you carried — Monday gap odds, accumulation & a hold/exit lean';
+  load();}
+
+async function load(){
+  $('board').innerHTML='<div class="card"><span style="color:var(--dim);font-family:var(--mono);font-size:12px">⟳ loading '+MODE+' board…</span></div>';
+  try{
+    const d=await (await fetch('/api/weekend_board?mode='+MODE)).json();
+    if(!d.rows||!d.rows.length){$('board').innerHTML='<div class="card empty">No candidates right now.</div>';return;}
+    $('board').innerHTML=MODE==='friday'?friBoard(d):monBoard(d);
+  }catch(e){$('board').innerHTML='<div class="card"><span class="neg">backend offline?</span></div>';}
+}
+function friBoard(d){
+  return `<div class="card"><div class="sh">Friday — weekend-long candidates · ${esc(d.asof_note)}</div>
+  <table class="h"><thead><tr><th>stock</th><th>verdict</th><th>favorability</th><th>accumulation</th><th>structure</th><th>weekend edge</th><th>today</th></tr></thead><tbody>
+  ${d.rows.map(r=>{const a=r.accum||{};return `<tr>
+    <td><span class="sym" onclick="openSym('${r.tk}')">${r.tk}</span><div class="nm">${esc((r.name||'').slice(0,22))}</div></td>
+    <td>${vbadge(r.verdict)}</td>
+    <td>${r.fav}<span class="favbar"><i style="width:${r.fav}%;background:${favCol(r.fav)}"></i></span></td>
+    <td class="${accCls(a.label)}">${a.label||'—'}<div class="nm">A/D ${a.ad_trend||'—'} · acc ${a.acc_days??'—'}/dist ${a.dist_days??'—'} · u/d ${a.ud20??'—'}</div></td>
+    <td>${r.structural||'—'}</td>
+    <td>${r.edge_net==null?'—':(r.edge_net>0?'+':'')+r.edge_net+'%/'+r.edge_win+'%'}<div class="nm">gap&lt;-2% ${r.gapdn2??'—'}%</div></td>
+    <td class="${r.chg_day>0?'pos':r.chg_day<0?'neg':'neu'}">${r.chg_day==null?'—':(r.chg_day>0?'+':'')+r.chg_day+'%'}<div class="nm">${r.pos_in_range??'—'}% range</div></td>
+  </tr>`;}).join('')}</tbody></table>
+  <div class="sub" style="margin-top:10px">✅ FAVORABLE = accumulated + Friday-strong + room + edge. 🔴 AVOID = distribution or at-ceiling. Decide near the 15:15 close; carry as delivery (no MTF leverage over the weekend).</div></div>`;
+}
+function monBoard(d){
+  if(!d.rows.length) return '<div class="card empty">No live positions to manage.</div>';
+  return `<div class="card"><div class="sh">Monday — manage your carried book · ${esc(d.asof_note)}</div>
+  <table class="h"><thead><tr><th>stock</th><th>qty@avg</th><th>unreal</th><th>accumulation</th><th>hist Mon ret/win</th><th>lean</th></tr></thead><tbody>
+  ${d.rows.map(r=>`<tr>
+    <td><span class="sym" onclick="openSym('${r.tk}')">${r.tk}</span><div class="nm">${esc((r.name||'').slice(0,22))}</div></td>
+    <td>${r.qty}@${r.avg??'—'}</td>
+    <td class="${r.unreal>=0?'pos':'neg'}">${r.unreal>=0?'+':'−'}₹${Math.abs(r.unreal||0).toLocaleString('en-IN')}</td>
+    <td class="${accCls(r.accum_label)}">${r.accum_label||'—'} (${r.accum_score??'—'})</td>
+    <td>${r.mon_ret==null?'—':(r.mon_ret>0?'+':'')+r.mon_ret+'% / '+r.mon_win+'%'}<div class="nm">gap&lt;-2% ${r.gapdn2??'—'}%</div></td>
+    <td>${esc(r.lean||'')}</td>
+  </tr>`).join('')}</tbody></table>
+  <div class="sub" style="margin-top:10px">Hold names still under accumulation with a positive Monday edge; exit/trim distribution. Act on the open, not pre-market.</div></div>`;
+}
+async function searchStock(){
+  const tk=($('q').value||'').trim().toUpperCase(); if(!tk)return;
+  $('stockres').innerHTML='<div class="card"><span style="color:var(--dim);font-family:var(--mono);font-size:12px">⟳ analysing '+esc(tk)+' — accumulation + Friday volume + edge… ~20s</span></div>';
+  try{
+    const r=await (await fetch('/api/weekend_stock/'+encodeURIComponent(tk))).json();
+    if(r.error){ $('stockres').innerHTML='<div class="card"><span class="neg">'+esc(r.error)+'</span></div>'; return; }
+    $('stockres').innerHTML=renderStock(r);
+  }catch(e){ $('stockres').innerHTML='<div class="card"><span class="neg">backend offline?</span></div>'; }
+}
+function renderStock(r){
+  const a=r.accum||{},fv=r.friday_volume||{},F=fv.friday||{},O=fv.other||{},ch=r.chase||{},e=r.edge||{},t=r.today||{};
+  const vc=/✅/.test(r.verdict)?'var(--green)':/🟡/.test(r.verdict)?'var(--amber)':/🔴/.test(r.verdict)?'var(--red)':'var(--dim)';
+  return `<div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:6px">
+      <div style="font-family:var(--mono);font-size:16px;font-weight:800"><span class="sym" onclick="openSym('${r.tk}')">${r.tk}</span> <span class="nm">${esc((r.name||'').slice(0,26))}</span></div>
+      <span class="badge" style="color:${vc};background:${vc}1f;font-size:12.5px">${esc(r.verdict)} · fav ${r.fav}</span></div>
+    <div class="wcards">
+      <div class="wc"><div class="n">Accumulation (daily)</div><div class="v ${accCls(a.label)}">${a.score??'—'}</div><div class="s">${a.label||'—'} · acc ${a.acc_days??'—'}/dist ${a.dist_days??'—'}</div></div>
+      <div class="wc"><div class="n">Structure</div><div class="v">${ch.structural||'—'}</div><div class="s">${ch.room_pct!=null?ch.room_pct+'% room':'—'} · RSI ${ch.rsi??'—'}</div></div>
+      <div class="wc"><div class="n">Weekend edge</div><div class="v ${(e.strong_net||0)>0?'pos':'neg'}">${e.strong_net==null?'—':(e.strong_net>0?'+':'')+e.strong_net+'%'}</div><div class="s">win ${e.strong_win??'—'}% · gap&lt;-2% ${e.gapdn2??'—'}%</div></div>
+      <div class="wc"><div class="n">Today</div><div class="v ${(t.chg_day||0)>0?'pos':'neg'}">${t.chg_day==null?'—':(t.chg_day>0?'+':'')+t.chg_day+'%'}</div><div class="s">${t.pos_in_range??'—'}% range · VWAP ${t.vwap_dist??'—'}%</div></div>
+    </div>
+    <div class="sh" style="margin-top:6px">Friday volume — accumulation vs distribution</div>
+    <table class="h"><thead><tr><th></th><th>up/dn vol</th><th>close-loc</th><th>Fri vol vs other</th><th>last-hr selling</th></tr></thead><tbody>
+      <tr><td>Fridays (n${F.n??'—'})</td><td>${F.udv??'—'}</td><td>${F.clv??'—'}</td><td>${fv.friday_vol_vs_other??'—'}×</td><td>${F.late_sell_pct??'—'}%</td></tr>
+      <tr><td>other days</td><td>${O.udv??'—'}</td><td>${O.clv??'—'}</td><td>1.0×</td><td>${O.late_sell_pct??'—'}%</td></tr>
+    </tbody></table>
+    <div class="sub" style="margin-top:8px;color:var(--ink)">${esc(fv.verdict||'')}</div></div>`;
+}
+$('q').addEventListener('keydown',ev=>{if(ev.key==='Enter')searchStock();});
+
+load();
+setInterval(load, 300000);   // refresh every 5 min (heavy board, server-cached)
+</script>
+</body>
+</html>

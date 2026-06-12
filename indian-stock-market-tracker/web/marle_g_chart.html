@@ -114,10 +114,10 @@ function go(){ const v=document.getElementById('q').value.trim().toUpperCase(); 
 function sma(arr, n){ const out=[]; let s=0; for(let i=0;i<arr.length;i++){ s+=arr[i].value; if(i>=n) s-=arr[i-n].value; if(i>=n-1) out.push({time:arr[i].time, value:+(s/n).toFixed(3)}); } return out; }
 
 const theme = {
-  layout:{background:{color:'#0e1116'},textColor:'#9aa3b4',fontFamily:'monospace'},
-  grid:{vertLines:{color:'rgba(255,255,255,.04)'},horzLines:{color:'rgba(255,255,255,.04)'}},
-  rightPriceScale:{borderColor:'rgba(255,255,255,.1)'},
-  timeScale:{borderColor:'rgba(255,255,255,.1)',rightOffset:4},
+  layout:{background:{color:'#ffffff'},textColor:'#3a3f4a',fontFamily:'monospace'},
+  grid:{vertLines:{color:'rgba(0,0,0,.06)'},horzLines:{color:'rgba(0,0,0,.06)'}},
+  rightPriceScale:{borderColor:'rgba(0,0,0,.15)'},
+  timeScale:{borderColor:'rgba(0,0,0,.15)',rightOffset:4},
   crosshair:{mode:LC.CrosshairMode.Normal}
 };
 
@@ -144,6 +144,82 @@ async function load(){
   const closes = c.map(d=>({time:d.time,value:d.close}));
   pc.addLineSeries({color:'#ff9933',lineWidth:1.5,priceLineVisible:false,lastValueVisible:false}).setData(sma(closes,50));
   pc.addLineSeries({color:'#60a5fa',lineWidth:1.5,priceLineVisible:false,lastValueVisible:false}).setData(sma(closes,250));
+
+  // ---- two-fib overlay (auto): MACRO solid, micro dashed — completed anchors only ----
+  try{
+    const fm = await (await fetch('/api/fibmap/'+encodeURIComponent(SYM))).json();
+    if(fm && fm.macro && !fm.error){
+      const conf=(fm.confluence||[]).map(x=>x.macro_level+' = '+x.micro_level+' @ Rs'+x.price+' ('+(x.dist_from_live_pct>0?'+':'')+x.dist_from_live_pct+'%)').join('  ·  ');
+      const info=document.createElement('div');
+      info.style.cssText='font-family:var(--mono);font-size:10.5px;color:var(--dim);margin:7px 0 0;line-height:1.6';
+      info.innerHTML='🧭 <b style="color:var(--ink)">two-fib</b> · MACRO '+fm.macro.lo+' → '+fm.macro.hi+' <span style="color:var(--dim)">('+fm.macro.direction+')</span> · micro '+(fm.micro?fm.micro.lo+' → '+fm.micro.hi+' '+fm.micro.direction:'—')
+        +(conf?' · <b style="color:var(--green)">real confluence:</b> '+conf:' · no honest confluence (independent anchors do not align)')
+        +'<br><span style="color:var(--dim)">anchors = completed pivots only — never the live price (live-anchoring manufactures fake confluence)</span>';
+      if(fm.upside_eta && fm.upside_eta.length){
+        info.innerHTML+='<br><span style="color:var(--muted)">⏱ time-to-level (diffusion, σ '+fm.daily_sigma_pct+'%/d): '
+          +fm.upside_eta.slice(0,6).map(e=>e.level+' '+e.price+' ('+(e.dist_pct>0?'+':'')+e.dist_pct+'% · '+e.eta+')').join('  ·  ')+'</span>';
+      }
+      const priceEl=document.getElementById('price');
+      priceEl.parentNode.insertBefore(info, priceEl.nextSibling);
+      // anchor diagonals: HH->LL (macro) and m0->m1 (micro), like the hand-drawn fib tool
+      try{
+        const dg=(a,b,color)=>{ const pts=[a,b].sort((x,y)=>x.time<y.time?-1:1);
+          const s=pc.addLineSeries({color:color,lineWidth:1,lineStyle:1,priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false});
+          s.setData(pts); };
+        dg({time:fm.macro.hi_date,value:fm.macro.hi},{time:fm.macro.lo_date,value:fm.macro.lo},'rgba(120,123,134,.85)');
+        if(fm.micro) dg({time:fm.micro.lo_date,value:fm.micro.lo},{time:fm.micro.hi_date,value:fm.micro.hi},'rgba(255,153,51,.95)');
+      }catch(e){}
+      const FIBC={'0':'#787b86','0.236':'#f23645','0.382':'#ff9800','0.5':'#4caf50',
+                  '0.618':'#009688','0.786':'#00bcd4','1':'#787b86',
+                  '1.272':'#2962ff','1.618':'#2962ff','2.618':'#e91e63','4.236':'#9c27b0'};
+      const mk=(p,color,style,title,w)=>{ try{ candle.createPriceLine({price:p,color:color,lineWidth:w||2,lineStyle:style,axisLabelVisible:true,title:title}); }catch(e){} };
+      mk(fm.macro.hi,FIBC['1'],0,'1 ('+fm.macro.hi+')');
+      mk(fm.macro.lo,FIBC['0'],0,'0 ('+fm.macro.lo+')');
+      Object.entries(fm.macro.levels).forEach(([k,v])=>mk(v,FIBC[k]||'#787b86',0,k+' ('+v+')'));
+      if(fm.micro){
+        mk(fm.micro.hi,'#ff9933',2,'m1 ('+fm.micro.hi+')',1);
+        mk(fm.micro.lo,'#ff9933',2,'m0 ('+fm.micro.lo+')',1);
+        Object.entries(fm.micro.extensions||{}).forEach(([k,v])=>{ if(v < fm.macro.hi*1.05) mk(v,FIBC[k]||'#2962ff',2,'m'+k+' ('+v+')',1); });
+      }
+      // ---- TradingView-style shaded fib regions (overlay canvas, pan/zoom-synced) ----
+      try{
+        const host=document.getElementById('price');
+        host.style.position='relative';
+        const ov=document.createElement('canvas');
+        ov.style.cssText='position:absolute;left:0;top:0;pointer-events:none;z-index:2';
+        host.appendChild(ov);
+        const FILL=(k,a)=>({'0.236':'rgba(242,54,69,','0.382':'rgba(255,152,0,','0.5':'rgba(76,175,80,','0.618':'rgba(0,150,136,','0.786':'rgba(0,188,212,','1':'rgba(120,123,134,','1.272':'rgba(41,98,255,','1.618':'rgba(41,98,255,','2.618':'rgba(233,30,99,','4.236':'rgba(156,39,176,'}[k]||'rgba(120,123,134,')+a+')';
+        const seq=(o)=>o.filter(p=>p[1]!=null && p[1]<fm.macro.hi*1.06).sort((a,b)=>a[1]-b[1]);
+        const macroSeq=seq([['0',fm.macro.lo],...Object.entries(fm.macro.levels),['1',fm.macro.hi]]);
+        let microSeq=null;
+        if(fm.micro){
+          microSeq=seq([['0',fm.micro.lo],...Object.entries(fm.micro.levels),['1',fm.micro.hi],...Object.entries(fm.micro.extensions||{})]);
+        }
+        const draw=()=>{
+          try{
+            const dpr=window.devicePixelRatio||1;
+            let cw=0; try{ cw=pc.timeScale().width(); }catch(e){}
+            if(!cw || cw<50) cw=700;
+            const ch=430;
+            ov.width=Math.round(cw*dpr); ov.height=Math.round(ch*dpr);
+            ov.style.width=cw+'px'; ov.style.height=ch+'px';
+            const ctx=ov.getContext('2d');
+            ctx.setTransform(dpr,0,0,dpr,0,0);
+            const yOf=p=>{ let y=candle.priceToCoordinate(p); if(y==null) y = p>fm.live ? -4 : ch+4; return y; };
+            const band=(s,x0,a)=>{ for(let i=0;i<s.length-1;i++){ const y2=yOf(s[i][1]), y1=yOf(s[i+1][1]); ctx.fillStyle=FILL(s[i+1][0],a); ctx.fillRect(x0, Math.min(y1,y2), cw-x0, Math.abs(y2-y1)); } };
+            band(macroSeq,0,0.07);
+            if(microSeq){
+              let x0=0;
+              try{ const xc=pc.timeScale().timeToCoordinate(fm.micro.lo_date||fm.micro.hi_date); if(xc!=null&&xc>0) x0=xc; }catch(e){}
+              band(microSeq,x0,0.13);
+            }
+          }catch(e){}
+        };
+        draw();
+        setInterval(draw,350);
+      }catch(e){}
+    }
+  }catch(e){}
 
   // ---- U/D ratio series ----
   const ud=[];
@@ -181,5 +257,6 @@ async function load(){
 }
 load();
 </script>
+  <script src="marle_g_nav.js"></script>
 </body>
 </html>

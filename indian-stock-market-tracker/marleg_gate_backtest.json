@@ -1,0 +1,236 @@
+{
+ "from": "2024-04-22",
+ "to": "2026-06-09",
+ "universe": 34,
+ "capital": 100000.0,
+ "risk_per_trade_pct": 1.0,
+ "k_atr": 2.5,
+ "max_pos": 8,
+ "results": {
+  "volume_only": [
+   {
+    "horizon": 5,
+    "trades": 577,
+    "win_pct": 47.3,
+    "avg_days": 4.9,
+    "stop_exits_pct": 7,
+    "net_ret_pct": -10.9,
+    "cagr_pct": -5.3,
+    "sharpe": -0.28,
+    "maxdd_pct": -20.2,
+    "pf": 0.91
+   },
+   {
+    "horizon": 10,
+    "trades": 347,
+    "win_pct": 49.9,
+    "avg_days": 9.2,
+    "stop_exits_pct": 20,
+    "net_ret_pct": -12.0,
+    "cagr_pct": -5.9,
+    "sharpe": -0.31,
+    "maxdd_pct": -26.9,
+    "pf": 0.89
+   },
+   {
+    "horizon": 15,
+    "trades": 245,
+    "win_pct": 46.9,
+    "avg_days": 13.6,
+    "stop_exits_pct": 24,
+    "net_ret_pct": -5.3,
+    "cagr_pct": -2.6,
+    "sharpe": -0.08,
+    "maxdd_pct": -22.0,
+    "pf": 0.94
+   },
+   {
+    "horizon": 21,
+    "trades": 204,
+    "win_pct": 48.5,
+    "avg_days": 17.3,
+    "stop_exits_pct": 32,
+    "net_ret_pct": -0.5,
+    "cagr_pct": -0.2,
+    "sharpe": 0.07,
+    "maxdd_pct": -21.3,
+    "pf": 0.99
+   },
+   {
+    "horizon": 30,
+    "trades": 145,
+    "win_pct": 45.5,
+    "avg_days": 23.6,
+    "stop_exits_pct": 40,
+    "net_ret_pct": -3.1,
+    "cagr_pct": -1.5,
+    "sharpe": -0.01,
+    "maxdd_pct": -17.3,
+    "pf": 0.96
+   },
+   {
+    "horizon": "stop-only",
+    "trades": 87,
+    "win_pct": 35.6,
+    "avg_days": 38.5,
+    "stop_exits_pct": 59,
+    "net_ret_pct": -7.1,
+    "cagr_pct": -3.5,
+    "sharpe": -0.14,
+    "maxdd_pct": -19.3,
+    "pf": 0.84
+   }
+  ],
+  "volume_gate": [
+   {
+    "horizon": 5,
+    "trades": 525,
+    "win_pct": 45.5,
+    "avg_days": 4.9,
+    "stop_exits_pct": 8,
+    "net_ret_pct": -16.7,
+    "cagr_pct": -8.4,
+    "sharpe": -0.49,
+    "maxdd_pct": -22.8,
+    "pf": 0.85
+   },
+   {
+    "horizon": 10,
+    "trades": 329,
+    "win_pct": 49.8,
+    "avg_days": 9.3,
+    "stop_exits_pct": 18,
+    "net_ret_pct": -6.4,
+    "cagr_pct": -3.1,
+    "sharpe": -0.13,
+    "maxdd_pct": -21.4,
+    "pf": 0.95
+   },
+   {
+    "horizon": 15,
+    "trades": 231,
+    "win_pct": 46.3,
+    "avg_days": 13.4,
+    "stop_exits_pct": 25,
+    "net_ret_pct": -8.2,
+    "cagr_pct": -4.0,
+    "sharpe": -0.18,
+    "maxdd_pct": -20.2,
+    "pf": 0.91
+   },
+   {
+    "horizon": 21,
+    "trades": 193,
+    "win_pct": 49.2,
+    "avg_days": 17.7,
+    "stop_exits_pct": 34,
+    "net_ret_pct": -2.5,
+    "cagr_pct": -1.2,
+    "sharpe": 0.01,
+    "maxdd_pct": -19.4,
+    "pf": 0.97
+   },
+   {
+    "horizon": 30,
+    "trades": 138,
+    "win_pct": 45.7,
+    "avg_days": 23.9,
+    "stop_exits_pct": 38,
+    "net_ret_pct": -2.0,
+    "cagr_pct": -0.9,
+    "sharpe": 0.02,
+    "maxdd_pct": -15.9,
+    "pf": 0.99
+   },
+   {
+    "horizon": "stop-only",
+    "trades": 85,
+    "win_pct": 40.0,
+    "avg_days": 39.2,
+    "stop_exits_pct": 53,
+    "net_ret_pct": 0.2,
+    "cagr_pct": 0.1,
+    "sharpe": 0.09,
+    "maxdd_pct": -17.2,
+    "pf": 1.02
+   }
+  ],
+  "gate_top2": [
+   {
+    "horizon": 5,
+    "trades": 248,
+    "win_pct": 43.5,
+    "avg_days": 4.9,
+    "stop_exits_pct": 8,
+    "net_ret_pct": -13.4,
+    "cagr_pct": -6.6,
+    "sharpe": -0.89,
+    "maxdd_pct": -18.3,
+    "pf": 0.75
+   },
+   {
+    "horizon": 10,
+    "trades": 181,
+    "win_pct": 47.0,
+    "avg_days": 9.2,
+    "stop_exits_pct": 18,
+    "net_ret_pct": -8.1,
+    "cagr_pct": -4.0,
+    "sharpe": -0.42,
+    "maxdd_pct": -18.2,
+    "pf": 0.86
+   },
+   {
+    "horizon": 15,
+    "trades": 151,
+    "win_pct": 46.4,
+    "avg_days": 13.1,
+    "stop_exits_pct": 28,
+    "net_ret_pct": -5.0,
+    "cagr_pct": -2.4,
+    "sharpe": -0.19,
+    "maxdd_pct": -17.7,
+    "pf": 0.91
+   },
+   {
+    "horizon": 21,
+    "trades": 132,
+    "win_pct": 53.8,
+    "avg_days": 17.4,
+    "stop_exits_pct": 33,
+    "net_ret_pct": 4.1,
+    "cagr_pct": 1.9,
+    "sharpe": 0.24,
+    "maxdd_pct": -12.9,
+    "pf": 1.1
+   },
+   {
+    "horizon": 30,
+    "trades": 108,
+    "win_pct": 41.7,
+    "avg_days": 22.8,
+    "stop_exits_pct": 43,
+    "net_ret_pct": -10.2,
+    "cagr_pct": -5.0,
+    "sharpe": -0.35,
+    "maxdd_pct": -18.8,
+    "pf": 0.81
+   },
+   {
+    "horizon": "stop-only",
+    "trades": 69,
+    "win_pct": 40.6,
+    "avg_days": 40.4,
+    "stop_exits_pct": 51,
+    "net_ret_pct": -6.5,
+    "cagr_pct": -3.2,
+    "sharpe": -0.16,
+    "maxdd_pct": -21.5,
+    "pf": 0.85
+   }
+  ]
+ },
+ "best_gate_horizon": 21,
+ "best_gate_sharpe": 0.24,
+ "note": "Signal at close -> next-open entry; stop on closes (close-basis like the guardian); 33bps RT; max 8 names; 1%-risk ATR sizing both variants \u2014 the ONLY difference between panels is the gate's trend filter. Smart-money/Kelly/jump gates are live-only overlays. Single-path, gross-of-slippage."
+}

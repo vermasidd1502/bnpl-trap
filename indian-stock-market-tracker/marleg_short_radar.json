@@ -1,0 +1,31 @@
+{
+ "asof": "2026-06-11",
+ "candidates": [],
+ "plan": "intraday short ONLY: entry on lower-high after 10:15, stop = entry + 1.5xATR(15m), breakeven lock at +1xATRi, flat 15:05. Paper-first \u2014 see validation.",
+ "validation": {
+  "rsi_only": {
+   "n": 10066,
+   "mean_pct": -0.016,
+   "median_pct": 0.03,
+   "win_pct": 50.9
+  },
+  "rsi+ext": {
+   "n": 7234,
+   "mean_pct": 0.01,
+   "median_pct": 0.046,
+   "win_pct": 51.7
+  },
+  "rsi+ext+spike": {
+   "n": 811,
+   "mean_pct": 0.282,
+   "median_pct": 0.18,
+   "win_pct": 55.1
+  },
+  "rsi+ext+spike-noUD": {
+   "n": 340,
+   "mean_pct": 0.413,
+   "median_pct": 0.185,
+   "win_pct": 55.3
+  }
+ }
+}

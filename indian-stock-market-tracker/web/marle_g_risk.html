@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Risk / VaR · Marle-G</title>
+<style>
+  :root{--bg:#080a0e;--bg2:#0e1116;--card:#14171e;--border:rgba(255,255,255,.08);--ink:#eef1f6;--muted:#9aa3b4;--dim:#646c7a;
+    --mono:'SF Mono',ui-monospace,Consolas,monospace;--saffron:#ff9933;--india-green:#138808;--green:#22c55e;--red:#ef4444;--amber:#fbbf24;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(1100px 520px at 50% -10%,rgba(255,153,51,.05),transparent 60%),var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,sans-serif}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--border);background:rgba(8,10,14,.8);position:sticky;top:0;z-index:10}
+  .brand{font-family:var(--mono);font-weight:800;letter-spacing:.18em;font-size:13px;display:flex;align-items:center;gap:9px}
+  .brand .mark{width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,var(--saffron),var(--india-green))}
+  .brand .w{background:linear-gradient(90deg,var(--saffron),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tabs{display:flex;gap:16px;font-family:var(--mono);font-size:11px;flex-wrap:wrap}.tabs a{color:var(--dim);text-decoration:none}.tabs a.on{color:var(--saffron)}.tabs a:hover{color:var(--ink)}
+  .wrap{max-width:1180px;margin:0 auto;padding:22px 24px 70px}
+  .head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px;flex-wrap:wrap;gap:10px}
+  h1{font-size:21px;font-weight:800}.clock{font-family:var(--mono);font-size:11px;color:var(--muted);text-align:right;line-height:1.6}.clock b{color:var(--saffron)}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:11px;margin-bottom:16px}
+  .mc{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px}.mc.hero{border-left:3px solid var(--red)}
+  .mc .n{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--dim)}
+  .mc .v{font-family:var(--mono);font-size:22px;font-weight:800;margin-top:5px}.mc .s{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:3px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:16px}
+  .sh{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-bottom:12px}
+  table.h{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11.5px}
+  .h th{font-size:9px;text-transform:uppercase;color:var(--dim);text-align:right;padding:8px 9px;border-bottom:1px solid var(--border)}.h th:first-child,.h td:first-child{text-align:left}
+  .h td{padding:9px;text-align:right;border-bottom:1px solid rgba(255,255,255,.04)}
+  .pos{color:var(--green)}.neg{color:var(--red)}.neu{color:var(--dim)}
+  .seg{display:flex;height:24px;border-radius:7px;overflow:hidden;margin:6px 0}.seg span{display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;color:#0a0b0f;font-weight:700}
+  .sug{font-family:var(--mono);font-size:12px;color:#cbd5e1;line-height:1.5;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+  details{background:var(--bg2);border:1px solid var(--border);border-radius:11px;padding:12px 15px;margin-bottom:14px}
+  summary{font-family:var(--mono);font-size:11px;color:var(--saffron);cursor:pointer;font-weight:700}details p{font-size:12.5px;color:#cbd5e1;line-height:1.6;margin-top:8px}details b{color:var(--ink)}
+  .barbg{position:relative;height:8px;background:rgba(255,255,255,.07);border-radius:4px;overflow:hidden;margin:4px 0}.barbg i{display:block;height:100%}
+</style>
+</head>
+<body>
+<div class="nav"><div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span></span></div><div class="tabs"></div></div>
+<main class="wrap">
+  <div class="head"><div><h1>📉 Portfolio Risk · VaR</h1><div class="sh" id="sub" style="margin-top:4px">loading live book…</div></div><div class="clock" id="clock"></div></div>
+
+  <details><summary>ℹ️ How to read this (CAPM, beta, VaR, Monte Carlo)</summary>
+    <p><b>Beta</b> = how hard the market (Nifty) moves you. β=1.2 → you swing ~1.2× Nifty. <b>Systematic risk</b> (market/beta) can't be diversified away; <b>idiosyncratic</b> (stock-specific) can — by holding <b>uncorrelated</b> names.</p>
+    <p><b>VaR (Value at Risk)</b> = the loss you'd exceed only X% of the time (99% = a 1-in-100 day). <b>ES (Expected Shortfall)</b> = the *average* loss when you breach VaR — the fat-tail number. <b>Student-t</b> VaR > Normal VaR because real markets have fat tails (FIN-537).</p>
+    <p><b>Monte Carlo</b> simulates 30,000 correlated, fat-tailed futures of your exact book → the histogram below is the distribution of what could happen by Monday.</p>
+  </details>
+
+  <div class="cards" id="cards"></div>
+  <div class="card"><div class="sh">Monte Carlo — weekend (3-day) P&amp;L distribution · 30k fat-tailed sims</div><div id="hist"></div>
+    <div class="sh" style="margin-top:10px">Probability of losing more than…</div><div id="probs"></div></div>
+  <div class="card"><div class="sh">Risk decomposition — systematic (market) vs idiosyncratic (stock-specific)</div><div id="decomp"></div></div>
+  <div class="card"><div class="sh">Positions — beta, market-correlation, risk share</div><div id="postbl"></div></div>
+  <div class="card"><div class="sh">⚑ Suggestions</div><div id="sug"></div></div>
+</main>
+<script src="marle_g_nav.js"></script>
+<script>
+window.MG_SELF_REFRESH=true;
+const $=id=>document.getElementById(id);
+const inr=n=>(n<0?'−₹':'₹')+Math.abs(Math.round(n)).toLocaleString('en-IN');
+const esc=s=>(s||'').replace(/[<>]/g,'');
+function clocks(){const now=new Date(),o={weekday:'short',hour:'2-digit',minute:'2-digit',hour12:true};
+  $('clock').innerHTML='IST <b>'+now.toLocaleString('en-US',{timeZone:'Asia/Kolkata',...o})+'</b><br>US-CT '+now.toLocaleString('en-US',{timeZone:'America/Chicago',...o});}
+setInterval(clocks,1000);clocks();
+
+function histSVG(counts,edges){
+  const W=1000,H=210,pad=28,n=counts.length,mx=Math.max(...counts)||1;
+  const x=i=>pad+(W-2*pad)*(i/n), bw=(W-2*pad)/n-1;
+  const zeroIdx=edges.findIndex(e=>e>=0);
+  const zx=pad+(W-2*pad)*(zeroIdx/(edges.length-1));
+  let bars='';
+  for(let i=0;i<n;i++){const mid=(edges[i]+edges[i+1])/2;const h=(counts[i]/mx)*(H-2*pad);
+    const col=mid<0?'var(--red)':'var(--green)';
+    bars+=`<rect x="${x(i).toFixed(1)}" y="${(H-pad-h).toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" fill="${col}" opacity="${mid<0?0.8:0.6}"/>`;}
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px">
+    ${bars}
+    <line x1="${zx.toFixed(1)}" y1="${pad-6}" x2="${zx.toFixed(1)}" y2="${H-pad}" stroke="var(--ink)" stroke-width="1" stroke-dasharray="3 3"/>
+    <text x="${zx.toFixed(1)}" y="14" fill="var(--ink)" font-size="10" font-family="monospace" text-anchor="middle">break-even</text>
+    <text x="${pad}" y="${H-8}" fill="var(--red)" font-size="10" font-family="monospace">${inr(edges[0])}</text>
+    <text x="${W-pad}" y="${H-8}" fill="var(--green)" font-size="10" font-family="monospace" text-anchor="end">${inr(edges[edges.length-1])}</text>
+  </svg>`;
+}
+
+async function load(){
+  try{
+    const r=await (await fetch('/api/portfolio_var')).json();
+    if(r.error){ $('sub').textContent=r.error; return; }
+    $('sub').textContent=`book ${inr(r.V)} · cash ${inr(r.cash)} · ${r.asof_note}`;
+    const betaCol=r.beta>1.2?'var(--red)':r.beta<0.8?'var(--green)':'var(--amber)';
+    $('cards').innerHTML=[
+      ['Portfolio beta',r.beta,`vs Nifty · ${r.beta>1.2?'aggressive':r.beta<0.8?'defensive':'moderate'}`,betaCol,''],
+      ['Daily volatility',r.vol_day_pct+'%',`~${r.vol_ann_pct}% annualized`,'var(--ink)',''],
+      ['1-day VaR 99% (t)',inr(r.var.t99),`fat-tail · ${Math.round(r.var.t99/r.cash*100)}% of cash`,'var(--amber)','hero'],
+      ['Weekend ES 99%',inr(r.var.es99*1.73),`avg loss if breached`,'var(--red)','hero'],
+      ['Diversification',r.diversification_ratio+'×',`avg pair-corr ${r.avg_pair_corr}`,'var(--ink)','']
+    ].map(c=>`<div class="mc ${c[4]}"><div class="n">${c[0]}</div><div class="v" style="color:${c[3]}">${c[1]}</div><div class="s">${c[2]}</div></div>`).join('');
+    $('hist').innerHTML=histSVG(r.mc.hist_counts,r.mc.hist_edges);
+    const thr=['10000','20000','30000','37000','50000'];
+    $('probs').innerHTML=`<table class="h"><tr><td class="neu">loss exceeds</td>${thr.map(t=>`<th>${inr(-t)}</th>`).join('')}</tr>
+      <tr><td>1-day</td>${thr.map(t=>`<td>${r.mc.prob_1d[t]}%</td>`).join('')}</tr>
+      <tr><td>weekend</td>${thr.map(t=>`<td class="${r.mc.prob_wk[t]>=2?'neg':''}">${r.mc.prob_wk[t]}%</td>`).join('')}</tr></table>
+      <div class="sh" style="margin-top:8px;text-transform:none;letter-spacing:0;color:var(--muted)">worst 1-in-1000 weekend: <b style="color:var(--red)">${inr(r.mc.worst_wk_01pct)}</b> · P(profit) ${r.mc.p_profit_wk}%</div>`;
+    $('decomp').innerHTML=`<div class="seg"><span style="width:${r.pct_systematic}%;background:var(--saffron)">${r.pct_systematic}% market</span><span style="width:${r.pct_idiosyncratic}%;background:#3b82f6">${r.pct_idiosyncratic}% stock-specific</span></div>
+      <div class="sh" style="text-transform:none;letter-spacing:0;color:var(--muted);margin-top:6px">${r.pct_systematic>55?'Mostly a leveraged market bet — diversifying stocks won\\'t help; lower beta/hedge will.':'Mostly stock-specific risk — diversifiable; the concentration (not the market) is the lever.'}</div>`;
+    $('postbl').innerHTML=`<table class="h"><thead><tr><th>stock</th><th>weight</th><th>beta</th><th>mkt corr</th><th>vol/day</th><th>risk share</th></tr></thead><tbody>${
+      r.positions.sort((a,b)=>b.risk_share-a.risk_share).map(p=>`<tr><td>${p.sym}</td><td>${p.weight}%</td><td class="${p.beta>1.2?'neg':p.beta<0.8?'pos':''}">${p.beta}</td><td>${p.mkt_corr}</td><td>${p.vol_pct}%</td>
+      <td>${p.risk_share}%<span class="barbg" style="display:inline-block;width:50px;margin-left:6px"><i style="width:${Math.min(100,p.risk_share)}%;background:var(--red)"></i></span></td></tr>`).join('')}</tbody></table>`;
+    $('sug').innerHTML=(r.suggestions||[]).map(s=>`<div class="sug">• ${esc(s)}</div>`).join('')||'<div class="sug neu">no flags</div>';
+  }catch(e){ $('sub').textContent='backend offline?'; }
+}
+load(); setInterval(load,180000);
+</script>
+</body>
+</html>

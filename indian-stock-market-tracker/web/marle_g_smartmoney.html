@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Money · Marle-G</title>
+<style>
+  :root{--bg:#080a0e;--card:#14171e;--bg2:#0e1116;--border:rgba(255,255,255,.08);--ink:#eef1f6;--muted:#9aa3b4;--dim:#646c7a;
+    --mono:'SF Mono',ui-monospace,Consolas,monospace;--saffron:#ff9933;--green:#22c55e;--red:#ef4444;--amber:#fbbf24;--india-green:#138808;--blue:#60a5fa;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(1100px 520px at 50% -10%,rgba(255,153,51,.05),transparent 60%),var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--border);background:rgba(8,10,14,.8);position:sticky;top:0;z-index:10}
+  .brand{font-family:var(--mono);font-weight:800;letter-spacing:.18em;font-size:13px;display:flex;align-items:center;gap:9px}
+  .brand .mark{width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,var(--saffron),var(--india-green))}
+  .brand .w{background:linear-gradient(90deg,var(--saffron),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tabs{display:flex;gap:13px;font-family:var(--mono);font-size:11px;flex-wrap:wrap}
+  .tabs a{color:var(--dim);text-decoration:none}.tabs a.on{color:var(--saffron)}.tabs a:hover{color:var(--ink)}
+  .wrap{max-width:1040px;margin:0 auto;padding:22px 22px 70px}
+  h1{font-size:22px;margin-bottom:3px} .sub{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:14px}
+  .inrow{display:flex;gap:9px;margin-bottom:10px}
+  #tk{flex:0 0 260px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--ink);font-family:var(--mono);font-size:13px;outline:none;text-transform:uppercase}
+  #tk:focus{border-color:var(--saffron)}
+  #go{background:linear-gradient(135deg,var(--saffron),var(--india-green));border:none;border-radius:10px;color:#0b0b0b;font-weight:800;font-family:var(--mono);font-size:12px;padding:0 18px;cursor:pointer}
+  .chips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
+  .chip{font-family:var(--mono);font-size:11px;color:var(--muted);background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:5px 11px;cursor:pointer}
+  .chip:hover{color:var(--saffron);border-color:var(--saffron)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:14px}
+  @media (max-width:860px){.grid2{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px}
+  .sh{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-bottom:10px}
+  table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11.5px}
+  th{font-size:9px;text-transform:uppercase;color:var(--dim);text-align:right;padding:5px 7px;border-bottom:1px solid var(--border)}
+  th.l,td.l{text-align:left} td{padding:6px 7px;text-align:right;border-bottom:1px solid rgba(255,255,255,.04)}
+  .vb{font-size:9px;font-weight:800;padding:2px 8px;border-radius:5px}
+  .acc{background:rgba(34,197,94,.16);color:var(--green)} .dis{background:rgba(239,68,68,.15);color:var(--red)}
+  .sta{background:rgba(255,255,255,.07);color:var(--muted)}
+  .long{background:rgba(34,197,94,.16);color:var(--green)} .short{background:rgba(239,68,68,.15);color:var(--red)}
+  .pass{background:rgba(255,255,255,.06);color:var(--dim)}
+  .cons{font-family:var(--mono);font-size:13px;font-weight:800;border-radius:10px;padding:10px 13px;margin-top:10px;background:var(--bg2);border:1px solid var(--border)}
+  .desk td{padding:8px 7px} .desk .why{color:var(--dim);font-size:10.5px}
+  .legend{font-family:var(--mono);font-size:10px;color:var(--dim);line-height:1.55;margin-top:10px}
+  .scr tr{cursor:pointer} .scr tr:hover td{background:rgba(255,153,51,.05)}
+  .load{color:var(--dim);font-family:var(--mono);font-size:11px}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span></span></div>
+  <div class="tabs"></div>
+</div>
+<main class="wrap">
+  <h1>🏦 Smart Money — Hedge-Fund Desk</h1>
+  <div class="sub">India's 13F: quarterly shareholding deltas (promoters / FII / DII vs the public) + a six-archetype hedge-fund desk vote per stock. Quarterly data; screen cached 12h.</div>
+  <div class="inrow"><input id="tk" placeholder="ticker… e.g. TITAN" autocomplete="off"><button id="go">Analyze</button></div>
+  <div class="chips" id="chips"></div>
+
+  <div class="grid2">
+    <div class="card"><div class="sh">Institutional flow <span id="ftag" style="color:var(--saffron)"></span></div><div id="flow" class="load">pick a ticker ↑</div></div>
+    <div class="card"><div class="sh">The desk — 6 archetypes vote <span id="dtag" style="color:var(--saffron)"></span></div><div id="desk" class="load">pick a ticker ↑</div></div>
+  </div>
+
+  <div class="card">
+    <div class="sh">Institutional-inflow screen — who the smart money is buying (Δ1Q FII+DII)</div>
+    <div id="screen" class="load">⟳ building the screen (first run scrapes ~24 names · ~1 min, then cached 12h)…</div>
+  </div>
+  <div class="legend">Promoter = insider conviction (India's strongest tell) · FII = foreign institutions · DII = domestic MFs/insurance (the structural bid) · Public = retail counterweight. Verdict: |Δ1Q FII+DII| > 0.3% → ACCUMULATING / DISTRIBUTING. Sources: screener.in shareholding (quarterly) + yfinance cross-check. Monitor-only; not advice.</div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const col=x=>x>0?'var(--green)':x<0?'var(--red)':'var(--muted)';
+const pm=x=>x==null?'—':(x>0?'+':'')+x;
+const CHIPS=["TITAN","RELIANCE","HDFCBANK","BAJFINANCE","DIVISLAB","VBL","SBIN","INFY"];
+function vb(v){const c=v==='ACCUMULATING'?'acc':v==='DISTRIBUTING'?'dis':'sta';return `<span class="vb ${c}">${esc(v)}</span>`;}
+function voteb(v){const c=v==='LONG'?'long':v==='SHORT'?'short':'pass';return `<span class="vb ${c}">${esc(v)}</span>`;}
+async function analyze(tk){
+  tk=(tk||'').trim().toUpperCase(); if(!tk)return;
+  $('tk').value=tk; $('ftag').textContent='· '+tk; $('dtag').textContent='· '+tk;
+  $('flow').innerHTML='<span class="load">⟳ shareholding…</span>'; $('desk').innerHTML='<span class="load">⟳ desk voting…</span>';
+  fetch('/api/smartmoney/'+tk).then(r=>r.json()).then(f=>{
+    if(f.error){ $('flow').innerHTML='<span class="load">'+esc(f.error)+'</span>'; return; }
+    const row=(lbl,o)=>`<tr><td class="l">${lbl}</td><td>${o.now==null?'—':o.now+'%'}</td>
+      <td style="color:${col(o.d1q)}">${pm(o.d1q)}</td><td style="color:${col(o.d4q)}">${pm(o.d4q)}</td></tr>`;
+    $('flow').innerHTML=`<table><thead><tr><th class="l">Holder</th><th>Now</th><th>Δ1Q</th><th>Δ4Q</th></tr></thead><tbody>
+      ${row('Promoters',f.promoter)}${row('FIIs',f.fii)}${row('DIIs',f.dii)}${row('Public',f.public)}</tbody></table>
+      <div class="cons">${vb(f.verdict)} <span style="color:${col(f.inst_delta_1q)}">inst ${pm(f.inst_delta_1q)}% 1Q · ${pm(f.inst_delta_4q)}% 4Q</span>
+      · promoters <b style="color:${f.promoter_action==='BUYING'?'var(--green)':f.promoter_action==='SELLING'?'var(--red)':'var(--muted)'}">${esc(f.promoter_action)}</b>
+      <div style="font-size:10px;color:var(--dim);font-weight:400;margin-top:4px">as of ${esc(f.asof)}${f.yf_institutions_pct!=null?` · yf cross-check: institutions ${f.yf_institutions_pct}% / insiders ${f.yf_insiders_pct}%`:''}</div></div>`;
+  }).catch(()=>{$('flow').innerHTML='<span class="load">backend offline?</span>';});
+  fetch('/api/equity/'+tk).then(r=>r.json()).then(e=>{
+    if(!e.arch){ $('desk').innerHTML='<span class="load">no desk read</span>'; return; }
+    $('desk').innerHTML=`<table class="desk"><tbody>${e.arch.map(a=>`<tr>
+      <td class="l"><b>${esc(a[0])}</b><br><span class="why">${esc(a[1])}</span></td>
+      <td>${voteb(a[2])}</td><td class="l why">${esc(a[3])}</td></tr>`).join('')}</tbody></table>
+      <div class="cons" style="color:${e.longs>e.shorts?'var(--green)':e.shorts>e.longs?'var(--red)':'var(--amber)'}">${esc(e.consensus)}</div>`;
+  }).catch(()=>{$('desk').innerHTML='<span class="load">backend offline?</span>';});
+}
+async function loadScreen(){
+  try{
+    const r=await(await fetch('/api/smartmoney_screen')).json();
+    const rows=(r.rows||[]).map(x=>`<tr onclick="analyze('${esc(x.sym)}')"><td class="l" style="font-weight:700">${esc(x.sym)}</td>
+      <td style="color:${col(x.inst_1q)}">${pm(x.inst_1q)}</td><td style="color:${col(x.inst_4q)}">${pm(x.inst_4q)}</td>
+      <td style="color:${col(x.fii_1q)}">${pm(x.fii_1q)}</td><td style="color:${col(x.dii_1q)}">${pm(x.dii_1q)}</td>
+      <td>${esc(x.promoter)}</td><td>${vb(x.verdict)}</td></tr>`).join('');
+    $('screen').innerHTML=rows?`<table class="scr"><thead><tr><th class="l">Sym</th><th>Inst Δ1Q</th><th>Inst Δ4Q</th><th>FII Δ1Q</th><th>DII Δ1Q</th><th>Promoter</th><th>Verdict</th></tr></thead><tbody>${rows}</tbody></table>
+      <div class="legend">click a row to load it above · ${r.n} names screened</div>`
+      :'<span class="load">screen empty — screener.in may be rate-limiting; retry later</span>';
+  }catch(e){ $('screen').innerHTML='<span class="load">backend offline? run: python marleg_server.py</span>'; }
+}
+$('go').onclick=()=>analyze($('tk').value);
+$('tk').addEventListener('keydown',e=>{if(e.key==='Enter')analyze($('tk').value);});
+$('chips').innerHTML=CHIPS.map(c=>`<span class="chip" onclick="analyze('${c}')">${c}</span>`).join('');
+analyze('TITAN');
+loadScreen();
+</script>
+  <script src="marle_g_nav.js"></script>
+</body>
+</html>

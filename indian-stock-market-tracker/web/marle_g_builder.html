@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Script Builder · Marle-G</title>
+<style>
+  :root{--bg:#080a0e;--card:#14171e;--bg2:#0e1116;--border:rgba(255,255,255,.08);--ink:#eef1f6;--muted:#9aa3b4;--dim:#646c7a;
+    --mono:'SF Mono',ui-monospace,Consolas,monospace;--saffron:#ff9933;--green:#22c55e;--red:#ef4444;--amber:#fbbf24;--india-green:#138808;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(1100px 520px at 50% -10%,rgba(255,153,51,.05),transparent 60%),var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--border);background:rgba(8,10,14,.8);position:sticky;top:0;z-index:10}
+  .brand{font-family:var(--mono);font-weight:800;letter-spacing:.18em;font-size:13px;display:flex;align-items:center;gap:9px}
+  .brand .mark{width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,var(--saffron),var(--india-green))}
+  .brand .w{background:linear-gradient(90deg,var(--saffron),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tabs{display:flex;gap:13px;font-family:var(--mono);font-size:11px;flex-wrap:wrap}
+  .tabs a{color:var(--dim);text-decoration:none}.tabs a.on{color:var(--saffron)}.tabs a:hover{color:var(--ink)}
+  .wrap{max-width:1040px;margin:0 auto;padding:22px 22px 70px}
+  h1{font-size:22px;margin-bottom:3px} .sub{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:14px}
+  .caveat{background:rgba(251,191,36,.10);border:1px solid var(--amber);border-radius:11px;padding:10px 13px;font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:14px}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .chip{font-family:var(--mono);font-size:12px;color:var(--muted);background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:7px 15px;cursor:pointer}
+  .chip.on{color:#0b0b0b;background:var(--saffron);border-color:var(--saffron);font-weight:800}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px}
+  .sh{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-bottom:10px}
+  .knobs{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:11px}
+  .knob label{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--dim);display:block;margin-bottom:4px}
+  .knob input,.knob select{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:9px 11px;color:var(--ink);font-family:var(--mono);font-size:13px;outline:none}
+  .knob input:focus{border-color:var(--saffron)}
+  .knob .rng{font-size:9px;color:var(--dim);margin-top:3px;font-family:var(--mono)}
+  .smas{display:flex;gap:9px;align-items:center;font-family:var(--mono);font-size:12px;color:var(--muted);padding-top:8px}
+  .btns{display:flex;gap:10px;margin-top:14px}
+  .btn{border:none;border-radius:10px;font-weight:800;font-family:var(--mono);font-size:12px;padding:11px 20px;cursor:pointer}
+  .btn.test{background:var(--bg2);color:var(--saffron);border:1px solid var(--saffron)}
+  .btn.build{background:linear-gradient(135deg,var(--saffron),var(--india-green));color:#0b0b0b}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px}
+  .st{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px}
+  .st .n{font-family:var(--mono);font-size:9px;text-transform:uppercase;color:var(--dim)}
+  .st .v{font-family:var(--mono);font-size:18px;font-weight:800;margin-top:3px}
+  .yearly{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}
+  .yr{font-family:var(--mono);font-size:10.5px;border:1px solid var(--border);border-radius:7px;padding:4px 9px;color:var(--muted)}
+  .notes{font-family:var(--mono);font-size:10.5px;color:var(--amber);margin-top:9px;line-height:1.5}
+  .scriptbox{background:var(--bg2);border:1px solid rgba(34,197,94,.4);border-radius:11px;padding:13px;font-family:var(--mono);font-size:12px;line-height:1.7;margin-top:11px}
+  .legend{font-family:var(--mono);font-size:10px;color:var(--dim);line-height:1.55;margin-top:8px}
+  .load{color:var(--dim);font-family:var(--mono);font-size:12px}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span></span></div>
+  <div class="tabs"></div>
+</div>
+<main class="wrap">
+  <h1>🛠 Strategy Script Builder</h1>
+  <div class="sub">pick a base strategy → turn the knobs → test against a decade of frozen data → generate a runnable script. The honesty battery (net costs, PSR, yearly) ships with every build.</div>
+  <div class="caveat">⚠ <b>Paper / research only.</b> Guardrails are clamped, not optional: stop ≥ 1.5×ATR (noise survival), risk ≤ 2%/trade, long-only, no leverage field exists. Generated scripts print candidates + sizes — they never place orders. Mods that survive PSR > 0.95 deserve attention; everything else is exploration.</div>
+
+  <div class="chips" id="bases"></div>
+  <div class="card">
+    <div class="sh">Mods — leave blank to use the base default</div>
+    <div class="knobs" id="knobs"></div>
+    <div class="smas" id="smas">
+      <span>trend filter:</span>
+      <label><input type="checkbox" id="sma50" checked> above 50dma</label>
+      <label><input type="checkbox" id="sma200" checked> above 200dma</label>
+    </div>
+    <div class="btns">
+      <button class="btn test" id="btnTest">⚡ Test mods (≈15s)</button>
+      <button class="btn build" id="btnBuild">📜 Build the script</button>
+    </div>
+  </div>
+
+  <div class="card"><div class="sh">Backtest — decade store, net of costs</div><div id="res" class="load">test some mods ↑</div></div>
+  <div class="legend">Simulator: signal at close → next-day entry · ATR-sized (risk% ÷ k·ATR) · exits stop/time/TP · 33bps RT · universe = liquid 34. PSR &gt; 0.95 = survives our bar. Not advice.</div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const col=x=>x>0?'var(--green)':x<0?'var(--red)':'var(--muted)';
+const KNOBS=[
+  ["name","name (for the script file)","text",null],
+  ["top_n","top N (conviction limit)","number","top_n"],
+  ["rebalance_days","scan every N sessions","number","rebalance_days"],
+  ["horizon_td","time exit (sessions)","number","horizon_td"],
+  ["k_atr","stop distance (× ATR)","number","k_atr"],
+  ["risk_pct","risk per trade (% capital)","number","risk_pct"],
+  ["mom_lookback","momentum lookback (days)","number","mom_lookback"],
+  ["ud_min","min ud (volume conviction)","number","ud_min"],
+  ["rsi_max","max RSI (dip trigger)","number","rsi_max"],
+  ["take_profit_pct","take profit (%) — optional","number","take_profit_pct"],
+];
+let TPL={}, LIM={}, BASE="momentum";
+function renderKnobs(){
+  const t=TPL[BASE]||{};
+  $('knobs').innerHTML=KNOBS.map(([k,lbl,typ])=>{
+    const lim=LIM[k]; const ph=(t[k]!=null?t[k]:'—');
+    return `<div class="knob"><label>${lbl}</label>
+      <input id="k_${k}" type="${typ}" step="any" placeholder="${ph}">
+      <div class="rng">${lim?('range '+lim[0]+'–'+lim[1]):''} · base: ${ph}</div></div>`;
+  }).join('');
+  $('sma50').checked=(t.above_sma||[]).includes(50);
+  $('sma200').checked=(t.above_sma||[]).includes(200);
+}
+function spec(){
+  const s={base:BASE, above_sma:[...($('sma50').checked?[50]:[]),...($('sma200').checked?[200]:[])]};
+  for(const [k] of KNOBS){ const v=$('k_'+k).value.trim(); if(v!=='') s[k]= (k==='name')?v:parseFloat(v); }
+  return s;
+}
+function statsHtml(r){
+  const s=r.stats, y=r.yearly_ret_pct||{};
+  const psrc=s.psr>=0.95?'var(--green)':s.psr>=0.8?'var(--amber)':'var(--red)';
+  return `<div class="stats">
+    <div class="st"><div class="n">CAGR</div><div class="v" style="color:${col(s.cagr_pct)}">${s.cagr_pct}%</div></div>
+    <div class="st"><div class="n">Sharpe</div><div class="v" style="color:${col(s.sharpe)}">${s.sharpe}</div></div>
+    <div class="st"><div class="n">PSR</div><div class="v" style="color:${psrc}">${s.psr??'—'}</div></div>
+    <div class="st"><div class="n">MaxDD</div><div class="v" style="color:var(--red)">${s.maxdd_pct}%</div></div>
+    <div class="st"><div class="n">Calmar</div><div class="v">${s.calmar}</div></div>
+    <div class="st"><div class="n">Trades</div><div class="v">${s.trades}</div></div>
+    <div class="st"><div class="n">Win</div><div class="v">${s.win_pct}%</div></div>
+    <div class="st"><div class="n">Avg hold</div><div class="v">${s.avg_hold_days}d</div></div></div>
+  <div class="yearly">${Object.entries(y).map(([yr,v])=>`<span class="yr">${yr} <b style="color:${col(v)}">${v>0?'+':''}${v}%</b></span>`).join('')}</div>
+  ${(r.guardrail_notes||[]).length?`<div class="notes">🛡 ${r.guardrail_notes.map(esc).join(' · ')}</div>`:''}
+  <div class="legend">${esc(r.from)} → ${esc(r.to)} · ${esc(r.note||'')}</div>`;
+}
+async function call(url){
+  $('res').innerHTML='<span class="load">⟳ simulating a decade…</span>';
+  try{
+    const r=await(await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(spec())})).json();
+    if(r.error){ $('res').innerHTML='<span class="load">'+esc(r.error)+'</span>'; return; }
+    let extra='';
+    if(r.script_path){
+      extra=`<div class="scriptbox">✓ <b>script written:</b> my_strategies/${esc(r.spec.name)}.py<br>
+        run: <b>python my_strategies/${esc(r.spec.name)}.py --today</b> (today's candidates + sizes)<br>
+        re-test: <b>python my_strategies/${esc(r.spec.name)}.py --backtest</b></div>`;
+    }
+    $('res').innerHTML=statsHtml(r)+extra;
+  }catch(e){ $('res').innerHTML='<span class="load">backend offline? run: python marleg_server.py</span>'; }
+}
+$('btnTest').onclick=()=>call('/api/builder/backtest');
+$('btnBuild').onclick=()=>call('/api/builder/build');
+async function init(){
+  try{
+    const r=await(await fetch('/api/builder/templates')).json();
+    TPL=r.templates; LIM=r.limits;
+    $('bases').innerHTML=Object.keys(TPL).map(b=>`<span class="chip ${b===BASE?'on':''}" onclick="BASE='${b}';document.querySelectorAll('#bases .chip').forEach(c=>c.classList.remove('on'));event.target.classList.add('on');renderKnobs()">${b.replace('_',' ')}</span>`).join('');
+    renderKnobs();
+  }catch(e){ $('knobs').innerHTML='<span class="load">backend offline?</span>'; }
+}
+init();
+</script>
+  <script src="marle_g_nav.js"></script>
+</body>
+</html>

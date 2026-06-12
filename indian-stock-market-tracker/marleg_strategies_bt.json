@@ -1,0 +1,45 @@
+{
+ "momentum_breakout": {
+  "cagr_pct": 9.6,
+  "sharpe": 0.57,
+  "win_rate_pct": 52.7,
+  "maxdd_pct": -13.9,
+  "n_days": 613,
+  "n_trades": 30,
+  "net_of_costs": true
+ },
+ "mean_reversion": {
+  "cagr_pct": 1.2,
+  "sharpe": 0.16,
+  "win_rate_pct": 51.3,
+  "maxdd_pct": -22.5,
+  "n_days": 466,
+  "n_trades": 189,
+  "net_of_costs": true
+ },
+ "volume_swing": {
+  "cagr_pct": -4.0,
+  "sharpe": -0.27,
+  "win_rate_pct": null,
+  "maxdd_pct": -17.3,
+  "n_days": 476,
+  "n_trades": null,
+  "net_of_costs": true,
+  "note": "from Robustness Lab \u2014 net of costs, DSR-checked"
+ },
+ "short_strangle": null,
+ "long_straddle_event": null,
+ "earnings_drift": null,
+ "cascade_basket": null,
+ "fund_momentum": null,
+ "mtf_leveraged_swing": {
+  "cagr_pct": 3.2,
+  "sharpe": 0.57,
+  "win_rate_pct": 52.7,
+  "maxdd_pct": -27.8,
+  "n_days": 613,
+  "n_trades": 30,
+  "net_of_costs": true,
+  "note": "momentum at 2x MTF, minus ~16%/yr interest; drawdown also doubles"
+ }
+}

@@ -330,7 +330,7 @@ const cls=x=> (x==null||isNaN(x))?'neu':x>0?'pos':x<0?'neg':'neu';
 const SECTOR_CONSTITUENTS = {
   'Nifty Bank':[['HDFCBANK','HDFC Bank'],['ICICIBANK','ICICI Bank'],['SBIN','State Bank of India'],['KOTAKBANK','Kotak Mahindra'],['AXISBANK','Axis Bank'],['INDUSINDBK','IndusInd Bank'],['BANKBARODA','Bank of Baroda'],['PNB','Punjab National Bank']],
   'Nifty IT':[['TCS','Tata Consultancy'],['INFY','Infosys'],['HCLTECH','HCL Tech'],['WIPRO','Wipro'],['TECHM','Tech Mahindra'],['LTIM','LTIMindtree'],['PERSISTENT','Persistent Sys'],['COFORGE','Coforge']],
-  'Nifty Auto':[['MARUTI','Maruti Suzuki'],['M&M','Mahindra & Mahindra'],['TATAMOTORS','Tata Motors'],['BAJAJ-AUTO','Bajaj Auto'],['EICHERMOT','Eicher Motors'],['HEROMOTOCO','Hero MotoCorp'],['TVSMOTOR','TVS Motor'],['ASHOKLEY','Ashok Leyland']],
+  'Nifty Auto':[['MARUTI','Maruti Suzuki'],['M&M','Mahindra & Mahindra'],['TMPV','Tata Motors PV'],['TMCV','Tata Motors CV'],['BAJAJ-AUTO','Bajaj Auto'],['EICHERMOT','Eicher Motors'],['HEROMOTOCO','Hero MotoCorp'],['TVSMOTOR','TVS Motor'],['ASHOKLEY','Ashok Leyland']],
   'Nifty Pharma':[['SUNPHARMA','Sun Pharma'],['DRREDDY','Dr Reddy Labs'],['CIPLA','Cipla'],['DIVISLAB','Divi Labs'],['AUROPHARMA','Aurobindo'],['LUPIN','Lupin'],['TORNTPHARM','Torrent Pharma'],['ALKEM','Alkem Labs']],
   'Nifty FMCG':[['HINDUNILVR','Hindustan Unilever'],['ITC','ITC'],['NESTLEIND','Nestle India'],['BRITANNIA','Britannia'],['TATACONSUM','Tata Consumer'],['DABUR','Dabur'],['GODREJCP','Godrej Consumer'],['VBL','Varun Beverages']],
   'Nifty Metal':[['TATASTEEL','Tata Steel'],['JSWSTEEL','JSW Steel'],['HINDALCO','Hindalco'],['VEDL','Vedanta'],['JINDALSTEL','Jindal Steel'],['NMDC','NMDC'],['SAIL','SAIL'],['COALINDIA','Coal India']],
@@ -571,5 +571,6 @@ $('fx-body').innerHTML=DATA.fx.map(f=>`<div class="tile"><div class="nm">${f.nm}
   }catch(e){ $('outlook-body').innerHTML='<div style="color:var(--text-tertiary);font-family:var(--font-mono);font-size:12px">Outlook unavailable — backend offline.</div>'; }
 })();
 </script>
+  <script src="marle_g_nav.js"></script>
 </body>
 </html>

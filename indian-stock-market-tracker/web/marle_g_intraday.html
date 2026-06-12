@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Intraday Vol · Marle-G</title>
+<style>
+  :root{--bg:#080a0e;--card:#14171e;--bg2:#0e1116;--border:rgba(255,255,255,.08);--ink:#eef1f6;--muted:#9aa3b4;--dim:#646c7a;
+    --mono:'SF Mono',ui-monospace,Consolas,monospace;--saffron:#ff9933;--green:#22c55e;--red:#ef4444;--amber:#fbbf24;--india-green:#138808;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(1100px 520px at 50% -10%,rgba(255,153,51,.05),transparent 60%),var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--border);background:rgba(8,10,14,.8);position:sticky;top:0;z-index:10}
+  .brand{font-family:var(--mono);font-weight:800;letter-spacing:.18em;font-size:13px;display:flex;align-items:center;gap:9px}
+  .brand .mark{width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,var(--saffron),var(--india-green))}
+  .brand .w{background:linear-gradient(90deg,var(--saffron),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tabs{display:flex;gap:14px;font-family:var(--mono);font-size:11px;flex-wrap:wrap}
+  .tabs a{color:var(--dim);text-decoration:none}.tabs a.on{color:var(--saffron)}.tabs a:hover{color:var(--ink)}
+  .wrap{max-width:1000px;margin:0 auto;padding:22px 22px 70px}
+  h1{font-size:22px;margin-bottom:3px} .sub{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:16px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:14px}
+  .sh{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-bottom:12px}
+  .inrow{display:flex;gap:9px;margin-bottom:12px}
+  #q{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--ink);font-family:var(--mono);font-size:13px;outline:none;text-transform:uppercase}
+  #q:focus{border-color:var(--saffron)} #go{background:linear-gradient(135deg,var(--saffron),var(--india-green));border:none;border-radius:10px;color:#0b0b0b;font-weight:800;font-family:var(--mono);font-size:13px;padding:0 20px;cursor:pointer}
+  .chips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
+  .chip{font-family:var(--mono);font-size:11px;color:var(--muted);background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:5px 11px;cursor:pointer}
+  .chip:hover{color:var(--saffron);border-color:var(--saffron)}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:11px;margin-bottom:14px}
+  .mc{background:var(--bg2);border:1px solid var(--border);border-radius:11px;padding:13px}
+  .mc .n{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--dim)}
+  .mc .v{font-family:var(--mono);font-size:22px;font-weight:800;margin-top:4px}
+  .mc .s{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:2px}
+  .badge{display:inline-block;font-family:var(--mono);font-size:11px;font-weight:800;padding:4px 10px;border-radius:7px;border:1px solid}
+  .ush{display:flex;align-items:flex-end;gap:1px;height:120px;margin-top:6px}
+  .ush .b{flex:1;background:linear-gradient(180deg,var(--saffron),rgba(255,153,51,.25));border-radius:2px 2px 0 0;min-height:1px}
+  .axis{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--dim);margin-top:5px}
+  table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px}
+  td{padding:4px 6px} .tl{color:var(--muted)} .tr{text-align:right}
+  .legend{font-family:var(--mono);font-size:10px;color:var(--dim);line-height:1.6}
+  .sparkrow{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:12px}
+  @media(max-width:680px){.sparkrow{grid-template-columns:repeat(2,1fr)}}
+  .spark{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:9px 10px 5px}
+  .spark .sl{font-family:var(--mono);font-size:10px;color:var(--dim);display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px}
+  .spark .sl b{font-size:11.5px}
+  .spk{stroke-dasharray:600;stroke-dashoffset:600;animation:spkdraw 1.1s ease forwards}
+  @keyframes spkdraw{to{stroke-dashoffset:0}}
+  .rmeter{margin:2px 0 11px}
+  .rm-track{position:relative;height:11px;background:rgba(255,255,255,.06);border-radius:6px}
+  .rm-fill{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,rgba(34,197,94,.22),rgba(34,197,94,.6));border-radius:6px}
+  .rm-cur{position:absolute;top:-3px;width:3px;height:17px;background:var(--ink);border-radius:2px;transform:translateX(-50%)}
+  .rm-m{position:absolute;top:-2px;width:2px;height:15px;transform:translateX(-50%)}
+  .rm-m.vw{background:var(--amber)} .rm-m.en{background:var(--saffron)}
+  .rm-lab{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9.5px;color:var(--dim);margin-top:4px}
+  .rm-key{font-family:var(--mono);font-size:9px;color:var(--dim);margin-top:3px}
+  .lvls{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:8px;margin-bottom:11px}
+  .lv{background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:8px 10px}
+  .lv.stop{border-left:3px solid var(--red)} .lv.tgt{border-left:3px solid var(--green)} .lv.you{border-left:3px solid var(--saffron)}
+  .lv .k{font-family:var(--mono);font-size:8.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:2px}
+  .lv .vv{font-family:var(--mono);font-size:14px;font-weight:800}
+  .rgrow{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+  @media(max-width:680px){.rgrow{grid-template-columns:repeat(2,1fr)}}
+  .rg{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:9px 10px}
+  .rg-h{font-family:var(--mono);font-size:10px;color:var(--dim);display:flex;justify-content:space-between;align-items:baseline}
+  .rg-h b{font-size:15px}
+  .rg-bar{position:relative;height:7px;background:rgba(255,255,255,.06);border-radius:4px;margin:6px 0}
+  .rg-z{position:absolute;top:0;bottom:0;opacity:.20}
+  .rg-z.os{left:0;width:30%;background:var(--green);border-radius:4px 0 0 4px}
+  .rg-z.ob{right:0;width:30%;background:var(--red);border-radius:0 4px 4px 0}
+  .rg-dot{position:absolute;top:-2px;width:3px;height:11px;border-radius:2px;transform:translateX(-50%)}
+  .rg-s{font-family:var(--mono);font-size:9.5px;text-transform:capitalize}
+  .rg-t{font-family:var(--mono);font-size:9px;color:var(--amber);margin-top:2px;line-height:1.3}
+</style>
+<script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
+</head>
+<body>
+<div class="nav">
+  <div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span></span></div>
+  <div class="tabs">
+    <a href="marle_g_pod.html">home</a><a href="marle_g_equity.html">equity</a><a href="#" class="on">intraday</a>
+    <a href="marle_g_cascade.html">cascade</a><a href="marle_g_vol.html">vol</a><a href="marle_g_regime.html">regime</a>
+    <a href="marle_g_thesis.html">thesis</a><a href="marle_g_mindhive.html">mindhive</a><a href="marle_g_portfolio.html">portfolio</a>
+  </div>
+</div>
+<main class="wrap">
+  <h1>⏱️ Intraday Tracker</h1>
+  <div class="sub">Live position by selectable interval (VWAP · RSI · EMA · momentum · bar-by-bar) + double due-diligence for gated names. FIN-537 realized-variance / HAR / squeeze below.</div>
+
+  <div class="inrow">
+    <input id="q" placeholder="ticker… e.g. TEJASNET / RELIANCE / NIFTY" autocomplete="off" value="TEJASNET">
+    <button id="go">Track</button>
+  </div>
+  <div class="chips" id="chips"></div>
+
+  <div class="card" id="poscard">
+    <div class="sh">Live position <span id="posstamp" style="color:var(--green);font-size:8.5px;float:right"></span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px" id="ivbar"></div>
+    <div id="sparks"></div>
+    <div id="chart" style="height:300px;margin-bottom:12px"></div>
+    <div id="posbody"><span style="color:var(--dim);font-family:var(--mono);font-size:12px">⟳ live read…</span></div>
+  </div>
+  <div id="rsi"></div>
+  <div id="ddcard"></div>
+  <div id="ivadvisor"></div>
+
+  <div class="sh" style="margin:18px 0 8px">FIN-537 volatility lab</div>
+  <div id="out"><div class="card"><span style="color:var(--dim);font-family:var(--mono);font-size:12px">⟳ realized variance + HAR (~15s)…</span></div></div>
+</main>
+<script>
+window.MG_SELF_REFRESH=true;   // this page self-polls (position/DD every 15s) — nav.js skips full-reload
+const $=id=>document.getElementById(id);
+const CHIPS=["TEJASNET","QUESS","RELIANCE","NIFTY","BANKNIFTY","INDIGO"];
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function svg(series,h){
+  const W=940,H=h||180,P=22;
+  const all=series.flatMap(s=>s.data.filter(v=>v!=null));
+  if(!all.length)return '<div style="color:var(--dim)">no data</div>';
+  const mn=Math.min(...all),mx=Math.max(...all),rng=(mx-mn)||1,n=Math.max(...series.map(s=>s.data.length));
+  const X=i=>P+(W-2*P)*(i/((n-1)||1)), Y=v=>H-P-(H-2*P)*((v-mn)/rng);
+  const polys=series.map(s=>{const pts=s.data.map((v,i)=>v==null?null:X(i).toFixed(1)+','+Y(v).toFixed(1)).filter(Boolean).join(' ');
+    return `<polyline fill="none" stroke="${s.color}" stroke-width="${s.w||1.6}" stroke-dasharray="${s.dash||''}" points="${pts}"/>`;}).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px">${polys}
+    <text x="2" y="12" fill="var(--dim)" font-size="10" font-family="monospace">${mx.toFixed(1)}</text>
+    <text x="2" y="${H-4}" fill="var(--dim)" font-size="10" font-family="monospace">${mn.toFixed(1)}</text></svg>`;
+}
+let LIVE_TK=null, LIVE_TIMER=null;
+async function poll(){
+  if(!LIVE_TK)return;
+  try{
+    const l=await (await fetch('/api/intraday/'+encodeURIComponent(LIVE_TK)+'/live')).json();
+    if(l.error||l.tk!==LIVE_TK)return;
+    const last=document.getElementById('live-last'); if(last) last.textContent=l.last;
+    const vol=document.getElementById('live-vol'); if(vol&&l.today_vol_ann_pct!=null) vol.textContent=l.today_vol_ann_pct+'%';
+    const sq=l.squeeze||{}, sqc=sq.on?'var(--amber)':sq.fired?'var(--saffron)':(sq.bandwidth_pctile>80?'var(--dim)':'var(--muted)');
+    const sb=document.getElementById('live-sq'); if(sb) sb.innerHTML=`<span class="badge" style="color:${sqc};border-color:${sqc}">${sq.on?'ON':sq.fired?'FIRED':sq.bandwidth_pctile>80?'EXPANDED':'—'}</span>`;
+    const st=document.getElementById('live-stamp'); if(st) st.textContent='● live '+new Date().toTimeString().slice(0,8);
+  }catch(e){}
+}
+// ---- live position + double-DD (interval-selectable) ----
+const INTERVALS=[1,3,5,10,15,30,60];
+let IV=5, POS_TIMER=null;
+const dc=v=>v>0?'var(--green)':v<0?'var(--red)':'var(--muted)';
+function renderIv(){ $('ivbar').innerHTML=INTERVALS.map(m=>`<span class="chip" style="${m===IV?'color:var(--saffron);border-color:var(--saffron)':''}" onclick="setIv(${m})">${m}m</span>`).join(''); }
+function setIv(m){ IV=m; renderIv(); loadPos(); loadDD(); }
+let CHART=null,CANDLE=null,VWAPL=null,PLINES=[],CKEY='';
+function renderChart(p){
+  const el=$('chart'); if(!el||!window.LightweightCharts)return;
+  if(!CHART){
+    CHART=LightweightCharts.createChart(el,{width:el.clientWidth,height:300,
+      layout:{background:{color:'transparent'},textColor:'#9aa3b4',fontFamily:'monospace',fontSize:10},
+      grid:{vertLines:{color:'rgba(255,255,255,.04)'},horzLines:{color:'rgba(255,255,255,.04)'}},
+      timeScale:{timeVisible:true,secondsVisible:false,borderColor:'rgba(255,255,255,.1)'},
+      rightPriceScale:{borderColor:'rgba(255,255,255,.1)'},crosshair:{mode:0}});
+    CANDLE=CHART.addCandlestickSeries({upColor:'#22c55e',downColor:'#ef4444',borderVisible:false,wickUpColor:'#22c55e',wickDownColor:'#ef4444'});
+    VWAPL=CHART.addLineSeries({color:'#fbbf24',lineWidth:1,priceLineVisible:false,lastValueVisible:false});
+    new ResizeObserver(()=>{try{CHART.applyOptions({width:el.clientWidth});}catch(e){}}).observe(el);
+  }
+  const bars=(p.bars||[]).filter(b=>b.ts);
+  CANDLE.setData(bars.map(b=>({time:b.ts+19800,open:b.o,high:b.h,low:b.l,close:b.c})));
+  VWAPL.setData(bars.filter(b=>b.vwap!=null).map(b=>({time:b.ts+19800,value:b.vwap})));
+  PLINES.forEach(l=>{try{CANDLE.removePriceLine(l);}catch(e){}}); PLINES=[];
+  const add=(price,color,title)=>{ if(price!=null) PLINES.push(CANDLE.createPriceLine({price,color,lineWidth:1,lineStyle:2,axisLabelVisible:true,title})); };
+  add(p.day_high,'rgba(148,163,184,.55)','H'); add(p.day_low,'rgba(148,163,184,.55)','L'); add(p.prev_close,'rgba(148,163,184,.3)','pc');
+  const key=LIVE_TK+':'+IV; if(key!==CKEY){ CHART.timeScale().fitContent(); CKEY=key; }
+}
+function rangeMeter(p){
+  const lo=p.day_low,hi=p.day_high,rng=(hi-lo)||1, at=v=>v==null?null:Math.max(0,Math.min(100,(v-lo)/rng*100));
+  const cur=at(p.ltp),vw=at(p.vwap),en=p.book?at(p.book.entry):null,L=p.levels||{};
+  return `<div class="rmeter"><div class="rm-track"><div class="rm-fill" style="width:${cur}%"></div>
+      ${vw!=null?`<span class="rm-m vw" style="left:${vw}%" title="VWAP ${p.vwap}"></span>`:''}
+      ${en!=null?`<span class="rm-m en" style="left:${en}%" title="your entry ${p.book.entry}"></span>`:''}
+      <span class="rm-cur" style="left:${cur}%"></span></div>
+    <div class="rm-lab"><span>L ${p.day_low}</span><span>${p.pos_in_range}% up the day${L.target_hit?' · ⚑ target hit':''}</span><span>H ${p.day_high}</span></div>
+    <div class="rm-key">▎ now &nbsp;·&nbsp; <span style="color:var(--amber)">▎</span> VWAP${en!=null?` &nbsp;·&nbsp; <span style="color:var(--saffron)">▎</span> your entry`:''}</div></div>`;
+}
+function levelStrip(p){
+  const L=p.levels||{},b=p.book;
+  const tgt=L.target_hit?'<span style="color:var(--amber)"> ⚑HIT</span>':'';
+  let s=`<div class="lvls">
+    <div class="lv stop"><span class="k">Stop (day)</span><span class="vv">${L.day_stop} <small style="color:var(--red)">${L.to_stop_pct}%</small></span></div>
+    <div class="lv tgt"><span class="k">Day target</span><span class="vv">${L.day_target} <small style="color:var(--green)">+${L.to_target_pct}%</small>${tgt}</span></div>
+    <div class="lv"><span class="k">Stretch</span><span class="vv">${L.stretch_target}</span></div>`;
+  if(b) s+=`<div class="lv you"><span class="k">Your pos · ${b.qty}</span><span class="vv">@${b.entry} <small style="color:${b.pnl_rs>=0?'var(--green)':'var(--red)'}">${b.pnl_rs>=0?'+':'−'}₹${Math.abs(b.pnl_rs).toLocaleString('en-IN')} (${b.pnl_pct}%)</small></span></div>`;
+  return s+`</div>`;
+}
+async function loadPos(){
+  if(!LIVE_TK)return; renderIv();
+  try{
+    const p=await (await fetch(`/api/intraday/${encodeURIComponent(LIVE_TK)}/position?interval=${IV}`)).json();
+    if(p.error){ $('posbody').innerHTML='<span style="color:var(--dim)">'+esc(p.error)+'</span>'; return; }
+    const m=p.momentum||{};
+    try{ renderChart(p); }catch(e){}
+    $('posstamp').textContent=(p.live?'● live ':'')+new Date().toTimeString().slice(0,8)+' · bar '+(p.asof||'').slice(11,16);
+    const cards=`<div class="cards">
+      <div class="mc"><div class="n">LTP · day</div><div class="v">${p.ltp}</div><div class="s" style="color:${dc(p.chg_day_pct)}">${p.chg_day_pct>0?'+':''}${p.chg_day_pct}% · open ${p.chg_open_pct>0?'+':''}${p.chg_open_pct}%</div></div>
+      <div class="mc"><div class="n">vs VWAP</div><div class="v" style="color:${dc(p.vwap_dist)}">${p.vwap_dist>0?'+':''}${p.vwap_dist}%</div><div class="s">VWAP ${p.vwap} · ${p.vwap_dist>=0?'above (bull)':'below (bear)'}</div></div>
+      <div class="mc"><div class="n">Day range</div><div class="v">${p.pos_in_range}%</div><div class="s">L ${p.day_low} · H ${p.day_high}</div></div>
+      <div class="mc"><div class="n">RSI ${IV}m · EMA</div><div class="v" style="color:${p.rsi>70?'var(--red)':p.rsi<30?'var(--green)':'var(--ink)'}">${p.rsi??'—'}</div><div class="s">${p.ema_state} · ${p.consecutive>0?'+'+p.consecutive+' up':p.consecutive<0?p.consecutive+' dn':'flat'} bars</div></div>
+      <div class="mc"><div class="n">Momentum</div><div class="v" style="color:${dc(m.score)};font-size:18px">${m.score>0?'+':''}${m.score}</div><div class="s">surge ${p.vol_surge}× · u/d ${p.ud_intraday}</div></div>
+    </div>
+    ${rangeMeter(p)}
+    ${levelStrip(p)}
+    <div class="legend" style="color:var(--ink);margin-bottom:8px">➤ ${esc(m.label||'')} — ${esc(p.verdict||'')}</div>`;
+    const bars=(p.bars||[]).slice(-30).reverse();
+    const tbl=`<div class="sh" style="margin-top:6px">Bar-by-bar (${IV}m) · most recent first · green vwap = bar above VWAP</div>
+      <table><tr><td class="tl">time</td><td class="tr tl">close</td><td class="tr tl">cum%</td><td class="tr tl">vwap</td><td class="tr tl">rsi</td><td class="tr tl">vol</td></tr>
+      ${bars.map(b=>`<tr><td>${b.t}</td><td class="tr">${b.c}</td><td class="tr" style="color:${dc(b.cum)}">${b.cum>0?'+':''}${b.cum}%</td><td class="tr" style="color:${b.av?'var(--green)':'var(--red)'}">${b.vwap??'—'}</td><td class="tr">${b.rsi??'—'}</td><td class="tr tl">${(b.v||0).toLocaleString('en-IN')}</td></tr>`).join('')}</table>`;
+    $('posbody').innerHTML=cards+tbl;
+  }catch(e){ $('posbody').innerHTML='<span style="color:var(--red)">position load error</span>'; }
+}
+async function loadDD(){
+  if(!LIVE_TK)return;
+  try{
+    const d=await (await fetch(`/api/intraday/${encodeURIComponent(LIVE_TK)}/dd?interval=${IV}`)).json();
+    if(d.error||!d.checks){ $('ddcard').innerHTML=''; return; }
+    const vc=/✅|🟢/.test(d.verdict)?'var(--green)':/🟡/.test(d.verdict)?'var(--amber)':'var(--red)';
+    const ch=d.chase;
+    const chaseHtml=(ch&&!ch.error)?`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px;margin-bottom:12px">
+      <div style="font-family:var(--mono);font-size:11.5px;color:var(--ink);margin-bottom:5px">${esc(ch.verdict)}</div>
+      <div class="legend">freshness <b style="color:var(--ink)">${ch.score}/100</b> · ${ch.from_52w_high_pct}% from 52w-high (room ${ch.room_to_52w_high_pct}%, ${ch.range_pos_pct}%ile) · RSI ${ch.rsi} · +${ch.stretch_50dma_pct}% vs 50-DMA · 20d ${ch.ret20_pct>0?'+':''}${ch.ret20_pct}%</div>
+      <div class="legend">golden number (52w-high ${ch.has_room?'= upside target':'= ceiling'}) ₹${ch.golden_number}${ch.pullback_entry?` · wait for pullback ~₹${ch.pullback_entry}`:''}</div></div>`:'';
+    $('ddcard').innerHTML=`<div class="card"><div class="sh">Double due diligence ${d.gated?'· <span style="color:var(--saffron)">GATE-QUALIFIED</span>':'· not gate-qualified'}</div>
+      <div class="badge" style="color:${vc};border-color:${vc};font-size:12.5px;margin-bottom:12px">${esc(d.verdict)} · ${d.passed}/${d.n}</div>
+      ${chaseHtml}
+      <table>${d.checks.map(c=>`<tr><td style="width:20px;color:${c.ok===true?'var(--green)':c.ok===null?'var(--dim)':'var(--red)'}">${c.ok===true?'✓':c.ok===null?'·':'✗'}</td><td class="tl">${esc(c.k)}</td><td class="tr">${esc(c.detail)}</td></tr>`).join('')}</table>
+      <div class="legend" style="margin-top:8px">Gate (sector + volume + fib) ✕ fundamentals (quality / Piotroski) ✕ live intraday (VWAP / momentum / EMA). Monitor-only, not advice.</div></div>`;
+  }catch(e){ $('ddcard').innerHTML=''; }
+}
+
+function rsiGauge(t){
+  const col=t.cls&&t.cls.indexOf('ob')===0?'var(--red)':t.cls&&t.cls.indexOf('os')===0?'var(--green)':'var(--muted)';
+  const v=Math.max(0,Math.min(100,t.rsi));
+  return `<div class="rg"><div class="rg-h">${t.tf}<b style="color:${col}">${t.rsi}</b></div>
+    <div class="rg-bar"><span class="rg-z os"></span><span class="rg-z ob"></span><span class="rg-dot" style="left:${v}%;background:${col}"></span></div>
+    <div class="rg-s" style="color:${col}">${t.state}</div>${t.trig?`<div class="rg-t">${esc(t.trig)}</div>`:''}</div>`;
+}
+async function loadRsi(){
+  if(!LIVE_TK)return;
+  try{
+    const d=await (await fetch('/api/intraday/'+encodeURIComponent(LIVE_TK)+'/rsi?interval='+IV)).json();
+    if(!d.timeframes||!d.timeframes.length){ $('rsi').innerHTML=''; return; }
+    const vc=/🔴/.test(d.verdict)?'var(--red)':/🟠|🟡/.test(d.verdict)?'var(--amber)':/🟢/.test(d.verdict)?'var(--green)':'var(--muted)';
+    const divs=[];
+    if(d.divergence_daily) divs.push('daily '+d.divergence_daily+' divergence');
+    if(d.divergence_intraday) divs.push('intraday '+d.divergence_intraday+' divergence');
+    $('rsi').innerHTML=`<div class="card"><div class="sh">RSI engine · overbought / oversold · entry–exit timing</div>
+      <div class="rgrow">${d.timeframes.map(rsiGauge).join('')}</div>
+      ${divs.length?`<div class="legend" style="color:var(--amber);margin-top:9px">⚠ ${esc(divs.join(' · '))} — price &amp; momentum disagree</div>`:''}
+      <div class="badge" style="color:${vc};border-color:${vc};font-size:12px;margin-top:10px">${esc(d.verdict)}</div>
+      <div class="legend" style="margin-top:6px">RSI &gt;70 = overbought (trim/exit zone) · &lt;30 = oversold (watch for entry). Green band = oversold, red band = overbought.</div></div>`;
+  }catch(e){ $('rsi').innerHTML=''; }
+}
+async function loadIvAdvisor(){
+  if(!LIVE_TK)return;
+  $('ivadvisor').innerHTML='<div class="card"><span style="color:var(--dim);font-family:var(--mono);font-size:12px">⟳ scoring intervals (trendiness + cost-aware backtest)…</span></div>';
+  try{
+    const a=await (await fetch(`/api/intraday/${encodeURIComponent(LIVE_TK)}/intervals`)).json();
+    if(a.error){ $('ivadvisor').innerHTML=''; return; }
+    const rows=(a.rows||[]).map(x=>{const b=x.bt||{};const cur=x.interval===IV;
+      return `<tr style="${cur?'background:rgba(255,153,51,.07)':''}">
+        <td class="tl" style="${cur?'color:var(--saffron);font-weight:700':''}">${x.interval}m${cur?' ◂':''}</td>
+        <td class="tr">${x.efficiency_ratio??'—'}</td><td class="tr">${x.autocorr??'—'}</td>
+        <td class="tr">${x.whipsaws_per_day??'—'}</td>
+        <td class="tr" style="color:${(b.total||0)>0?'var(--green)':'var(--red)'}">${b.total==null?'—':(b.total>0?'+':'')+b.total+'%'}</td>
+        <td class="tr">${b.n??'—'}</td><td class="tr">${b.win_rate==null?'—':b.win_rate+'%'}</td><td class="tr">${b.pf??'—'}</td></tr>`;}).join('');
+    $('ivadvisor').innerHTML=`<div class="card"><div class="sh">Which interval? · trendiness ✕ whipsaw ✕ cost-aware backtest (net of ${a.cost_rt_pct}% round-trip)</div>
+      <div class="badge" style="color:var(--saffron);border-color:var(--saffron);font-size:12.5px;margin-bottom:6px">Best fit: ${a.recommended}m</div>
+      ${a.today_regime?`<div class="legend" style="color:var(--ink);margin:6px 0">Today: ${esc(a.today_regime)}</div>`:''}
+      <table style="margin-top:6px"><tr><td class="tl">interval</td><td class="tr tl">eff.ratio</td><td class="tr tl">autocorr</td><td class="tr tl">whip/day</td><td class="tr tl">bt net</td><td class="tr tl">trades</td><td class="tr tl">win</td><td class="tr tl">PF</td></tr>${rows}</table>
+      ${a.compare_5_15?`<div class="legend" style="margin-top:8px;color:var(--ink)">${esc(a.compare_5_15)}</div>`:''}
+      <div class="legend" style="margin-top:6px">${esc(a.verdict)}</div>
+      <div class="legend">Eff.ratio = net move ÷ path (higher = trendier). Backtest = long-only EMA9/21 cross, reset each session, net of cost. Positive total = the timeframe paid after fees on recent history.</div></div>`;
+  }catch(e){ $('ivadvisor').innerHTML=''; }
+}
+
+function spark(p){
+  const w=170,h=44,pad=3,pts=p.pts||[];
+  if(pts.length<2) return '';
+  const mn=Math.min(...pts),mx=Math.max(...pts),rng=(mx-mn)||1;
+  const X=i=>pad+(w-2*pad)*(i/((pts.length-1)||1));
+  const Y=v=>h-pad-(h-2*pad)*((v-mn)/rng);
+  const col=p.chg>=0?'var(--green)':'var(--red)';
+  const line=pts.map((v,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1)).join(' ');
+  const area=line+` L ${X(pts.length-1).toFixed(1)} ${h-pad} L ${X(0).toFixed(1)} ${h-pad} Z`;
+  return `<div class="spark"><div class="sl">${p.label}<b style="color:${col}">${p.chg>0?'+':''}${p.chg}%</b></div>
+    <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" style="width:100%;height:${h}px;display:block">
+      <path d="${area}" fill="${col}" opacity="0.10"/><path d="${line}" fill="none" stroke="${col}" stroke-width="1.6" class="spk"/>
+    </svg></div>`;
+}
+async function loadSparks(){
+  if(!LIVE_TK)return;
+  try{
+    const d=await (await fetch('/api/intraday/'+encodeURIComponent(LIVE_TK)+'/sparklines')).json();
+    if(!d.periods||!d.periods.length){ $('sparks').innerHTML=''; return; }
+    $('sparks').innerHTML='<div class="sparkrow">'+d.periods.map(spark).join('')+'</div>';
+  }catch(e){ $('sparks').innerHTML=''; }
+}
+
+async function track(tk){
+  tk=(tk||'').trim().toUpperCase(); if(!tk)return; $('q').value=tk;
+  LIVE_TK=tk; renderIv(); loadPos(); loadDD(); loadIvAdvisor(); loadSparks(); loadRsi();
+  clearInterval(POS_TIMER); POS_TIMER=setInterval(()=>{loadPos();loadDD();loadRsi();},15000);
+  $('out').innerHTML='<div class="card"><span style="color:var(--dim);font-family:var(--mono);font-size:12px">⟳ computing realized variance + HAR for '+esc(tk)+'…</span></div>';
+  try{
+    const r=await (await fetch('/api/intraday/'+encodeURIComponent(tk))).json();
+    if(r.error){ $('out').innerHTML='<div class="card"><span style="color:var(--dim)">'+esc(r.error)+'</span></div>'; return; }
+    const h=r.har||{}, sq=r.squeeze||{}, sf=r.stylized_facts||{};
+    const sqc=sq.on?'var(--amber)':sq.fired?'var(--saffron)':(sq.bandwidth_pctile>80?'var(--dim)':'var(--muted)');
+    // metric cards
+    const cards=`<div class="cards">
+      <div class="mc"><div class="n">Last <span id="live-stamp" style="color:var(--green);font-size:8.5px;float:right"></span></div><div class="v" id="live-last">${r.last}</div><div class="s">${esc(r.name)}</div></div>
+      <div class="mc"><div class="n">Realized vol · today</div><div class="v" id="live-vol" style="color:var(--saffron)">${r.rv.today_vol_ann_pct}%</div><div class="s">${r.rv.today_vol_pct}%/day · o/n ${r.rv.overnight_share_pct}%</div></div>
+      <div class="mc"><div class="n">HAR forecast · next day</div><div class="v" style="color:${h.error?'var(--dim)':'var(--green)'}">${h.error?'—':h.vol_forecast_ann_pct+'%'}</div><div class="s">${h.error?'need more history':h.vol_forecast_daily_pct+'%/day'}</div></div>
+      <div class="mc"><div class="n">Squeeze</div><div class="v" id="live-sq" style="font-size:14px"><span class="badge" style="color:${sqc};border-color:${sqc}">${sq.on?'ON':sq.fired?'FIRED':sq.bandwidth_pctile>80?'EXPANDED':'—'}</span></div><div class="s">bw ${sq.bandwidth_pctile}th · mom ${sq.direction}</div></div>
+    </div>`;
+    // RV history chart + forecast point
+    const rvData=(r.rv_series||[]).map(p=>p.vol);
+    if(h.vol_forecast_ann_pct) rvData.push(h.vol_forecast_ann_pct);
+    const rvChart=`<div class="card"><div class="sh">Realized volatility — daily history (annualized %) · last point = HAR forecast</div>
+      ${svg([{data:rvData,color:'var(--saffron)'}],190)}
+      <div class="legend" style="margin-top:6px">RV = Σ squared 5-min returns, overnight-adjusted (${r.n_days_rv} days). The green metric is tomorrow's HAR forecast — appended as the final point.</div></div>`;
+    // price + Bollinger
+    const ps=r.price_series||[];
+    const priceChart=`<div class="card"><div class="sh">Intraday price + Bollinger bands (5-min, last ${ps.length} bars)</div>
+      ${svg([{data:ps.map(p=>p.u),color:'rgba(148,163,184,.55)',w:1,dash:'3 3'},{data:ps.map(p=>p.l),color:'rgba(148,163,184,.55)',w:1,dash:'3 3'},{data:ps.map(p=>p.c),color:'var(--green)',w:1.8}],200)}
+      <div class="legend" style="margin-top:8px;color:var(--ink)">➤ ${esc(sq.verdict||'')}</div>
+      <div class="legend">Bands ${sq.lower} / ${sq.mid} / ${sq.upper} · TTM momentum ${sq.momentum} (${sq.direction}). Squeeze = Bollinger inside Keltner → coiling → expansion tends to follow.</div></div>`;
+    // U-shape
+    const us=r.ushape||[]; const mxs=Math.max(...us.map(u=>u.share_pct),0.01);
+    const ushChart=`<div class="card"><div class="sh">Pearson intraday U-shape — variance share by time of day</div>
+      <div class="ush">${us.map(u=>`<div class="b" title="${u.t}: ${u.share_pct}% (${u.vol_bp}bp)" style="height:${(u.share_pct/mxs*100).toFixed(0)}%"></div>`).join('')}</div>
+      <div class="axis"><span>${us.length?us[0].t:''}</span><span>midday</span><span>${us.length?us[us.length-1].t:''}</span></div>
+      <div class="legend" style="margin-top:8px">Variance isn't flat through the day — it's high at the open & into the close, low at lunch. A move means more when it lands in a low-variance slot.</div></div>`;
+    // HAR + stylized
+    const harTbl=h.error?`<div style="color:var(--dim);font-family:var(--mono);font-size:11px">${esc(h.error)}</div>`:`<table>
+      <tr><td class="tl">HAR coefficients</td><td class="tr">daily ${h.coef.daily}</td><td class="tr">weekly ${h.coef.weekly}</td><td class="tr">monthly ${h.coef.monthly}</td></tr>
+      <tr><td class="tl">persistence (D+W+M)</td><td class="tr" style="color:var(--saffron)">${h.persistence}</td><td class="tl">leverage</td><td class="tr" style="color:${h.coef.leverage<0?'var(--green)':'var(--red)'}">${h.coef.leverage}</td></tr>
+      <tr><td class="tl">fit R² · n</td><td class="tr">${h.r2}</td><td class="tl tr">obs</td><td class="tr">${h.n_obs}</td></tr></table>`;
+    const facts=`<div class="card"><div class="sh">HAR model & FIN-537 stylized-fact checks</div>${harTbl}
+      <div class="legend" style="margin-top:10px">std(Rₜ/√RVₜ) = <b style="color:var(--ink)">${sf.std_standardized_return}</b> (≈1 ⇒ RV captures daily vol, fact #4) · log-RV ACF(1) = <b style="color:var(--ink)">${sf.logRV_acf1}</b> (RV persistence, fact #2). Negative leverage ⇒ down-days raise tomorrow's vol. Model output, not advice.</div></div>`;
+
+    $('out').innerHTML=cards+rvChart+priceChart+ushChart+facts;
+    LIVE_TK=tk; clearInterval(LIVE_TIMER); LIVE_TIMER=setInterval(poll,60000); poll();
+  }catch(e){ $('out').innerHTML='<div class="card"><span style="color:var(--red)">backend offline? run: python marleg_server.py</span></div>'; }
+}
+$('go').onclick=()=>track($('q').value);
+$('q').addEventListener('keydown',e=>{if(e.key==='Enter')track($('q').value);});
+$('chips').innerHTML=CHIPS.map(c=>`<span class="chip" onclick="track('${c}')">${c}</span>`).join('');
+const _qp=new URLSearchParams(location.search);
+track((_qp.get('q')||_qp.get('tk')||'TEJASNET').trim().toUpperCase());
+</script>
+  <script src="marle_g_nav.js"></script>
+</body>
+</html>

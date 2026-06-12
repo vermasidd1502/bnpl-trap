@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Auto-Trader · Marle-G</title>
+<style>
+  :root{--bg:#080a0e;--card:#14171e;--bg2:#0e1116;--border:rgba(255,255,255,.08);--ink:#eef1f6;--muted:#9aa3b4;--dim:#646c7a;
+    --mono:'SF Mono',ui-monospace,Consolas,monospace;--saffron:#ff9933;--green:#22c55e;--red:#ef4444;--amber:#fbbf24;--india-green:#138808;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(1100px 520px at 50% -10%,rgba(255,153,51,.05),transparent 60%),var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--border);background:rgba(8,10,14,.8);position:sticky;top:0;z-index:10}
+  .brand{font-family:var(--mono);font-weight:800;letter-spacing:.18em;font-size:13px;display:flex;align-items:center;gap:9px}
+  .brand .mark{width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,var(--saffron),var(--india-green))}
+  .brand .w{background:linear-gradient(90deg,var(--saffron),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tabs{display:flex;gap:13px;font-family:var(--mono);font-size:11px;flex-wrap:wrap}
+  .tabs a{color:var(--dim);text-decoration:none}.tabs a.on{color:var(--saffron)}.tabs a:hover{color:var(--ink)}
+  .wrap{max-width:1000px;margin:0 auto;padding:22px 22px 70px}
+  h1{font-size:22px;margin-bottom:3px;display:flex;align-items:center;gap:10px}
+  .live{font-family:var(--mono);font-size:10px;color:var(--green);border:1px solid rgba(34,197,94,.4);border-radius:6px;padding:2px 8px}
+  .sub{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:12px}
+  .caveat{background:rgba(251,191,36,.10);border:1px solid var(--amber);border-radius:11px;padding:10px 13px;font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:14px}
+  .profs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .pf{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:9px 13px;cursor:pointer;font-family:var(--mono);min-width:120px}
+  .pf.on{border-color:var(--saffron);background:rgba(255,153,51,.08)}
+  .pf .nm{font-size:11px;font-weight:800;text-transform:capitalize}
+  .pf .eq{font-size:15px;font-weight:800;margin-top:3px}
+  .pf .rt{font-size:10px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:11px;margin-bottom:14px}
+  .mc{background:var(--bg2);border:1px solid var(--border);border-radius:11px;padding:13px}
+  .mc .n{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--dim)}
+  .mc .v{font-family:var(--mono);font-size:20px;font-weight:800;margin-top:4px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px}
+  .sh{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-bottom:10px}
+  table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11.5px}
+  th{font-size:9px;text-transform:uppercase;color:var(--dim);text-align:right;padding:5px 7px;border-bottom:1px solid var(--border)}
+  th.l,td.l{text-align:left}
+  td{padding:5px 7px;text-align:right;border-bottom:1px solid rgba(255,255,255,.04)}
+  .sd{font-size:9px;font-weight:800;padding:1px 6px;border-radius:4px}
+  .log{font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.7;max-height:200px;overflow-y:auto}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span></span></div>
+  <div class="tabs"></div>
+</div>
+<main class="wrap">
+  <h1>🤖 Overnight Auto-Trader <span class="live" id="live">● connecting…</span></h1>
+  <div class="sub">paper · multi-profile · enters the last 30 min (15:00–15:30 IST), holds overnight, exits at the open. Quality-filtered ud winners; <b>sid</b> runs long/short.</div>
+  <div class="caveat">⚠ <b>Paper only</b> — marks local cash books, never a real order. This trades the <b>overnight</b> leg (backtest ~+3.2 Sharpe) — the edge the intraday version gave back. Keep the machine awake through the IST session for entries/exits. Not advice.</div>
+  <div class="profs" id="profs"></div>
+  <div class="cards" id="cards"></div>
+  <div class="card"><div class="sh">Open positions <span id="pftag" style="color:var(--saffron)"></span></div><div id="open"></div></div>
+  <div class="card"><div class="sh">Closed</div><div id="closed"></div></div>
+  <div class="card"><div class="sh">Activity log</div><div class="log" id="log"></div></div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const ORDER=["conservative","balanced","aggressive","adaptive","sid"];
+let DATA=null, CUR="sid";
+const col=x=>x>0?'var(--green)':x<0?'var(--red)':'var(--muted)';
+function render(){
+  if(!DATA) return;
+  $('profs').innerHTML=ORDER.filter(p=>DATA[p]).map(p=>{const b=DATA[p];
+    return `<div class="pf ${p===CUR?'on':''}" onclick="CUR='${p}';render()"><div class="nm">${p}</div>
+      <div class="eq">₹${Math.round(b.equity||b.start).toLocaleString('en-IN')}</div>
+      <div class="rt" style="color:${col(b.ret_pct)}">${b.ret_pct>0?'+':''}${b.ret_pct??0}% · ${b.open||0} open</div></div>`;}).join('');
+  const b=DATA[CUR]; if(!b) return;
+  $('pftag').textContent='· '+CUR;
+  $('cards').innerHTML=`
+    <div class="mc"><div class="n">Equity</div><div class="v">₹${Math.round(b.equity||b.start).toLocaleString('en-IN')}</div></div>
+    <div class="mc"><div class="n">Return</div><div class="v" style="color:${col(b.ret_pct)}">${b.ret_pct>0?'+':''}${b.ret_pct??0}%</div></div>
+    <div class="mc"><div class="n">Realized</div><div class="v" style="color:${col(b.realized)}">${b.realized>0?'+':''}${b.realized??0}</div></div>
+    <div class="mc"><div class="n">Open</div><div class="v">${b.open||0}</div></div>
+    <div class="mc"><div class="n">Closed</div><div class="v">${b.n_closed||0}</div></div>
+    <div class="mc"><div class="n">As of</div><div class="v" style="font-size:12px">${(b.asof||'').replace(' IST','')}</div></div>`;
+  const sd=s=>s==='LONG'?'<span class="sd" style="background:rgba(34,197,94,.15);color:var(--green)">LONG</span>':'<span class="sd" style="background:rgba(239,68,68,.15);color:var(--red)">SHORT</span>';
+  const op=(b.positions||[]).map(p=>`<tr><td class="l">${sd(p.side)} ${p.sym}</td><td>${p.qty}</td><td>${p.entry}</td><td>${p.now??'—'}</td><td style="color:${col(p.upnl)}">${p.upnl>0?'+':''}${p.upnl??'—'}</td><td style="color:var(--dim)">${p.stop??'—'}/${p.target??'—'}</td></tr>`).join('');
+  $('open').innerHTML=op?`<table><thead><tr><th class="l">Position</th><th>Qty</th><th>Entry</th><th>Now</th><th>uP&L</th><th>Stop/Tgt</th></tr></thead><tbody>${op}</tbody></table>`:'<span style="color:var(--dim);font-family:var(--mono);font-size:11px">flat — enters at 15:00–15:30 IST</span>';
+  const cl=(b.closed||[]).slice().reverse().map(c=>`<tr><td class="l">${sd(c.side)} ${c.sym}</td><td>${c.entry}</td><td>${c.exit}</td><td style="color:${col(c.pnl)}">${c.pnl>0?'+':''}${c.pnl}</td><td class="l" style="color:var(--dim)">${c.reason||''}</td></tr>`).join('');
+  $('closed').innerHTML=cl?`<table><thead><tr><th class="l">Position</th><th>Entry</th><th>Exit</th><th>P&L</th><th class="l">Reason</th></tr></thead><tbody>${cl}</tbody></table>`:'<span style="color:var(--dim);font-family:var(--mono);font-size:11px">nothing closed yet</span>';
+  $('log').innerHTML=(b.log||[]).slice().reverse().map(l=>`<div>${l}</div>`).join('')||'—';
+}
+async function load(){
+  try{
+    const r=await (await fetch('/api/autotrader')).json();
+    if(r.error){ $('live').textContent='○ '+r.error; $('live').style.color='var(--dim)'; return; }
+    DATA=r.profiles; $('live').textContent='● live '+new Date().toTimeString().slice(0,8); $('live').style.color='var(--green)';
+    render();
+  }catch(e){ $('live').textContent='○ backend offline'; $('live').style.color='var(--red)'; }
+}
+load(); setInterval(load,30000);
+</script>
+  <script src="marle_g_nav.js"></script>
+</body>
+</html>

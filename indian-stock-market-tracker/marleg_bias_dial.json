@@ -1,0 +1,61 @@
+{
+ "live_dial": 40.4,
+ "reading": "LEAN SHORT/CASH",
+ "components": {
+  "breadth50": 37.0,
+  "breadth200": 40.0,
+  "ud_tilt": 40.0,
+  "trend": 28.0,
+  "nh_nl": 57.0
+ },
+ "buckets": [
+  {
+   "bucket": "0-20 deep-short",
+   "n": 72,
+   "long_fwd10_med": 1.46,
+   "long_fwd10_avg": 0.21,
+   "long_win_pct": 56.9,
+   "short_net_med": -1.58,
+   "short_win_pct": 43.1
+  },
+  {
+   "bucket": "20-40 lean-short",
+   "n": 313,
+   "long_fwd10_med": 0.87,
+   "long_fwd10_avg": 0.74,
+   "long_win_pct": 59.1,
+   "short_net_med": -0.99,
+   "short_win_pct": 40.9
+  },
+  {
+   "bucket": "40-60 neutral",
+   "n": 562,
+   "long_fwd10_med": 0.78,
+   "long_fwd10_avg": 0.59,
+   "long_win_pct": 58.9,
+   "short_net_med": -0.9,
+   "short_win_pct": 41.1
+  },
+  {
+   "bucket": "60-80 lean-long",
+   "n": 816,
+   "long_fwd10_med": 0.79,
+   "long_fwd10_avg": 0.72,
+   "long_win_pct": 61.8,
+   "short_net_med": -0.91,
+   "short_win_pct": 38.2
+  },
+  {
+   "bucket": "80-100 strong-long",
+   "n": 480,
+   "long_fwd10_med": 0.88,
+   "long_fwd10_avg": 0.69,
+   "long_win_pct": 65.0,
+   "short_net_med": -1.0,
+   "short_win_pct": 35.0
+  }
+ ],
+ "short_logic_works": false,
+ "verdict": "Shorting does NOT pay even in low-dial regimes (drift/dip-recovery dominates) -> the dial means LONG vs CASH, not LONG vs SHORT.",
+ "note": "Forward 10d EW-universe returns by dial bucket; short net of 12bps (best-case intraday; puts cost ~5x). No lookahead (dial from data through day t)."
+}

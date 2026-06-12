@@ -1,0 +1,352 @@
+{
+ "asof": "2026-06-08",
+ "hold": 10,
+ "summary": {
+  "TRAIN (in-sample)": {
+   "long": {
+    "cagr": -0.037141637325782906,
+    "sharpe": -0.15096386230928527,
+    "hit": 0.5909090909090909,
+    "avg": -0.00096637730950986
+   },
+   "short": {
+    "cagr": -0.18287176736208466,
+    "sharpe": -1.3080138377618111,
+    "hit": 0.5,
+    "avg": -0.0075555520961967295
+   },
+   "bench": {
+    "cagr": 0.0552232294784607,
+    "sharpe": 0.5071490544664514,
+    "hit": 0.5454545454545454,
+    "avg": 0.0024195338499057003
+   },
+   "edge_long": -0.13859111594155607
+  },
+  "TEST (out-of-sample)": {
+   "long": {
+    "cagr": 0.08492033845786207,
+    "sharpe": 0.46411355533831666,
+    "hit": 0.4666666666666667,
+    "avg": 0.004209685518178987
+   },
+   "short": {
+    "cagr": -0.1333253712397794,
+    "sharpe": -0.478017649916381,
+    "hit": 0.5333333333333333,
+    "avg": -0.004503824527661645
+   },
+   "bench": {
+    "cagr": -0.001413273117868541,
+    "sharpe": 0.08120290731884898,
+    "hit": 0.4,
+    "avg": 0.0005931219443552858
+   },
+   "edge_long": 0.5616563573823701
+  }
+ },
+ "longs": [
+  {
+   "s": "ADANIENT",
+   "name": "ADANIENT",
+   "sector": "Metals & Mining",
+   "ud": 3.01,
+   "ud_ma": 2.03,
+   "fib": 0.94,
+   "sec_rank_pct": 21,
+   "price": 2970.0
+  },
+  {
+   "s": "ADANIENSOL",
+   "name": "ADANIENSOL",
+   "sector": "Power",
+   "ud": 1.72,
+   "ud_ma": 1.61,
+   "fib": 0.99,
+   "sec_rank_pct": 26,
+   "price": 1570.4
+  }
+ ],
+ "shorts": [
+  {
+   "s": "SBICARD",
+   "name": "SBICARD",
+   "sector": "Financial Services",
+   "ud": 0.19,
+   "ud_ma": 0.64,
+   "fib": 0.0,
+   "sec_rank_pct": 63,
+   "price": 574.5
+  },
+  {
+   "s": "SHREECEM",
+   "name": "SHREECEM",
+   "sector": "Construction Materials",
+   "ud": 0.2,
+   "ud_ma": 1.09,
+   "fib": 0.16,
+   "sec_rank_pct": 68,
+   "price": 23535.0
+  },
+  {
+   "s": "HINDUNILVR",
+   "name": "HINDUNILVR",
+   "sector": "Fast Moving Consumer Goods",
+   "ud": 0.3,
+   "ud_ma": 1.12,
+   "fib": 0.14,
+   "sec_rank_pct": 79,
+   "price": 2110.1
+  },
+  {
+   "s": "BRITANNIA",
+   "name": "BRITANNIA",
+   "sector": "Fast Moving Consumer Goods",
+   "ud": 0.3,
+   "ud_ma": 0.73,
+   "fib": 0.01,
+   "sec_rank_pct": 79,
+   "price": 5078.5
+  },
+  {
+   "s": "DABUR",
+   "name": "DABUR",
+   "sector": "Fast Moving Consumer Goods",
+   "ud": 0.3,
+   "ud_ma": 1.56,
+   "fib": 0.08,
+   "sec_rank_pct": 79,
+   "price": 419.8
+  },
+  {
+   "s": "CONCOR",
+   "name": "CONCOR",
+   "sector": "Services",
+   "ud": 0.35,
+   "ud_ma": 1.31,
+   "fib": 0.19,
+   "sec_rank_pct": 89,
+   "price": 445.4
+  },
+  {
+   "s": "BAJFINANCE",
+   "name": "BAJFINANCE",
+   "sector": "Financial Services",
+   "ud": 0.36,
+   "ud_ma": 1.36,
+   "fib": 0.3,
+   "sec_rank_pct": 63,
+   "price": 871.1
+  },
+  {
+   "s": "ULTRACEMCO",
+   "name": "ULTRACEMCO",
+   "sector": "Construction Materials",
+   "ud": 0.39,
+   "ud_ma": 1.14,
+   "fib": 0.16,
+   "sec_rank_pct": 68,
+   "price": 10795.0
+  },
+  {
+   "s": "SBILIFE",
+   "name": "SBILIFE",
+   "sector": "Financial Services",
+   "ud": 0.41,
+   "ud_ma": 0.86,
+   "fib": 0.0,
+   "sec_rank_pct": 63,
+   "price": 1764.4
+  },
+  {
+   "s": "ICICIGI",
+   "name": "ICICIGI",
+   "sector": "Financial Services",
+   "ud": 0.41,
+   "ud_ma": 0.7,
+   "fib": 0.17,
+   "sec_rank_pct": 63,
+   "price": 1738.4
+  },
+  {
+   "s": "BAJAJFINSV",
+   "name": "BAJAJFINSV",
+   "sector": "Financial Services",
+   "ud": 0.43,
+   "ud_ma": 0.91,
+   "fib": 0.09,
+   "sec_rank_pct": 63,
+   "price": 1674.6
+  },
+  {
+   "s": "PIIND",
+   "name": "PIIND",
+   "sector": "Chemicals",
+   "ud": 0.46,
+   "ud_ma": 1.32,
+   "fib": 0.0,
+   "sec_rank_pct": 74,
+   "price": 2680.8
+  },
+  {
+   "s": "HDFCLIFE",
+   "name": "HDFCLIFE",
+   "sector": "Financial Services",
+   "ud": 0.47,
+   "ud_ma": 1.48,
+   "fib": 0.0,
+   "sec_rank_pct": 63,
+   "price": 564.5
+  },
+  {
+   "s": "ICICIPRULI",
+   "name": "ICICIPRULI",
+   "sector": "Financial Services",
+   "ud": 0.48,
+   "ud_ma": 1.1,
+   "fib": 0.0,
+   "sec_rank_pct": 63,
+   "price": 475.4
+  },
+  {
+   "s": "IRFC",
+   "name": "IRFC",
+   "sector": "Financial Services",
+   "ud": 0.51,
+   "ud_ma": 1.03,
+   "fib": 0.17,
+   "sec_rank_pct": 63,
+   "price": 94.7
+  },
+  {
+   "s": "ICICIBANK",
+   "name": "ICICIBANK",
+   "sector": "Financial Services",
+   "ud": 0.54,
+   "ud_ma": 0.88,
+   "fib": 0.19,
+   "sec_rank_pct": 63,
+   "price": 1250.2
+  },
+  {
+   "s": "CHOLAFIN",
+   "name": "CHOLAFIN",
+   "sector": "Financial Services",
+   "ud": 0.54,
+   "ud_ma": 1.15,
+   "fib": 0.23,
+   "sec_rank_pct": 63,
+   "price": 1456.0
+  },
+  {
+   "s": "SHRIRAMFIN",
+   "name": "SHRIRAMFIN",
+   "sector": "Financial Services",
+   "ud": 0.63,
+   "ud_ma": 0.92,
+   "fib": 0.19,
+   "sec_rank_pct": 63,
+   "price": 896.7
+  },
+  {
+   "s": "DLF",
+   "name": "DLF",
+   "sector": "Realty",
+   "ud": 0.65,
+   "ud_ma": 1.51,
+   "fib": 0.28,
+   "sec_rank_pct": 84,
+   "price": 561.3
+  },
+  {
+   "s": "AMBUJACEM",
+   "name": "AMBUJACEM",
+   "sector": "Construction Materials",
+   "ud": 0.67,
+   "ud_ma": 1.18,
+   "fib": 0.11,
+   "sec_rank_pct": 68,
+   "price": 415.3
+  },
+  {
+   "s": "UPL",
+   "name": "UPL",
+   "sector": "Chemicals",
+   "ud": 0.69,
+   "ud_ma": 1.01,
+   "fib": 0.24,
+   "sec_rank_pct": 74,
+   "price": 625.0
+  },
+  {
+   "s": "ITC",
+   "name": "ITC",
+   "sector": "Fast Moving Consumer Goods",
+   "ud": 0.74,
+   "ud_ma": 1.42,
+   "fib": 0.02,
+   "sec_rank_pct": 79,
+   "price": 279.5
+  },
+  {
+   "s": "IRCTC",
+   "name": "IRCTC",
+   "sector": "Consumer Services",
+   "ud": 0.74,
+   "ud_ma": 1.22,
+   "fib": 0.1,
+   "sec_rank_pct": 95,
+   "price": 516.1
+  },
+  {
+   "s": "GODREJPROP",
+   "name": "GODREJPROP",
+   "sector": "Realty",
+   "ud": 0.79,
+   "ud_ma": 1.42,
+   "fib": 0.27,
+   "sec_rank_pct": 84,
+   "price": 1654.6
+  },
+  {
+   "s": "TRENT",
+   "name": "TRENT",
+   "sector": "Consumer Services",
+   "ud": 0.83,
+   "ud_ma": 1.47,
+   "fib": 0.25,
+   "sec_rank_pct": 95,
+   "price": 2724.1
+  },
+  {
+   "s": "ABFRL",
+   "name": "ABFRL",
+   "sector": "Consumer Services",
+   "ud": 0.9,
+   "ud_ma": 1.81,
+   "fib": 0.22,
+   "sec_rank_pct": 95,
+   "price": 59.3
+  },
+  {
+   "s": "GODREJCP",
+   "name": "GODREJCP",
+   "sector": "Fast Moving Consumer Goods",
+   "ud": 0.97,
+   "ud_ma": 1.03,
+   "fib": 0.07,
+   "sec_rank_pct": 79,
+   "price": 997.0
+  },
+  {
+   "s": "KOTAKBANK",
+   "name": "KOTAKBANK",
+   "sector": "Financial Services",
+   "ud": 1.1,
+   "ud_ma": 1.34,
+   "fib": 0.26,
+   "sec_rank_pct": 63,
+   "price": 377.1
+  }
+ ]
+}

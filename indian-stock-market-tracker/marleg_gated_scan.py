@@ -16,7 +16,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 SECT = json.load(open(os.path.join(HERE, "marleg_sectors.json"), encoding="utf-8"))
 NAMES = {r["s"]: r["n"] for r in json.load(open(os.path.join(HERE, "marleg_symbols.json"), encoding="utf-8"))}
 OUT = os.path.join(HERE, "marleg_gated_cache.json")
-U = mvs.SEED
+U = mvs.load_universe()                             # full Groww NSE-equity universe (~3000+)
 
 
 def main():

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Monitor · Marle-G</title>
+<style>
+  :root{--bg:#080a0e;--card:#14171e;--bg2:#0e1116;--border:rgba(255,255,255,.08);--ink:#eef1f6;--muted:#9aa3b4;--dim:#646c7a;
+    --mono:'SF Mono',ui-monospace,Consolas,monospace;--saffron:#ff9933;--green:#22c55e;--red:#ef4444;--amber:#fbbf24;--india-green:#138808;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(1100px 520px at 50% -10%,rgba(255,153,51,.05),transparent 60%),var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--border);background:rgba(8,10,14,.8);position:sticky;top:0;z-index:10}
+  .brand{font-family:var(--mono);font-weight:800;letter-spacing:.18em;font-size:13px;display:flex;align-items:center;gap:9px}
+  .brand .mark{width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,var(--saffron),var(--india-green))}
+  .brand .w{background:linear-gradient(90deg,var(--saffron),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tabs{display:flex;gap:16px;font-family:var(--mono);font-size:11px;flex-wrap:wrap}
+  .tabs a{color:var(--dim);text-decoration:none}.tabs a.on{color:var(--saffron)}.tabs a:hover{color:var(--ink)}
+  .wrap{max-width:1180px;margin:0 auto;padding:20px 22px 70px}
+  .head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+  .head h1{font-size:23px}
+  .live-dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;animation:pulse 1.4s infinite;margin-right:6px}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  #status{font-family:var(--mono);font-size:11px;color:var(--muted);margin:4px 0 16px}
+  .addbar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+  .addbar input{flex:1;min-width:160px;background:var(--bg2);border:1px solid var(--border);color:var(--ink);border-radius:9px;padding:9px 12px;font-family:var(--mono);font-size:12px}
+  .addbar button{font-family:var(--mono);font-size:11px;border-radius:9px;padding:9px 14px;border:1px solid var(--border);background:var(--bg2);color:var(--muted);cursor:pointer}
+  .addbar button.on{background:linear-gradient(135deg,var(--saffron),var(--india-green));color:#0a0b0f;font-weight:800;border:none}
+  table.t{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .t th{font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--dim);text-align:right;padding:9px 12px;border-bottom:1px solid var(--border)}
+  .t th:first-child,.t td:first-child{text-align:left}
+  .t td{padding:9px 12px;text-align:right;border-bottom:1px solid rgba(255,255,255,.04)}
+  .t tr:last-child td{border-bottom:none}
+  .sym{font-weight:700}
+  .pos{color:var(--green)}.neg{color:var(--red)}.neu{color:var(--dim)}
+  .flash-up{animation:fu .8s} .flash-dn{animation:fd .8s}
+  @keyframes fu{0%{background:rgba(34,197,94,.35)}100%{background:transparent}}
+  @keyframes fd{0%{background:rgba(239,68,68,.35)}100%{background:transparent}}
+  .tag{font-family:var(--mono);font-size:9px;font-weight:800;padding:3px 8px;border-radius:5px}
+  .tag.BUYING{background:rgba(34,197,94,.18);color:var(--green)}
+  .tag.FADING{background:rgba(239,68,68,.18);color:var(--red)}
+  .tag.QUIET{background:rgba(255,255,255,.05);color:var(--dim)}
+  .tag.FLAT{background:rgba(251,191,36,.12);color:var(--amber)}
+  .x{color:var(--dim);cursor:pointer}.x:hover{color:var(--red)}
+  .legend{font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:10px;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span></span></div>
+  <div class="tabs">
+    <a href="marle_g_pod.html">home</a><a href="marle_g_equity.html">equity</a><a href="#" class="on">live</a>
+    <a href="marle_g_paper.html">paper</a><a href="marle_g_macro_preview.html">macro</a><a href="marle_g_dashboard.html">dashboard</a>
+  </div>
+</div>
+<main class="wrap">
+  <div class="head"><h1><span class="live-dot"></span>Live Monitor</h1></div>
+  <div id="status">connecting…</div>
+  <div class="addbar">
+    <input id="add" placeholder="add symbols (comma-sep): RELIANCE, TCS …" spellcheck="false">
+    <button onclick="addSyms()">＋ add</button>
+    <button id="auto" class="on" onclick="toggleAuto()">⚡ auto-add buying/fading: ON</button>
+  </div>
+  <table class="t"><thead><tr><th>stock</th><th>price</th><th>chg %</th><th>vol vs avg</th><th>signal</th><th></th></tr></thead>
+    <tbody id="rows"><tr><td colspan="6" style="color:var(--dim)">loading…</td></tr></tbody></table>
+  <div class="legend">Auto-updates every 6s — no refresh. Price flashes <span class="pos">green</span>/<span class="neg">red</span> on tick.
+    BUYING = up + real volume · FADING = down + volume · "vol vs avg" = today's cumulative volume ÷ 20-day average (pace-adjusted by time of day).
+    Price = <b>Groww real-time LTP</b> when your broker session is live (status shows ● real-time), else yfinance (~15-min delayed). Volume pace = yfinance.
+    Tick-by-tick streaming would need the Groww websocket on Cloud.</div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const pct=x=>(x>0?'+':'')+(+x).toFixed(2)+'%';
+const cls=x=>x>0?'pos':x<0?'neg':'neu';
+const DEFAULTS=['RELIANCE','HDFCBANK','ICICIBANK','TCS','INFY','SBIN','TMPV','ITC','BHARTIARTL','LT','JSWENERGY','ADANIENT','ADANIENSOL','MARUTI','AXISBANK'];
+let watch=new Set(DEFAULTS), prev={}, autoAdd=true;
+try{ const wl=JSON.parse(localStorage.getItem('marleg_watchlists')||'{}'); Object.values(wl).flat().forEach(s=>watch.add((s.sym||s).toUpperCase())); }catch(e){}
+
+function addSyms(){ ($('add').value||'').split(',').map(s=>s.trim().toUpperCase()).filter(Boolean).forEach(s=>watch.add(s)); $('add').value=''; tick(); }
+function rm(s){ watch.delete(s); tick(); }
+function toggleAuto(){ autoAdd=!autoAdd; $('auto').classList.toggle('on',autoAdd); $('auto').textContent='⚡ auto-add buying/fading: '+(autoAdd?'ON':'OFF'); }
+
+async function pullGated(){
+  if(!autoAdd) return;
+  try{ const g=await (await fetch('/api/gated')).json(); (g.picks||[]).forEach(p=>watch.add((p.s||'').toUpperCase())); }catch(e){}
+}
+async function tick(){
+  const syms=[...watch].slice(0,30);
+  try{
+    const d=await (await fetch('/api/live?syms='+encodeURIComponent(syms.join(',')))).json();
+    const ts=(d._ts||'').replace('T',' ').slice(0,19);
+    const rows=syms.map(s=>({s,...(d[s]||{})})).filter(r=>!r.error && r.price!=null);
+    rows.sort((a,b)=>Math.abs(b.chg)-Math.abs(a.chg));
+    $('rows').innerHTML=rows.map(r=>{
+      const fl = prev[r.s]==null?'':(r.price>prev[r.s]?'flash-up':r.price<prev[r.s]?'flash-dn':'');
+      prev[r.s]=r.price;
+      return `<tr><td><span class="sym">${r.s}</span></td>
+        <td class="${fl}">${r.price.toLocaleString('en-IN')}</td>
+        <td class="${cls(r.chg)}">${pct(r.chg)}</td>
+        <td style="color:${r.volr>1?'var(--saffron)':'var(--muted)'}">${r.volr==null?'—':r.volr+'×'}</td>
+        <td><span class="tag ${r.tag}">${r.tag}</span></td>
+        <td><span class="x" onclick="rm('${r.s}')">✕</span></td></tr>`;}).join('') || '<tr><td colspan="6" style="color:var(--dim)">no data</td></tr>';
+    const buying=rows.filter(r=>r.tag==='BUYING').length, fading=rows.filter(r=>r.tag==='FADING').length;
+    const src=(d._src==='groww')?'<span style="color:var(--green)">● real-time · Groww</span>':'<span style="color:var(--amber)">delayed · yfinance</span>';
+    $('status').innerHTML=`<span style="color:var(--green)">${buying} buying</span> · <span style="color:var(--red)">${fading} fading</span> · ${rows.length} watched · ${src} · as of ${ts||'—'} IST · auto-refresh 6s`;
+  }catch(e){ $('status').textContent='backend offline — run python marleg_server.py'; }
+}
+pullGated(); tick();
+setInterval(tick, 6000);
+setInterval(pullGated, 60000);
+</script>
+  <script src="marle_g_nav.js"></script>
+</body>
+</html>

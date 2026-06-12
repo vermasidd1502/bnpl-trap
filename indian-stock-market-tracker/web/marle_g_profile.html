@@ -49,7 +49,6 @@
     <a href="marle_g_funds.html">funds</a><a href="marle_g_portfolio.html">portfolio</a>
     <a href="marle_g_macro_preview.html">macro</a><a href="marle_g_dashboard.html">dashboard</a><a href="#" class="on">profile</a>
   </div>
-  <span class="preview-tag">PREVIEW</span>
 </div>
 
 <main class="wrap">
@@ -150,5 +149,6 @@ function renderWatch(){
 function delWL(n){let wl=JSON.parse(localStorage.getItem('marleg_watchlists')||'{}');delete wl[n];localStorage.setItem('marleg_watchlists',JSON.stringify(wl));renderWatch();}
 answers=getP().riskAnswers||{};updateHead();renderSurvey();renderWatch();
 </script>
+  <script src="marle_g_nav.js"></script>
 </body>
 </html>

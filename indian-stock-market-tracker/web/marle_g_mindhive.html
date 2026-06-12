@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mindhive · Marle-G</title>
+<style>
+  :root{--bg:#080a0e;--card:#14171e;--bg2:#0e1116;--border:rgba(255,255,255,.08);--ink:#eef1f6;--muted:#9aa3b4;--dim:#646c7a;
+    --mono:'SF Mono',ui-monospace,Consolas,monospace;--saffron:#ff9933;--green:#22c55e;--red:#ef4444;--amber:#fbbf24;--india-green:#138808;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(1100px 520px at 50% -10%,rgba(255,153,51,.05),transparent 60%),var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--border);background:rgba(8,10,14,.8);position:sticky;top:0;z-index:10}
+  .brand{font-family:var(--mono);font-weight:800;letter-spacing:.18em;font-size:13px;display:flex;align-items:center;gap:9px}
+  .brand .mark{width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,var(--saffron),var(--india-green))}
+  .brand .w{background:linear-gradient(90deg,var(--saffron),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tabs{display:flex;gap:15px;font-family:var(--mono);font-size:11px;flex-wrap:wrap}
+  .tabs a{color:var(--dim);text-decoration:none}.tabs a.on{color:var(--saffron)}.tabs a:hover{color:var(--ink)}
+  .wrap{max-width:980px;margin:0 auto;padding:22px 22px 40px}
+  h1{font-size:22px;margin-bottom:3px} .sub{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:18px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px}
+  .state{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+  .st{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px}
+  .st .n{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--dim)}
+  .st .v{font-family:var(--mono);font-size:18px;font-weight:800;margin-top:3px}
+  .chat{height:52vh;min-height:340px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding:4px}
+  .msg{max-width:92%;border-radius:12px;padding:11px 13px;font-size:13px;line-height:1.5}
+  .me{align-self:flex-end;background:linear-gradient(135deg,rgba(255,153,51,.18),rgba(19,136,8,.14));border:1px solid rgba(255,153,51,.3);font-family:var(--mono)}
+  .bot{align-self:flex-start;background:var(--bg2);border:1px solid var(--border);white-space:pre-wrap;font-family:var(--mono);font-size:12.5px;color:var(--ink)}
+  .bot .tag{display:inline-block;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--saffron);border:1px solid rgba(255,153,51,.3);border-radius:5px;padding:1px 6px;margin-bottom:7px}
+  .chips{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0 2px}
+  .chip{font-family:var(--mono);font-size:11px;color:var(--muted);background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:6px 12px;cursor:pointer}
+  .chip:hover{color:var(--saffron);border-color:var(--saffron)}
+  .inrow{display:flex;gap:9px;margin-top:8px}
+  #q{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--ink);font-family:var(--mono);font-size:13px;outline:none}
+  #q:focus{border-color:var(--saffron)}
+  #send{background:linear-gradient(135deg,var(--saffron),var(--india-green));border:none;border-radius:10px;color:#0b0b0b;font-weight:800;font-family:var(--mono);font-size:13px;padding:0 20px;cursor:pointer}
+  .legend{font-family:var(--mono);font-size:10px;color:var(--dim);line-height:1.6;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span></span></div>
+  <div class="tabs">
+    <a href="marle_g_pod.html">home</a><a href="marle_g_equity.html">equity</a><a href="marle_g_cascade.html">cascade</a>
+    <a href="marle_g_vol.html">vol</a><a href="marle_g_regime.html">regime</a><a href="marle_g_thesis.html">thesis</a>
+    <a href="#" class="on">mindhive</a><a href="marle_g_portfolio.html">portfolio</a>
+  </div>
+</div>
+<main class="wrap">
+  <h1>🧠 Mindhive</h1>
+  <div class="sub">the local scenario brain — fuses regime + cascades + grey-swan theses + firm moats into one queryable mind. zero API cost; every answer is built from the pod's own computed signals.</div>
+
+  <div class="card">
+    <div class="state" id="state"><div style="color:var(--dim);font-family:var(--mono);font-size:12px">⟳ waking the mind…</div></div>
+  </div>
+
+  <div class="card">
+    <div class="chat" id="chat"></div>
+    <div class="chips" id="chips"></div>
+    <div class="inrow">
+      <input id="q" placeholder="ask the mind…  e.g. should I long or short RELIANCE / what's the story / what if war" autocomplete="off">
+      <button id="send">Ask</button>
+    </div>
+    <div class="legend">Deterministic router → regime · cascade · thesis-ledger · business-agent. No LLM, no API spend (a local-model phrasing layer is a switch, off by default). Monitor-only; not advice.</div>
+  </div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const CHIPS=["what's the story","should I long or short INDIGO","long or short SBICARD","what's under-priced","what if war","thesis on water","tell me about RELIANCE"];
+function add(cls,html){const d=document.createElement('div');d.className='msg '+cls;d.innerHTML=html;$('chat').appendChild(d);$('chat').scrollTop=$('chat').scrollHeight;return d;}
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+async function loadState(){
+  try{
+    const s=await (await fetch('/api/mindhive')).json();
+    const r=s.regime||{},k=s.kg_stats||{};
+    const gc=r.gauge>=60?'var(--green)':r.gauge<=35?'var(--red)':'var(--amber)';
+    $('state').innerHTML=`
+      <div class="st"><div class="n">Regime gauge</div><div class="v" style="color:${gc}">${r.gauge??'—'}/100</div></div>
+      <div class="st"><div class="n">Read</div><div class="v" style="font-size:12px">${(r.regime||'—').split(' — ')[0]}</div></div>
+      <div class="st"><div class="n">Live scenarios</div><div class="v">${(s.active_events||[]).length}</div></div>
+      <div class="st"><div class="n">Grey-swan theses</div><div class="v">${k.theses??'—'}</div></div>
+      <div class="st"><div class="n">Memory palace</div><div class="v">${k.edges??'—'} <span style="font-size:10px;color:var(--dim)">edges</span></div></div>
+      <div class="st"><div class="n">As of</div><div class="v" style="font-size:13px">${s.asof||'—'}</div></div>`;
+  }catch(e){ $('state').innerHTML='<div style="color:var(--dim);font-family:var(--mono);font-size:12px">mind offline — run: python marleg_server.py</div>'; }
+}
+async function ask(q){
+  q=(q||'').trim(); if(!q)return;
+  $('q').value='';
+  add('me',esc(q));
+  const bot=add('bot','<span style="color:var(--dim)">⟳ thinking…</span>');
+  try{
+    const r=await (await fetch('/api/mindhive/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({q})})).json();
+    const tag=r.intent?`<span class="tag">${esc(r.intent)}</span>\n`:'';
+    bot.innerHTML=tag+esc(r.answer||r.error||'(no answer)');
+  }catch(e){ bot.innerHTML='<span style="color:var(--red)">error reaching the mind</span>'; }
+  $('chat').scrollTop=$('chat').scrollHeight;
+}
+$('send').onclick=()=>ask($('q').value);
+$('q').addEventListener('keydown',e=>{if(e.key==='Enter')ask($('q').value);});
+$('chips').innerHTML=CHIPS.map(c=>`<span class="chip" onclick="ask(this.dataset.q)" data-q="${esc(c)}">${esc(c)}</span>`).join('');
+loadState();
+ask("what's the story");
+</script>
+  <script src="marle_g_nav.js"></script>
+</body>
+</html>

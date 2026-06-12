@@ -26,6 +26,26 @@ HERE = __file__.rsplit("\\", 1)[0] if "\\" in __file__ else "."
 # ----------------------------------------------------------------- Groww broker (real-time + account)
 import groww_client
 import marleg_vwap as mvwap   # VWAP analytics (rolling + anchored + sigma bands)
+import marleg_cascade         # event -> 5-tier industry cascade ("the painting")
+import marleg_vol             # options vol layer: IV (BS) vs realized + Greeks
+import marleg_option_structures as mstruct   # straddle/butterfly/condor compare + backtest
+import marleg_projection        # accounting trends + multi-horizon price cone
+import marleg_fundamentals       # robust fundamentals (statement-computed ratios + coverage)
+import marleg_winners            # live winners/losers board (book marked to live price)
+import marleg_overextension      # don't-chase guard (room vs ceiling, 52w-high golden number)
+import marleg_weekend            # weekend-carry edge (Friday-momentum -> Monday) + live scan
+import marleg_var                # portfolio VaR + Monte-Carlo + CAPM beta (FIN-537 risk engine)
+import marleg_regime            # dispersion/correlation regime dial (scenario-alpha gate)
+import marleg_thesis            # structural grey-swan scenario book (Thesis Ledger)
+import marleg_smartmoney         # institutional-flow / smart-money (shareholding deltas)
+import marleg_business           # firm-level: moat / Porter 5-forces / SWOT / sector-override
+import marleg_mindhive           # the local scenario brain: synthesis + KG + deterministic chat
+import marleg_intraday           # FIN537 realized-vol (RV+HAR) + Bollinger/Keltner squeeze
+import marleg_nifty_sim          # Nifty options strategy tournament (BS-priced multi-year backtest)
+import marleg_volume_book        # daily volume intraday "thrill" book (intraday vs overnight legs)
+import marleg_signal_quality     # winners vs misleading spikes + shorts (bad ud / 0.618) + dated targets + Pareto
+import marleg_robust_bt          # cost / DSR / PSR / bootstrap robustness battery (honest scorecard)
+import marleg_strategies         # trading-strategies pod: playbooks + honest backtests + try-on-a-stock paper trade
 _GROWW, _GROWW_ERR = None, None
 def groww():
     """Lazy singleton. Returns a GrowwClient, or None if creds are unavailable."""
@@ -54,7 +74,7 @@ def cached(key, fn, ttl):
 
 NAMES = {
  "RELIANCE":"Reliance Industries","HDFCBANK":"HDFC Bank","TCS":"Tata Consultancy","INFY":"Infosys",
- "ICICIBANK":"ICICI Bank","SBIN":"State Bank of India","TATAMOTORS":"Tata Motors","ITC":"ITC",
+ "ICICIBANK":"ICICI Bank","SBIN":"State Bank of India","TMPV":"Tata Motors PV","TMCV":"Tata Motors CV","ITC":"ITC",
  "BHARTIARTL":"Bharti Airtel","MARUTI":"Maruti Suzuki","HINDUNILVR":"Hindustan Unilever","LT":"Larsen & Toubro",
  "AXISBANK":"Axis Bank","KOTAKBANK":"Kotak Mahindra Bank","SUNPHARMA":"Sun Pharma","WIPRO":"Wipro",
  "HCLTECH":"HCL Tech","BAJFINANCE":"Bajaj Finance","TATASTEEL":"Tata Steel","NTPC":"NTPC",
@@ -80,6 +100,9 @@ def equity_analysis(ticker):
     df = _hist(tk, "1y")
     if df is None or len(df) < 60:
         return {"error": f"no data for {tk}", "tk": tk}
+    df = df.dropna(subset=[c for c in ["Close", "High", "Low", "Volume"] if c in df.columns])
+    if len(df) < 60:
+        return {"error": f"insufficient clean data for {tk}", "tk": tk}
     close, high, low, vol = df["Close"], df["High"], df["Low"], df["Volume"]
     ltp = float(close.iloc[-1]); prev = float(close.iloc[-2]); chg = round((ltp/prev-1)*100, 2)
     direction = np.sign(close.diff()).fillna(0)
@@ -131,8 +154,21 @@ def equity_analysis(ticker):
     sma50 = float(close.rolling(50).mean().iloc[-1]); sma200 = float(close.rolling(200).mean().iloc[-1]) if len(close) >= 200 else sma50
     ema12 = close.ewm(span=12).mean(); ema26 = close.ewm(span=26).mean(); macd = float((ema12-ema26).iloc[-1])
     bbm = close.rolling(20).mean(); bbs = close.rolling(20).std(); pctb = float((ltp - (bbm-2*bbs).iloc[-1])/(((bbm+2*bbs)-(bbm-2*bbs)).iloc[-1]+1e-9)*100)
+    if math.isnan(pctb): pctb = 50.0
     vwap = float((tp*vol)[-20:].sum()/vol[-20:].sum()); rsi = round(_rsi(close), 1)
     hi52 = float(high[-252:].max()); off52 = round((ltp/hi52-1)*100, 1)
+    # entry timing from RSI — backtested: low-RSI accumulation = best risk-adjusted entry;
+    # RSI 45-60 is the dead zone (lost in/out of sample); high RSI still works as momentum.
+    if verdict == "LONG" or vcs > 0:
+        entry = ("EARLY · oversold accumulation" if rsi < 45 else "DEAD-ZONE · RSI 45-60" if rsi < 60
+                 else "EXTENDED · RSI 60-70" if rsi < 70 else "CHASING · overbought")
+        if rsi < 45: conv = min(95, conv + 10)
+        elif rsi < 60: conv = max(20, conv - 12)
+        driver = f"{verdict} - {conv} - driven by " + " - ".join(c[0].lower() for c in top) + "."
+    elif verdict == "SHORT" or vcs < 0:
+        entry = ("OVERSOLD · bounce risk" if rsi < 30 else "distribution" if rsi < 70 else "still overbought")
+    else:
+        entry = "neutral"
     dir_ = 1 if verdict == "LONG" else -1 if verdict == "SHORT" else 0
     def conf(b): return "NEUTRAL" if dir_ == 0 else ("CONFIRMS" if b == dir_ else "CONFLICTS" if b != 0 else "NEUTRAL")
     # Ichimoku Kinko Hyo — cloud position + Tenkan/Kijun cross
@@ -196,7 +232,7 @@ def equity_analysis(ticker):
             "target": target, "stopL": stopL, "tgtpct": tgtpct, "rr": (2.0 if target else None),
             "atr": round(atr14, 2), "ret_sigma": round(ret_sigma, 2),
             "ud": ud, "obvSlope": obvSlope, "adSlope": adSlope, "cmf": cmf, "mfi": mfi, "rvol": rvol,
-            "deliv": None, "C": C, "vcs": vcs, "verdict": verdict, "conv": conv, "vsa": vsa, "driver": driver,
+            "deliv": None, "entry": entry, "rsi": rsi, "C": C, "vcs": vcs, "verdict": verdict, "conv": conv, "vsa": vsa, "driver": driver,
             "ta": ta, "ichimoku": ichimoku, "arch": arch, "consensus": consensus, "longs": longs, "shorts": shorts, "series": series,
             "asof": str(close.index[-1].date())}
 
@@ -242,16 +278,87 @@ def api_symbols():
     sub = [r for r in syms if (q in r["s"] or q in r["n"].upper()) and not r["s"].startswith(q)]
     return jsonify((pre + sub)[:lim])
 
+def _volume_pod_live():
+    """Cache (nightly scan) + LIVE price overlay. The cached `price` is yesterday's
+    close (midnight scan), so live chg = live/cached - 1. Refreshed every 5 min."""
+    with open(os.path.join(HERE, "marleg_volume_cache.json"), encoding="utf-8") as f:
+        data = json.load(f)
+    try:
+        import yfinance as yf
+        import pandas as _pd
+        # cap live refresh to the top-conviction names (a 3000-name universe can't refresh
+        # every 5 min) — the rest keep their scan-time price.
+        allst = [x for sec in data.get("sectors", []) for x in sec.get("stocks", [])]
+        allst.sort(key=lambda x: -(x.get("ud") or 0))
+        syms = list(dict.fromkeys(x["s"] for x in allst[:250]))
+        d = yf.download([s + ".NS" for s in syms], period="1d", interval="5m",
+                        group_by="ticker", progress=False, threads=True)
+        n = 0
+        for sec in data.get("sectors", []):
+            for x in sec.get("stocks", []):
+                try:
+                    c = d[x["s"] + ".NS"]["Close"].dropna()
+                    if not len(c):
+                        continue
+                    live = float(c.iloc[-1])
+                    prev = x.get("price")
+                    if prev:
+                        x["chg"] = round((live / prev - 1) * 100, 2)
+                    x["price"] = round(live, 1)
+                    n += 1
+                except Exception:
+                    pass
+        from datetime import datetime, timezone, timedelta
+        ist = datetime.now(timezone(timedelta(hours=5, minutes=30)))
+        data["live_overlay"] = {"updated": ist.strftime("%H:%M IST"), "names": n}
+        data["asof"] = (data.get("asof") or "") + "  ·  live px " + ist.strftime("%H:%M")
+    except Exception:
+        pass                                         # overlay is best-effort; cache still serves
+    return data
+
+
 @app.route("/api/volume_pod")
 def api_volume_pod():
     try:
-        with open(os.path.join(HERE, "marleg_volume_cache.json"), encoding="utf-8") as f:
-            return jsonify(json.load(f))
+        return jsonify(cached("volume_pod_live", _volume_pod_live, 300))
     except Exception:
         return jsonify({"error": "no volume cache yet — run: python marleg_volume_scan.py", "sectors": []})
 
+def _gated_live():
+    """Gated-longs scan cache + LIVE price overlay (target% recomputed vs live)."""
+    with open(os.path.join(HERE, "marleg_gated_cache.json"), encoding="utf-8") as f:
+        d = json.load(f)
+    try:
+        import yfinance as yf
+        syms = [x["s"] for x in d.get("picks", [])]
+        if syms:
+            dd = yf.download([s + ".NS" for s in syms], period="1d", interval="5m",
+                             group_by="ticker", progress=False, threads=True)
+            for x in d.get("picks", []):
+                try:
+                    c = dd[x["s"] + ".NS"]["Close"].dropna()
+                    if not len(c):
+                        continue
+                    live = float(c.iloc[-1])
+                    x["price"] = round(live, 2)
+                    if x.get("target"):
+                        x["tgtpct"] = round((x["target"] / live - 1) * 100, 1)
+                except Exception:
+                    pass
+            from datetime import datetime, timezone, timedelta
+            ist = datetime.now(timezone(timedelta(hours=5, minutes=30)))
+            d["asof"] = (d.get("asof") or "") + "  ·  live px " + ist.strftime("%H:%M")
+    except Exception:
+        pass
+    return d
+
+
 @app.route("/api/gated")
 def api_gated():
+    try:
+        return jsonify(cached("gated_live", _gated_live, 300))
+    except Exception:
+        pass
     try:
         with open(os.path.join(HERE, "marleg_gated_cache.json"), encoding="utf-8") as f:
             return jsonify(json.load(f))
@@ -359,9 +466,11 @@ def api_candles(ticker):
         df = _hist(ticker, period)
         if df is None or len(df) < 30:
             return {"error": "no data"}
+        df = df.dropna(subset=["Open", "High", "Low", "Close"])   # NaN bars poison browser JSON
         candles = [{"time": str(idx.date()), "open": round(float(r["Open"]), 2),
                     "high": round(float(r["High"]), 2), "low": round(float(r["Low"]), 2),
-                    "close": round(float(r["Close"]), 2), "vol": float(r["Volume"])}
+                    "close": round(float(r["Close"]), 2),
+                    "vol": float(r["Volume"]) if r["Volume"] == r["Volume"] else 0.0}
                    for idx, r in df.iterrows()]
         return {"symbol": ticker.upper(), "period": period, "candles": candles}
     return jsonify(cached("candles:" + ticker.upper() + ":" + period, do, 300))
@@ -473,13 +582,21 @@ def _broker(fn, key, ttl):
     g = groww()
     if g is None:
         return jsonify({"error": _GROWW_ERR or "no groww client"}), 503
-    return jsonify(cached(key, lambda: fn(g) or {"error": "request failed"}, ttl))
+    def do():
+        try:                                   # token can lapse (approval flow) -> degrade, don't 500
+            return fn(g) or {"error": "no data"}
+        except Exception as e:
+            return {"error": "Groww unavailable (auth lapsed?): " + str(e)[:140]}
+    return jsonify(cached(key, do, ttl))
 
 @app.route("/api/holdings")
 def api_holdings():  return _broker(lambda g: g.holdings_data(),  "groww:holdings",  30)
 
 @app.route("/api/positions")
 def api_positions(): return _broker(lambda g: g.positions_data(), "groww:positions", 10)
+
+@app.route("/api/winners")
+def api_winners():   return _broker(lambda g: marleg_winners.board(g), "groww:winners", 20)
 
 @app.route("/api/orders")
 def api_orders():    return _broker(lambda g: g.orders_data(),    "groww:orders",    10)
@@ -587,11 +704,14 @@ def api_options(und):
 def _news(query, n=8):
     try:
         import urllib.parse, xml.etree.ElementTree as ET
+        from email.utils import parsedate_to_datetime
+        from datetime import datetime, timezone
         url = "https://news.google.com/rss/search?q=" + urllib.parse.quote(query) + "&hl=en-IN&gl=IN&ceid=IN:en"
         r = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=10)
         root = ET.fromstring(r.content)
-        out = []
-        for it in root.findall(".//item")[:n]:
+        now = datetime.now(timezone.utc)
+        items = []
+        for it in root.findall(".//item"):
             title = (it.findtext("title") or "").strip()
             src = ""
             se = it.find("source")
@@ -599,8 +719,18 @@ def _news(query, n=8):
                 src = se.text.strip()
             elif " - " in title:
                 title, src = title.rsplit(" - ", 1)
-            out.append({"title": title.strip(), "source": src.strip(), "pub": (it.findtext("pubDate") or "").strip()})
-        return out
+            pub = (it.findtext("pubDate") or "").strip()
+            ts, ago = 0.0, ""
+            try:
+                dt = parsedate_to_datetime(pub)
+                ts = dt.timestamp()
+                hrs = (now - dt).total_seconds() / 3600
+                ago = f"{int(hrs)}h ago" if hrs < 48 else f"{int(hrs / 24)}d ago"
+            except Exception:
+                pass
+            items.append({"title": title.strip(), "source": src.strip(), "pub": pub, "ts": ts, "ago": ago})
+        items.sort(key=lambda x: -x["ts"])               # NEWEST first — RSS order is by relevance, not date
+        return items[:n]
     except Exception:
         return []
 
@@ -741,81 +871,9 @@ def _piotroski(t):
 @app.route("/api/fundamentals/<ticker>")
 def api_fundamentals(ticker):
     tk = ticker.upper()
-    def do():
-        t = yf.Ticker(yftk(tk)); info = t.info or {}
-        price = info.get("currentPrice") or info.get("regularMarketPrice")
-        if not price: return {"error": "no fundamentals for " + tk}
-        eps = info.get("trailingEps"); bvps = info.get("bookValue")
-        shares = (info.get("marketCap")/price) if (info.get("marketCap") and price) else None
-        graham = (22.5*eps*bvps)**0.5 if (eps and bvps and eps > 0 and bvps > 0) else None
-        dcf = None; fcf = info.get("freeCashflow")
-        g = max(0.05 if (eps and eps > 0) else 0.0, min((info.get("earningsGrowth") or info.get("revenueGrowth") or 0.08), 0.15))
-        if fcf and fcf > 0 and shares:
-            r = 0.115; gt = 0.045; f = fcf; pv = 0.0
-            for yrn in range(1, 6):
-                f *= (1+g); pv += f/((1+r)**yrn)
-            pv += (f*(1+gt)/(r-gt))/((1+r)**5)
-            dcf = (pv + (info.get("totalCash") or 0) - (info.get("totalDebt") or 0))/shares
-        tgt = info.get("targetMeanPrice"); rec = info.get("recommendationKey"); na = info.get("numberOfAnalystOpinions")
-        intrinsic = [x for x in [graham, dcf] if x]
-        fair = sum(intrinsic)/len(intrinsic) if intrinsic else None
-        gap = ((fair/price-1)*100) if fair else None
-        verdict = "N/A" if gap is None else "UNDERVALUED" if gap > 15 else "OVERVALUED" if gap < -15 else "FAIRLY VALUED"
-        upside = ((tgt/price-1)*100) if tgt else None
-        de = info.get("debtToEquity")
-        H = {"ROE": _pct(info.get("returnOnEquity")), "ROA": _pct(info.get("returnOnAssets")),
-             "Net margin": _pct(info.get("profitMargins")), "Op margin": _pct(info.get("operatingMargins")),
-             "Rev growth": _pct(info.get("revenueGrowth")), "EPS growth": _pct(info.get("earningsGrowth")),
-             "D/E (x)": round(de/100, 2) if isinstance(de, (int, float)) else None, "Current ratio": info.get("currentRatio"),
-             "P/E": info.get("trailingPE"), "Fwd P/E": info.get("forwardPE"), "P/B": info.get("priceToBook"),
-             "PEG": info.get("pegRatio"), "EV/EBITDA": info.get("enterpriseToEbitda"), "Div yield %": info.get("dividendYield")}
-        roe = info.get("returnOnEquity") or 0; pm = info.get("profitMargins") or 0
-        rg = info.get("revenueGrowth") or 0; eg = info.get("earningsGrowth") or 0; cr = info.get("currentRatio") or 0
-        sc = 0; mx = 0
-        for cond, w in [(roe > 0.15, 20), (pm > 0.10, 15), (rg > 0.08, 15), (eg > 0, 15),
-                        (isinstance(de, (int, float)) and de < 100, 15), (cr > 1.2, 10), (bool(fcf and fcf > 0), 10)]:
-            mx += w
-            if cond: sc += w
-        qscore = round(sc/mx*100) if mx else None
-        pio = _piotroski(t)
-        def s2(x): return format(x, ",.0f") if isinstance(x, (int, float)) else "n/a"
-        N = []
-        if fair:
-            div_note = ""
-            if upside is not None and gap is not None:
-                if gap < -10 and upside > 10:
-                    div_note = (" Note the divergence: intrinsic models (current cash flow / book) screen expensive, yet analysts see ~%.0f%% upside — that gap is the growth premium the market assigns to future earnings a current-FCF DCF can't yet capture." % upside)
-                elif gap > 10 and upside < -10:
-                    div_note = " Note the divergence: it screens cheap on assets/cash flow but analysts see downside — often a value trap or a deteriorating outlook."
-            N.append({"h": "What it's worth", "p":
-                ("On the numbers, intrinsic estimates span Graham %s and DCF %s against the market price of Rs %s — on current cash flow and book value the stock screens %s. "
-                 "Read these as a range, not a point: Graham is a conservative floor; the DCF assumes ~%d%% cash-flow growth at an 11.5%% discount, so it understates capex-heavy, growth-optionality names. "
-                 "Trading multiples: P/E %s, forward P/E %s, P/B %s, EV/EBITDA %s.%s")
-                % (("Rs "+s2(graham)) if graham else "n/a", ("Rs "+s2(dcf)) if dcf else "n/a", s2(price), verdict.lower(),
-                   int(g*100), _f(info.get("trailingPE")), _f(info.get("forwardPE")), _f(info.get("priceToBook")),
-                   _f(info.get("enterpriseToEbitda")), div_note)})
-        N.append({"h": "How they're doing", "p":
-            ("Return on equity is %s%% and net margin %s%%, on revenue growth of %s%% and EPS growth of %s%%. "
-             "Balance sheet: debt/equity %s, current ratio %s. %s Quality score %s/100%s.")
-            % (_f(H["ROE"]), _f(H["Net margin"]), _f(H["Rev growth"]), _f(H["EPS growth"]),
-               (str(H["D/E (x)"])+"x") if H["D/E (x)"] is not None else "n/a", _f(H["Current ratio"]),
-               ("Piotroski F-score %d/%d (accounting health, 9 is best). " % (pio["score"], pio["of"])) if pio else "",
-               qscore if qscore is not None else "—",
-               (" — financially " + ("strong" if (qscore or 0) >= 70 else "mixed" if (qscore or 0) >= 45 else "weak")) if qscore is not None else "")})
-        if tgt:
-            N.append({"h": "The Street's 1-year view", "p":
-                ("Analyst consensus 1-year target is Rs %s — %s%% %s today's Rs %s, from %s analysts, consensus rating %s. "
-                 "Range Rs %s (low) to Rs %s (high). The Street's forward number is a projection; pair it with the volume/technical read for timing.")
-                % (s2(tgt), ("%.0f" % abs(upside)) if upside is not None else "—", "above" if (upside or 0) > 0 else "below",
-                   s2(price), na or "?", (rec or "n/a").replace("_", " "),
-                   s2(info.get("targetLowPrice") or 0), s2(info.get("targetHighPrice") or 0))})
-        return {"tk": tk, "name": info.get("shortName") or NAMES.get(tk, tk), "price": round(price, 2),
-                "sector": info.get("sector"), "industry": info.get("industry"),
-                "graham": round(graham, 1) if graham else None, "dcf": round(dcf, 1) if dcf else None,
-                "fair": round(fair, 1) if fair else None, "gap": round(gap, 1) if gap is not None else None,
-                "verdict": verdict, "target": round(tgt, 1) if tgt else None, "upside": round(upside, 1) if upside is not None else None,
-                "rec": rec, "n_analysts": na, "health": H, "qscore": qscore, "piotroski": pio, "narrative": N}
-    return jsonify(cached("fund:" + tk, do, 1800))
+    # Robust provider: ratios computed from the financial statements (TTM), .info only as
+    # fallback, with sanity + formatting guards and honest coverage. See marleg_fundamentals.py.
+    return jsonify(cached("fund:" + tk, lambda: marleg_fundamentals.fundamentals(tk, NAMES), 1800))
 
 # ----------------------------------------------------------------- UNIVERSAL analysis (fuse all pillars)
 @app.route("/api/analyze/<ticker>")
@@ -888,6 +946,478 @@ def api_analyze(ticker):
                               "rationale": " ".join(parts), "conflicts": conflicts}}
     return jsonify(cached("analyze:" + tk, do, 120))
 
+# ----------------------------------------------------------------- live monitor (auto-refresh, no page reload)
+_AVG_LAST, _VOL_LAST = {}, {}   # last-good per-symbol fallbacks (yfinance is flaky on bulk pulls)
+
+def _avg_prev(syms):
+    """20-day avg volume + prev close per symbol — changes only daily, cache 1h.
+    Validates each symbol and back-fills from last-good, so a partial/garbage
+    yfinance pull can't poison the cache with missing or absurd values."""
+    def do():
+        out = {}
+        try:
+            d = yf.download([s + ".NS" for s in syms], period="1mo", interval="1d",
+                            progress=False, group_by="ticker", threads=True)
+            for s in syms:
+                try:
+                    dc = (d[s + ".NS"] if len(syms) > 1 else d)
+                    cl = dc["Close"].dropna(); vv = dc["Volume"].dropna()
+                    if len(vv) >= 10 and len(cl) >= 2:                 # need a real history
+                        avg = float(vv.iloc[-21:-1].mean())
+                        if avg > 0:
+                            out[s] = [avg, float(cl.iloc[-2])]
+                            _AVG_LAST[s] = out[s]
+                except Exception:
+                    pass
+        except Exception:
+            pass
+        for s in syms:                                                # back-fill gaps
+            if s not in out and s in _AVG_LAST:
+                out[s] = _AVG_LAST[s]
+        return out
+    return cached("avgprev:" + ",".join(sorted(syms)), do, 3600)
+
+
+def _intraday_vol(syms):
+    """Today's cumulative volume + bar count + last intraday price per symbol
+    (yfinance 1m), cache 30s. Volume pace moves slowly, so a 30s cache cuts
+    yfinance load (less throttling = fewer partial failures); gaps use last-good."""
+    def do():
+        out = {}
+        try:
+            d = yf.download([s + ".NS" for s in syms], period="1d", interval="1m",
+                            progress=False, group_by="ticker", threads=True)
+        except Exception:
+            d = None
+        for s in syms:
+            try:
+                cm = (d[s + ".NS"] if len(syms) > 1 else d)
+                v = cm["Volume"].dropna(); c = cm["Close"].dropna()
+                if len(v) >= 1 and float(v.sum()) > 0:
+                    out[s] = [float(v.sum()), len(v), float(c.iloc[-1]) if len(c) else None]
+                    _VOL_LAST[s] = out[s]
+            except Exception:
+                pass
+        for s in syms:
+            if s not in out and s in _VOL_LAST:
+                out[s] = _VOL_LAST[s]
+        return out
+    return cached("livevol:" + ",".join(sorted(syms)), do, 30)
+
+@app.route("/api/live")
+def api_live():
+    syms = [s.strip().upper() for s in request.args.get("syms", "").split(",") if s.strip()][:30]
+    if not syms:
+        return jsonify({})
+    def do():
+        ap = _avg_prev(syms)            # 1h-cached daily avg vol + prev close (validated)
+        vol = _intraday_vol(syms)       # 30s-cached today cumulative volume (+ fallback price)
+        gq, g = {}, groww()
+        if g is not None:
+            try:
+                gq = g.quote_table(syms)   # real-time price / prev / chg (batch ltp + ohlc)
+            except Exception:
+                gq = {}
+        out, live = {}, False
+        for s in syms:
+            try:
+                gv = gq.get(s) or {}
+                avg, dprev = (ap.get(s) or [None, None])
+                tv = vol.get(s)
+                yp = tv[2] if (tv and len(tv) > 2) else None
+                if gv.get("price") is not None:                       # real-time (Groww)
+                    price, src, live = float(gv["price"]), "groww", True
+                    prev = gv.get("prev") or dprev
+                    chg = gv.get("chg") if gv.get("chg") is not None else \
+                        (round((price / prev - 1) * 100, 2) if prev else 0.0)
+                elif yp is not None:                                  # delayed (yfinance) fallback
+                    price, src, prev = yp, "yfinance", dprev
+                    chg = round((price / prev - 1) * 100, 2) if prev else 0.0
+                else:
+                    out[s] = {"error": 1}; continue
+                # pace-adjusted volume ratio — validated; drop if implausible (poisoned avg)
+                volr = None
+                if tv and avg:
+                    todayvol, nbars = tv[0], tv[1]
+                    frac = min(1.0, max(0.05, nbars / 375.0)) if nbars else 1.0
+                    vr = todayvol / (avg * frac)
+                    volr = round(vr, 2) if vr < 30 else None
+                vconf = volr is not None and volr > 0.9                # volume confirms the move
+                tag = ("BUYING" if (chg > 0.3 and vconf) else "FADING" if (chg < -0.3 and vconf)
+                       else "QUIET" if (volr is not None and volr < 0.5) else "FLAT")
+                out[s] = {"price": round(price, 2), "chg": chg, "volr": volr, "tag": tag, "src": src}
+            except Exception:
+                out[s] = {"error": 1}
+        out["_ts"] = str(pd.Timestamp.now(tz="Asia/Kolkata"))[:19] if live else None
+        out["_src"] = "groww" if live else "yfinance"
+        return out
+    return jsonify(cached("live:" + ",".join(sorted(syms)), do, 5))
+
+# ----------------------------------------------------------------- event cascade ("the painting")
+@app.route("/api/cascade/events")
+def api_cascade_events():
+    return jsonify([{"key": k, "label": v["label"]} for k, v in marleg_cascade.EVENTS.items()])
+
+@app.route("/api/cascade")
+def api_cascade():
+    ev = request.args.get("event", "oil_shock_up")
+    if ev not in marleg_cascade.EVENTS:
+        return jsonify({"error": "unknown event", "events": list(marleg_cascade.EVENTS)})
+    return jsonify(cached("cascade:" + ev, lambda: marleg_cascade.build_cascade(ev), 600))
+
+@app.route("/api/vol")
+def api_vol():
+    opt = request.args.get("opt", "")
+    side = request.args.get("side", "long")
+    qty = int(request.args.get("qty", "0") or 0)
+    if not opt:
+        return jsonify({"error": "pass ?opt=<SYMBOL>&side=&qty="})
+    return jsonify(cached(f"vol:{opt}:{side}:{qty}", lambda: marleg_vol.analyze_option(opt, side, qty), 60))
+
+@app.route("/api/structures/compare")
+def api_structures_compare():
+    return jsonify(cached("struct:compare", lambda: mstruct.compare_data(), 60))
+
+@app.route("/api/structures/backtest")
+def api_structures_backtest():
+    yrs = int(request.args.get("years", "5") or 5)
+    return jsonify(cached(f"struct:bt:{yrs}", lambda: mstruct.backtest_data(yrs), 3600))
+
+@app.route("/api/projection/<ticker>")
+def api_projection(ticker):
+    tk = ticker.upper()
+    return jsonify(cached("proj:" + tk, lambda: marleg_projection.project(tk), 1800))
+
+@app.route("/api/regime")
+def api_regime():
+    return jsonify(cached("regime", marleg_regime.compute, 3600))   # heavy 1y pull -> cache 1h
+
+@app.route("/api/thesis")
+def api_thesis():
+    return jsonify(cached("thesis:ledger", lambda: marleg_thesis.ledger(), 1800))
+
+@app.route("/api/thesis/<key>")
+def api_thesis_one(key):
+    return jsonify(cached("thesis:" + key, lambda: marleg_thesis.analyze(key), 1800))
+
+@app.route("/api/smartmoney/<ticker>")
+def api_smartmoney(ticker):
+    tk = ticker.upper()
+    return jsonify(cached("smart:" + tk, lambda: marleg_smartmoney.flow(tk), 43200))
+
+@app.route("/api/smartmoney_screen")
+def api_smartmoney_screen():
+    # rank a liquid universe by 1Q institutional inflow; quarterly data -> cache 12h
+    def _run():
+        try:
+            import marleg_volume_scan as mvs
+            uni = mvs.SEED[:24]
+        except Exception:
+            uni = ["RELIANCE", "HDFCBANK", "ICICIBANK", "INFY", "TCS", "ITC", "LT", "SBIN",
+                   "AXISBANK", "BHARTIARTL", "TITAN", "MARUTI", "SUNPHARMA", "NTPC",
+                   "TATASTEEL", "ULTRACEMCO", "ASIANPAINT", "BAJFINANCE", "M&M", "WIPRO"]
+        return {"rows": marleg_smartmoney.screen(uni), "n": len(uni)}
+    return jsonify(cached("smartmoney_screen", _run, 43200))
+
+@app.route("/api/business/<ticker>")
+def api_business(ticker):
+    tk = ticker.upper()
+    return jsonify(cached("biz:" + tk, lambda: marleg_business.analyze(tk), 43200))   # heavy peer pull -> cache 12h
+
+@app.route("/api/mindhive")
+def api_mindhive():
+    return jsonify(cached("mindhive:state", marleg_mindhive.synthesize, 1800))   # self-disk-caches 3h too
+
+@app.route("/api/mindhive/ask", methods=["GET", "POST"])
+def api_mindhive_ask():
+    q = ((request.get_json(force=True, silent=True) or {}).get("q") if request.method == "POST"
+         else request.args.get("q", ""))
+    q = (q or "").strip()
+    if not q:
+        return jsonify({"intent": "help", "answer": "Ask me something — e.g. \"what's the story\"."})
+    st = cached("mindhive:state", marleg_mindhive.synthesize, 1800)
+    try:
+        return jsonify(marleg_mindhive.ask(q, st))
+    except Exception as e:
+        return jsonify({"intent": "error", "answer": f"Mindhive error: {e}"})
+
+@app.route("/api/intraday/<ticker>")
+def api_intraday(ticker):
+    return jsonify(cached("intraday:" + ticker.upper(), lambda: marleg_intraday.analyze(ticker), 600))
+
+@app.route("/api/intraday/<ticker>/signature")
+def api_intraday_sig(ticker):
+    return jsonify(cached("intraday:sig:" + ticker.upper(), lambda: marleg_intraday.signature(ticker), 3600))
+
+@app.route("/api/intraday/<ticker>/live")
+def api_intraday_live(ticker):
+    return jsonify(cached("intraday:live:" + ticker.upper(), lambda: marleg_intraday.live(ticker), 45))
+
+@app.route("/api/intraday/<ticker>/position")
+def api_intraday_position(ticker):
+    iv = request.args.get("interval", 5, type=int)
+    return jsonify(cached(f"intraday:pos:{ticker.upper()}:{iv}", lambda: marleg_intraday.position(ticker, iv), 20))
+
+@app.route("/api/intraday/<ticker>/dd")
+def api_intraday_dd(ticker):
+    iv = request.args.get("interval", 5, type=int)
+    return jsonify(cached(f"intraday:dd:{ticker.upper()}:{iv}", lambda: marleg_intraday.due_diligence(ticker, iv), 60))
+
+@app.route("/api/intraday/<ticker>/intervals")
+def api_intraday_intervals(ticker):
+    return jsonify(cached("intraday:iv:" + ticker.upper(), lambda: marleg_intraday.interval_advisor(ticker), 1800))
+
+@app.route("/api/intraday/<ticker>/sparklines")
+def api_intraday_sparklines(ticker):
+    return jsonify(cached("intraday:spk:" + ticker.upper(), lambda: marleg_intraday.sparklines(ticker), 1800))
+
+@app.route("/api/intraday/<ticker>/rsi")
+def api_intraday_rsi(ticker):
+    iv = request.args.get("interval", 5, type=int)
+    return jsonify(cached(f"intraday:rsi:{ticker.upper()}:{iv}", lambda: marleg_intraday.rsi_engine(ticker, iv), 30))
+
+@app.route("/api/overextension/<ticker>")
+def api_overextension(ticker):
+    return jsonify(cached("overext:" + ticker.upper(), lambda: marleg_overextension.chase_check(ticker), 1800))
+
+@app.route("/api/weekend_carry")
+def api_weekend_carry():
+    return jsonify(cached("weekend_carry", marleg_weekend.carry_scan, 120))   # live; refresh through the session
+
+@app.route("/api/weekend_board")
+def api_weekend_board():
+    mode = request.args.get("mode", "friday")
+    if mode not in ("friday", "monday"):
+        mode = "friday"
+    return jsonify(cached("weekend_board:" + mode, lambda: marleg_weekend.weekend_board(mode), 600))
+
+@app.route("/api/weekend_stock/<ticker>")
+def api_weekend_stock(ticker):
+    return jsonify(cached("weekend_stock:" + ticker.upper(), lambda: marleg_weekend.weekend_stock(ticker), 600))
+
+@app.route("/api/portfolio_var")
+def api_portfolio_var():
+    return jsonify(cached("portfolio_var", lambda: marleg_var.portfolio_risk(), 300))
+
+@app.route("/api/nifty_sim")
+def api_nifty_sim():
+    return jsonify(cached("nifty_sim", marleg_nifty_sim.run_tournament, 21600))   # heavy multi-year backtest -> cache 6h
+
+@app.route("/api/sectoral")
+def api_sectoral():
+    return jsonify(cached("sectoral", marleg_nifty_sim.sector_compare, 21600))   # 4 tournaments -> cache 6h
+
+@app.route("/api/volume_book")
+def api_volume_book():
+    return jsonify(cached("volume_book", marleg_volume_book.book, 3600))   # universe fetch + backtest -> cache 1h
+
+@app.route("/api/fibmap/<symbol>")
+def api_fibmap(symbol):
+    import marleg_fibmap
+    sym = symbol.upper()
+    return jsonify(cached("fib:" + sym, lambda: marleg_fibmap.fibmap(sym), 3600))
+
+
+@app.route("/api/bias_dial")
+def api_bias_dial():
+    import marleg_bias_dial
+    return jsonify(cached("bias_dial", marleg_bias_dial.run, 1800))
+
+
+@app.route("/api/short_radar")
+def api_short_radar():
+    # eclipse watch: overbought + extended + spike, fade-history aware; validation from disk
+    import marleg_short_radar as sr
+    def _run():
+        res = sr.scan()
+        try:
+            with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "marleg_short_radar.json")) as f:
+                res["validation"] = json.load(f).get("validation")
+        except Exception:
+            pass
+        return res
+    return jsonify(cached("short_radar", _run, 600))
+
+
+@app.route("/api/volume_ledger")
+def api_volume_ledger():
+    # suggestion memory: record today (idempotent) + streaks + the streak-age study
+    import marleg_volume_ledger as vl
+    def _run():
+        try:
+            vl.record_today()
+        except Exception:
+            pass
+        return vl.summary()
+    return jsonify(cached("volume_ledger", _run, 600))   # 10 min — keeps 'now' price fresh in-session
+
+
+@app.route("/api/builder/templates")
+def api_builder_templates():
+    import marleg_script_builder as msb
+    return jsonify({"templates": msb.TEMPLATES, "limits": msb.LIMITS})
+
+@app.route("/api/builder/backtest", methods=["POST"])
+def api_builder_backtest():
+    import marleg_script_builder as msb
+    try:
+        return jsonify(msb.simulate(request.get_json(force=True, silent=True) or {}))
+    except Exception as e:
+        return jsonify({"error": str(e)[:200]})
+
+@app.route("/api/builder/build", methods=["POST"])
+def api_builder_build():
+    import marleg_script_builder as msb
+    try:
+        return jsonify(msb.build(request.get_json(force=True, silent=True) or {}))
+    except Exception as e:
+        return jsonify({"error": str(e)[:200]})
+
+
+@app.route("/api/engine")
+def api_engine():
+    # strategy-engine meta-backtest + current allocation posture
+    try:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "marleg_engine.json")) as f:
+            return jsonify(json.load(f))
+    except Exception as e:
+        return jsonify({"error": "run: python marleg_engine.py", "detail": str(e)[:80]})
+
+
+@app.route("/api/india_rules")
+def api_india_rules():
+    import marleg_india_rules
+    return jsonify(cached("india_rules", marleg_india_rules.get_rules, 21600))
+
+
+@app.route("/api/gatebot")
+def api_gatebot():
+    # GateBot paper book + the horizon-grid backtest behind its config
+    out = {}
+    for key, fn in [("book", "marleg_gatebot_book.json"), ("backtest", "marleg_gate_backtest.json")]:
+        try:
+            with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), fn)) as f:
+                out[key] = json.load(f)
+        except Exception:
+            out[key] = None
+    return jsonify(out)
+
+
+@app.route("/api/robust_bt")
+def api_robust_bt():
+    # serve the precomputed honest scorecard (instant); recompute on demand if missing
+    p = os.path.join(os.path.dirname(os.path.abspath(__file__)), "marleg_robust_bt.json")
+    try:
+        with open(p) as f:
+            return jsonify(json.load(f))
+    except Exception:
+        return jsonify(cached("robust_bt", marleg_robust_bt.run, 21600))
+
+
+@app.route("/api/strategies")
+def api_strategies():
+    return jsonify(cached("strategies_catalog", marleg_strategies.catalog, 1800))   # playbooks + cached backtest stats
+
+@app.route("/api/strategies/paper")
+def api_strategies_paper():
+    return jsonify(marleg_strategies.paper_book())                                  # live-marked paper book
+
+@app.route("/api/strategies/try", methods=["POST"])
+def api_strategies_try():
+    d = request.get_json(force=True, silent=True) or {}
+    return jsonify(marleg_strategies.paper_trade(d.get("id", ""), d.get("ticker", "")))   # evaluate + paper-trade if it fires
+
+@app.route("/api/strategies/<sid>")
+def api_strategy_detail(sid):
+    return jsonify(marleg_strategies.detail(sid))                                   # full playbook
+
+@app.route("/api/autotrader")
+def api_autotrader():
+    import glob
+    order = ["conservative", "balanced", "aggressive", "adaptive", "sid"]
+    profs = {}
+    for f in glob.glob(os.path.join(HERE, "marleg_at_*.json")):
+        try:
+            name = os.path.basename(f)[len("marleg_at_"):-len(".json")]
+            with open(f, encoding="utf-8") as fh:
+                profs[name] = json.load(fh)          # live books written by the bot (separate process)
+        except Exception:
+            pass
+    if not profs:
+        return jsonify({"error": "overnight auto-trader not started yet — run: python marleg_autotrader.py"})
+    return jsonify({"mode": "overnight", "profiles": {k: profs[k] for k in order if k in profs}})
+
+@app.route("/api/signal_quality")
+def api_signal_quality():
+    return jsonify(cached("signal_quality", marleg_signal_quality.scan, 3600))   # universe fetch -> cache 1h
+
+# ----------------------------------------------------------------- paper-book status
+@app.route("/api/paper")
+def api_paper():
+    def do():
+        names = ["conservative", "balanced", "aggressive", "adaptive"]
+        books, allsyms = {}, set()
+        for n in names:
+            try:
+                b = json.load(open(os.path.join(HERE, f"marleg_paper_{n}.json")))
+                books[n] = b
+                for p in b.get("positions", []):
+                    allsyms.add(p["sym"])
+            except Exception:
+                pass
+        px, ts = {}, None
+        if allsyms:
+            try:                                              # intraday 1-min = freshest while market is open
+                d = yf.download(" ".join(s + ".NS" for s in allsyms), period="1d", interval="1m",
+                                progress=False, group_by="ticker", threads=True)
+                for s in allsyms:
+                    try:
+                        c = (d[s + ".NS"]["Close"] if len(allsyms) > 1 else d["Close"]).dropna()
+                        if len(c):
+                            px[s] = round(float(c.iloc[-1]), 2)
+                            ts = str(c.index[-1].tz_convert("Asia/Kolkata")) if c.index.tz is not None else str(c.index[-1])
+                    except Exception:
+                        pass
+            except Exception:
+                pass
+            miss = [s for s in allsyms if s not in px]          # fallback to daily close (market closed / illiquid)
+            if miss:
+                try:
+                    d2 = yf.download(" ".join(s + ".NS" for s in miss), period="5d", interval="1d",
+                                     progress=False, group_by="ticker", threads=True)
+                    for s in miss:
+                        try:
+                            c = (d2[s + ".NS"]["Close"] if len(miss) > 1 else d2["Close"]).dropna()
+                            if len(c):
+                                px[s] = round(float(c.iloc[-1]), 2)
+                                if ts is None:
+                                    ts = str(c.index[-1])
+                        except Exception:
+                            pass
+                except Exception:
+                    pass
+        out = {}
+        for n, b in books.items():
+            pos, mv, upnl = [], 0.0, 0.0
+            for p in b.get("positions", []):
+                now = px.get(p["sym"], p["entry"]); v = p["qty"] * now; up = p["qty"] * (now - p["entry"])
+                mv += v; upnl += up
+                pos.append({"sym": p["sym"], "qty": p["qty"], "entry": p["entry"], "now": now,
+                            "stop": p["stop"], "target": p["target"], "tag": p.get("tag"), "held": p.get("held", 0),
+                            "mv": round(v), "upnl": round(up),
+                            "dist_stop": round((now - p["stop"]) / now * 100, 1) if now else None,
+                            "dist_tgt": round((p["target"] - now) / now * 100, 1) if now else None})
+            equity = b["cash"] + mv
+            out[n] = {"equity": round(equity), "start": b.get("start", 100000),
+                      "ret": round((equity / b.get("start", 100000) - 1) * 100, 2), "cash": round(b["cash"]),
+                      "upnl": round(upnl), "realized": sum(x.get("pnl", 0) for x in b.get("closed", [])),
+                      "open": len(pos), "closed": len(b.get("closed", [])), "regime": b.get("regime"),
+                      "cfg": b.get("cfg"), "asof": b.get("asof"), "positions": pos,
+                      "recent_closed": b.get("closed", [])[-6:]}
+        out["price_ts"] = ts
+        return out
+    return jsonify(cached("paper", do, 20))
+
 # ----------------------------------------------------------------- static (front-end served from web/)
 WEB = os.path.join(HERE, "web")
 @app.route("/")
@@ -902,5 +1432,8 @@ def static_file(p):
     return ("not found", 404)
 
 if __name__ == "__main__":
-    print("Marle-G surveillance backend -> http://127.0.0.1:8777/")
-    app.run(host="127.0.0.1", port=8777, threaded=True)
+    # MARLEG_HOST/MARLEG_PORT let the Pod Suite launcher (and anything else) relocate us
+    _host = os.environ.get("MARLEG_HOST", "127.0.0.1")
+    _port = int(os.environ.get("MARLEG_PORT", "8777"))
+    print(f"Marle-G surveillance backend -> http://{_host}:{_port}/")
+    app.run(host=_host, port=_port, threaded=True)

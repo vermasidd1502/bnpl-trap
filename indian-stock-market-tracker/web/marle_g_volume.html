@@ -63,6 +63,8 @@
   .vb.LONG{background:rgba(34,197,94,.18);color:var(--green)} .vb.SHORT{background:rgba(239,68,68,.18);color:var(--red)} .vb.FLAT{background:rgba(255,255,255,.06);color:var(--dim)}
   .tgt{font-family:var(--mono);font-size:9.5px;color:var(--muted);margin-top:3px}
   .cons{font-weight:800;font-family:var(--mono)}
+  .dbadge{font-family:var(--mono);font-size:9px;font-weight:800;color:var(--green);border:1px solid rgba(34,197,94,.4);border-radius:5px;padding:1px 5px;margin-left:6px;vertical-align:middle}
+  .dbadge.new{color:var(--saffron);border-color:rgba(255,153,51,.4)}
 </style>
 </head>
 <body>
@@ -77,7 +79,7 @@
 <main class="wrap">
   <div class="head"><h1>Volume Pod</h1><span class="sub" id="sub"></span></div>
   <div class="bar2">
-    <input id="q" placeholder="filter by symbol or company…" spellcheck="false">
+    <input id="q" placeholder="filter the list by symbol or company…" spellcheck="false" data-no-suggest>
     <div class="seg"><button id="byud" class="on" onclick="setSort('ud')">sort: U/D</button><button id="byrvol" onclick="setSort('rvol')">RVOL</button></div>
     <button class="gatedb" onclick="toggleGated()">🎯 Gated longs</button>
     <button class="addb" onclick="toggleAdd()">➕ Add / edit stock</button>
@@ -199,7 +201,65 @@ async function loadGated(){
         :'<div style="color:var(--muted);padding:12px">No stocks pass all gates right now — the gates are strict by design.</div>');
   }catch(e){ f.innerHTML='<span style="color:var(--dim)">unavailable</span>'; }
 }
+window.MG_SELF_REFRESH = true;   // self-refreshes every 5 min (below) — nav.js skips its 60s full reload
 load();
+setInterval(load, 300000);       // refresh the volume pod every 5 minutes (soft re-fetch + re-render)
 </script>
+  <script>
+(async function(){
+  try{
+    const r=await (await fetch('/api/volume_ledger')).json();
+    const cur=(r.current&&r.current.list)||[];
+    if(!cur.length) return;
+    const M={}; cur.forEach(x=>M[x.sym]=x.badge);
+    const strip=document.createElement('div');
+    strip.style.cssText='font-family:var(--mono);font-size:11px;color:var(--muted);margin:8px 0 12px;background:var(--card);border:1px solid var(--border);border-radius:11px;padding:11px 13px';
+    const pc=v=>v>0?'var(--green)':v<0?'var(--red)':'var(--muted)';
+    const rows=cur.map(x=>{
+      const chg=x.chg_pct!=null?`<span style="color:${pc(x.chg_pct)}">(${x.chg_pct>0?'+':''}${x.chg_pct}%)</span>`:'';
+      const prog=x.progress_pct!=null?`<span style="color:var(--dim)"> · ${x.progress_pct}% to target</span>`:'';
+      const zone=x.zone==='go-to'?'<span style="color:var(--green);font-weight:800"> ●go-to</span>'
+        :x.zone==='extreme'?'<span style="color:var(--red);font-weight:800"> ●extreme</span>'
+        :x.zone==='hot'?'<span style="color:var(--amber)"> ●hot</span>':'';
+      return `<div style="margin-top:4px">${x.sym} <span class="dbadge${x.badge==='NEW'?' new':''}">${x.badge}</span>${zone}
+        &nbsp;trig <b style="color:var(--ink)">${x.trigger??'—'}</b> <span style="color:var(--dim)">(${x.trigger_date||''})</span>
+        → now <b style="color:var(--ink)">${x.now??'—'}</b> ${chg}
+        → tgt <b style="color:var(--saffron)">${x.target??'—'}</b>${prog}</div>`;
+    }).join('');
+    strip.innerHTML='⏳ <b style="color:var(--ink)">days on the volume list</b> <span style="color:var(--dim)">— trigger price → live → target (trig + 2×ATR) · auto-recorded · streak age ≈ flat edge: awareness, not timing</span>'+rows;
+    const anchor=document.querySelector('.sub')||document.querySelector('h1');
+    if(anchor&&anchor.parentNode) anchor.parentNode.insertBefore(strip,anchor.nextSibling);
+    const tag=()=>{document.querySelectorAll('.sym').forEach(el=>{
+      const s=(el.childNodes[0]&&el.childNodes[0].textContent||el.textContent).trim();
+      if(M[s]&&!el.dataset.badged){el.dataset.badged='1';
+        const b=document.createElement('span');b.className='dbadge'+(M[s]==='NEW'?' new':'');
+        b.textContent=M[s];el.appendChild(b);}});};
+    tag();
+    const out=document.getElementById('out');
+    if(out) new MutationObserver(tag).observe(out,{childList:true,subtree:true});
+  }catch(e){}
+})();
+(async function(){
+  try{
+    const r=await (await fetch('/api/short_radar')).json();
+    const card=document.createElement('div');
+    card.style.cssText='font-family:var(--mono);font-size:11px;color:var(--muted);margin:0 0 12px;background:var(--card);border:1px solid rgba(239,68,68,.25);border-radius:11px;padding:11px 13px';
+    const v=(r.validation||{})['rsi+ext+spike-noUD'];
+    const head='🌑 <b style="color:var(--ink)">short radar — eclipse watch</b> <span style="color:var(--dim)">overbought + extended + spike, fade-history aware · decade validation: '+(v?('+'+v.mean_pct+'%/trade net, win '+v.win_pct+'% (n='+v.n+') — promising, paper-first'):'run marleg_short_radar.py')+'</span>';
+    const rows=(r.candidates||[]).slice(0,6).map(c=>{
+      const col=c.no_short?'var(--dim)':'var(--red)';
+      return `<div style="margin-top:4px;color:${col}">${c.sym} px ${c.px} · rsi ${c.rsi_y} · ext ${c.ext_atr}×ATR · today ${c.chg_today_pct>0?'+':''}${c.chg_today_pct}% · ud ${c.ud} · fade3d ${c.fade_hist_3d_pct??'—'}% — <b>${c.verdict}</b></div>`;
+    }).join('');
+    card.innerHTML=head+(rows||'<div style="margin-top:5px;color:var(--dim)">no eclipse candidates right now — nothing is simultaneously overbought, extended and spiking</div>')
+      +'<div style="margin-top:6px;color:var(--dim)">'+(r.plan||'')+'</div>';
+    const anchor=document.querySelector('.sub')||document.querySelector('h1');
+    if(anchor&&anchor.parentNode){
+      const after=anchor.nextSibling&&anchor.nextSibling.nextSibling?anchor.nextSibling.nextSibling:anchor.nextSibling;
+      anchor.parentNode.insertBefore(card, after);
+    }
+  }catch(e){}
+})();
+  </script>
+  <script src="marle_g_nav.js"></script>
 </body>
 </html>

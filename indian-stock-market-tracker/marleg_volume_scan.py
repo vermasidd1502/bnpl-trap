@@ -23,6 +23,20 @@ SYMS = os.path.join(HERE, "marleg_symbols.json")
 OUT = os.path.join(HERE, "marleg_volume_cache.json")
 
 # Liquid universe spanning every sector (seed). --all expands to the full classified set.
+def load_universe():
+    """Full NSE-equity universe from marleg_universe.json (built by marleg_universe_build.py);
+    falls back to SEED if the file isn't there."""
+    try:
+        import json as _j
+        d = _j.load(open(os.path.join(HERE, "marleg_universe.json"), encoding="utf-8"))
+        u = [x["s"] for x in d.get("stocks", [])]
+        if u:
+            return sorted(set(u) | set(SEED))     # SEED guarantees the liquid core is in
+    except Exception:
+        pass
+    return list(dict.fromkeys(SEED))
+
+
 SEED = [
     # Energy / power / oil-gas
     "RELIANCE","ONGC","IOC","BPCL","HINDPETRO","GAIL","OIL","NTPC","POWERGRID","TATAPOWER",
@@ -142,7 +156,12 @@ def main():
         print(f"regrouping {len(rows)} cached stocks with refreshed sectors...")
         _write(rows, sect, names)
         return
-    universe = sorted(set(sect) | set(SEED)) if "--all" in sys.argv else list(dict.fromkeys(SEED))
+    if "--universe" in sys.argv:                  # full Groww NSE-equity universe (~3000+)
+        universe = load_universe()
+    elif "--all" in sys.argv:
+        universe = sorted(set(sect) | set(SEED))
+    else:
+        universe = list(dict.fromkeys(SEED))
     print(f"scanning {len(universe)} symbols...")
     rows = {}
     CH = 80

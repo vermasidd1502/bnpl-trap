@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Signal Quality · Marle-G</title>
+<style>
+  :root{--bg:#080a0e;--card:#14171e;--bg2:#0e1116;--border:rgba(255,255,255,.08);--ink:#eef1f6;--muted:#9aa3b4;--dim:#646c7a;
+    --mono:'SF Mono',ui-monospace,Consolas,monospace;--saffron:#ff9933;--green:#22c55e;--red:#ef4444;--amber:#fbbf24;--india-green:#138808;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(1100px 520px at 50% -10%,rgba(255,153,51,.05),transparent 60%),var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--border);background:rgba(8,10,14,.8);position:sticky;top:0;z-index:10}
+  .brand{font-family:var(--mono);font-weight:800;letter-spacing:.18em;font-size:13px;display:flex;align-items:center;gap:9px}
+  .brand .mark{width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,var(--saffron),var(--india-green))}
+  .brand .w{background:linear-gradient(90deg,var(--saffron),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tabs{display:flex;gap:12px;font-family:var(--mono);font-size:11px;flex-wrap:wrap}
+  .tabs a{color:var(--dim);text-decoration:none}.tabs a.on{color:var(--saffron)}.tabs a:hover{color:var(--ink)}
+  .wrap{max-width:1080px;margin:0 auto;padding:22px 22px 70px}
+  h1{font-size:22px;margin-bottom:3px} .sub{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:14px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px}
+  .sh{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-bottom:10px}
+  .par{display:flex;align-items:flex-end;gap:8px;height:90px}
+  .par .b{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px}
+  .par .bar{width:100%;background:linear-gradient(180deg,var(--saffron),rgba(255,153,51,.2));border-radius:3px 3px 0 0;min-height:2px}
+  .par .lab{font-family:var(--mono);font-size:9px;color:var(--dim)}
+  .grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+  .row{display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);font-family:var(--mono);font-size:11.5px}
+  .row .sym{font-weight:700} .row .r{text-align:right;color:var(--muted)}
+  .tagh{font-family:var(--mono);font-size:11px;font-weight:800;padding:3px 9px;border-radius:6px;display:inline-block;margin-bottom:8px}
+  .legend{font-family:var(--mono);font-size:10px;color:var(--dim);line-height:1.55;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span></span></div>
+  <div class="tabs">
+    <a href="marle_g_pod.html">home</a><a href="marle_g_equity.html">equity</a><a href="marle_g_intraday.html">intraday</a>
+    <a href="marle_g_volbook.html">day-book</a><a href="#" class="on">quality</a><a href="marle_g_autotrader.html">auto-trader</a>
+    <a href="marle_g_niftysim.html">nifty&nbsp;sim</a><a href="marle_g_sectoral.html">sectoral</a><a href="marle_g_mindhive.html">mindhive</a>
+  </div>
+</div>
+<main class="wrap">
+  <h1>🔬 Signal Quality &amp; Horizon</h1>
+  <div class="sub">real winners vs misleading volume spikes · short candidates (bad ud / 0.618 golden) · dated targets · the Pareto timeframe.</div>
+  <div class="card">
+    <div class="sh">Pareto timeframe — where the volume-long edge concentrates</div>
+    <div class="par" id="pareto"></div>
+    <div class="legend" id="pverdict"></div>
+  </div>
+  <div class="grid3" id="lists"></div>
+  <div class="legend" id="note"></div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+function rowsLong(arr){
+  return arr.length?arr.map(w=>`<div class="row"><div><span class="sym">${w.sym}</span> <span style="color:var(--dim)">ud ${w.ud}</span></div>
+    <div class="r">→ <b style="color:var(--green)">${w.target??'—'}</b> by ${w.target_date||'—'}<br><span style="color:var(--dim);font-size:10px">${w.horizon||''}${w.turnover_cr?' · Rs'+w.turnover_cr+'cr':''}</span></div></div>`).join(''):'<span style="color:var(--dim);font-size:11px">none today</span>';
+}
+function rowsSus(arr){
+  return arr.length?arr.map(s=>`<div class="row"><div><span class="sym">${s.sym}</span> <span style="color:var(--dim)">ud ${s.ud}</span></div>
+    <div class="r" style="max-width:60%;color:var(--amber)">${s.why}</div></div>`).join(''):'<span style="color:var(--dim);font-size:11px">none today</span>';
+}
+function rowsShort(arr){
+  return arr.length?arr.map(s=>`<div class="row"><div><span class="sym">${s.sym}</span> <span style="color:var(--dim)">ud ${s.ud}</span>${s.at_golden?' <span style="color:var(--amber)">[@0.618]</span>':''}</div>
+    <div class="r">↓ <b style="color:var(--red)">${s.target_down??'—'}</b> by ${s.target_date||'—'}<br><span style="color:var(--dim);font-size:10px">${(s.reasons||[]).join('; ')}</span></div></div>`).join(''):'<span style="color:var(--dim);font-size:11px">none today</span>';
+}
+async function load(){
+  try{
+    const r=await (await fetch('/api/signal_quality')).json();
+    if(r.error){ $('lists').innerHTML='<span style="color:var(--dim)">'+r.error+'</span>'; return; }
+    const p=r.pareto, hz=Object.keys(p.capture_pct);
+    const mx=Math.max(...hz.map(h=>Math.abs(p.capture_pct[h])),1);
+    $('pareto').innerHTML=hz.map(h=>{const v=p.capture_pct[h];const hot=(+h)===p.recommended_days;
+      return `<div class="b"><div style="font-family:var(--mono);font-size:10px;color:${v<0?'var(--red)':'var(--muted)'}">${p.avg_fwd_pct[h]}%</div>
+        <div class="bar" style="height:${Math.max(2,Math.abs(v)/mx*70)}px;background:${hot?'linear-gradient(180deg,var(--green),rgba(34,197,94,.2))':''}"></div>
+        <div class="lab" style="${hot?'color:var(--green);font-weight:700':''}">${h}d</div></div>`;}).join('');
+    $('pverdict').innerHTML=`<b style="color:var(--saffron)">→ ${p.verdict}</b> <span style="color:var(--dim)">(${p.n_signals} historical signals; bars = % of the eventual move captured by each horizon)</span>`;
+    $('lists').innerHTML=`
+      <div class="card"><div class="tagh" style="background:rgba(34,197,94,.15);color:var(--green)">▲ REAL WINNERS (${r.winners.length})</div>${rowsLong(r.winners)}</div>
+      <div class="card"><div class="tagh" style="background:rgba(251,191,36,.15);color:var(--amber)">⚠ SUSPECT — misleading spike (${r.suspects.length})</div>${rowsSus(r.suspects)}</div>
+      <div class="card"><div class="tagh" style="background:rgba(239,68,68,.15);color:var(--red)">▼ SHORTS — distribution / 0.618 (${r.shorts.length})</div>${rowsShort(r.shorts)}</div>`;
+    $('note').innerHTML=(r.note||'')+` · as of ${r.asof}.`;
+  }catch(e){ $('lists').innerHTML='<span style="color:var(--red)">backend offline? run: python marleg_server.py</span>'; }
+}
+load();
+</script>
+  <script src="marle_g_nav.js"></script>
+</body>
+</html>

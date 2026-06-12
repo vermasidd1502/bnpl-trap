@@ -159,10 +159,11 @@ function delList(nm){ if(!confirm('Delete watchlist "'+nm+'"?'))return; const wl
 function removeStock(nm,sym){ const wl=getWL(); if(wl[nm]){wl[nm]=wl[nm].filter(s=>s.sym!==sym); if(!wl[nm].length)delete wl[nm];} setWL(wl); }
 function seedDemo(){
   const wl=getWL();
-  wl['Demo · Large-cap watch']=[{sym:'RELIANCE',name:'Reliance'},{sym:'HDFCBANK',name:'HDFC Bank'},{sym:'TCS',name:'Tata Consultancy'},{sym:'INFY',name:'Infosys'},{sym:'TATAMOTORS',name:'Tata Motors'},{sym:'SBIN',name:'State Bank of India'}];
+  wl['Demo · Large-cap watch']=[{sym:'RELIANCE',name:'Reliance'},{sym:'HDFCBANK',name:'HDFC Bank'},{sym:'TCS',name:'Tata Consultancy'},{sym:'INFY',name:'Infosys'},{sym:'TMPV',name:'Tata Motors PV'},{sym:'SBIN',name:'State Bank of India'}];
   setWL(wl);
 }
 render();
 </script>
+  <script src="marle_g_nav.js"></script>
 </body>
 </html>

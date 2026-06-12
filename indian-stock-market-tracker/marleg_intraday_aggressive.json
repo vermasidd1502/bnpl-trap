@@ -1,0 +1,30 @@
+{
+ "profile": "aggressive",
+ "cash": 698.2000000000116,
+ "start": 100000.0,
+ "positions": [
+  {
+   "sym": "ICICIBANK",
+   "qty": 78,
+   "entry": 1273.1,
+   "now": 1273.1,
+   "stop": 1257.8,
+   "target": 1303.7,
+   "tag": "BUYING",
+   "volr": 1.03,
+   "t": "2026-06-09 13:26"
+  }
+ ],
+ "closed": [],
+ "steps": 1,
+ "cfg": {
+  "risk": 1.2,
+  "maxpos": 6
+ },
+ "equity": 100000,
+ "last_actions": [
+  "BUY 78 ICICIBANK @ 1273.1 (vol 1.03x)"
+ ],
+ "asof": "2026-06-09 13:26",
+ "eod": false
+}

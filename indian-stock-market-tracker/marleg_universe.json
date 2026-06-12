@@ -1,0 +1,12666 @@
+{
+"n": 3165,
+"source": "groww_instrument_master",
+"stocks": [
+{
+"s": "AAATECH",
+"n": "AAA Technologies"
+},
+{
+"s": "AADHARHFC",
+"n": "Aadhar Housing Fin"
+},
+{
+"s": "AAKAAR",
+"n": "Aakaar Medical Techn"
+},
+{
+"s": "AAKASH",
+"n": "Aakash Exploration"
+},
+{
+"s": "AARADHYA",
+"n": "Aaradhya Dispos. Ind"
+},
+{
+"s": "AAREYDRUGS",
+"n": "Aarey Pharma"
+},
+{
+"s": "AARNAV",
+"n": "Aarnav Fashions"
+},
+{
+"s": "AARON",
+"n": "Aaron Industries"
+},
+{
+"s": "AARTECH",
+"n": "Aartech Solonics"
+},
+{
+"s": "AARTIDRUGS",
+"n": "Aarti Drugs"
+},
+{
+"s": "AARTIIND",
+"n": "Aarti Industries"
+},
+{
+"s": "AARTIPHARM",
+"n": "Aarti Pharmalabs"
+},
+{
+"s": "AARTISURF",
+"n": "Aarti Surfactant"
+},
+{
+"s": "AARVI",
+"n": "Aarvi Encon"
+},
+{
+"s": "AATMAJ",
+"n": "Aatmaj Healthcare"
+},
+{
+"s": "AAVAS",
+"n": "Aavas Financiers"
+},
+{
+"s": "ABANSENT",
+"n": "Abans Enterprise"
+},
+{
+"s": "ABB",
+"n": "ABB India"
+},
+{
+"s": "ABBOTINDIA",
+"n": "Abbott India"
+},
+{
+"s": "ABCAPITAL",
+"n": "Aditya Birla Cap"
+},
+{
+"s": "ABCOTS",
+"n": "AB Cotspin India"
+},
+{
+"s": "ABDL",
+"n": "Allied Blenders"
+},
+{
+"s": "ABFRL",
+"n": "ABFRL"
+},
+{
+"s": "ABHAPOWER",
+"n": "Abha Power And Steel"
+},
+{
+"s": "ABINFRA",
+"n": "AB Infrabuild"
+},
+{
+"s": "ABLBL",
+"n": "Aditya Birla Lifesty"
+},
+{
+"s": "ABMINTLLTD",
+"n": "Abm International"
+},
+{
+"s": "ABMKNO",
+"n": "ABM Knowledgeware"
+},
+{
+"s": "ABNINT",
+"n": "ABN Intercorp"
+},
+{
+"s": "ABREL",
+"n": "Aditya Birla Real"
+},
+{
+"s": "ABSLAMC",
+"n": "Aditya Birla Sun AMC"
+},
+{
+"s": "ABSLBANETF",
+"n": "ABSLBANETF"
+},
+{
+"s": "ABSLFTTIDG-MF",
+"n": "ABSLFTTIDG"
+},
+{
+"s": "ABSLFTTIDN-MF",
+"n": "ABSLFTTIDN"
+},
+{
+"s": "ABSLFTTIRG-MF",
+"n": "ABSLFTTIRG"
+},
+{
+"s": "ABSLFTTIRN-MF",
+"n": "ABSLFTTIRN"
+},
+{
+"s": "ABSLLIQUID",
+"n": "ABSLLIQUID"
+},
+{
+"s": "ABSLMSCIN",
+"n": "ABSLMSCIN"
+},
+{
+"s": "ABSLPSE",
+"n": "ABSLPSE"
+},
+{
+"s": "ABSMARINE",
+"n": "ABS Marine Services"
+},
+{
+"s": "ACC",
+"n": "ACC"
+},
+{
+"s": "ACCELYA",
+"n": "Accelya Solutions"
+},
+{
+"s": "ACCENTMIC",
+"n": "Accent Microcell"
+},
+{
+"s": "ACCORD",
+"n": "Accord Synergy"
+},
+{
+"s": "ACCPL",
+"n": "Accretion Pharma."
+},
+{
+"s": "ACCURACY",
+"n": "Accuracy Shipping"
+},
+{
+"s": "ACE",
+"n": "Action Const Equip"
+},
+{
+"s": "ACEINTEG",
+"n": "Ace Integrated Soln"
+},
+{
+"s": "ACETEC",
+"n": "Acetech E-Commerce"
+},
+{
+"s": "ACI",
+"n": "Archean Chem Inds"
+},
+{
+"s": "ACL",
+"n": "Andhra Cements"
+},
+{
+"s": "ACMESOLAR",
+"n": "Acme Solar Holdings"
+},
+{
+"s": "ACSTECH",
+"n": "ACS Technologies"
+},
+{
+"s": "ACTIVEINFR",
+"n": "Active Infrastruc."
+},
+{
+"s": "ACUTAAS",
+"n": "Acutaas Chemicals"
+},
+{
+"s": "ADANIENSOL",
+"n": "Adani Energy Solut."
+},
+{
+"s": "ADANIENT",
+"n": "Adani Enterprises"
+},
+{
+"s": "ADANIGREEN",
+"n": "Adani Green Energy"
+},
+{
+"s": "ADANIPORTS",
+"n": "Adani Ports &Special"
+},
+{
+"s": "ADANIPOWER",
+"n": "Adani Power"
+},
+{
+"s": "ADDICTIVE",
+"n": "Addictive Learn Tech"
+},
+{
+"s": "ADFFOODS",
+"n": "ADF Foods"
+},
+{
+"s": "ADISOFT",
+"n": "Adisoft Tech"
+},
+{
+"s": "ADL",
+"n": "Archidply Decor"
+},
+{
+"s": "ADOR",
+"n": "Ador Welding"
+},
+{
+"s": "ADROITINFO",
+"n": "Adroit Infotech"
+},
+{
+"s": "ADSL",
+"n": "Allied Digital Serv."
+},
+{
+"s": "ADVAIT",
+"n": "Advait Energy"
+},
+{
+"s": "ADVANCE",
+"n": "Advance Agrolife"
+},
+{
+"s": "ADVANIHOTR",
+"n": "Advani Hotels"
+},
+{
+"s": "ADVENTHTL",
+"n": "Advent Hotels Inter."
+},
+{
+"s": "ADVENZYMES",
+"n": "Advanced Enzyme"
+},
+{
+"s": "AEGISLOG",
+"n": "Aegis Logistics"
+},
+{
+"s": "AEGISVOPAK",
+"n": "Aegis Vopak Terminal"
+},
+{
+"s": "AEPL",
+"n": "Artemis Electricals"
+},
+{
+"s": "AEQUS",
+"n": "Aequs"
+},
+{
+"s": "AEROENTER",
+"n": "AEROFLEX ENTERPRISES LIMITED"
+},
+{
+"s": "AEROFLEX",
+"n": "Aeroflex Industries"
+},
+{
+"s": "AERON",
+"n": "Aeron Composite"
+},
+{
+"s": "AERONEU",
+"n": "Aeroflex Neu"
+},
+{
+"s": "AESTHETIK",
+"n": "Aesthetik Engineers"
+},
+{
+"s": "AETHER",
+"n": "Aether Inds"
+},
+{
+"s": "AFCONS",
+"n": "Afcons Infra"
+},
+{
+"s": "AFFLE",
+"n": "Affle 3i"
+},
+{
+"s": "AFFORDABLE",
+"n": "ARAPL"
+},
+{
+"s": "AFIL",
+"n": "Akme Fintrade"
+},
+{
+"s": "AFSL",
+"n": "Abans Financial Services Limited"
+},
+{
+"s": "AGARIND",
+"n": "Agarwal Inds Corp"
+},
+{
+"s": "AGARWALEYE",
+"n": "Dr. Agarwal's Health"
+},
+{
+"s": "AGARWALFT",
+"n": "Agarwal Float Glass"
+},
+{
+"s": "AGARWALTUF",
+"n": "Agarwal Tough"
+},
+{
+"s": "AGI",
+"n": "AGI Greenpac"
+},
+{
+"s": "AGIIL",
+"n": "AGI Infra"
+},
+{
+"s": "AGNI",
+"n": "Agni Green Power"
+},
+{
+"s": "AGRITECH",
+"n": "Agri-Tech India"
+},
+{
+"s": "AGROPHOS",
+"n": "Agro Phos India"
+},
+{
+"s": "AGUL",
+"n": "AG Universal"
+},
+{
+"s": "AHCL",
+"n": "Anlon Healthcare"
+},
+{
+"s": "AHIMSA",
+"n": "Ahimsa Industries"
+},
+{
+"s": "AHLADA",
+"n": "Ahlada Engineers"
+},
+{
+"s": "AHLEAST",
+"n": "Asian Hotels East"
+},
+{
+"s": "AHLUCONT",
+"n": "Ahluwalia Contracts"
+},
+{
+"s": "AHLWEST",
+"n": "Asian Hotels West"
+},
+{
+"s": "AIAENG",
+"n": "AIA Engineering"
+},
+{
+"s": "AIIL",
+"n": "Authum Invstmnt"
+},
+{
+"s": "AILIMITED",
+"n": "Abhishek Integra"
+},
+{
+"s": "AIMTRON",
+"n": "Aimtron Electronics"
+},
+{
+"s": "AIRAN",
+"n": "Airan"
+},
+{
+"s": "AIROLAM",
+"n": "AiroLam"
+},
+{
+"s": "AISL",
+"n": "ANI Integrated Serv"
+},
+{
+"s": "AJANTPHARM",
+"n": "Ajanta Pharma"
+},
+{
+"s": "AJAXENGG",
+"n": "Ajax Engineering"
+},
+{
+"s": "AJMERA",
+"n": "Ajmera Realty"
+},
+{
+"s": "AJOONI",
+"n": "Ajooni Biotech"
+},
+{
+"s": "AKANKSHA",
+"n": "Akanksha Power&Infra"
+},
+{
+"s": "AKASH",
+"n": "Akash Infra-Projects"
+},
+{
+"s": "AKCAPIT",
+"n": "AK Capital Serv"
+},
+{
+"s": "AKG",
+"n": "AKG Exim"
+},
+{
+"s": "AKI",
+"n": "AKI India"
+},
+{
+"s": "AKIKO",
+"n": "Akiko Global Service"
+},
+{
+"s": "AKSHAR",
+"n": "Akshar Spintex"
+},
+{
+"s": "AKSHARCHEM",
+"n": "Aksharchem (India)"
+},
+{
+"s": "AKSHOPTFBR",
+"n": "Aksh Optifibre"
+},
+{
+"s": "AKUMS",
+"n": "Akums Drugs & Pharmaceuticals"
+},
+{
+"s": "ALANKIT",
+"n": "Alankit"
+},
+{
+"s": "ALBERTDAVD",
+"n": "Albert David"
+},
+{
+"s": "ALCODIS",
+"n": "Alcokraft Distiller."
+},
+{
+"s": "ALEMBICLTD",
+"n": "Alembic"
+},
+{
+"s": "ALGOQUANT",
+"n": "Algoquant Fintec"
+},
+{
+"s": "ALICON",
+"n": "Alicon Castalloy"
+},
+{
+"s": "ALIVUS",
+"n": "Alivus Life Sciences"
+},
+{
+"s": "ALKALI",
+"n": "Alkali Metals"
+},
+{
+"s": "ALKEM",
+"n": "Alkem Laboratories"
+},
+{
+"s": "ALKYLAMINE",
+"n": "Alkyl Amines Chem"
+},
+{
+"s": "ALLCARGO",
+"n": "Allcargo Logistics"
+},
+{
+"s": "ALLDIGI",
+"n": "Alldigi Tech"
+},
+{
+"s": "ALLETEC",
+"n": "All E Technologies"
+},
+{
+"s": "ALLTIME",
+"n": "All Time Plastics"
+},
+{
+"s": "ALMONDZ",
+"n": "Almondz Global Sec"
+},
+{
+"s": "ALOKINDS",
+"n": "Alok Industries"
+},
+{
+"s": "ALPA",
+"n": "Alpa Laboratories"
+},
+{
+"s": "ALPEXSOLAR",
+"n": "Alpex Solar"
+},
+{
+"s": "ALPHA",
+"n": "KOTAKALPHA"
+},
+{
+"s": "ALPHAETF",
+"n": "ALPHAETF"
+},
+{
+"s": "ALPHAGEO",
+"n": "Alphageo (India)"
+},
+{
+"s": "ALUWIND",
+"n": "Aluwind Infra-Tech"
+},
+{
+"s": "AMAGI",
+"n": "Amagi Media Labs"
+},
+{
+"s": "AMANTA",
+"n": "Amanta Healthcare"
+},
+{
+"s": "AMBAAUTO",
+"n": "Amba Auto Sales &Ser"
+},
+{
+"s": "AMBALALSA",
+"n": "Ambalal Sarabhai Ent"
+},
+{
+"s": "AMBANIORGO",
+"n": "Ambani Orgochem"
+},
+{
+"s": "AMBER",
+"n": "Amber Enterprises"
+},
+{
+"s": "AMBICAAGAR",
+"n": "Ambica Agarbathies"
+},
+{
+"s": "AMBIKCO",
+"n": "Ambika Cotton Mills"
+},
+{
+"s": "AMBUJACEM",
+"n": "Ambuja Cement"
+},
+{
+"s": "AMCL",
+"n": "ANB Metal Cast"
+},
+{
+"s": "AMDIND",
+"n": "AMD Industries"
+},
+{
+"s": "AMEYA",
+"n": "Ameya Precision Engg"
+},
+{
+"s": "AMIABLE",
+"n": "Amiable Logistic (I)"
+},
+{
+"s": "AMIRCHAND",
+"n": "Amir Chand Jagdish"
+},
+{
+"s": "AMJLAND",
+"n": "AMJ Land Holdings"
+},
+{
+"s": "AMNPLST",
+"n": "Amines & Plasticizers"
+},
+{
+"s": "AMRUTANJAN",
+"n": "Amrutanjan Health"
+},
+{
+"s": "ANANDRATHI",
+"n": "Anand Rathi Weal"
+},
+{
+"s": "ANANTAM",
+"n": "Anantam Highways"
+},
+{
+"s": "ANANTRAJ",
+"n": "Anant Raj"
+},
+{
+"s": "ANDHRAPAP",
+"n": "Andhra Paper"
+},
+{
+"s": "ANDHRSUGAR",
+"n": "Andhra Sugars"
+},
+{
+"s": "ANGELONE",
+"n": "Angel One"
+},
+{
+"s": "ANIKINDS",
+"n": "Anik Industries"
+},
+{
+"s": "ANKITMETAL",
+"n": "Ankit Metal & Power"
+},
+{
+"s": "ANLON",
+"n": "Anlon Tech Solution"
+},
+{
+"s": "ANMOL",
+"n": "Anmol India"
+},
+{
+"s": "ANNAPURNA",
+"n": "Annapurna Swadisht"
+},
+{
+"s": "ANONDITA",
+"n": "Anondita Medicare"
+},
+{
+"s": "ANSALAPI-BZ",
+"n": "Ansal Properties"
+},
+{
+"s": "ANTELOPUS",
+"n": "Antelopus Selan Ener"
+},
+{
+"s": "ANTGRAPHIC",
+"n": "Antarctica"
+},
+{
+"s": "ANTHEM",
+"n": "Anthem Biosciences"
+},
+{
+"s": "ANUHPHR",
+"n": "Anuh Pharma"
+},
+{
+"s": "ANUP",
+"n": "Anup Engineering"
+},
+{
+"s": "ANURAS",
+"n": "Anupam Rasayan"
+},
+{
+"s": "ANYA",
+"n": "Anya Polytech"
+},
+{
+"s": "AONEGOLD",
+"n": "AONEGOLD"
+},
+{
+"s": "AONELIQUID",
+"n": "AONELIQUID"
+},
+{
+"s": "AONENIFTY",
+"n": "AONENIFTY"
+},
+{
+"s": "AONESILVER",
+"n": "Angel One Silver ETF"
+},
+{
+"s": "AONETOTAL",
+"n": "AONETOTAL"
+},
+{
+"s": "APARINDS",
+"n": "Apar Industries"
+},
+{
+"s": "APCL",
+"n": "Anjani Portland Cem."
+},
+{
+"s": "APCOTEXIND",
+"n": "Apcotex Industries"
+},
+{
+"s": "APEX",
+"n": "Apex Frozen Foods"
+},
+{
+"s": "APEXECO",
+"n": "Apex Ecotech"
+},
+{
+"s": "APLAPOLLO",
+"n": "APL Apollo Tubes"
+},
+{
+"s": "APLLTD",
+"n": "Alembic Pharma"
+},
+{
+"s": "APOLLO",
+"n": "Apollo Micro Systems"
+},
+{
+"s": "APOLLOHOSP",
+"n": "Apollo Hospitals"
+},
+{
+"s": "APOLLOPIPE",
+"n": "Apollo Pipes"
+},
+{
+"s": "APOLLOTYRE",
+"n": "Apollo Tyres"
+},
+{
+"s": "APOLSINHOT",
+"n": "Apollo Sindoori Hotels"
+},
+{
+"s": "APRAMEYA",
+"n": "Aprameya Engineering"
+},
+{
+"s": "APS",
+"n": "Australian Premium"
+},
+{
+"s": "APSISAERO",
+"n": "Apsis Aerocom"
+},
+{
+"s": "APTECHT",
+"n": "Aptech"
+},
+{
+"s": "APTUS",
+"n": "Aptus Value Housing"
+},
+{
+"s": "AQYLON",
+"n": "Aqylon Nexus"
+},
+{
+"s": "ARABIAN",
+"n": "Arabian Petroleum"
+},
+{
+"s": "ARCHIDPLY",
+"n": "Archidply Industries"
+},
+{
+"s": "ARCHIES",
+"n": "Archies"
+},
+{
+"s": "ARCIIL",
+"n": "ARC Insulation & Ins"
+},
+{
+"s": "ARE&M",
+"n": "Amara Raja Energy"
+},
+{
+"s": "ARENTERP",
+"n": "Rajdarshan Inds"
+},
+{
+"s": "ARFIN",
+"n": "Arfin India"
+},
+{
+"s": "ARHAM",
+"n": "Arham Technolgy"
+},
+{
+"s": "ARIES",
+"n": "Aries Agro"
+},
+{
+"s": "ARIHANT",
+"n": "Arihant Foundations"
+},
+{
+"s": "ARIHANTACA",
+"n": "Arihant Academy"
+},
+{
+"s": "ARIHANTCAP",
+"n": "Arihant Capital"
+},
+{
+"s": "ARIHANTSUP",
+"n": "Arihant Superstructures"
+},
+{
+"s": "ARIS",
+"n": "Arisinfra Solutions"
+},
+{
+"s": "ARISTO",
+"n": "Aristo Bio-Tech&Lis"
+},
+{
+"s": "ARKADE",
+"n": "Arkade Developers"
+},
+{
+"s": "ARMANFIN",
+"n": "Arman Financial Serv"
+},
+{
+"s": "ARMOUR",
+"n": "Armour Security (I)"
+},
+{
+"s": "AROGRANITE",
+"n": "Aro Granite Inds"
+},
+{
+"s": "ARROWGREEN",
+"n": "Arrow Greentech"
+},
+{
+"s": "ARSHIYA",
+"n": "Arshiya"
+},
+{
+"s": "ARSSBL",
+"n": "Anand Rathi Share"
+},
+{
+"s": "ARTEMISMED",
+"n": "Artemis Medicare"
+},
+{
+"s": "ARTNIRMAN",
+"n": "Art Nirman"
+},
+{
+"s": "ARUNAYA",
+"n": "Arunaya Organics"
+},
+{
+"s": "ARVEE",
+"n": "Arvee Labs (India)"
+},
+{
+"s": "ARVIND",
+"n": "Arvind"
+},
+{
+"s": "ARVINDFASN",
+"n": "Arvind Fashions"
+},
+{
+"s": "ARVINDPORT",
+"n": "Arvind Port  & Infra"
+},
+{
+"s": "ARVSMART",
+"n": "Arvind Smartspaces"
+},
+{
+"s": "ASAHIINDIA",
+"n": "Asahi India Glass"
+},
+{
+"s": "ASAHISONG",
+"n": "Asahi Songwon"
+},
+{
+"s": "ASAL",
+"n": "Automotive Stamping"
+},
+{
+"s": "ASALCBR",
+"n": "Assoc Alcohol & Brew"
+},
+{
+"s": "ASCOM",
+"n": "Ascom Leasing"
+},
+{
+"s": "ASHALOG",
+"n": "Ashapura Logistics"
+},
+{
+"s": "ASHAPURMIN",
+"n": "Ashapura Minechem"
+},
+{
+"s": "ASHIANA",
+"n": "Ashiana Housing"
+},
+{
+"s": "ASHIKA",
+"n": "Ashika Credit Capital"
+},
+{
+"s": "ASHIMASYN",
+"n": "Ashima"
+},
+{
+"s": "ASHOKA",
+"n": "Ashoka Buildcon"
+},
+{
+"s": "ASHOKAMET",
+"n": "Ashoka Metcast"
+},
+{
+"s": "ASHOKLEY",
+"n": "Ashok Leyland"
+},
+{
+"s": "ASHWINI",
+"n": "Ashwini Container"
+},
+{
+"s": "ASIANENE",
+"n": "Asian Energy Serv"
+},
+{
+"s": "ASIANHOTNR",
+"n": "Asian Hotels North"
+},
+{
+"s": "ASIANPAINT",
+"n": "Asian Paints"
+},
+{
+"s": "ASIANTILES",
+"n": "Asian Granito India"
+},
+{
+"s": "ASKAUTOLTD",
+"n": "ASK Automotive"
+},
+{
+"s": "ASMS",
+"n": "Avio Smart Market"
+},
+{
+"s": "ASPINWALL",
+"n": "Aspinwall & Co"
+},
+{
+"s": "ASPIRE",
+"n": "Aspire & Innovative Advertising Ltd"
+},
+{
+"s": "ASTAR",
+"n": "Asian Star Co"
+},
+{
+"s": "ASTEC",
+"n": "Astec Lifesciences"
+},
+{
+"s": "ASTERDM",
+"n": "Aster DM Healthcare"
+},
+{
+"s": "ASTRAL",
+"n": "Astral"
+},
+{
+"s": "ASTRAMICRO",
+"n": "Astra Micro Wave"
+},
+{
+"s": "ASTRAZEN",
+"n": "Astrazeneca Pharma"
+},
+{
+"s": "ASTRON",
+"n": "Astron Paper & Board"
+},
+{
+"s": "ATALREAL",
+"n": "Atal Realtech"
+},
+{
+"s": "ATAM",
+"n": "Atam Valves"
+},
+{
+"s": "ATCENERGY",
+"n": "ATC Energies System"
+},
+{
+"s": "ATGL",
+"n": "Adani Total Gas"
+},
+{
+"s": "ATHERENERG",
+"n": "Ather Energy"
+},
+{
+"s": "ATL",
+"n": "Allcargo Terminal"
+},
+{
+"s": "ATLANTAA",
+"n": "Atlantaa"
+},
+{
+"s": "ATLANTAELE",
+"n": "Atlanta Electricals"
+},
+{
+"s": "ATLASCYCLE",
+"n": "Atlas Cycles Haryana"
+},
+{
+"s": "ATMASTCO",
+"n": "Atmastco"
+},
+{
+"s": "ATUL",
+"n": "Atul"
+},
+{
+"s": "ATULAUTO",
+"n": "Atul Auto"
+},
+{
+"s": "AUBANK",
+"n": "AU Small Fin. Bank"
+},
+{
+"s": "AURIGROW",
+"n": "Auri Grow India"
+},
+{
+"s": "AURIONPRO",
+"n": "Aurionpro Solutions"
+},
+{
+"s": "AUROIMPEX",
+"n": "Auro Impex & Chem."
+},
+{
+"s": "AUROPHARMA",
+"n": "Aurobindo Pharma"
+},
+{
+"s": "AURUM",
+"n": "Aurum Proptech"
+},
+{
+"s": "AUSL",
+"n": "Aditya Ultra Steel"
+},
+{
+"s": "AUSOMENT",
+"n": "Ausom Enterprise"
+},
+{
+"s": "AUTOAXLES",
+"n": "Auto.Axle"
+},
+{
+"s": "AUTOBEES",
+"n": "NETFAUTO"
+},
+{
+"s": "AUTOIETF",
+"n": "ICICIAUTO"
+},
+{
+"s": "AUTOIND",
+"n": "Autoline Industries"
+},
+{
+"s": "AVADHSUGAR",
+"n": "Avadh Sugar & Energy"
+},
+{
+"s": "AVALON",
+"n": "Avalon Technologies"
+},
+{
+"s": "AVANA",
+"n": "Avana Electrosystems"
+},
+{
+"s": "AVANTEL",
+"n": "Avantel"
+},
+{
+"s": "AVANTIFEED",
+"n": "Avanti Feeds"
+},
+{
+"s": "AVATAR",
+"n": "Avatar Industries"
+},
+{
+"s": "AVG",
+"n": "AVG Logistics"
+},
+{
+"s": "AVIANSH",
+"n": "Avi Ansh Textile"
+},
+{
+"s": "AVL",
+"n": "Aditya Vision"
+},
+{
+"s": "AVONMORE",
+"n": "Avonmore Capital"
+},
+{
+"s": "AVPINFRA",
+"n": "AVP Infracon Ltd"
+},
+{
+"s": "AVROIND",
+"n": "Avro India"
+},
+{
+"s": "AVSL",
+"n": "AVSL Industries"
+},
+{
+"s": "AVTNPL",
+"n": "AVT Natural Prod"
+},
+{
+"s": "AWFIS",
+"n": "Awfis Space Solution"
+},
+{
+"s": "AWHCL",
+"n": "Antony Waste"
+},
+{
+"s": "AWL",
+"n": "AWL Agri Business"
+},
+{
+"s": "AXISBANK",
+"n": "Axis Bank"
+},
+{
+"s": "AXISBNKETF",
+"n": "AXISBNKETF"
+},
+{
+"s": "AXISCADES",
+"n": "Axiscades Tech"
+},
+{
+"s": "AXISCETF",
+"n": "AXISCETF"
+},
+{
+"s": "AXISGOLD",
+"n": "AXISGOLD"
+},
+{
+"s": "AXISHCETF",
+"n": "AXISHCETF"
+},
+{
+"s": "AXISILVER",
+"n": "AXISILVER"
+},
+{
+"s": "AXISNIFTY",
+"n": "AXIS NIFTY ETF"
+},
+{
+"s": "AXISTECETF",
+"n": "AXISTECETF"
+},
+{
+"s": "AXISVALUE",
+"n": "AXISVALUE"
+},
+{
+"s": "AXITA",
+"n": "Axita Cotton"
+},
+{
+"s": "AXSENSEX",
+"n": "AXISPEGP"
+},
+{
+"s": "AYE",
+"n": "AYE Finance"
+},
+{
+"s": "AYMSYNTEX",
+"n": "Aym Syntex"
+},
+{
+"s": "AZAD",
+"n": "Azad Engineering"
+},
+{
+"s": "BABAFP",
+"n": "Baba Food Processing"
+},
+{
+"s": "BAFNAPH",
+"n": "Bafna Pharma"
+},
+{
+"s": "BAGDIGITAL",
+"n": "B.A.G. Convergence"
+},
+{
+"s": "BAGFILMS",
+"n": "BAG Films & Media"
+},
+{
+"s": "BAGMANE",
+"n": "Bagmane Prime Office"
+},
+{
+"s": "BAHETI",
+"n": "Baheti Recycling Ind"
+},
+{
+"s": "BAIDFIN",
+"n": "Baid Leasing & Fin"
+},
+{
+"s": "BAJAJ-AUTO",
+"n": "Bajaj Auto"
+},
+{
+"s": "BAJAJCON",
+"n": "Bajaj Corp"
+},
+{
+"s": "BAJAJELEC",
+"n": "Bajaj Electricals"
+},
+{
+"s": "BAJAJFINSV",
+"n": "Bajaj Finserv"
+},
+{
+"s": "BAJAJHCARE",
+"n": "Bajaj Healthcare"
+},
+{
+"s": "BAJAJHFL",
+"n": "Bajaj Housing Financ"
+},
+{
+"s": "BAJAJHIND",
+"n": "Bajaj Hindusthan Sug"
+},
+{
+"s": "BAJAJHLDNG",
+"n": "Bajaj Hold & Invest"
+},
+{
+"s": "BAJAJINDEF",
+"n": "BAJAJINDEF"
+},
+{
+"s": "BAJAJST",
+"n": "Bajaj Steel Industries"
+},
+{
+"s": "BAJEL",
+"n": "Bajel Projects"
+},
+{
+"s": "BAJFINANCE",
+"n": "Bajaj Finance"
+},
+{
+"s": "BALAJEE",
+"n": "Shree Tirup.Bal.Agro"
+},
+{
+"s": "BALAJIPHOS",
+"n": "Balaji Phosphates"
+},
+{
+"s": "BALAJITELE",
+"n": "Balaji Telefilms"
+},
+{
+"s": "BALAMINES",
+"n": "Balaji Amines"
+},
+{
+"s": "BALAXI",
+"n": "Balaxi Pharma"
+},
+{
+"s": "BALCO",
+"n": "Solve Plastic Prod"
+},
+{
+"s": "BALKRISHNA",
+"n": "Balkrishna Paper"
+},
+{
+"s": "BALKRISIND",
+"n": "Balkrishna Inds."
+},
+{
+"s": "BALMLAWRIE",
+"n": "Balmer Lawrie & Co"
+},
+{
+"s": "BALPHARMA",
+"n": "Bal Pharma"
+},
+{
+"s": "BALRAMCHIN",
+"n": "Balrampur Chini Mill"
+},
+{
+"s": "BALUFORGE",
+"n": "Balu Forge Inds"
+},
+{
+"s": "BANARBEADS",
+"n": "Banaras Beads"
+},
+{
+"s": "BANARISUG",
+"n": "Bannari Amman Sugars"
+},
+{
+"s": "BANCOINDIA",
+"n": "Banco Products"
+},
+{
+"s": "BANDHANBNK",
+"n": "Bandhan Bank"
+},
+{
+"s": "BANG",
+"n": "Bang Overseas"
+},
+{
+"s": "BANKA",
+"n": "Banka BioLoo"
+},
+{
+"s": "BANKADD",
+"n": "BANKETFADD"
+},
+{
+"s": "BANKBARODA",
+"n": "Bank of Baroda"
+},
+{
+"s": "BANKBEES",
+"n": "Nippon India ETF Bank BeES"
+},
+{
+"s": "BANKBETA",
+"n": "UTIBANKETF"
+},
+{
+"s": "BANKBETF",
+"n": "BANKBETF"
+},
+{
+"s": "BANKETF",
+"n": "BANKETF"
+},
+{
+"s": "BANKIETF",
+"n": "ICICIBANKN"
+},
+{
+"s": "BANKINDIA",
+"n": "Bank Of India"
+},
+{
+"s": "BANKPSU",
+"n": "Mirae Asset NiftyPSU"
+},
+{
+"s": "BANSALWIRE",
+"n": "Bansal Wire Inds."
+},
+{
+"s": "BANSWRAS",
+"n": "Banswara Syntex"
+},
+{
+"s": "BARFLEX",
+"n": "Barflex Polyfilms"
+},
+{
+"s": "BASF",
+"n": "BASF India"
+},
+{
+"s": "BASILIC",
+"n": "Basilic Fly Studio"
+},
+{
+"s": "BASML",
+"n": "Bannari Amman Mills"
+},
+{
+"s": "BATAINDIA",
+"n": "Bata india"
+},
+{
+"s": "BATLIBOI",
+"n": "Batliboi"
+},
+{
+"s": "BAWEJA",
+"n": "Baweja Studios"
+},
+{
+"s": "BAYERCROP",
+"n": "Bayer CropScience"
+},
+{
+"s": "BBL",
+"n": "Bharat Bijlee"
+},
+{
+"s": "BBNPNBETF",
+"n": "BBNPNBETF"
+},
+{
+"s": "BBNPPGOLD",
+"n": "BBNPPGOLD"
+},
+{
+"s": "BBOX",
+"n": "Black Bo"
+},
+{
+"s": "BBTC",
+"n": "Bombay Burmah Trdg."
+},
+{
+"s": "BBTCL",
+"n": "B & B Triplewall"
+},
+{
+"s": "BCG",
+"n": "Brightcom Group"
+},
+{
+"s": "BCLIND",
+"n": "BCL Industries"
+},
+{
+"s": "BCONCEPTS",
+"n": "Brand Concepts"
+},
+{
+"s": "BCPL",
+"n": "BCPL Railway Infra"
+},
+{
+"s": "BDL",
+"n": "Bharat Dynamics"
+},
+{
+"s": "BDR",
+"n": "BDR Buildcon"
+},
+{
+"s": "BEACON",
+"n": "Beacon Trusteeship"
+},
+{
+"s": "BEARDSELL",
+"n": "Beardsell"
+},
+{
+"s": "BECTORFOOD",
+"n": "Mrs Bectors Food"
+},
+{
+"s": "BEDMUTHA",
+"n": "Bedmutha Industries"
+},
+{
+"s": "BEEKAY",
+"n": "Beekay Steel Inds"
+},
+{
+"s": "BEL",
+"n": "Bharat Electronics"
+},
+{
+"s": "BELLACASA",
+"n": "Bella Casa Fashion"
+},
+{
+"s": "BELRISE",
+"n": "Belrise Industri"
+},
+{
+"s": "BEML",
+"n": "BEML"
+},
+{
+"s": "BENGALASM",
+"n": "Bengal & Assam Co"
+},
+{
+"s": "BEPL",
+"n": "Bhansali Engg. Poly."
+},
+{
+"s": "BERGEPAINT",
+"n": "Berger Paints India"
+},
+{
+"s": "BESTAGRO",
+"n": "Best Agrolife"
+},
+{
+"s": "BETA",
+"n": "Beta Drugs"
+},
+{
+"s": "BEWLTD",
+"n": "BEW Engineering"
+},
+{
+"s": "BFINVEST",
+"n": "BF Investment"
+},
+{
+"s": "BFSI",
+"n": "Mirae Asset Nifty Fin Serv ETF"
+},
+{
+"s": "BFUTILITIE",
+"n": "BF Utilities"
+},
+{
+"s": "BGRENERGY",
+"n": "BGR Energy Systems"
+},
+{
+"s": "BHADORA",
+"n": "Bhadora Industries"
+},
+{
+"s": "BHAGCHEM",
+"n": "Bhagiradha Chem"
+},
+{
+"s": "BHAGERIA",
+"n": "Bhageria Industries"
+},
+{
+"s": "BHAGYANGR",
+"n": "Bhagyanagar India"
+},
+{
+"s": "BHANDARI",
+"n": "Bhandari Hosiery"
+},
+{
+"s": "BHARATCOAL",
+"n": "Bharat Coking Coal"
+},
+{
+"s": "BHARATFORG",
+"n": "Bharat Forge"
+},
+{
+"s": "BHARATGEAR",
+"n": "Bharat Gears"
+},
+{
+"s": "BHARATRAS",
+"n": "Bharat Rasayan"
+},
+{
+"s": "BHARATSE",
+"n": "Bharat Seats"
+},
+{
+"s": "BHARATWIRE",
+"n": "Bharat Wire Ropes"
+},
+{
+"s": "BHARTIARTL",
+"n": "Bharti Airtel"
+},
+{
+"s": "BHARTIHEXA",
+"n": "Bharti Hexacom"
+},
+{
+"s": "BHEL",
+"n": "BHEL"
+},
+{
+"s": "BI",
+"n": "Bilcare"
+},
+{
+"s": "BIGBLOC",
+"n": "Bigbloc Construction"
+},
+{
+"s": "BIKAJI",
+"n": "Bikaji Foods Inter."
+},
+{
+"s": "BIKEWO",
+"n": "Bikewo Green Tech"
+},
+{
+"s": "BIL",
+"n": "Bhartiya Intl"
+},
+{
+"s": "BILVYAPAR",
+"n": "BIL Vyapa"
+},
+{
+"s": "BIMETAL",
+"n": "Bimetal Bearings"
+},
+{
+"s": "BIOCON",
+"n": "Biocon"
+},
+{
+"s": "BIOFILCHEM",
+"n": "Biofil Chem & Pharma"
+},
+{
+"s": "BIOPOL",
+"n": "Biopol Chemicals"
+},
+{
+"s": "BIRDYS",
+"n": "Grill Splendour Serv"
+},
+{
+"s": "BIRET",
+"n": "Brookfield IndiaReal"
+},
+{
+"s": "BIRLACABLE",
+"n": "Birla Cable"
+},
+{
+"s": "BIRLACORPN",
+"n": "Birla Corporation"
+},
+{
+"s": "BIRLAMONEY",
+"n": "Aditya Birla Money"
+},
+{
+"s": "BIRLANU",
+"n": "BirlaNu"
+},
+{
+"s": "BIRLAPREC",
+"n": "Birla Precision"
+},
+{
+"s": "BLACKBUCK",
+"n": "BlackBuck"
+},
+{
+"s": "BLACKROSE",
+"n": "Black Rose Inds"
+},
+{
+"s": "BLAL",
+"n": "BEML Land Assets"
+},
+{
+"s": "BLBLIMITED",
+"n": "BLB"
+},
+{
+"s": "BLIL",
+"n": "Balmer Lawie Invst"
+},
+{
+"s": "BLISSGVS",
+"n": "Bliss GVS Pharma"
+},
+{
+"s": "BLKASHYAP",
+"n": "BL Kashyap & Sons"
+},
+{
+"s": "BLS",
+"n": "BLS Intl Serv"
+},
+{
+"s": "BLSE",
+"n": "BLS E-Services"
+},
+{
+"s": "BLUECOAST",
+"n": "Blue Coast Hotels"
+},
+{
+"s": "BLUEDART",
+"n": "Blue Dart Express"
+},
+{
+"s": "BLUEJET",
+"n": "Blue Jet Healthcare"
+},
+{
+"s": "BLUEPEBBLE",
+"n": "Blue Pebble Ltd"
+},
+{
+"s": "BLUESTARCO",
+"n": "Blue Star"
+},
+{
+"s": "BLUESTONE",
+"n": "Bluestone Jewellery"
+},
+{
+"s": "BLUEWATER",
+"n": "Blue Water Logistics"
+},
+{
+"s": "BLUSPRING",
+"n": "Bluspring Enterprise"
+},
+{
+"s": "BMETRICS",
+"n": "Bombay Metrics Suppl"
+},
+{
+"s": "BMLL",
+"n": "Bio Medica Laborator"
+},
+{
+"s": "BMWVENTLTD",
+"n": "BMW Ventures"
+},
+{
+"s": "BNAGROCHEM",
+"n": "BN Agrochem"
+},
+{
+"s": "BNALTD",
+"n": "B&A"
+},
+{
+"s": "BODALCHEM",
+"n": "Bodal Chemicals"
+},
+{
+"s": "BOMDYEING",
+"n": "Bombay Dyeing Mfg."
+},
+{
+"s": "BONLON",
+"n": "Bonlon Industries"
+},
+{
+"s": "BORANA",
+"n": "Borana Weaves"
+},
+{
+"s": "BOROLTD",
+"n": "Borosil"
+},
+{
+"s": "BORORENEW",
+"n": "Borosil Renewables"
+},
+{
+"s": "BOROSCI",
+"n": "Borosil Scientific"
+},
+{
+"s": "BOSCH-HCIL",
+"n": "Bosch Home Comfort"
+},
+{
+"s": "BOSCHLTD",
+"n": "Bosch"
+},
+{
+"s": "BOSS",
+"n": "Boss Packaging"
+},
+{
+"s": "BPCL",
+"n": "BPCL"
+},
+{
+"s": "BPL",
+"n": "BPL"
+},
+{
+"s": "BRACEPORT",
+"n": "Brace Port"
+},
+{
+"s": "BRANDMAN",
+"n": "Brandman Retail"
+},
+{
+"s": "BRIGADE",
+"n": "Brigade Enterprises"
+},
+{
+"s": "BRIGHOTEL",
+"n": "Brigade Hotel Ven."
+},
+{
+"s": "BRITANNIA",
+"n": "Britannia Industries"
+},
+{
+"s": "BRNL",
+"n": "Bharat Road Network"
+},
+{
+"s": "BROOKS",
+"n": "Brooks Labs"
+},
+{
+"s": "BSE",
+"n": "BSE"
+},
+{
+"s": "BSHSL",
+"n": "Bombay Hybrid Seeds"
+},
+{
+"s": "BSL",
+"n": "BSL"
+},
+{
+"s": "BSLGOLDETF",
+"n": "BSLGOLDETF"
+},
+{
+"s": "BSLIFQPIDG-MF",
+"n": "BSLIFQPIDG"
+},
+{
+"s": "BSLIQPIIDP-MF",
+"n": "BSLIQPIIDP"
+},
+{
+"s": "BSLIQPIRDP-MF",
+"n": "BSLIQPIRDP"
+},
+{
+"s": "BSLIQPIRG-MF",
+"n": "BSLIQPIRG"
+},
+{
+"s": "BSLNIFTY",
+"n": "BSLNIFTY"
+},
+{
+"s": "BSLSENETFG",
+"n": "BSLSENETFG"
+},
+{
+"s": "BSOFT",
+"n": "Birlasoft"
+},
+{
+"s": "BTML",
+"n": "Bodhi Tree MM"
+},
+{
+"s": "BTTL",
+"n": "Bhilwara Tech Tex"
+},
+{
+"s": "BUILDPRO",
+"n": "Shankara Buildpro"
+},
+{
+"s": "BULKCORP",
+"n": "Bulkcorp Internl"
+},
+{
+"s": "BUTTERFLY",
+"n": "ButterflyGandhimathi"
+},
+{
+"s": "BVCL",
+"n": "Barak Valley Cem"
+},
+{
+"s": "BYKE",
+"n": "Byke Hospitality"
+},
+{
+"s": "CADSYS",
+"n": "Cadsys India"
+},
+{
+"s": "CALSOFT",
+"n": "California Software"
+},
+{
+"s": "CAMLINFINE",
+"n": "Camlin Fine Sciences"
+},
+{
+"s": "CAMPUS",
+"n": "Campus Active"
+},
+{
+"s": "CAMS",
+"n": "Computer Age Man"
+},
+{
+"s": "CANARYS",
+"n": "Canarys Automations"
+},
+{
+"s": "CANBK",
+"n": "Canara Bank"
+},
+{
+"s": "CANFINHOME",
+"n": "Can Fin Homes"
+},
+{
+"s": "CANHLIFE",
+"n": "Canara HSBC Life Ins"
+},
+{
+"s": "CANTABIL",
+"n": "Cantabil Retail"
+},
+{
+"s": "CAPACITE",
+"n": "Capacite Infra"
+},
+{
+"s": "CAPILLARY",
+"n": "Capillary Techno Ind"
+},
+{
+"s": "CAPINVIT",
+"n": "Capital Infra"
+},
+{
+"s": "CAPITALSFB",
+"n": "Capital Small Fin."
+},
+{
+"s": "CAPLIPOINT",
+"n": "Caplin Point Labs"
+},
+{
+"s": "CAPTRUST",
+"n": "Capital Trust"
+},
+{
+"s": "CARBORUNIV",
+"n": "Carborundum Univer."
+},
+{
+"s": "CARERATING",
+"n": "CARE Ratings"
+},
+{
+"s": "CARRARO",
+"n": "Carraro India"
+},
+{
+"s": "CARTRADE",
+"n": "Cartrade Tech"
+},
+{
+"s": "CARYSIL",
+"n": "Carysil"
+},
+{
+"s": "CASHIETF",
+"n": "CASHIETF"
+},
+{
+"s": "CASTROLIND",
+"n": "Castrol India"
+},
+{
+"s": "CBAZAAR",
+"n": "Net Avenue Tech."
+},
+{
+"s": "CCAVENUE",
+"n": "AvenuesAI"
+},
+{
+"s": "CCCL",
+"n": "Consolidated Const"
+},
+{
+"s": "CCHHL",
+"n": "Country Club"
+},
+{
+"s": "CCL",
+"n": "CCL Products India"
+},
+{
+"s": "CDSL",
+"n": "Central Dep. Service"
+},
+{
+"s": "CEATLTD",
+"n": "CEAT"
+},
+{
+"s": "CEDAAR",
+"n": "Cedaar Textile"
+},
+{
+"s": "CEIGALL",
+"n": "Ceigall India"
+},
+{
+"s": "CEINSYS",
+"n": "Ceinsys Tech"
+},
+{
+"s": "CELEBRITY",
+"n": "Celebrity Fashion"
+},
+{
+"s": "CELLECOR",
+"n": "Cellecor Gadgets"
+},
+{
+"s": "CELLO",
+"n": "Cello World"
+},
+{
+"s": "CELLPOINT",
+"n": "Cell Point (India)"
+},
+{
+"s": "CEMPRO",
+"n": "Cemindia Projects"
+},
+{
+"s": "CENTENKA",
+"n": "Century Enka"
+},
+{
+"s": "CENTEXT",
+"n": "Century Extrusions"
+},
+{
+"s": "CENTRALBK",
+"n": "Central Bank of India"
+},
+{
+"s": "CENTRUM",
+"n": "Centrum Capital"
+},
+{
+"s": "CENTUM",
+"n": "Centum Electronics"
+},
+{
+"s": "CENTURYPLY",
+"n": "Century Plyboard"
+},
+{
+"s": "CERA",
+"n": "Cera Sanitaryware"
+},
+{
+"s": "CEREBRAINT",
+"n": "Cerebra Intg Tech"
+},
+{
+"s": "CESC",
+"n": "CESC"
+},
+{
+"s": "CEWATER",
+"n": "Concord Enviro Sys."
+},
+{
+"s": "CGCL",
+"n": "Capri Global Capital"
+},
+{
+"s": "CGPOWER",
+"n": "CG Power & Inds"
+},
+{
+"s": "CGRAPHICS",
+"n": "Creative Graphic Sol"
+},
+{
+"s": "CHALET",
+"n": "Chalet Hotels"
+},
+{
+"s": "CHAMBLFERT",
+"n": "Chambal Fertilisers"
+},
+{
+"s": "CHAMUNDA",
+"n": "Chamunda Electrical"
+},
+{
+"s": "CHANDAN",
+"n": "Chandan Healthcare"
+},
+{
+"s": "CHAVDA",
+"n": "Chavda Infra"
+},
+{
+"s": "CHEMBOND",
+"n": "Chembond Mat.Techno"
+},
+{
+"s": "CHEMBONDCH",
+"n": "Chembond Chemicals"
+},
+{
+"s": "CHEMCON",
+"n": "Chemcon Speciality"
+},
+{
+"s": "CHEMFAB",
+"n": "Chemfab Alkalis"
+},
+{
+"s": "CHEMICAL",
+"n": "CHEMICAL"
+},
+{
+"s": "CHEMPLASTS",
+"n": "Chemplast Sanmar"
+},
+{
+"s": "CHENNPETRO",
+"n": "Chennai Petro Corp"
+},
+{
+"s": "CHETANA",
+"n": "Chetana Education"
+},
+{
+"s": "CHEVIOT",
+"n": "Cheviot Co"
+},
+{
+"s": "CHOICEGOLD",
+"n": "CHOICEGOLD"
+},
+{
+"s": "CHOICEIN",
+"n": "Choice Intl"
+},
+{
+"s": "CHOLAFIN",
+"n": "Cholamandalam Invest"
+},
+{
+"s": "CHOLAHLDNG",
+"n": "Cholamandalam Fin."
+},
+{
+"s": "CIEINDIA",
+"n": "CIE Automotive India"
+},
+{
+"s": "CIFL",
+"n": "Capital India Finance"
+},
+{
+"s": "CINELINE",
+"n": "Cineline India"
+},
+{
+"s": "CINEVISTA",
+"n": "Cinevista"
+},
+{
+"s": "CIPLA",
+"n": "Cipla"
+},
+{
+"s": "CITIUSINVT",
+"n": "Citius Transnet Inve"
+},
+{
+"s": "CKKRETAIL",
+"n": "CKK Retail Mart"
+},
+{
+"s": "CLASSICEIL",
+"n": "Classic Electrodes"
+},
+{
+"s": "CLEAN",
+"n": "Clean Science"
+},
+{
+"s": "CLEANMAX",
+"n": "Clean Max Env. Energ"
+},
+{
+"s": "CLEDUCATE",
+"n": "CL Educate"
+},
+{
+"s": "CLSEL",
+"n": "Chaman L S Exports"
+},
+{
+"s": "CLSL",
+"n": "Crop Life Science"
+},
+{
+"s": "CMNL",
+"n": "Chaman Metallics"
+},
+{
+"s": "CMPDI",
+"n": "Central Mine Planning & Design Inst"
+},
+{
+"s": "CMRGREEN",
+"n": "CMR Green Tech"
+},
+{
+"s": "CMRSL",
+"n": "Cyber Media Research"
+},
+{
+"s": "CMSINFO",
+"n": "CMS Info Systems"
+},
+{
+"s": "CNL",
+"n": "Creative Peripherals"
+},
+{
+"s": "COALINDIA",
+"n": "Coal India"
+},
+{
+"s": "COASTCORP",
+"n": "Coastal Corporation"
+},
+{
+"s": "COCHINSHIP",
+"n": "Cochin Shipyard"
+},
+{
+"s": "COCKERILL",
+"n": "John Cockerill India"
+},
+{
+"s": "COFFEEDAY",
+"n": "Coffee Day Entr"
+},
+{
+"s": "COFORGE",
+"n": "Coforge"
+},
+{
+"s": "COHANCE",
+"n": "Cohance Lifesciences"
+},
+{
+"s": "COLPAL",
+"n": "Colgate-Palmolive"
+},
+{
+"s": "COMFINTE",
+"n": "Comfort Intech"
+},
+{
+"s": "COMMITTED",
+"n": "Committed Cargo Care"
+},
+{
+"s": "COMMOIETF",
+"n": "COMMOIETF"
+},
+{
+"s": "COMPINFO",
+"n": "Compuage Infocom"
+},
+{
+"s": "COMPUSOFT",
+"n": "Compucom Software"
+},
+{
+"s": "COMSYN",
+"n": "COMSYN"
+},
+{
+"s": "CONCOR",
+"n": "Container Corp"
+},
+{
+"s": "CONCORDBIO",
+"n": "Concord Biotech"
+},
+{
+"s": "CONFIPET",
+"n": "Confidence Petro"
+},
+{
+"s": "CONNPLEX",
+"n": "Connplex Cinemas"
+},
+{
+"s": "CONS",
+"n": "KOTAKCONS"
+},
+{
+"s": "CONSOFINVT",
+"n": "Consolidated Finvest"
+},
+{
+"s": "CONSUMBEES",
+"n": "Nippon India ETF Consumption"
+},
+{
+"s": "CONSUMER",
+"n": "Mirae Asset Nifty In"
+},
+{
+"s": "CONSUMIETF",
+"n": "CONSUMIETF"
+},
+{
+"s": "CONTI",
+"n": "Continental Seeds"
+},
+{
+"s": "CONTROLPR",
+"n": "Control Print"
+},
+{
+"s": "COOLCAPS",
+"n": "Cool Caps Indus"
+},
+{
+"s": "CORALFINAC",
+"n": "Coral India Finance"
+},
+{
+"s": "CORDSCABLE",
+"n": "Cords Cable Inds"
+},
+{
+"s": "COROMANDEL",
+"n": "Coromandel Intl"
+},
+{
+"s": "CORONA",
+"n": "CORONA Remedies"
+},
+{
+"s": "COSMOFIRST",
+"n": "Cosmo First"
+},
+{
+"s": "COUNCODOS",
+"n": "Country Condo's"
+},
+{
+"s": "CPCAP",
+"n": "CP Capital"
+},
+{
+"s": "CPEDU",
+"n": "Career Point Edutech"
+},
+{
+"s": "CPPLUS",
+"n": "Aditya Infotech"
+},
+{
+"s": "CPS",
+"n": "CPS Shapers"
+},
+{
+"s": "CPSEETF",
+"n": "CPSE ETF"
+},
+{
+"s": "CRAFTSMAN",
+"n": "Craftsman Automation"
+},
+{
+"s": "CRAMC",
+"n": "Canara Robeco Asset"
+},
+{
+"s": "CRAYONS",
+"n": "Crayons Advertis"
+},
+{
+"s": "CREATIVEYE",
+"n": "Creative Eye"
+},
+{
+"s": "CREDITACC",
+"n": "CreditAccess Grameen"
+},
+{
+"s": "CREST",
+"n": "Crest Ventures"
+},
+{
+"s": "CRISIL",
+"n": "CRISIL"
+},
+{
+"s": "CRIZAC",
+"n": "Crizac"
+},
+{
+"s": "CROMPTON",
+"n": "Crompton Greaves"
+},
+{
+"s": "CROWN",
+"n": "Crown Lifters"
+},
+{
+"s": "CSBBANK",
+"n": "CSB Bank"
+},
+{
+"s": "CSLFINANCE",
+"n": "CSL Finance"
+},
+{
+"s": "CSSL",
+"n": "Clear Secured"
+},
+{
+"s": "CTE",
+"n": "Cambridge Tech"
+},
+{
+"s": "CUB",
+"n": "City Union Bank"
+},
+{
+"s": "CUBEXTUB",
+"n": "Cubex Tubings"
+},
+{
+"s": "CUDML",
+"n": "Cash UR Drive Market"
+},
+{
+"s": "CUMMINSIND",
+"n": "Cummins India"
+},
+{
+"s": "CUPID",
+"n": "Cupid"
+},
+{
+"s": "CURAA",
+"n": "CURA Technologies"
+},
+{
+"s": "CURIS",
+"n": "Curis Lifesciences"
+},
+{
+"s": "CURRENT",
+"n": "Current Infraproject"
+},
+{
+"s": "CYBERMEDIA",
+"n": "Cyber Media India"
+},
+{
+"s": "CYBERTECH",
+"n": "Cybertech Systems"
+},
+{
+"s": "CYIENT",
+"n": "Cyient"
+},
+{
+"s": "CYIENTDLM",
+"n": "Cyient DLM"
+},
+{
+"s": "DABUR",
+"n": "Dabur India"
+},
+{
+"s": "DAICHI",
+"n": "Dai Ichi Karkaria"
+},
+{
+"s": "DALBHARAT",
+"n": "Dalmia Bharat"
+},
+{
+"s": "DALMIASUG",
+"n": "Dalmia Bharat Inds"
+},
+{
+"s": "DAMCAPITAL",
+"n": "DAM Capital Advi"
+},
+{
+"s": "DAMODARIND",
+"n": "Damodar Industries"
+},
+{
+"s": "DANGEE",
+"n": "Dangee Dums"
+},
+{
+"s": "DANISH",
+"n": "Danish Power"
+},
+{
+"s": "DATAMATICS",
+"n": "Datamatic Global Ser"
+},
+{
+"s": "DATAPATTNS",
+"n": "Data Patterns (I)"
+},
+{
+"s": "DAVANGERE",
+"n": "Davangere Sugar Co"
+},
+{
+"s": "DBCORP",
+"n": "DB Corp"
+},
+{
+"s": "DBEIL",
+"n": "Deepak Builders"
+},
+{
+"s": "DBL",
+"n": "Dilip Buildcon"
+},
+{
+"s": "DBOL",
+"n": "Dhampur Bio Organics"
+},
+{
+"s": "DBREALTY",
+"n": "Valor Estate"
+},
+{
+"s": "DBSTOCKBRO",
+"n": "DB Stock Brokers"
+},
+{
+"s": "DCAL",
+"n": "Dishman Carbogen"
+},
+{
+"s": "DCBBANK",
+"n": "DCB Bank"
+},
+{
+"s": "DCCL",
+"n": "DAR Credit & Capital"
+},
+{
+"s": "DCG",
+"n": "DCG Cables & Wires"
+},
+{
+"s": "DCI",
+"n": "DC Infotech & Comm"
+},
+{
+"s": "DCM",
+"n": "DCM"
+},
+{
+"s": "DCMFINSERV",
+"n": "DCM Financial Serv"
+},
+{
+"s": "DCMNVL",
+"n": "DCM Nouvelle"
+},
+{
+"s": "DCMSHRIRAM",
+"n": "DCM Shriram"
+},
+{
+"s": "DCMSIL",
+"n": "DCM Shriram Internat"
+},
+{
+"s": "DCMSRIND",
+"n": "DCM Shriram Inds."
+},
+{
+"s": "DCW",
+"n": "DCW"
+},
+{
+"s": "DCXINDIA",
+"n": "DCX Systems"
+},
+{
+"s": "DDEVPLSTIK",
+"n": "Ddev Plastiks Ind."
+},
+{
+"s": "DECCANCE",
+"n": "Deccan Cements"
+},
+{
+"s": "DECCANTRAN",
+"n": "Deccan Transcon Leas"
+},
+{
+"s": "DECNGOLD",
+"n": "Deccan Gold Mines"
+},
+{
+"s": "DEEDEV",
+"n": "Dee Development Eng."
+},
+{
+"s": "DEEM",
+"n": "Deem Roll-Tech"
+},
+{
+"s": "DEEPAKFERT",
+"n": "Deepak Fert & Petro"
+},
+{
+"s": "DEEPAKNTR",
+"n": "Deepak Nitrite"
+},
+{
+"s": "DEEPINDS",
+"n": "Deep Industries"
+},
+{
+"s": "DEFENCE",
+"n": "DEFENCE"
+},
+{
+"s": "DELAPLEX",
+"n": "Delaplex"
+},
+{
+"s": "DELHIVERY",
+"n": "Delhivery"
+},
+{
+"s": "DELPHIFX",
+"n": "Ebixcash World"
+},
+{
+"s": "DELTACORP",
+"n": "Delta Corp"
+},
+{
+"s": "DELTAMAGNT",
+"n": "Delta Manufacturing"
+},
+{
+"s": "DELTIC",
+"n": "Delta Autocorp"
+},
+{
+"s": "DEN",
+"n": "DEN Networks"
+},
+{
+"s": "DENEERS",
+"n": "DE Neers Tools"
+},
+{
+"s": "DENORA",
+"n": "De Nora India"
+},
+{
+"s": "DENTA",
+"n": "Denta Water And Inf"
+},
+{
+"s": "DENTALKART",
+"n": "Vasa Denticity"
+},
+{
+"s": "DESTINY",
+"n": "Destiny Logi & Infra"
+},
+{
+"s": "DEVIT",
+"n": "Dev It"
+},
+{
+"s": "DEVX",
+"n": "Dev Accelerator"
+},
+{
+"s": "DEVYANI",
+"n": "Devyani"
+},
+{
+"s": "DGCONTENT",
+"n": "Digicontent"
+},
+{
+"s": "DHAMPURSUG",
+"n": "Dhampur Sugar Mills"
+},
+{
+"s": "DHANBANK",
+"n": "Dhanlaxmi Bank"
+},
+{
+"s": "DHANLAXMI",
+"n": "Dhanlaxmi Crop Scien"
+},
+{
+"s": "DHANSA",
+"n": "Dhansa Labs"
+},
+{
+"s": "DHANUKA",
+"n": "Dhanuka Agritech"
+},
+{
+"s": "DHARAN",
+"n": "Dharan Infra-EPC"
+},
+{
+"s": "DHARARAIL",
+"n": "Dhara Rail Projects"
+},
+{
+"s": "DHARIWAL",
+"n": "Dhariwalcorp"
+},
+{
+"s": "DHARMAJ",
+"n": "Dharmaj Crop Guard"
+},
+{
+"s": "DHRUV",
+"n": "Dhruv Consultancy"
+},
+{
+"s": "DHTL",
+"n": "Docmode Health Tech"
+},
+{
+"s": "DHUNINV",
+"n": "Dhunseri Investments"
+},
+{
+"s": "DIACABS",
+"n": "Diamond Power Infra"
+},
+{
+"s": "DIAMINESQ",
+"n": "Diamines & Chemicals"
+},
+{
+"s": "DIAMONDYD",
+"n": "Prataap Snacks"
+},
+{
+"s": "DICIND",
+"n": "DIC India"
+},
+{
+"s": "DIFFNKG",
+"n": "Diffusion Engineers"
+},
+{
+"s": "DIGIDRIVE",
+"n": "Digidrive Distribut"
+},
+{
+"s": "DIGIKORE",
+"n": "Digikore Studios"
+},
+{
+"s": "DIGISPICE",
+"n": "Digispice Tech"
+},
+{
+"s": "DIGITIDE",
+"n": "Digitide Solutions"
+},
+{
+"s": "DIGJAMLMTD",
+"n": "DIGJAM"
+},
+{
+"s": "DIRL",
+"n": "Dhanuka Infra Realty"
+},
+{
+"s": "DISAQ",
+"n": "DISA India"
+},
+{
+"s": "DISHTV",
+"n": "Dish TV India"
+},
+{
+"s": "DIVGIITTS",
+"n": "Divgi Torqtransfer"
+},
+{
+"s": "DIVIDEND",
+"n": "DIVIDEND"
+},
+{
+"s": "DIVINEHIRA",
+"n": "Divine Hira Jeweller"
+},
+{
+"s": "DIVISLAB",
+"n": "Divi's Labs"
+},
+{
+"s": "DIVOPPBEES",
+"n": "Nippon India ETF Dividend Opps"
+},
+{
+"s": "DIVYADHAN",
+"n": "Divyadhan Recycling"
+},
+{
+"s": "DIXON",
+"n": "Dixon Technologies"
+},
+{
+"s": "DJML",
+"n": "DJ Mediaprint & Logi"
+},
+{
+"s": "DKEGL",
+"n": "DK Enterprises"
+},
+{
+"s": "DLF",
+"n": "DLF"
+},
+{
+"s": "DLINKINDIA",
+"n": "D-Link (India)"
+},
+{
+"s": "DMART",
+"n": "Avenue Supermarts"
+},
+{
+"s": "DMCC",
+"n": "DMCC Speciality Chem"
+},
+{
+"s": "DNAMEDIA",
+"n": "Diligent Media Co"
+},
+{
+"s": "DODLA",
+"n": "Dodla Dairy"
+},
+{
+"s": "DOLATALGO",
+"n": "Dolat Algotech"
+},
+{
+"s": "DOLLAR",
+"n": "Dollar Industries"
+},
+{
+"s": "DOLLEX",
+"n": "Dollex Agrotech"
+},
+{
+"s": "DOLPHIN",
+"n": "Dolphin Enterprise"
+},
+{
+"s": "DOMS",
+"n": "DOMS Industries"
+},
+{
+"s": "DONEAR",
+"n": "Donear Industries"
+},
+{
+"s": "DPABHUSHAN",
+"n": "DP Abhushan"
+},
+{
+"s": "DPEL",
+"n": "Divine Power Energy"
+},
+{
+"s": "DPSCLTD",
+"n": "India Power Corp"
+},
+{
+"s": "DPWIRES",
+"n": "DP Wires"
+},
+{
+"s": "DRAGARWQ",
+"n": "Dr Agarwal's Hosp"
+},
+{
+"s": "DRCSYSTEMS",
+"n": "DRC Systems"
+},
+{
+"s": "DREAMFOLKS",
+"n": "Dreamfolks Services"
+},
+{
+"s": "DREDGECORP",
+"n": "Dredging Corporation"
+},
+{
+"s": "DRONE",
+"n": "Drone Destination"
+},
+{
+"s": "DRREDDY",
+"n": "Dr Reddy's Labs"
+},
+{
+"s": "DRSCARGO",
+"n": "DRS Cargo Movers"
+},
+{
+"s": "DRSDILIP",
+"n": "DRS Dilip Roadline"
+},
+{
+"s": "DSFCL",
+"n": "DCM Shriram Fine Che"
+},
+{
+"s": "DSSL",
+"n": "Dynacons Systems"
+},
+{
+"s": "DTIL",
+"n": "Dhunseri Tea"
+},
+{
+"s": "DTL",
+"n": "Diensten Tech"
+},
+{
+"s": "DUCOL",
+"n": "Ducol Organic&Colour"
+},
+{
+"s": "DUCON",
+"n": "Ducon Infratech"
+},
+{
+"s": "DUGLOBAL",
+"n": "DU Digital"
+},
+{
+"s": "DURLAX",
+"n": "Durlax Top Surface"
+},
+{
+"s": "DVL",
+"n": "Dhunseri Ventures"
+},
+{
+"s": "DWARKESH",
+"n": "Dwarikesh Sugar"
+},
+{
+"s": "DYCL",
+"n": "Dynamic Cables"
+},
+{
+"s": "DYNAMATECH",
+"n": "Dynamatic Tech"
+},
+{
+"s": "DYNAMIC",
+"n": "Dynamic Services & Security"
+},
+{
+"s": "DYNPRO",
+"n": "Dynemic Products"
+},
+{
+"s": "EASEMYTRIP",
+"n": "EaseMyTrip"
+},
+{
+"s": "EASTSILK",
+"n": "Eastern Silk Inds"
+},
+{
+"s": "EBANKNIFTY",
+"n": "EBANKNIFTY"
+},
+{
+"s": "EBGNG",
+"n": "GNG Electronics"
+},
+{
+"s": "ECAPINSURE",
+"n": "Edelweiss BSE Capita"
+},
+{
+"s": "ECLERX",
+"n": "eClerx Services"
+},
+{
+"s": "ECOLINE",
+"n": "Ecoline Exim"
+},
+{
+"s": "ECOSMOBLTY",
+"n": "Ecos India Mob Hosp."
+},
+{
+"s": "EDELWEISS",
+"n": "Edelweiss Financial Services"
+},
+{
+"s": "EEPL",
+"n": "Eppeltone Engineers"
+},
+{
+"s": "EFACTOR",
+"n": "E Factor Experie"
+},
+{
+"s": "EFCIL",
+"n": "EFC (I)"
+},
+{
+"s": "EFFWA",
+"n": "Effwa Infra & Resear"
+},
+{
+"s": "EFORCE",
+"n": "Electro Force(India)"
+},
+{
+"s": "EGOLD",
+"n": "EGOLD"
+},
+{
+"s": "EICHERMOT",
+"n": "Eicher Motors"
+},
+{
+"s": "EIDPARRY",
+"n": "EID-Parry India"
+},
+{
+"s": "EIEL",
+"n": "Enviro Infra Engine."
+},
+{
+"s": "EIFFL",
+"n": "Euro India Fresh Foods"
+},
+{
+"s": "EIHAHOTELS",
+"n": "EIH Associated Hotel"
+},
+{
+"s": "EIHOTEL",
+"n": "EIH"
+},
+{
+"s": "EIMCOELECO",
+"n": "Eimco Elecon India"
+},
+{
+"s": "EKC",
+"n": "Everest Kanto"
+},
+{
+"s": "ELANTAS",
+"n": "ELANTAS Beck India"
+},
+{
+"s": "ELCIDIN",
+"n": "Elcid Investments"
+},
+{
+"s": "ELDEHSG",
+"n": "EHIL"
+},
+{
+"s": "ELECON",
+"n": "Elecon Engg Co"
+},
+{
+"s": "ELECTCAST",
+"n": "Electrosteel Castings"
+},
+{
+"s": "ELECTHERM",
+"n": "Electrotherm India"
+},
+{
+"s": "ELGIEQUIP",
+"n": "Elgi Equipments"
+},
+{
+"s": "ELGIRUBCO",
+"n": "ELGI Rubber Co"
+},
+{
+"s": "ELGNZ",
+"n": "Eleganz Interiors"
+},
+{
+"s": "ELIN",
+"n": "Elin Electronics"
+},
+{
+"s": "ELIQUID",
+"n": "ELIQUID"
+},
+{
+"s": "ELITECON",
+"n": "Elitecon Intl"
+},
+{
+"s": "ELLEN",
+"n": "Ellenbarrie Indl.Gas"
+},
+{
+"s": "ELPROINTL",
+"n": "Elpro International"
+},
+{
+"s": "EMAMILTD",
+"n": "Emami"
+},
+{
+"s": "EMAMIPAP",
+"n": "Emami Paper Mills"
+},
+{
+"s": "EMAMIREAL",
+"n": "Emami Realty"
+},
+{
+"s": "EMAPARTNER",
+"n": "EMA Partners India"
+},
+{
+"s": "EMBASSY",
+"n": "Embassy Office REIT"
+},
+{
+"s": "EMBDL",
+"n": "Embassy Developments"
+},
+{
+"s": "EMCURE",
+"n": "Emcure Pharma"
+},
+{
+"s": "EMIL",
+"n": "Electronics Mart Ind"
+},
+{
+"s": "EMKAY",
+"n": "EmkayGlobal Finl.Ser"
+},
+{
+"s": "EMKAYTOOLS",
+"n": "Emkay Taps & Cutting"
+},
+{
+"s": "EMMBI",
+"n": "Emmbi Industries"
+},
+{
+"s": "EMMIL",
+"n": "Energy-Mission"
+},
+{
+"s": "EMMVEE",
+"n": "Emmvee Photovoltaic"
+},
+{
+"s": "EMPOWER",
+"n": "Empower India"
+},
+{
+"s": "EMSLIMITED",
+"n": "EMS"
+},
+{
+"s": "EMUDHRA",
+"n": "eMudhra"
+},
+{
+"s": "EMULTIMQ",
+"n": "EDELAMC - EMULTIMQ"
+},
+{
+"s": "ENCOMPAS",
+"n": "Encompass Design Ind"
+},
+{
+"s": "ENDURANCE",
+"n": "Endurance Tech"
+},
+{
+"s": "ENERGY",
+"n": "ENERGY"
+},
+{
+"s": "ENERGYDEV",
+"n": "Energy Development Co"
+},
+{
+"s": "ENFUSE",
+"n": "Enfuse Solutions Ltd"
+},
+{
+"s": "ENGINERSIN",
+"n": "Engineers India"
+},
+{
+"s": "ENIFTY",
+"n": "Edelweiss Nifty 50"
+},
+{
+"s": "ENIL",
+"n": "Entertainment Network"
+},
+{
+"s": "ENRIN",
+"n": "Siemens Energy India"
+},
+{
+"s": "ENSER",
+"n": "Enser Communications Ltd"
+},
+{
+"s": "ENTERO",
+"n": "Entero Healthcare"
+},
+{
+"s": "ENVIRO",
+"n": "Envirotech Systems"
+},
+{
+"s": "EPACK",
+"n": "EPACK Durable"
+},
+{
+"s": "EPACKPEB",
+"n": "EPack Prefab Techno."
+},
+{
+"s": "EPIGRAL",
+"n": "Epigral Ltd"
+},
+{
+"s": "EPL",
+"n": "EPL"
+},
+{
+"s": "EPWINDIA",
+"n": "EPW India"
+},
+{
+"s": "EQUIPPP",
+"n": "Equippp Social"
+},
+{
+"s": "EQUITASBNK",
+"n": "Equitas Small Fin"
+},
+{
+"s": "ERIS",
+"n": "Eris Lifesciences"
+},
+{
+"s": "ESABINDIA",
+"n": "Esab india"
+},
+{
+"s": "ESAFSFB",
+"n": "ESAF Small Finance"
+},
+{
+"s": "ESCONET",
+"n": "Esconet Technologies"
+},
+{
+"s": "ESCORTS",
+"n": "Escorts"
+},
+{
+"s": "ESENSEX",
+"n": "ESENSEX"
+},
+{
+"s": "ESFL",
+"n": "Essen Speciality Fi"
+},
+{
+"s": "ESG",
+"n": "MAESGETF"
+},
+{
+"s": "ESILVER",
+"n": "ESILVER"
+},
+{
+"s": "ESPRIT",
+"n": "Esprit Stones"
+},
+{
+"s": "ESSARSHPNG",
+"n": "Essar Shipping"
+},
+{
+"s": "ESSENTIA",
+"n": "Integra Essentia"
+},
+{
+"s": "ESTER",
+"n": "Ester Industries"
+},
+{
+"s": "ETERNAL",
+"n": "Eternal (Zomato)"
+},
+{
+"s": "ETHOSLTD",
+"n": "Ethos"
+},
+{
+"s": "ETL",
+"n": "Emkay Tools"
+},
+{
+"s": "ETML",
+"n": "Emerald Tyre Manufac"
+},
+{
+"s": "EUREKAFORB",
+"n": "Eureka Forbes"
+},
+{
+"s": "EUROBOND",
+"n": "Euro Panel Products"
+},
+{
+"s": "EUROPRATIK",
+"n": "Euro Pratik Sales"
+},
+{
+"s": "EUROTEXIND",
+"n": "Eurotex Industries"
+},
+{
+"s": "EVEREADY",
+"n": "Eveready Industries"
+},
+{
+"s": "EVERESTIND",
+"n": "Everest Industries"
+},
+{
+"s": "EVIETF",
+"n": "EVIETF"
+},
+{
+"s": "EVINDIA",
+"n": "EVINDIA"
+},
+{
+"s": "EXCELINDUS",
+"n": "Excel Industries"
+},
+{
+"s": "EXCELLENT",
+"n": "Excellent Wires"
+},
+{
+"s": "EXCELSOFT",
+"n": "Excelsoft Technologi"
+},
+{
+"s": "EXICOM",
+"n": "Exicom Tele-Systems"
+},
+{
+"s": "EXIDEIND",
+"n": "Exide Industries"
+},
+{
+"s": "EXIMROUTES",
+"n": "Exim Routes"
+},
+{
+"s": "EXPLEOSOL",
+"n": "Expleo Solutions"
+},
+{
+"s": "EXXARO",
+"n": "Exxaro Tiles"
+},
+{
+"s": "FABTECH",
+"n": "Fabtech Technologies"
+},
+{
+"s": "FACT",
+"n": "Fert & Chem Travan"
+},
+{
+"s": "FAIRCHEMOR",
+"n": "Fairchem Organics"
+},
+{
+"s": "FALCONTECH",
+"n": "Falcon Technoproject"
+},
+{
+"s": "FCL",
+"n": "Fineotex Chemical"
+},
+{
+"s": "FCSSOFT",
+"n": "FCS Software Soln"
+},
+{
+"s": "FDC",
+"n": "FDC"
+},
+{
+"s": "FEDDERSHOL",
+"n": "Fedders Holding"
+},
+{
+"s": "FEDERALBNK",
+"n": "The Federal Bank"
+},
+{
+"s": "FEDFINA",
+"n": "Fedbank Financial"
+},
+{
+"s": "FEL",
+"n": "Future Enterprises"
+},
+{
+"s": "FELDVR",
+"n": "Future Enter.-B-DVR"
+},
+{
+"s": "FELIX",
+"n": "Felix Industries"
+},
+{
+"s": "FERMENTA",
+"n": "Fermenta Biotech"
+},
+{
+"s": "FIBERWEB",
+"n": "Fiberweb"
+},
+{
+"s": "FIDEL",
+"n": "Fidel Softech"
+},
+{
+"s": "FIEMIND",
+"n": "Fiem Inds"
+},
+{
+"s": "FILATEX",
+"n": "Filatex India"
+},
+{
+"s": "FILATFASH",
+"n": "Filatex Fashions"
+},
+{
+"s": "FINBUD",
+"n": "Finbud Financial"
+},
+{
+"s": "FINCABLES",
+"n": "Finolex Cables"
+},
+{
+"s": "FINEORG",
+"n": "Fine Organic Inds."
+},
+{
+"s": "FINIETF",
+"n": "ICICIFIN"
+},
+{
+"s": "FINKURVE",
+"n": "Finkurve Financial"
+},
+{
+"s": "FINOPB",
+"n": "Fino Payments Bk"
+},
+{
+"s": "FINPIPE",
+"n": "Finolex Industries"
+},
+{
+"s": "FIRSTCRY",
+"n": "Brainbees Solutions"
+},
+{
+"s": "FISCHER",
+"n": "Fischer Medical"
+},
+{
+"s": "FIVESTAR",
+"n": "Five Star Business"
+},
+{
+"s": "FLAIR",
+"n": "Flair Writing Indu."
+},
+{
+"s": "FLEXIADD",
+"n": "FLEXIADD"
+},
+{
+"s": "FLEXITUFF",
+"n": "Flexituff Ventures"
+},
+{
+"s": "FLFL",
+"n": "Future Lifestyle"
+},
+{
+"s": "FLUOROCHEM",
+"n": "Gujarat Fluorochem"
+},
+{
+"s": "FLYSBS",
+"n": "FlySBS Aviation"
+},
+{
+"s": "FMCGADD",
+"n": "DSP Nifty FMCG ETF"
+},
+{
+"s": "FMCGIETF",
+"n": "ICICIFMCG"
+},
+{
+"s": "FMGOETZE",
+"n": "Federal-Mogul Goetze"
+},
+{
+"s": "FMNL",
+"n": "Future Market Netw"
+},
+{
+"s": "FOCE",
+"n": "Foce India"
+},
+{
+"s": "FOCUS",
+"n": "Focus Lighting"
+},
+{
+"s": "FONEBOX",
+"n": "Fonebox Retail"
+},
+{
+"s": "FOODSIN",
+"n": "Foods and Inns"
+},
+{
+"s": "FORCAS",
+"n": "Forcas Studio"
+},
+{
+"s": "FORCEMOT",
+"n": "Force Motors"
+},
+{
+"s": "FORGEAUTO",
+"n": "Forge Auto Intern"
+},
+{
+"s": "FORTIS",
+"n": "Fortis Healthcare"
+},
+{
+"s": "FOSECOIND",
+"n": "Foseco India"
+},
+{
+"s": "FRACTAL",
+"n": "Fractal Analytics"
+},
+{
+"s": "FRESHARA",
+"n": "Freshara Agro Export"
+},
+{
+"s": "FROG",
+"n": "Frog Innovations"
+},
+{
+"s": "FRONTSP",
+"n": "Frontier Springs"
+},
+{
+"s": "FSL",
+"n": "Firstsource Solution"
+},
+{
+"s": "FUSION",
+"n": "Fusion Finance"
+},
+{
+"s": "FWSTC",
+"n": "Flywings Simulator"
+},
+{
+"s": "GABRIEL",
+"n": "Gabriel India"
+},
+{
+"s": "GAEL",
+"n": "Gujarat Ambuja Exp"
+},
+{
+"s": "GAIL",
+"n": "GAIL (India)"
+},
+{
+"s": "GAJANAND",
+"n": "Gajanand Internat."
+},
+{
+"s": "GALAPREC",
+"n": "Gala Precision Engi."
+},
+{
+"s": "GALAXYSURF",
+"n": "Galaxy Surfactants"
+},
+{
+"s": "GALLANTT",
+"n": "Gallantt Ispat"
+},
+{
+"s": "GANDHAR",
+"n": "Gandhar Oil Refinery"
+},
+{
+"s": "GANDHITUBE",
+"n": "Gandhi Special Tubes"
+},
+{
+"s": "GANECOS",
+"n": "Ganesha Ecosphere"
+},
+{
+"s": "GANESHBE",
+"n": "Ganesh Benzoplast"
+},
+{
+"s": "GANESHCP",
+"n": "Ganesh Consumer Prod"
+},
+{
+"s": "GANESHHOU",
+"n": "Ganesh Housing"
+},
+{
+"s": "GANESHIN",
+"n": "Ganesh Infraworld"
+},
+{
+"s": "GANGABATH",
+"n": "Ganga Bath Fittings"
+},
+{
+"s": "GANGAFORGE",
+"n": "Ganga Forging"
+},
+{
+"s": "GANGESSECU",
+"n": "Ganges Securities"
+},
+{
+"s": "GARFIBRES",
+"n": "Garware Tech Fibre"
+},
+{
+"s": "GARUDA",
+"n": "Garuda Const. & Eng."
+},
+{
+"s": "GATECH",
+"n": "GACM Technologies"
+},
+{
+"s": "GATECHDVR",
+"n": "SCAPDVR"
+},
+{
+"s": "GATEWAY",
+"n": "Gateway Distri"
+},
+{
+"s": "GAUDIUMIVF",
+"n": "Gaudium IVF & Women"
+},
+{
+"s": "GAYAHWS",
+"n": "Gayatri Highways"
+},
+{
+"s": "GAYAPROJ",
+"n": "Gayatri Projects"
+},
+{
+"s": "GCHOTELS",
+"n": "Grand Continent"
+},
+{
+"s": "GCSL",
+"n": "Gretex Corporate"
+},
+{
+"s": "GEECEE",
+"n": "GeeCee Vntrs"
+},
+{
+"s": "GEEKAYWIRE",
+"n": "Geekay Wires"
+},
+{
+"s": "GEMAROMA",
+"n": "Gem Aromatics"
+},
+{
+"s": "GENCON",
+"n": "Generic Engg"
+},
+{
+"s": "GENESYS",
+"n": "Genesys Intl Corp"
+},
+{
+"s": "GENUSPAPER",
+"n": "Genus Paper & Boards"
+},
+{
+"s": "GENUSPOWER",
+"n": "Genus Power Infra"
+},
+{
+"s": "GEOJITFSL",
+"n": "Geojit Finl. Service"
+},
+{
+"s": "GESHIP",
+"n": "GE Shipping"
+},
+{
+"s": "GFLLIMITED",
+"n": "GFL"
+},
+{
+"s": "GGBL",
+"n": "Ganesh Green Bharat"
+},
+{
+"s": "GHCL",
+"n": "GHCL"
+},
+{
+"s": "GHCLTEXTIL",
+"n": "GHCL Textiles"
+},
+{
+"s": "GICHSGFIN",
+"n": "GIC Housing Finance"
+},
+{
+"s": "GICL",
+"n": "Globe Intl Carriers"
+},
+{
+"s": "GICRE",
+"n": "General Insurance"
+},
+{
+"s": "GILLANDERS",
+"n": "Gillanders Arbuthnot"
+},
+{
+"s": "GILLETTE",
+"n": "Gillette India"
+},
+{
+"s": "GINNIFILA",
+"n": "Ginni Filaments"
+},
+{
+"s": "GIPCL",
+"n": "Guj Inds Power Co"
+},
+{
+"s": "GIRIRAJ",
+"n": "Giriraj Civil Devs"
+},
+{
+"s": "GJL",
+"n": "Grover Jewells"
+},
+{
+"s": "GKENERGY",
+"n": "GK Energy"
+},
+{
+"s": "GKSL",
+"n": "Guj. Kidney & Super"
+},
+{
+"s": "GKWLIMITED",
+"n": "GKW"
+},
+{
+"s": "GLAND",
+"n": "Gland Pharma"
+},
+{
+"s": "GLAXO",
+"n": "GSK Pharma"
+},
+{
+"s": "GLENMARK",
+"n": "Glenmark Pharma"
+},
+{
+"s": "GLFL",
+"n": "Gujarat Lease Fin"
+},
+{
+"s": "GLOBAL",
+"n": "Global Education"
+},
+{
+"s": "GLOBALE",
+"n": "Globale Tessile"
+},
+{
+"s": "GLOBALPET",
+"n": "Global Pet Indus"
+},
+{
+"s": "GLOBALVECT",
+"n": "Global Vectra"
+},
+{
+"s": "GLOBE",
+"n": "Globe Enterprises(I)"
+},
+{
+"s": "GLOBECIVIL",
+"n": "Globe Civil Projects"
+},
+{
+"s": "GLOBUSSPR",
+"n": "Globus Spirits"
+},
+{
+"s": "GLOSTERLTD",
+"n": "Gloster"
+},
+{
+"s": "GLOTTIS",
+"n": "Glottis"
+},
+{
+"s": "GMBREW",
+"n": "GM Breweries"
+},
+{
+"s": "GMDCLTD",
+"n": "GMDC"
+},
+{
+"s": "GML",
+"n": "Galaxy Medicare"
+},
+{
+"s": "GMMPFAUDLR",
+"n": "GMM Pfaudler"
+},
+{
+"s": "GMRAIRPORT",
+"n": "GMR Airports"
+},
+{
+"s": "GMRP&UI",
+"n": "GMR Power"
+},
+{
+"s": "GNA",
+"n": "GNA Axles"
+},
+{
+"s": "GNFC",
+"n": "GNFC"
+},
+{
+"s": "GNRL",
+"n": "GNRL"
+},
+{
+"s": "GOACARBON",
+"n": "Goa Carbon"
+},
+{
+"s": "GOCLCORP",
+"n": "GOCL Corp"
+},
+{
+"s": "GOCOLORS",
+"n": "Go Fashion (India)"
+},
+{
+"s": "GODAVARIB",
+"n": "Godavari Biorefin"
+},
+{
+"s": "GODFRYPHLP",
+"n": "Godfrey Phillips"
+},
+{
+"s": "GODIGIT",
+"n": "Go Digit General Ins"
+},
+{
+"s": "GODREJAGRO",
+"n": "Godrej Agrovet"
+},
+{
+"s": "GODREJCP",
+"n": "Godrej Consumer"
+},
+{
+"s": "GODREJIND",
+"n": "Godrej Industries"
+},
+{
+"s": "GODREJPROP",
+"n": "Godrej Properties"
+},
+{
+"s": "GOKEX",
+"n": "Gokaldas Exports"
+},
+{
+"s": "GOKUL",
+"n": "Gokul Refoils"
+},
+{
+"s": "GOKULAGRO",
+"n": "Gokul Agro Resources"
+},
+{
+"s": "GOLDADD",
+"n": "GOLDETFADD"
+},
+{
+"s": "GOLDBEES",
+"n": "Nippon India ETF Gold BeES"
+},
+{
+"s": "GOLDBETA",
+"n": "UTI GOLD ETF"
+},
+{
+"s": "GOLDBND",
+"n": "GOLDBND"
+},
+{
+"s": "GOLDCASE",
+"n": "GOLDCASE"
+},
+{
+"s": "GOLDENTOBC",
+"n": "Golden Tobacco"
+},
+{
+"s": "GOLDETF",
+"n": "MAGOLDETF"
+},
+{
+"s": "GOLDIAM",
+"n": "Goldiam Intl"
+},
+{
+"s": "GOLDIETF",
+"n": "ICICI Prud Gold ETF"
+},
+{
+"s": "GOLDKART",
+"n": "Goldkart Jewels"
+},
+{
+"s": "GOLDSTAR",
+"n": "Goldstar Power"
+},
+{
+"s": "GOLDTECH",
+"n": "AION-Tech Solutions"
+},
+{
+"s": "GOODLUCK",
+"n": "Goodluck India"
+},
+{
+"s": "GOODYEAR",
+"n": "Goodyear India"
+},
+{
+"s": "GOPAL",
+"n": "Gopal Snacks"
+},
+{
+"s": "GOYALALUM",
+"n": "Goyal Aluminiums"
+},
+{
+"s": "GOYALSALT",
+"n": "Goyal Salt"
+},
+{
+"s": "GPECO",
+"n": "GP Eco Solutions"
+},
+{
+"s": "GPIL",
+"n": "Godawari Pwr"
+},
+{
+"s": "GPPL",
+"n": "Gujarat Pipavav Port"
+},
+{
+"s": "GPTHEALTH",
+"n": "GPT Healthcare"
+},
+{
+"s": "GPTINFRA",
+"n": "GPT Infraprojects"
+},
+{
+"s": "GRADIENTE",
+"n": "Gradiente Infotain."
+},
+{
+"s": "GRANDOAK",
+"n": "Grand Oak Canyons"
+},
+{
+"s": "GRANULES",
+"n": "Granules India"
+},
+{
+"s": "GRAPHISAD",
+"n": "Graphisads"
+},
+{
+"s": "GRAPHITE",
+"n": "Graphite India"
+},
+{
+"s": "GRASIM",
+"n": "Grasim Industries"
+},
+{
+"s": "GRAUWEIL",
+"n": "Grauer & Weil"
+},
+{
+"s": "GRAVISSHO",
+"n": "Graviss Hospitality"
+},
+{
+"s": "GRAVITA",
+"n": "Gravita India"
+},
+{
+"s": "GRCL",
+"n": "Gayatri Rubbers"
+},
+{
+"s": "GREAVESCOT",
+"n": "Greaves Cotton"
+},
+{
+"s": "GREENCHEF",
+"n": "Greenchef Appliances"
+},
+{
+"s": "GREENLAM",
+"n": "Greenlam Industries"
+},
+{
+"s": "GREENLEAF",
+"n": "Greenleaf Envirotech"
+},
+{
+"s": "GREENPANEL",
+"n": "Greenpanel Inds."
+},
+{
+"s": "GREENPLY",
+"n": "Greenply Industries"
+},
+{
+"s": "GREENPOWER",
+"n": "Orient Green Power"
+},
+{
+"s": "GRETEX",
+"n": "Gretex Industries"
+},
+{
+"s": "GRINDWELL",
+"n": "Grindwell Norton"
+},
+{
+"s": "GRINFRA",
+"n": "GR Infraprojects"
+},
+{
+"s": "GRMOVER",
+"n": "GRM Overseas"
+},
+{
+"s": "GROBTEA",
+"n": "Grob Tea Co"
+},
+{
+"s": "GROWW",
+"n": "Groww"
+},
+{
+"s": "GROWWCAPM",
+"n": "GROWWCAPM"
+},
+{
+"s": "GROWWCHEM",
+"n": "GROWWCHEM"
+},
+{
+"s": "GROWWDEFNC",
+"n": "Groww Nifty India Defence ETF"
+},
+{
+"s": "GROWWEV",
+"n": "GROWWEV"
+},
+{
+"s": "GROWWGOLD",
+"n": "Groww Gold ETF"
+},
+{
+"s": "GROWWHOSPI",
+"n": "GROWWHOSPI"
+},
+{
+"s": "GROWWLIQID",
+"n": "Groww Nifty 1D Rate Liquid ETF"
+},
+{
+"s": "GROWWLOVOL",
+"n": "GROWWLOVOL"
+},
+{
+"s": "GROWWMETAL",
+"n": "GROWWMETAL"
+},
+{
+"s": "GROWWNET",
+"n": "Groww Nifty India Internet ETF"
+},
+{
+"s": "GROWWNIFTY",
+"n": "Groww Nifty 50 ETF"
+},
+{
+"s": "GROWWPOWER",
+"n": "GROWWPOWER"
+},
+{
+"s": "GROWWPSE",
+"n": "GROWWPSE"
+},
+{
+"s": "GROWWPSUBK",
+"n": "Groww Nifty PSU Bank ETF"
+},
+{
+"s": "GROWWRAIL",
+"n": "Groww Nifty India Railways PSU ETF"
+},
+{
+"s": "GROWWRLTY",
+"n": "GROWWRLTY"
+},
+{
+"s": "GROWWSLVR",
+"n": "Groww Silver ETF"
+},
+{
+"s": "GRPLTD",
+"n": "GRP"
+},
+{
+"s": "GRSE",
+"n": "Garden Reach"
+},
+{
+"s": "GRWRHITECH",
+"n": "Garware Hi Tech"
+},
+{
+"s": "GSFC",
+"n": "GSFC"
+},
+{
+"s": "GSLSU",
+"n": "Global Surfaces"
+},
+{
+"s": "GSMFOILS",
+"n": "GSM Foils"
+},
+{
+"s": "GSPCROP",
+"n": "GSP Crop Science"
+},
+{
+"s": "GSS",
+"n": "GSS Infotech"
+},
+{
+"s": "GSTL",
+"n": "Globesecure Technlgy"
+},
+{
+"s": "GTECJAINX",
+"n": "G-Tec Jainx Edu"
+},
+{
+"s": "GTL",
+"n": "GTL"
+},
+{
+"s": "GTLINFRA",
+"n": "GTL Infrastructure"
+},
+{
+"s": "GTPL",
+"n": "GTPL Hathway"
+},
+{
+"s": "GUFICBIO",
+"n": "Gufic Biosciences"
+},
+{
+"s": "GUJALKALI",
+"n": "Gujarat Alkalies"
+},
+{
+"s": "GUJAPOLLO",
+"n": "Gujarat Apollo Inds"
+},
+{
+"s": "GUJGASLTD",
+"n": "Gujarat Energy"
+},
+{
+"s": "GUJRAFFIA",
+"n": "Gujarat Raffia Inds"
+},
+{
+"s": "GUJTHEM",
+"n": "Guj Themis Biosyn"
+},
+{
+"s": "GULFOILLUB",
+"n": "Gulf Oil Lubricants"
+},
+{
+"s": "GULFPETRO",
+"n": "GP Petroleums"
+},
+{
+"s": "GULPOLY",
+"n": "Gulshan Polyols"
+},
+{
+"s": "GURUNANAK",
+"n": "Gurunanak Agricultur"
+},
+{
+"s": "GVKPIL",
+"n": "GVK Power & Infra"
+},
+{
+"s": "GVPIL",
+"n": "GE Power India"
+},
+{
+"s": "GVPTECH",
+"n": "GVP Infotech"
+},
+{
+"s": "GVT&D",
+"n": "GE Vernova T&D India"
+},
+{
+"s": "HAL",
+"n": "HAL"
+},
+{
+"s": "HALDER",
+"n": "Halder Venture"
+},
+{
+"s": "HALDYNGL",
+"n": "Haldyn Glass"
+},
+{
+"s": "HALEOSLABS",
+"n": "Haleos Labs"
+},
+{
+"s": "HAPPSTMNDS",
+"n": "Happiest Minds Tech."
+},
+{
+"s": "HAPPYFORGE",
+"n": "Happy Forgings"
+},
+{
+"s": "HARDWYN",
+"n": "Hardwyn India"
+},
+{
+"s": "HARIOMPIPE",
+"n": "Hariom Pipe Inds"
+},
+{
+"s": "HARRMALAYA",
+"n": "Harrisons Malayalam"
+},
+{
+"s": "HARSHA",
+"n": "Harsha Engineers Int"
+},
+{
+"s": "HATHWAY",
+"n": "Hathway Cable"
+},
+{
+"s": "HATSUN",
+"n": "Hatsun Agro Prod"
+},
+{
+"s": "HAVELLS",
+"n": "Havells India"
+},
+{
+"s": "HAVISHA",
+"n": "Sri Havisha Hosp"
+},
+{
+"s": "HAWKINCOOK",
+"n": "Hawkins Cookers"
+},
+{
+"s": "HBESD",
+"n": "HB Estate Developers"
+},
+{
+"s": "HBLENGINE",
+"n": "HBL Engineering"
+},
+{
+"s": "HBSL",
+"n": "HB Stockholdings"
+},
+{
+"s": "HCC",
+"n": "Hindustan Constr"
+},
+{
+"s": "HCG",
+"n": "Healthcare Global"
+},
+{
+"s": "HCL-INSYS",
+"n": "HCL Infosystems"
+},
+{
+"s": "HCLTECH",
+"n": "HCL Tech."
+},
+{
+"s": "HDBFS",
+"n": "HDB Financial Services"
+},
+{
+"s": "HDFCAMC",
+"n": "HDFC Asset Mgmt Co"
+},
+{
+"s": "HDFCBANK",
+"n": "HDFC Bank"
+},
+{
+"s": "HDFCGOLD",
+"n": "HDFC MF - GETF"
+},
+{
+"s": "HDFCGROWTH",
+"n": "HDFCGROWTH"
+},
+{
+"s": "HDFCLIFE",
+"n": "HDFC Life Insurance"
+},
+{
+"s": "HDFCLIQUID-EQ",
+"n": "HDFC Nifty 1D Rate Liquid ETF - Growth"
+},
+{
+"s": "HDFCLOWVOL",
+"n": "HDFC NIFTY100 Low Vo"
+},
+{
+"s": "HDFCMOMENT",
+"n": "HDFC NIFTY200 Mom 30"
+},
+{
+"s": "HDFCNIFBAN",
+"n": "HDFCNIFBAN"
+},
+{
+"s": "HDFCNIFIT",
+"n": "HDFCNIFIT"
+},
+{
+"s": "HDFCNIFTY",
+"n": "HDFCNIFTY"
+},
+{
+"s": "HDFCPSUBK",
+"n": "HDFCPSUBK"
+},
+{
+"s": "HDFCPVTBAN",
+"n": "HDFCPVTBAN"
+},
+{
+"s": "HDFCQUAL",
+"n": "HDFCQUAL"
+},
+{
+"s": "HDFCSENSEX",
+"n": "HDFCSENSEX"
+},
+{
+"s": "HDFCSILVER",
+"n": "HDFCSILVER"
+},
+{
+"s": "HDFCVALUE",
+"n": "HDFCVALUE"
+},
+{
+"s": "HDIL",
+"n": "HDIL"
+},
+{
+"s": "HEADSUP",
+"n": "Mandhana Retail"
+},
+{
+"s": "HEALTHADD",
+"n": "HEALTHADD"
+},
+{
+"s": "HEALTHCARE",
+"n": "HEALTHCARE"
+},
+{
+"s": "HEALTHIETF",
+"n": "ICICIPHARM"
+},
+{
+"s": "HEALTHX",
+"n": "Health X Platform"
+},
+{
+"s": "HEALTHY",
+"n": "BSL Nifty Healthcare ETF"
+},
+{
+"s": "HECPROJECT",
+"n": "HEC Infra Projects"
+},
+{
+"s": "HEG",
+"n": "HEG"
+},
+{
+"s": "HEIDELBERG",
+"n": "Heidelberg Cement"
+},
+{
+"s": "HEMIPROP",
+"n": "Hemisphere Prop"
+},
+{
+"s": "HERANBA",
+"n": "Heranba Industries"
+},
+{
+"s": "HERITGFOOD",
+"n": "Heritage Foods"
+},
+{
+"s": "HEROMOTOCO",
+"n": "Hero MotoCorp"
+},
+{
+"s": "HESTERBIO",
+"n": "Hester Biosciences"
+},
+{
+"s": "HEXAGON",
+"n": "Hexagon Nutrition"
+},
+{
+"s": "HEXATRADEX",
+"n": "Hexa Tradex"
+},
+{
+"s": "HEXT",
+"n": "HEXT"
+},
+{
+"s": "HFCL",
+"n": "HFCL"
+},
+{
+"s": "HGINFRA",
+"n": "HGIEL"
+},
+{
+"s": "HGM",
+"n": "HandsOn Global Manag"
+},
+{
+"s": "HGS",
+"n": "Hinduja Global"
+},
+{
+"s": "HIGREEN",
+"n": "Hi-Green Carbon"
+},
+{
+"s": "HIKAL",
+"n": "Hikal"
+},
+{
+"s": "HILINFRA",
+"n": "Highway Infrast."
+},
+{
+"s": "HILTON",
+"n": "Hilton Metal Forging"
+},
+{
+"s": "HIMATSEIDE",
+"n": "Himatsingka Seide"
+},
+{
+"s": "HINDALCO",
+"n": "Hindalco"
+},
+{
+"s": "HINDCOMPOS",
+"n": "Hindustan Composites"
+},
+{
+"s": "HINDCON",
+"n": "Hindcon Chemicals"
+},
+{
+"s": "HINDCOPPER",
+"n": "Hindustan Copper"
+},
+{
+"s": "HINDOILEXP",
+"n": "HOEC"
+},
+{
+"s": "HINDPETRO",
+"n": "HPCL"
+},
+{
+"s": "HINDUNILVR",
+"n": "Hindustan Unilever"
+},
+{
+"s": "HINDWAREAP",
+"n": "Hindware Home Innovation Limited"
+},
+{
+"s": "HINDZINC",
+"n": "Hindustan Zinc"
+},
+{
+"s": "HIRECT",
+"n": "Hind Rectifiers"
+},
+{
+"s": "HISARMETAL",
+"n": "Hisar Metal Inds"
+},
+{
+"s": "HITECH",
+"n": "Hi-Tech Pipes"
+},
+{
+"s": "HITECHCORP",
+"n": "Hitech Corporation"
+},
+{
+"s": "HITECHGEAR",
+"n": "Hi-Tech Gears"
+},
+{
+"s": "HLEGLAS",
+"n": "HLE Glascoat"
+},
+{
+"s": "HLVLTD",
+"n": "HLV"
+},
+{
+"s": "HMAAGRO",
+"n": "HMA Agro Indus"
+},
+{
+"s": "HMT",
+"n": "HMT"
+},
+{
+"s": "HMVL",
+"n": "Hindustan Media"
+},
+{
+"s": "HNDFDS",
+"n": "Hindustan Foods"
+},
+{
+"s": "HNGSNGBEES",
+"n": "Nippon ETF HangSeng BeES"
+},
+{
+"s": "HOACFOODS",
+"n": "Hoac Foods India"
+},
+{
+"s": "HOLMARC",
+"n": "Holmarc Opto-Mech"
+},
+{
+"s": "HOMEFIRST",
+"n": "Home First Finance"
+},
+{
+"s": "HOMESFY",
+"n": "Homesfy Realty"
+},
+{
+"s": "HONASA",
+"n": "Honasa Consumer"
+},
+{
+"s": "HONAUT",
+"n": "Honeywell Automation"
+},
+{
+"s": "HONDAPOWER",
+"n": "Honda Power Prods"
+},
+{
+"s": "HPAL",
+"n": "Hp Adhesives"
+},
+{
+"s": "HPIL",
+"n": "Hindprakash Inds"
+},
+{
+"s": "HPL",
+"n": "HPL Electric & Power"
+},
+{
+"s": "HPTL",
+"n": "HP Telecom India"
+},
+{
+"s": "HRHNEXT",
+"n": "HRH Next Services"
+},
+{
+"s": "HSBCGOLD",
+"n": "HSBCGOLD"
+},
+{
+"s": "HSCL",
+"n": "Himadri Speciality"
+},
+{
+"s": "HTMEDIA",
+"n": "HT Media"
+},
+{
+"s": "HUBTOWN",
+"n": "Hubtown"
+},
+{
+"s": "HUDCO",
+"n": "HUDCO"
+},
+{
+"s": "HUHTAMAKI",
+"n": "Huhtamaki India"
+},
+{
+"s": "HVAX",
+"n": "HVAX Technologies"
+},
+{
+"s": "HYBRIDFIN",
+"n": "Hybrid Fin Serv"
+},
+{
+"s": "HYUNDAI",
+"n": "Hyundai Motor India"
+},
+{
+"s": "IBLFL",
+"n": "IBL Finance"
+},
+{
+"s": "IBULLSLTD",
+"n": "Indiabulls"
+},
+{
+"s": "ICDSLTD",
+"n": "ICDS"
+},
+{
+"s": "ICEMAKE",
+"n": "Ice Make Refrig"
+},
+{
+"s": "ICICIAMC",
+"n": "ICICI Prud.Asset Man"
+},
+{
+"s": "ICICIBANK",
+"n": "ICICI Bank"
+},
+{
+"s": "ICICIGI",
+"n": "ICICI Lombard Gen."
+},
+{
+"s": "ICICIPRULI",
+"n": "ICICI Prudential"
+},
+{
+"s": "ICIL",
+"n": "Indo Count Inds"
+},
+{
+"s": "ICRA",
+"n": "ICRA"
+},
+{
+"s": "IDBI",
+"n": "IDBI Bank"
+},
+{
+"s": "IDEA",
+"n": "Vodafone Idea"
+},
+{
+"s": "IDEAFORGE",
+"n": "Ideaforge Technology"
+},
+{
+"s": "IDEALTECHO",
+"n": "Ideal Technoplast In"
+},
+{
+"s": "IDENTICAL",
+"n": "Identical Brains"
+},
+{
+"s": "IDFCFIRSTB",
+"n": "IDFC First Bank"
+},
+{
+"s": "IDFNIFTYET",
+"n": "IDFC Nifty ETF"
+},
+{
+"s": "IEML",
+"n": "Indian Emulsifiers"
+},
+{
+"s": "IEX",
+"n": "IEX"
+},
+{
+"s": "IFBAGRO",
+"n": "IFB Agro Industries"
+},
+{
+"s": "IFBIND",
+"n": "IFB Industries"
+},
+{
+"s": "IFCI",
+"n": "IFCI"
+},
+{
+"s": "IFGLEXPOR",
+"n": "IFGL Refractories"
+},
+{
+"s": "IGARASHI",
+"n": "Igarashi Motors"
+},
+{
+"s": "IGCL",
+"n": "Indogulf Cropscience"
+},
+{
+"s": "IGIL",
+"n": "International Gemolo"
+},
+{
+"s": "IGL",
+"n": "Indraprastha Gas"
+},
+{
+"s": "IGPL",
+"n": "IGPL"
+},
+{
+"s": "IIFL",
+"n": "IIFL Finance"
+},
+{
+"s": "IIFLCAPS",
+"n": "IIFL Securities"
+},
+{
+"s": "IITL",
+"n": "Industrial Invest"
+},
+{
+"s": "IKIO",
+"n": "IKIO Technologies"
+},
+{
+"s": "IKS",
+"n": "Inventurus Knowledge"
+},
+{
+"s": "IL&FSENGG",
+"n": "IL&FS Engg. & Const."
+},
+{
+"s": "IL&FSTRANS",
+"n": "IL&FS Transport"
+},
+{
+"s": "IMAGICAA",
+"n": "Imagicaaworld"
+},
+{
+"s": "IMFA",
+"n": "IMFA"
+},
+{
+"s": "IMPAL",
+"n": "IMPAL"
+},
+{
+"s": "INA",
+"n": "Insolation Energy"
+},
+{
+"s": "INCREDIBLE",
+"n": "Adhunik Industries"
+},
+{
+"s": "INDBANK",
+"n": "Indbank Merchant"
+},
+{
+"s": "INDGN",
+"n": "Indegene"
+},
+{
+"s": "INDHOTEL",
+"n": "Indian Hotel"
+},
+{
+"s": "INDIACEM",
+"n": "India Cements"
+},
+{
+"s": "INDIAGLYCO",
+"n": "India Glycols"
+},
+{
+"s": "INDIAMART",
+"n": "Indiamart Inter"
+},
+{
+"s": "INDIANB",
+"n": "Indian Bank"
+},
+{
+"s": "INDIANCARD",
+"n": "Indian Card Cloth"
+},
+{
+"s": "INDIANHUME",
+"n": "Indian Hume Pipe"
+},
+{
+"s": "INDIASHLTR",
+"n": "India Shelter Fin."
+},
+{
+"s": "INDIFRA",
+"n": "Indifra"
+},
+{
+"s": "INDIGO",
+"n": "Interglobe Aviation"
+},
+{
+"s": "INDIGOPNTS",
+"n": "Indigo Paints"
+},
+{
+"s": "INDIGRID",
+"n": "India Grid Trust"
+},
+{
+"s": "INDIQUBE",
+"n": "Indiqube Spaces"
+},
+{
+"s": "INDNIPPON",
+"n": "India Nippon Elec"
+},
+{
+"s": "INDOAMIN",
+"n": "Indo Amines"
+},
+{
+"s": "INDOBORAX",
+"n": "Indo Borax"
+},
+{
+"s": "INDOCO",
+"n": "Indoco Remedies"
+},
+{
+"s": "INDOFARM",
+"n": "Indo Farm Equipment"
+},
+{
+"s": "INDORAMA",
+"n": "Indo Rama Synthetics"
+},
+{
+"s": "INDOSTAR",
+"n": "IndoStar Capital"
+},
+{
+"s": "INDOTECH",
+"n": "Indo Tech"
+},
+{
+"s": "INDOTHAI",
+"n": "Indo Thai Secs"
+},
+{
+"s": "INDOUS",
+"n": "Indo US Bio-Tech"
+},
+{
+"s": "INDOWIND",
+"n": "Indowind Energy"
+},
+{
+"s": "INDPRUD",
+"n": "Ind & Prud Invest"
+},
+{
+"s": "INDRAMEDCO",
+"n": "Indrapras Med Corp"
+},
+{
+"s": "INDSWFTLAB",
+"n": "Ind-Swift Labs"
+},
+{
+"s": "INDTERRAIN",
+"n": "Indian Terrain"
+},
+{
+"s": "INDUSINDBK",
+"n": "IndusInd Bank"
+},
+{
+"s": "INDUSINVIT",
+"n": "Indus Infra Trust"
+},
+{
+"s": "INDUSTOWER",
+"n": "Indus Towers"
+},
+{
+"s": "INFINIUM",
+"n": "Infinium Pharmachem"
+},
+{
+"s": "INFLUX",
+"n": "Influx Healthtech"
+},
+{
+"s": "INFOBEAN",
+"n": "Infobeans Tech."
+},
+{
+"s": "INFOLLION",
+"n": "Infollion Research"
+},
+{
+"s": "INFOMEDIA",
+"n": "Infomedia Press"
+},
+{
+"s": "INFRA",
+"n": "INFRA"
+},
+{
+"s": "INFRABEES",
+"n": "Nippon India ETF Infra BeES"
+},
+{
+"s": "INFRAIETF",
+"n": "ICICI Prudential Nifty Infrastructure ETF"
+},
+{
+"s": "INFY",
+"n": "Infosys"
+},
+{
+"s": "INGERRAND",
+"n": "Ingersoll Rand"
+},
+{
+"s": "INM",
+"n": "Interiors & More"
+},
+{
+"s": "INNOMET",
+"n": "Innomet Adv Material"
+},
+{
+"s": "INNOVACAP",
+"n": "Innova Captab"
+},
+{
+"s": "INNOVANA",
+"n": "Innovana Thinklabs"
+},
+{
+"s": "INNOVISION",
+"n": "Innovision"
+},
+{
+"s": "INOXGREEN",
+"n": "Inox Green Energy Se"
+},
+{
+"s": "INOXINDIA",
+"n": "Inox India"
+},
+{
+"s": "INOXWIND",
+"n": "INOX Wind"
+},
+{
+"s": "INSECTICID",
+"n": "Insecticides India"
+},
+{
+"s": "INSPIRE",
+"n": "Inspire Films"
+},
+{
+"s": "INSPIRISYS",
+"n": "Inspirisys Solutions"
+},
+{
+"s": "INTEGRITY",
+"n": "Integrity Infrabuild"
+},
+{
+"s": "INTELLECT",
+"n": "Intellect Design"
+},
+{
+"s": "INTENTECH",
+"n": "Intense Tech"
+},
+{
+"s": "INTERARCH",
+"n": "Interarch Building"
+},
+{
+"s": "INTERISE",
+"n": "Interise Trust"
+},
+{
+"s": "INTERNET",
+"n": "INTERNET"
+},
+{
+"s": "INTLCONV",
+"n": "Intl Conveyors"
+},
+{
+"s": "INVENTURE",
+"n": "Inventure Growth"
+},
+{
+"s": "INVICTA",
+"n": "Invicta Diagnostic"
+},
+{
+"s": "INVPRECQ",
+"n": "IPCL"
+},
+{
+"s": "IOB",
+"n": "Indian Overseas Bank"
+},
+{
+"s": "IOC",
+"n": "IOCL"
+},
+{
+"s": "IOLCP",
+"n": "IOLCP"
+},
+{
+"s": "IONEXCHANG",
+"n": "Ion Exchange"
+},
+{
+"s": "IPCALAB",
+"n": "Ipca Laboratories"
+},
+{
+"s": "IPHL",
+"n": "Indian Phosphate"
+},
+{
+"s": "IPL",
+"n": "India Pesticides"
+},
+{
+"s": "IPSL",
+"n": "Integrated Personnel"
+},
+{
+"s": "IRB",
+"n": "IRB Infra Devs"
+},
+{
+"s": "IRBINVIT",
+"n": "IRBINVIT"
+},
+{
+"s": "IRCON",
+"n": "Ircon International"
+},
+{
+"s": "IRCTC",
+"n": "IRCTC"
+},
+{
+"s": "IREDA",
+"n": "Indian Ren. Energy"
+},
+{
+"s": "IRFC",
+"n": "IRFC"
+},
+{
+"s": "IRIS",
+"n": "IRIS RegTech Solut."
+},
+{
+"s": "IRISDOREME",
+"n": "Iris Clothings"
+},
+{
+"s": "IRMENERGY",
+"n": "IRM Energy"
+},
+{
+"s": "ISFT",
+"n": "Intrasoft Tech"
+},
+{
+"s": "ISGEC",
+"n": "ISGEC Heavy Engg"
+},
+{
+"s": "ISHAN",
+"n": "Ishan International"
+},
+{
+"s": "ISHANCH",
+"n": "Ishan Dyes and Chem."
+},
+{
+"s": "IT",
+"n": "KOTAKIT"
+},
+{
+"s": "ITADD",
+"n": "ITETFADD"
+},
+{
+"s": "ITALIANE",
+"n": "Italian Edibles"
+},
+{
+"s": "ITBEES",
+"n": "Nippon India ETF IT"
+},
+{
+"s": "ITBETA",
+"n": "NIFITETF"
+},
+{
+"s": "ITC",
+"n": "ITC"
+},
+{
+"s": "ITCHOTELS",
+"n": "ITC Hotels"
+},
+{
+"s": "ITDC",
+"n": "ITDC"
+},
+{
+"s": "ITETF",
+"n": "ITETF"
+},
+{
+"s": "ITI",
+"n": "ITI"
+},
+{
+"s": "ITIETF",
+"n": "ICICITECH"
+},
+{
+"s": "ITTL",
+"n": "INNOVATIVE TYRE & TUBE LT"
+},
+{
+"s": "IVALUE",
+"n": "Ivalue Infosolutions"
+},
+{
+"s": "IVC",
+"n": "IL&FS Investment"
+},
+{
+"s": "IVP",
+"n": "IVP"
+},
+{
+"s": "IVZINGOLD",
+"n": "Invesco Gold ETF"
+},
+{
+"s": "IVZINNIFTY",
+"n": "Invesco Nifty ETF"
+},
+{
+"s": "IWARE",
+"n": "Iware Supplychain"
+},
+{
+"s": "IWP",
+"n": "Indian Wood Prods"
+},
+{
+"s": "IXIGO",
+"n": "Le Travenues Techno"
+},
+{
+"s": "IZMO",
+"n": "Izmo"
+},
+{
+"s": "J&KBANK",
+"n": "Jammu & Kashmir Bank"
+},
+{
+"s": "JAGRAN",
+"n": "Jagran Prakashan"
+},
+{
+"s": "JAGSNPHARM",
+"n": "Jagson Pal Pharma"
+},
+{
+"s": "JAIBALAJI",
+"n": "Jai Balaji Inds"
+},
+{
+"s": "JAICORPLTD",
+"n": "Jai Corp"
+},
+{
+"s": "JAINAM",
+"n": "Jainam Ferro"
+},
+{
+"s": "JAINIK",
+"n": "Jainik Power Cables"
+},
+{
+"s": "JAINREC",
+"n": "Jain Resource Recycl"
+},
+{
+"s": "JAIPURKURT",
+"n": "Nandani Creation"
+},
+{
+"s": "JAKHARIA",
+"n": "Jakharia Fabric"
+},
+{
+"s": "JALAN",
+"n": "Jalan Transolution"
+},
+{
+"s": "JAMNAAUTO",
+"n": "Jamna Auto Inds"
+},
+{
+"s": "JARO",
+"n": "Jaro Inst. of Tech&R"
+},
+{
+"s": "JASH",
+"n": "Jash Engineering"
+},
+{
+"s": "JAYAGROGN",
+"n": "Jayant Agro-Organics"
+},
+{
+"s": "JAYBARMARU",
+"n": "Jay Bharat Maruti"
+},
+{
+"s": "JAYBEE",
+"n": "Jay Bee Laminations"
+},
+{
+"s": "JAYESH",
+"n": "Jayesh Logistics"
+},
+{
+"s": "JAYKAY",
+"n": "Jaykay Enterprises"
+},
+{
+"s": "JAYNECOIND",
+"n": "Jayaswal Neco Inds"
+},
+{
+"s": "JAYSREETEA",
+"n": "Jay Shree Tea"
+},
+{
+"s": "JBCHEPHARM",
+"n": "JB Chem & Pharma"
+},
+{
+"s": "JBMA",
+"n": "JBM Auto"
+},
+{
+"s": "JETFREIGHT",
+"n": "Jet Freight Logistic"
+},
+{
+"s": "JETKNIT",
+"n": "Jet Knitwears"
+},
+{
+"s": "JEYYAM",
+"n": "Jeyyam Global Foods"
+},
+{
+"s": "JFLLIFE",
+"n": "JFL Life Sciences"
+},
+{
+"s": "JGCHEM",
+"n": "JG Chemicals"
+},
+{
+"s": "JHS",
+"n": "JHS Svendgaard Lab"
+},
+{
+"s": "JINDALPHOT",
+"n": "Jindal Photo"
+},
+{
+"s": "JINDALPOLY",
+"n": "Jindal Poly Films"
+},
+{
+"s": "JINDALSAW",
+"n": "Jindal SAW"
+},
+{
+"s": "JINDALSTEL",
+"n": "Jindal Steel"
+},
+{
+"s": "JINDRILL",
+"n": "Jindal Drilling"
+},
+{
+"s": "JINDWORLD",
+"n": "Jindal Worldwide"
+},
+{
+"s": "JIOFIN",
+"n": "JIO Financial Serv."
+},
+{
+"s": "JISLDVREQS",
+"n": "Jain Irrigation - DVR"
+},
+{
+"s": "JISLJALEQS",
+"n": "Jain Irrigation Sys"
+},
+{
+"s": "JITFINFRA",
+"n": "JITF Infra"
+},
+{
+"s": "JIWANRAM",
+"n": "Jiwanram Sheod Ind."
+},
+{
+"s": "JKCEMENT",
+"n": "JK Cement"
+},
+{
+"s": "JKIL",
+"n": "J Kumar Infra"
+},
+{
+"s": "JKIPL",
+"n": "Jinkushal Industries"
+},
+{
+"s": "JKLAKSHMI",
+"n": "JK Lakshmi Cement"
+},
+{
+"s": "JKPAPER",
+"n": "JK Paper"
+},
+{
+"s": "JKTYRE",
+"n": "JK Tyre & Industries"
+},
+{
+"s": "JLHL",
+"n": "Jupiter Life Line"
+},
+{
+"s": "JMA",
+"n": "Jullundur Motor"
+},
+{
+"s": "JMFINANCIL",
+"n": "JM Financial"
+},
+{
+"s": "JNKINDIA",
+"n": "JNK India"
+},
+{
+"s": "JOCIL",
+"n": "Jocil"
+},
+{
+"s": "JPOLYINVST",
+"n": "Jindal Poly Invst"
+},
+{
+"s": "JPPOWER",
+"n": "Jaiprakash Power"
+},
+{
+"s": "JSFB",
+"n": "Jana Small Fin. Bank"
+},
+{
+"s": "JSL",
+"n": "Jindal Stainless"
+},
+{
+"s": "JSLL",
+"n": "Jeena Sikho Life"
+},
+{
+"s": "JSWCEMENT",
+"n": "JSW Cement"
+},
+{
+"s": "JSWDULUX",
+"n": "JSW Dulux"
+},
+{
+"s": "JSWENERGY",
+"n": "JSW Energy"
+},
+{
+"s": "JSWHL",
+"n": "JSW Holdings"
+},
+{
+"s": "JSWINFRA",
+"n": "JSW Infrastructure"
+},
+{
+"s": "JSWSTEEL",
+"n": "JSW Steel"
+},
+{
+"s": "JTEKTINDIA",
+"n": "JTEKT India"
+},
+{
+"s": "JTLIND",
+"n": "JTL Industries"
+},
+{
+"s": "JUBLCPL",
+"n": "Jubilant Agri & Con."
+},
+{
+"s": "JUBLFOOD",
+"n": "Jubilant Foodworks"
+},
+{
+"s": "JUBLINGREA",
+"n": "Jubilant Ingrevia"
+},
+{
+"s": "JUBLPHARMA",
+"n": "Jubilant Pharmova"
+},
+{
+"s": "JUNIORBEES",
+"n": "JUNIORBEES"
+},
+{
+"s": "JUNIPER",
+"n": "Juniper Hotels"
+},
+{
+"s": "JUSTDIAL",
+"n": "Just Dial"
+},
+{
+"s": "JWL",
+"n": "Jupiter Wagons"
+},
+{
+"s": "JYOTHYLAB",
+"n": "Jyothy Labs"
+},
+{
+"s": "JYOTICNC",
+"n": "Jyoti CNC Automation"
+},
+{
+"s": "JYOTIGLOBL",
+"n": "Jyoti Global Plast"
+},
+{
+"s": "JYOTISTRUC",
+"n": "Jyoti Structures"
+},
+{
+"s": "KABRAEXTRU",
+"n": "Kabra Extrus.technik"
+},
+{
+"s": "KAJARIACER",
+"n": "Kajaria Ceramics"
+},
+{
+"s": "KAKATCEM",
+"n": "Kakatiya Cemen Sugar"
+},
+{
+"s": "KALAMANDIR",
+"n": "Sai Silks (Kalaman)"
+},
+{
+"s": "KALANA",
+"n": "Kalana Ispat"
+},
+{
+"s": "KALPATARU",
+"n": "Kalpataru"
+},
+{
+"s": "KALYANI",
+"n": "Kalyani Commercial"
+},
+{
+"s": "KALYANIFRG",
+"n": "Kalyani Forge"
+},
+{
+"s": "KALYANKJIL",
+"n": "Kalyan Jewellers"
+},
+{
+"s": "KAMAHOLD",
+"n": "Kama Holdings"
+},
+{
+"s": "KAMATHOTEL",
+"n": "Kamat Hotels"
+},
+{
+"s": "KAMDHENU",
+"n": "Kamdhenu"
+},
+{
+"s": "KAMOPAINTS",
+"n": "Kamdhenu Ventures"
+},
+{
+"s": "KANANIIND",
+"n": "Kanani Industries"
+},
+{
+"s": "KANCHI",
+"n": "Kanchi Karpooram"
+},
+{
+"s": "KANDARP",
+"n": "Kandarp Digi Smart"
+},
+{
+"s": "KANORICHEM",
+"n": "Kanoria Chemical"
+},
+{
+"s": "KANPRPLA",
+"n": "Kanpur Plastipack"
+},
+{
+"s": "KANSAINER",
+"n": "Kansai Nerolac"
+},
+{
+"s": "KAPSTON",
+"n": "Kapston Services"
+},
+{
+"s": "KARMAENG",
+"n": "Karma Energy"
+},
+{
+"s": "KARNIKA",
+"n": "Karnika Industries"
+},
+{
+"s": "KARURVYSYA",
+"n": "Karur Vysya Bank"
+},
+{
+"s": "KATARIA",
+"n": "Kataria Industries"
+},
+{
+"s": "KAUSHALYA",
+"n": "Kaushalya Infra"
+},
+{
+"s": "KAVDEFENCE",
+"n": "Kavveri Def. Wireles"
+},
+{
+"s": "KAYA",
+"n": "Kaya"
+},
+{
+"s": "KAYNES",
+"n": "Kaynes Technology"
+},
+{
+"s": "KAYTEX",
+"n": "Kaytex Fabrics"
+},
+{
+"s": "KCEIL",
+"n": "Kay Cee Energy & Inf"
+},
+{
+"s": "KCK",
+"n": "Kck Industries"
+},
+{
+"s": "KCP",
+"n": "KCP"
+},
+{
+"s": "KCPSUGIND",
+"n": "KCP Sugar & Inds"
+},
+{
+"s": "KDDL",
+"n": "KDDL"
+},
+{
+"s": "KDL",
+"n": "Kore Digital"
+},
+{
+"s": "KEC",
+"n": "KEC International"
+},
+{
+"s": "KECL",
+"n": "Kirloskar Electric"
+},
+{
+"s": "KEEPLEARN",
+"n": "DSJ Communications"
+},
+{
+"s": "KEI",
+"n": "KEI Industries"
+},
+{
+"s": "KEL",
+"n": "Kundan Edifice"
+},
+{
+"s": "KELLTONTEC",
+"n": "Kellton Tech Soln"
+},
+{
+"s": "KEN",
+"n": "Ken Enterprises"
+},
+{
+"s": "KENNAMET",
+"n": "Kennametal"
+},
+{
+"s": "KERNEX",
+"n": "Kernex Microsystem"
+},
+{
+"s": "KESORAMIND",
+"n": "Kesoram Industries"
+},
+{
+"s": "KEYFINSERV",
+"n": "Keynote Financial"
+},
+{
+"s": "KFINTECH",
+"n": "KFin Technologies"
+},
+{
+"s": "KHADIM",
+"n": "Khadim"
+},
+{
+"s": "KHAICHEM",
+"n": "Khaitan Chem & Fert"
+},
+{
+"s": "KHAITANLTD",
+"n": "Khaitan"
+},
+{
+"s": "KHANDSE",
+"n": "Khandwala Securities"
+},
+{
+"s": "KHFM",
+"n": "KHFM Hospitality"
+},
+{
+"s": "KICL",
+"n": "KICL"
+},
+{
+"s": "KILITCH",
+"n": "Kilitch Drugs"
+},
+{
+"s": "KIMS",
+"n": "KIMS"
+},
+{
+"s": "KINGFA",
+"n": "Kingfa Science"
+},
+{
+"s": "KIOCL",
+"n": "KIOCL"
+},
+{
+"s": "KIRANVYPAR",
+"n": "Kiran Vyapar"
+},
+{
+"s": "KIRIINDUS",
+"n": "Kiri Industries"
+},
+{
+"s": "KIRLFER",
+"n": "Kirloskar Ferrous"
+},
+{
+"s": "KIRLOSBROS",
+"n": "Kirloskar Brothers"
+},
+{
+"s": "KIRLOSENG",
+"n": "Kirloskar Oil Engines"
+},
+{
+"s": "KIRLOSIND",
+"n": "Kirloskar Industries"
+},
+{
+"s": "KIRLPNU",
+"n": "Kirloskar Pneumatic"
+},
+{
+"s": "KISSHT",
+"n": "OnEMI Technology"
+},
+{
+"s": "KITEX",
+"n": "Kitex Garments"
+},
+{
+"s": "KKCL",
+"n": "Kewal Kiran Clothing"
+},
+{
+"s": "KKJEWELS",
+"n": "Kabra Jewels"
+},
+{
+"s": "KKVAPOW",
+"n": "KKV Agro Powers"
+},
+{
+"s": "KLBRENG-B",
+"n": "Kilburn Eng"
+},
+{
+"s": "KLL",
+"n": "Kaushalya Logistics"
+},
+{
+"s": "KMEW",
+"n": "Knowledge Marine"
+},
+{
+"s": "KMSUGAR",
+"n": "KM Sugar Mills"
+},
+{
+"s": "KNAGRI",
+"n": "KN Agri Resources"
+},
+{
+"s": "KNRCON",
+"n": "KNR Constructions"
+},
+{
+"s": "KODYTECH",
+"n": "Kody Technolab"
+},
+{
+"s": "KOHINOOR",
+"n": "Kohinoor Foods"
+},
+{
+"s": "KOKUYOCMLN",
+"n": "Kokuyo Camlin"
+},
+{
+"s": "KOLTEPATIL",
+"n": "Kolte-Patil Develop."
+},
+{
+"s": "KONSTELEC",
+"n": "Konstelec Engineers"
+},
+{
+"s": "KONTOR",
+"n": "Kontor Space"
+},
+{
+"s": "KOPRAN",
+"n": "Kopran"
+},
+{
+"s": "KORE",
+"n": "Jay Jalaram Techno."
+},
+{
+"s": "KOTAKBANK",
+"n": "Kotak Mahindra Bank"
+},
+{
+"s": "KOTARISUG",
+"n": "Kothari Sugars"
+},
+{
+"s": "KOTHARIPET",
+"n": "Kothari Petrochem"
+},
+{
+"s": "KOTHARIPRO",
+"n": "Kothari Products"
+},
+{
+"s": "KOTIC",
+"n": "Kothari Industrial"
+},
+{
+"s": "KOTYARK",
+"n": "Kotyark Industries"
+},
+{
+"s": "KOVAI",
+"n": "Kovai Medical Center"
+},
+{
+"s": "KPEL",
+"n": "KP ENERGY"
+},
+{
+"s": "KPIGREEN",
+"n": "KPI Green Energy"
+},
+{
+"s": "KPIL",
+"n": "Kalpataru Projects"
+},
+{
+"s": "KPITTECH",
+"n": "KPIT Tech"
+},
+{
+"s": "KPL",
+"n": "Kwality Pharma"
+},
+{
+"s": "KPRMILL",
+"n": "K.P.R. Mill"
+},
+{
+"s": "KRBL",
+"n": "KRBL"
+},
+{
+"s": "KREBSBIO",
+"n": "Krebs Biochem"
+},
+{
+"s": "KRIDHANINF",
+"n": "Kridhan Infra"
+},
+{
+"s": "KRISHANA",
+"n": "Krishana Phoschem"
+},
+{
+"s": "KRISHCA",
+"n": "Krishca Strapping S"
+},
+{
+"s": "KRISHIVAL",
+"n": "Krishival Foods"
+},
+{
+"s": "KRISHNADEF",
+"n": "Krishna Defence"
+},
+{
+"s": "KRITI",
+"n": "Kriti Industries"
+},
+{
+"s": "KRITIKA",
+"n": "Kritika Wires"
+},
+{
+"s": "KRITINUT",
+"n": "Kriti Nutrients"
+},
+{
+"s": "KRMAYURVED",
+"n": "KRM Ayurveda"
+},
+{
+"s": "KRN",
+"n": "KRN Heat Exch Refrig"
+},
+{
+"s": "KRONOX",
+"n": "Kronox Lab Sciences"
+},
+{
+"s": "KROSS",
+"n": "Kross"
+},
+{
+"s": "KRSNAA",
+"n": "Krsnaa"
+},
+{
+"s": "KRT",
+"n": "Knowledge RealtyTrus"
+},
+{
+"s": "KRYSTAL",
+"n": "Krystal Integrated Services Ltd"
+},
+{
+"s": "KSB",
+"n": "KSB"
+},
+{
+"s": "KSCL",
+"n": "Kaveri Seed Co"
+},
+{
+"s": "KSHINTL",
+"n": "KSH International"
+},
+{
+"s": "KSHITIJPOL",
+"n": "Kshitij Polyline"
+},
+{
+"s": "KSL",
+"n": "Kalyani Steels"
+},
+{
+"s": "KSOLVES",
+"n": "Ksolves India"
+},
+{
+"s": "KSR",
+"n": "KSR Footwear"
+},
+{
+"s": "KTKBANK",
+"n": "Karnataka Bank"
+},
+{
+"s": "KUANTUM",
+"n": "Kuantum Papers"
+},
+{
+"s": "KWIL",
+"n": "Kwality Wall's India"
+},
+{
+"s": "LAGNAM",
+"n": "Lagnam Spintex"
+},
+{
+"s": "LAHOTIOV",
+"n": "Lahoti Overseas"
+},
+{
+"s": "LAKPRE",
+"n": "Lakshmi Precision"
+},
+{
+"s": "LAKSHYA",
+"n": "Lakshya Powertech"
+},
+{
+"s": "LAL",
+"n": "Lorenzini Apparels"
+},
+{
+"s": "LALPATHLAB",
+"n": "Dr Lal PathLabs"
+},
+{
+"s": "LAMBODHARA",
+"n": "Lambodhara Textile"
+},
+{
+"s": "LAMOSAIC",
+"n": "Lamosaic India"
+},
+{
+"s": "LANCORHOL",
+"n": "Lancor Holdings"
+},
+{
+"s": "LANDMARK",
+"n": "Landmark Cars"
+},
+{
+"s": "LANDSMILL",
+"n": "Landsmill Green"
+},
+{
+"s": "LAOPALA",
+"n": "La Opala Rg"
+},
+{
+"s": "LASA",
+"n": "Lasa Supergenerics"
+},
+{
+"s": "LATENTVIEW",
+"n": "Latent View"
+},
+{
+"s": "LATTEYS",
+"n": "Latteys Industries"
+},
+{
+"s": "LAURUSLABS",
+"n": "Laurus Labs"
+},
+{
+"s": "LAXMICOT",
+"n": "Laxmi Cotspin"
+},
+{
+"s": "LAXMIDENTL",
+"n": "Laxmi Denta"
+},
+{
+"s": "LAXMIINDIA",
+"n": "Laxmi India Finance"
+},
+{
+"s": "LCCINFOTEC",
+"n": "LCC Infotech"
+},
+{
+"s": "LEMERITE",
+"n": "Le Merite Exports"
+},
+{
+"s": "LEMONTREE",
+"n": "Lemon Tree Hotels"
+},
+{
+"s": "LENSKART",
+"n": "Lenskart Solutions"
+},
+{
+"s": "LEXUS",
+"n": "Lexus Granito"
+},
+{
+"s": "LFIC",
+"n": "Lakshmi Finance"
+},
+{
+"s": "LGBBROSLTD",
+"n": "LG Balakrishnan"
+},
+{
+"s": "LGEINDIA",
+"n": "LG Electronics India"
+},
+{
+"s": "LGHL",
+"n": "Laxmi Goldorna"
+},
+{
+"s": "LIBAS",
+"n": "Libas Consumer Prods"
+},
+{
+"s": "LIBERTSHOE",
+"n": "Liberty Shoes"
+},
+{
+"s": "LICHSGFIN",
+"n": "LIC Housing Finance"
+},
+{
+"s": "LICI",
+"n": "LIC"
+},
+{
+"s": "LICMFGOLD",
+"n": "LICMFGOLD"
+},
+{
+"s": "LICNETFGSC",
+"n": "LICNMFET"
+},
+{
+"s": "LICNETFSEN",
+"n": "LICNETFSEN"
+},
+{
+"s": "LICNFNHGP",
+"n": "LICNFNHGP"
+},
+{
+"s": "LIKHITHA",
+"n": "Likhitha Infra"
+},
+{
+"s": "LINC",
+"n": "Linc"
+},
+{
+"s": "LINCOLN",
+"n": "Lincoln Pharma"
+},
+{
+"s": "LINDEINDIA",
+"n": "Linde India"
+},
+{
+"s": "LIQGRWBEES",
+"n": "LIQGRWBEES"
+},
+{
+"s": "LIQUID",
+"n": "LIQUID"
+},
+{
+"s": "LIQUIDADD",
+"n": "DSP BSE Liquid"
+},
+{
+"s": "LIQUIDBEES",
+"n": "LIQUIDBEES"
+},
+{
+"s": "LIQUIDBETF",
+"n": "LIQUIDBETF"
+},
+{
+"s": "LIQUIDCASE",
+"n": "LIQUIDCASE"
+},
+{
+"s": "LIQUIDETF",
+"n": "LIQUIDETF"
+},
+{
+"s": "LIQUIDIETF",
+"n": "LIQUIDIETF"
+},
+{
+"s": "LIQUIDPLUS",
+"n": "LIQUIDPLUS"
+},
+{
+"s": "LIQUIDSBI",
+"n": "LIQUIDSBI"
+},
+{
+"s": "LIQUIDSHRI",
+"n": "LIQUIDSHRI"
+},
+{
+"s": "LLOYDS",
+"n": "Lloyds Luxuries"
+},
+{
+"s": "LLOYDSENGG",
+"n": "Lloyds Engr Works"
+},
+{
+"s": "LLOYDSENT",
+"n": "Lloyds enterprises limited"
+},
+{
+"s": "LLOYDSME",
+"n": "Lloyds Metals"
+},
+{
+"s": "LMW",
+"n": "LMW"
+},
+{
+"s": "LODHA",
+"n": "Lodha Developers"
+},
+{
+"s": "LOKESHMACH",
+"n": "Lokesh Machines"
+},
+{
+"s": "LORDSCHLO",
+"n": "Lords Chloro Alkali"
+},
+{
+"s": "LOTUSDEV",
+"n": "Sri Lotus Developers"
+},
+{
+"s": "LOTUSEYE",
+"n": "Lotus Eye Hosp"
+},
+{
+"s": "LOVABLE",
+"n": "Lovable Lingerie"
+},
+{
+"s": "LOWVOL-EQ",
+"n": "LOWVOL"
+},
+{
+"s": "LOWVOLIETF",
+"n": "ICICILOVOL"
+},
+{
+"s": "LOYALTEX",
+"n": "Loyal Textile Mills"
+},
+{
+"s": "LPDC",
+"n": "LPDCL"
+},
+{
+"s": "LRRPL",
+"n": "Lead Reclaim And Rub"
+},
+{
+"s": "LT",
+"n": "L&T"
+},
+{
+"s": "LTF",
+"n": "L&T Finance"
+},
+{
+"s": "LTFOODS",
+"n": "LT Foods"
+},
+{
+"s": "LTGILTBEES",
+"n": "LTGILTBEES"
+},
+{
+"s": "LTGILTCASE",
+"n": "LTGILTCASE"
+},
+{
+"s": "LTM",
+"n": "LTM"
+},
+{
+"s": "LTTS",
+"n": "L&T Technology Serv."
+},
+{
+"s": "LUMAXIND",
+"n": "Lumax Industries"
+},
+{
+"s": "LUMAXTECH",
+"n": "Lumax Auto Tech"
+},
+{
+"s": "LUPIN",
+"n": "Lupin"
+},
+{
+"s": "LUXIND",
+"n": "Lux Industries"
+},
+{
+"s": "LXCHEM",
+"n": "Laxmi Organic Inds."
+},
+{
+"s": "LYKALABS",
+"n": "Lyka Labs"
+},
+{
+"s": "LYPSAGEMS",
+"n": "Lypsa Gems"
+},
+{
+"s": "M&M",
+"n": "Mahindra & Mahindra"
+},
+{
+"s": "M&MFIN",
+"n": "Mah & Mah Finl. Serv"
+},
+{
+"s": "MAANALU",
+"n": "Maan Aluminium"
+},
+{
+"s": "MACOBSTECH",
+"n": "Macobs Technologies"
+},
+{
+"s": "MACPOWER",
+"n": "Macpower CNC"
+},
+{
+"s": "MADHAV",
+"n": "Madhav Marbles"
+},
+{
+"s": "MADHAVBAUG",
+"n": "Vaidya Sane Ayur Lab"
+},
+{
+"s": "MADHAVIPL",
+"n": "Madhav Infra Proj"
+},
+{
+"s": "MADHUCON",
+"n": "Madhucon Projects"
+},
+{
+"s": "MADHUSUDAN",
+"n": "Madhusudan Masala"
+},
+{
+"s": "MADRASFERT",
+"n": "Madras Fertilizers"
+},
+{
+"s": "MAFANG",
+"n": "Mirae Asset NYSE FANG+ ETF"
+},
+{
+"s": "MAFATIND",
+"n": "Mafatlal Industries"
+},
+{
+"s": "MAGADSUGAR",
+"n": "Magadh Sugar & Energ"
+},
+{
+"s": "MAGNUM",
+"n": "Magnum Ventures"
+},
+{
+"s": "MAGSON",
+"n": "Magson Retail & Dist"
+},
+{
+"s": "MAHABANK",
+"n": "Bank of Maharashtra"
+},
+{
+"s": "MAHAPEXLTD",
+"n": "Maha Rashtra Apex"
+},
+{
+"s": "MAHASTEEL",
+"n": "Mahamaya Steel"
+},
+{
+"s": "MAHEPC",
+"n": "Mahindra EPC Irrig"
+},
+{
+"s": "MAHESHWARI",
+"n": "Maheshwari Logistics"
+},
+{
+"s": "MAHICKRA",
+"n": "Mahickra Chemicals"
+},
+{
+"s": "MAHKTECH",
+"n": "MAHKTECH"
+},
+{
+"s": "MAHLIFE",
+"n": "Mahindra Lifespace"
+},
+{
+"s": "MAHLOG",
+"n": "Mahindra Logistics"
+},
+{
+"s": "MAHSCOOTER",
+"n": "Maharashtra Scooters"
+},
+{
+"s": "MAHSEAMLES",
+"n": "Maharashtra Seamless"
+},
+{
+"s": "MAITHANALL",
+"n": "Maithan Alloys"
+},
+{
+"s": "MAITREYA",
+"n": "Maitreya Medicare"
+},
+{
+"s": "MAJESAUT",
+"n": "Majestic Auto"
+},
+{
+"s": "MAKEINDIA",
+"n": "MAMFGETF"
+},
+{
+"s": "MAKS",
+"n": "Maks Energy Solution"
+},
+{
+"s": "MAL",
+"n": "Mangalam Alloys"
+},
+{
+"s": "MALLCOM",
+"n": "Mallcom"
+},
+{
+"s": "MALUPAPER",
+"n": "Malu Paper Mills"
+},
+{
+"s": "MAMATA",
+"n": "Mamata Machinery"
+},
+{
+"s": "MANAKALUCO",
+"n": "Manaksia Aluminium"
+},
+{
+"s": "MANAKCOAT",
+"n": "Manaksia Coated"
+},
+{
+"s": "MANAKSIA",
+"n": "Manaksia"
+},
+{
+"s": "MANAKSTEEL",
+"n": "Manaksia Steels"
+},
+{
+"s": "MANALIPETC",
+"n": "Manali Petrochem"
+},
+{
+"s": "MANAPPURAM",
+"n": "Manappuram Finance"
+},
+{
+"s": "MANAV",
+"n": "Manav Infra Proj"
+},
+{
+"s": "MANBA",
+"n": "Manba Finance"
+},
+{
+"s": "MANCREDIT",
+"n": "MCFL"
+},
+{
+"s": "MANDEEP",
+"n": "Mandeep Auto Indust"
+},
+{
+"s": "MANGALAM",
+"n": "Mangalam Drugs"
+},
+{
+"s": "MANGLMCEM",
+"n": "Mangalam Cement"
+},
+{
+"s": "MANILAM",
+"n": "Manilam Industries I"
+},
+{
+"s": "MANINDS",
+"n": "Man Industries"
+},
+{
+"s": "MANINFRA",
+"n": "Man InfraConstruct"
+},
+{
+"s": "MANKIND",
+"n": "Mankind Pharma"
+},
+{
+"s": "MANOMAY",
+"n": "Manomay Tex India"
+},
+{
+"s": "MANORAMA",
+"n": "Manorama Inds"
+},
+{
+"s": "MANORG",
+"n": "Mangalam Organics"
+},
+{
+"s": "MANUFGBEES",
+"n": "MANUFGBEES"
+},
+{
+"s": "MANUGRAPH",
+"n": "Manugraph India"
+},
+{
+"s": "MANYAVAR",
+"n": "Vedant Fashions"
+},
+{
+"s": "MAPMYINDIA",
+"n": "CE Info Systems"
+},
+{
+"s": "MARALOVER",
+"n": "Maral Overseas"
+},
+{
+"s": "MARATHON",
+"n": "Marathon Nextgen"
+},
+{
+"s": "MARC",
+"n": "Marc Technocrats"
+},
+{
+"s": "MARCO",
+"n": "Marco Cables"
+},
+{
+"s": "MARICO",
+"n": "Marico"
+},
+{
+"s": "MARINE",
+"n": "Marine Electrials"
+},
+{
+"s": "MARINETRAN",
+"n": "Marinetrans India"
+},
+{
+"s": "MARKOLINES",
+"n": "Markolines Pave Tech"
+},
+{
+"s": "MARKSANS",
+"n": "Marksans Pharma"
+},
+{
+"s": "MARSONS",
+"n": "Marsons"
+},
+{
+"s": "MARUSHIKA",
+"n": "Marushika Technology"
+},
+{
+"s": "MARUTI",
+"n": "Maruti Suzuki"
+},
+{
+"s": "MASFIN",
+"n": "MAS Financial"
+},
+{
+"s": "MASKINVEST",
+"n": "Mask Investments"
+},
+{
+"s": "MASON",
+"n": "Mason Infratech"
+},
+{
+"s": "MASTEK",
+"n": "Mastek"
+},
+{
+"s": "MASTER",
+"n": "Master Components"
+},
+{
+"s": "MASTERTR",
+"n": "Master Trust"
+},
+{
+"s": "MATRIMONY",
+"n": "Matrimony.Com"
+},
+{
+"s": "MAWANASUG",
+"n": "Mawana Sugars"
+},
+{
+"s": "MAXESTATES",
+"n": "Max Estates"
+},
+{
+"s": "MAXHEALTH",
+"n": "Max Healthcare"
+},
+{
+"s": "MAXIND",
+"n": "Max India"
+},
+{
+"s": "MAXPOSURE",
+"n": "Maxposure"
+},
+{
+"s": "MAXVOLT",
+"n": "Maxvolt Energy Indus"
+},
+{
+"s": "MAYASHEEL",
+"n": "Mayasheel Ventures"
+},
+{
+"s": "MAYURUNIQ",
+"n": "Mayur Uniquoters"
+},
+{
+"s": "MAZDA",
+"n": "Mazda"
+},
+{
+"s": "MAZDOCK",
+"n": "Mazagon Dock Ship"
+},
+{
+"s": "MBAPL",
+"n": "MBAPL"
+},
+{
+"s": "MBEL",
+"n": "M&B Engineering"
+},
+{
+"s": "MBLINFRA",
+"n": "MBL Infrastructures"
+},
+{
+"s": "MCCHRLS-B",
+"n": "Mac Charles"
+},
+{
+"s": "MCL",
+"n": "M Tek Copper"
+},
+{
+"s": "MCLEODRUSS",
+"n": "McLeod Russel"
+},
+{
+"s": "MCLOUD",
+"n": "Magellanic Cloud"
+},
+{
+"s": "MCON",
+"n": "MCON Rasayan India"
+},
+{
+"s": "MCX",
+"n": "MCX"
+},
+{
+"s": "MDL",
+"n": "Marvel Decor"
+},
+{
+"s": "MEDANTA",
+"n": "Global Health"
+},
+{
+"s": "MEDIASSIST",
+"n": "Medi Assist Health"
+},
+{
+"s": "MEDICAMEQ",
+"n": "Medicamen Biotech"
+},
+{
+"s": "MEDICO",
+"n": "Medico Remedies"
+},
+{
+"s": "MEDIORG",
+"n": "Medicamen Organics"
+},
+{
+"s": "MEDISTEP",
+"n": "Medistep Healthcare"
+},
+{
+"s": "MEDPLUS",
+"n": "Medplus Health Services"
+},
+{
+"s": "MEESHO",
+"n": "Meesho"
+},
+{
+"s": "MEGAFLEX",
+"n": "Mega Flex Plastics"
+},
+{
+"s": "MEGASTAR",
+"n": "Megastar Foods"
+},
+{
+"s": "MEGATHERM",
+"n": "Megatherm Induction"
+},
+{
+"s": "MEIL",
+"n": "Mangal Electrical"
+},
+{
+"s": "MENNPIS",
+"n": "Menon Pistons"
+},
+{
+"s": "MENONBE",
+"n": "Menon Bearings"
+},
+{
+"s": "MEP",
+"n": "MEP Infra Devs"
+},
+{
+"s": "MERCANTILE",
+"n": "Mercantile Ventures"
+},
+{
+"s": "MERCURYEV",
+"n": "Mercury Metals"
+},
+{
+"s": "METAL",
+"n": "Mirae Asset Nifty"
+},
+{
+"s": "METALIETF",
+"n": "METALIETF"
+},
+{
+"s": "METROBRAND",
+"n": "Metro Brands"
+},
+{
+"s": "METROGLOBL",
+"n": "Metroglobal"
+},
+{
+"s": "METROPOLIS",
+"n": "Metropolis Health."
+},
+{
+"s": "MFML",
+"n": "Mahalaxmi Fabric"
+},
+{
+"s": "MFSL",
+"n": "Max Fin Services"
+},
+{
+"s": "MGEL",
+"n": "Mangalam Global Entr"
+},
+{
+"s": "MGL",
+"n": "Mahanagar Gas"
+},
+{
+"s": "MGSL",
+"n": "Matrix Geo Solutions"
+},
+{
+"s": "MHHL",
+"n": "Mohini Health"
+},
+{
+"s": "MHLXMIRU",
+"n": "MRT"
+},
+{
+"s": "MHRIL",
+"n": "Mahindra Holi.&Resor"
+},
+{
+"s": "MICEL",
+"n": "MIC Electronics"
+},
+{
+"s": "MICROPRO",
+"n": "Micropro Software"
+},
+{
+"s": "MIDCAP",
+"n": "KOTAKMID50"
+},
+{
+"s": "MIDCAPADD",
+"n": "MIDCAPADD"
+},
+{
+"s": "MIDCAPBETA",
+"n": "NIFMID150"
+},
+{
+"s": "MIDCAPETF",
+"n": "MAM150ETF"
+},
+{
+"s": "MIDCAPIETF",
+"n": "ICICIM150"
+},
+{
+"s": "MIDHANI",
+"n": "Mishra Dhatu Nigam"
+},
+{
+"s": "MIDSELIETF",
+"n": "MIDSELIETF"
+},
+{
+"s": "MIDSMALL",
+"n": "MIDSMALL"
+},
+{
+"s": "MIDWESTLTD",
+"n": "Midwest"
+},
+{
+"s": "MIEL",
+"n": "Manglam Infra & Eng"
+},
+{
+"s": "MILTON",
+"n": "Milton Industries"
+},
+{
+"s": "MINDACORP",
+"n": "Minda Corporation"
+},
+{
+"s": "MINDPOOL",
+"n": "Mindpool Tech"
+},
+{
+"s": "MINDSPACE",
+"n": "Mindspace Business"
+},
+{
+"s": "MINDTECK",
+"n": "Mindteck (India)"
+},
+{
+"s": "MIRCELECTR",
+"n": "Onida Electronics"
+},
+{
+"s": "MIRZAINT",
+"n": "Mirza International"
+},
+{
+"s": "MITCON",
+"n": "MITCON Consultancy"
+},
+{
+"s": "MITTAL",
+"n": "Mittal Life Style"
+},
+{
+"s": "MKPL",
+"n": "MK Proteins"
+},
+{
+"s": "MMEL",
+"n": "Moving Media Entert."
+},
+{
+"s": "MMFL",
+"n": "MM Forgings"
+},
+{
+"s": "MMP",
+"n": "MMP Industries"
+},
+{
+"s": "MMTC",
+"n": "MMTC"
+},
+{
+"s": "MMWL",
+"n": "Media Matrix"
+},
+{
+"s": "MNC",
+"n": "KOTAKMNC"
+},
+{
+"s": "MOBIKWIK",
+"n": "One Mobikwik Systems"
+},
+{
+"s": "MOBILISE",
+"n": "Mobilise App Lab"
+},
+{
+"s": "MOCAPITAL",
+"n": "Motilal Oswal Nifty"
+},
+{
+"s": "MODEFENCE",
+"n": "MODEFENCE"
+},
+{
+"s": "MODINATUR",
+"n": "Modi Naturals"
+},
+{
+"s": "MODIRUBBER",
+"n": "Modi Rubber"
+},
+{
+"s": "MODIS",
+"n": "Modi's Navnirman"
+},
+{
+"s": "MODISONLTD",
+"n": "Modison"
+},
+{
+"s": "MODTHREAD",
+"n": "Modern Threads"
+},
+{
+"s": "MOENERGY",
+"n": "Motilal Oswal Nifty"
+},
+{
+"s": "MOGOLD",
+"n": "MOGOLD"
+},
+{
+"s": "MOGSEC",
+"n": "MO 5 Year G-Sec ETF"
+},
+{
+"s": "MOHEALTH",
+"n": "MOHEALTH"
+},
+{
+"s": "MOHITIND",
+"n": "Mohit Industries"
+},
+{
+"s": "MOIL",
+"n": "MOIL"
+},
+{
+"s": "MOINFRA",
+"n": "MOINFRA"
+},
+{
+"s": "MOIPO",
+"n": "Motilal Oswal BSE"
+},
+{
+"s": "MOKSH",
+"n": "Moksh Ornaments"
+},
+{
+"s": "MOL",
+"n": "Meghmani"
+},
+{
+"s": "MOLDTECH",
+"n": "Mold-Tek Tech"
+},
+{
+"s": "MOLDTKPAC",
+"n": "Mold-Tek Packaging"
+},
+{
+"s": "MOLOWVOL",
+"n": "MOLOWVOL"
+},
+{
+"s": "MOMENTUM",
+"n": "Aditya Birla Nif200"
+},
+{
+"s": "MOMGF",
+"n": "MOMGF"
+},
+{
+"s": "MOMIDMTM",
+"n": "MOMIDMTM"
+},
+{
+"s": "MOMNC",
+"n": "MOMNC"
+},
+{
+"s": "MOMOMENTUM",
+"n": "MOMOMENTUM"
+},
+{
+"s": "MONARCH",
+"n": "Monarch Networth"
+},
+{
+"s": "MONEYBOXX",
+"n": "Moneyboxx Finance"
+},
+{
+"s": "MONOLITH",
+"n": "Monolithisch India"
+},
+{
+"s": "MONOPHARMA",
+"n": "Mono Pharmacare"
+},
+{
+"s": "MONTECARLO",
+"n": "Monte Carlo Fashions"
+},
+{
+"s": "MOPSE",
+"n": "Motilal Oswal Nifty"
+},
+{
+"s": "MOQUALITY",
+"n": "Motilal Osl S&P BSEQ"
+},
+{
+"s": "MORARJEE-BZ",
+"n": "Morarjee Textiles"
+},
+{
+"s": "MOREALTY",
+"n": "MOREALTY"
+},
+{
+"s": "MOREPENLAB",
+"n": "Morepen Labs"
+},
+{
+"s": "MOS",
+"n": "MOS Utility"
+},
+{
+"s": "MOSCHIP",
+"n": "Moschip Tech"
+},
+{
+"s": "MOSERVICE",
+"n": "Motilal Oswal Nifty"
+},
+{
+"s": "MOSILVER",
+"n": "MOSILVER"
+},
+{
+"s": "MOTHERSON",
+"n": "Samvardhana Motherson"
+},
+{
+"s": "MOTILALOFS",
+"n": "MO Financial"
+},
+{
+"s": "MOTISONS",
+"n": "Motisons Jewellers"
+},
+{
+"s": "MOTOGENFIN",
+"n": "Motor & Gen Finance"
+},
+{
+"s": "MOTOUR",
+"n": "Motilal Oswal Nifty"
+},
+{
+"s": "MOVALUE",
+"n": "Motilal S&P BSE EnVl"
+},
+{
+"s": "MOXSH",
+"n": "Moxsh Overseas Edu"
+},
+{
+"s": "MPEL",
+"n": "Manas Polymers"
+},
+{
+"s": "MPHASIS",
+"n": "Mphasis"
+},
+{
+"s": "MPSLTD",
+"n": "MPS"
+},
+{
+"s": "MPTODAY",
+"n": "MP Today Media"
+},
+{
+"s": "MRF",
+"n": "MRF"
+},
+{
+"s": "MRIL",
+"n": "Mahendra Realt&Infra"
+},
+{
+"s": "MRPL",
+"n": "MRPL"
+},
+{
+"s": "MSCIADD",
+"n": "MSCIADD"
+},
+{
+"s": "MSCIINDIA",
+"n": "MSCIINDIA"
+},
+{
+"s": "MSPL",
+"n": "MSP Steel & Power"
+},
+{
+"s": "MSTCLTD",
+"n": "MSTC"
+},
+{
+"s": "MSUMI",
+"n": "Motherson Sumi Wiring India"
+},
+{
+"s": "MTARTECH",
+"n": "MTAR Technologies"
+},
+{
+"s": "MTEDUCARE",
+"n": "MT Educare"
+},
+{
+"s": "MTNL",
+"n": "MTNL"
+},
+{
+"s": "MUFIN",
+"n": "Mufin Green Finance"
+},
+{
+"s": "MUFTI",
+"n": "Credo Brands Mktg"
+},
+{
+"s": "MUKANDLTD",
+"n": "Mukand"
+},
+{
+"s": "MUKKA",
+"n": "Mukka Proteins"
+},
+{
+"s": "MUKTAARTS",
+"n": "Mukta Arts"
+},
+{
+"s": "MULTICAP",
+"n": "MULTICAP"
+},
+{
+"s": "MUNISH",
+"n": "Munish Forge"
+},
+{
+"s": "MUNJALAU",
+"n": "Munjal Auto Inds"
+},
+{
+"s": "MUNJALSHOW",
+"n": "Munjal Showa"
+},
+{
+"s": "MURUDCERA",
+"n": "Murudeshwar Ceramics"
+},
+{
+"s": "MUTHOOTCAP",
+"n": "Muthoot Capital Serv"
+},
+{
+"s": "MUTHOOTFIN",
+"n": "Muthoot Finance"
+},
+{
+"s": "MUTHOOTMF",
+"n": "Muthoot Microfin"
+},
+{
+"s": "MVGJL",
+"n": "Manoj Vaibhav Gems"
+},
+{
+"s": "MVKAGRO",
+"n": "M.V.K. Agro FoodProd"
+},
+{
+"s": "MWL",
+"n": "Mangalam Worldwide"
+},
+{
+"s": "MYMUDRA",
+"n": "My Mudra Fincorp"
+},
+{
+"s": "NACLIND",
+"n": "NACL Industries"
+},
+{
+"s": "NAGREEKCAP",
+"n": "Nagreeka Capital"
+},
+{
+"s": "NAGREEKEXP",
+"n": "Nagreeka Exports"
+},
+{
+"s": "NAHARCAP",
+"n": "Nahar Cap & Fin"
+},
+{
+"s": "NAHARINDUS",
+"n": "Nahar Inds Enter"
+},
+{
+"s": "NAHARPOLY",
+"n": "Nahar Poly Films"
+},
+{
+"s": "NAHARSPING",
+"n": "Nahar Spinning Mills"
+},
+{
+"s": "NAM-INDIA",
+"n": "Nippon Life India AMC"
+},
+{
+"s": "NAMAN",
+"n": "Naman Industries Pro"
+},
+{
+"s": "NAMOEWASTE",
+"n": "Namo Ewaste Mgmt."
+},
+{
+"s": "NARMADA",
+"n": "Narmada Agrobase"
+},
+{
+"s": "NATCAPSUQ",
+"n": "Natural Capsules"
+},
+{
+"s": "NATCOPHARM",
+"n": "Natco Pharma"
+},
+{
+"s": "NATHBIOGEN",
+"n": "Nath Bio-Genes"
+},
+{
+"s": "NATIONALUM",
+"n": "NALCO"
+},
+{
+"s": "NATIONSTD",
+"n": "National Stndrd"
+},
+{
+"s": "NAUKRI",
+"n": "Info Edge (India)"
+},
+{
+"s": "NAVA",
+"n": "Nava"
+},
+{
+"s": "NAVINFLUOR",
+"n": "Navin Fluorine Intl"
+},
+{
+"s": "NAVKARCORP",
+"n": "Navkar Corporation"
+},
+{
+"s": "NAVKARURB",
+"n": "Navkar Urban"
+},
+{
+"s": "NAVNETEDUL",
+"n": "Navneet Education"
+},
+{
+"s": "NAZARA",
+"n": "Nazara Technologies"
+},
+{
+"s": "NBCC",
+"n": "NBCC (India)"
+},
+{
+"s": "NBIFIN",
+"n": "NBI Industrial Fin"
+},
+{
+"s": "NCC",
+"n": "NCC"
+},
+{
+"s": "NCLIND",
+"n": "NCL Industries"
+},
+{
+"s": "NDGL",
+"n": "Naga Dhunseri Group"
+},
+{
+"s": "NDL",
+"n": "Nandan Denim"
+},
+{
+"s": "NDLVENTURE",
+"n": "NXTDigital"
+},
+{
+"s": "NDRAUTO",
+"n": "NDR Auto Components"
+},
+{
+"s": "NDTV",
+"n": "New Delhi Television"
+},
+{
+"s": "NEAGI",
+"n": "Neelamalai Agro"
+},
+{
+"s": "NECCLTD",
+"n": "North Eastern Carrying"
+},
+{
+"s": "NECLIFE",
+"n": "Nectar Life Sciences"
+},
+{
+"s": "NEELAM",
+"n": "Neelam Linens&Garmen"
+},
+{
+"s": "NELCAST",
+"n": "Nelcast"
+},
+{
+"s": "NELCO",
+"n": "NELCO"
+},
+{
+"s": "NEOCHEM",
+"n": "Neochem Bio Solution"
+},
+{
+"s": "NEOGEN",
+"n": "Neogen Chemicals"
+},
+{
+"s": "NEPHROCARE",
+"n": "Nephro Care India"
+},
+{
+"s": "NEPHROPLUS",
+"n": "Nephrocare Health Se"
+},
+{
+"s": "NEPTUNE",
+"n": "Neptune Petrochem."
+},
+{
+"s": "NESCO",
+"n": "Nesco"
+},
+{
+"s": "NESTLEIND",
+"n": "Nestle"
+},
+{
+"s": "NETF",
+"n": "Tata Asset Mngt. Ltd."
+},
+{
+"s": "NETWEB",
+"n": "Netweb Technologies"
+},
+{
+"s": "NEULANDLAB",
+"n": "Neuland Laboratories"
+},
+{
+"s": "NEWGEN",
+"n": "Newgen Software Tech"
+},
+{
+"s": "NEWJAISA",
+"n": "Newjaisa Tech"
+},
+{
+"s": "NEXTMEDIA",
+"n": "Next Mediaworks"
+},
+{
+"s": "NFL",
+"n": "National Fertilizers"
+},
+{
+"s": "NFPSAMPOOR",
+"n": "NFP Sampoorna Foods"
+},
+{
+"s": "NGIL",
+"n": "Nakoda Group of Inds"
+},
+{
+"s": "NGLFINE",
+"n": "NGL Fine Chem"
+},
+{
+"s": "NH",
+"n": "Narayana Hrudayalaya"
+},
+{
+"s": "NHIT",
+"n": "NHIT"
+},
+{
+"s": "NHPC",
+"n": "NHPC"
+},
+{
+"s": "NIACL",
+"n": "New India Assurance"
+},
+{
+"s": "NIBE",
+"n": "NIBE"
+},
+{
+"s": "NIBL",
+"n": "NRB Inds Bearings"
+},
+{
+"s": "NIDAN",
+"n": "Nidan Labs. & Health"
+},
+{
+"s": "NIFTYADD",
+"n": "NIFTY50ADD"
+},
+{
+"s": "NIFTYBEES",
+"n": "NIFTYBEES"
+},
+{
+"s": "NIFTYBETA",
+"n": "UTINIFTETF"
+},
+{
+"s": "NIFTYBETF",
+"n": "NIFTYBETF"
+},
+{
+"s": "NIFTYCASE",
+"n": "NIFTYCASE"
+},
+{
+"s": "NIFTYETF",
+"n": "NIFTYETF"
+},
+{
+"s": "NIFTYIETF",
+"n": "ICICI Prudent.Nifty"
+},
+{
+"s": "NIFTYQLITY",
+"n": "Aditya Birla Nif200Q"
+},
+{
+"s": "NIITLTD",
+"n": "NIIT"
+},
+{
+"s": "NIITMTS",
+"n": "NIIT Learning Sys"
+},
+{
+"s": "NIKITA",
+"n": "Nikita Greentech"
+},
+{
+"s": "NILAINFRA",
+"n": "Nila Infrastructures"
+},
+{
+"s": "NILASPACES",
+"n": "Nila Spaces"
+},
+{
+"s": "NILE",
+"n": "NILE"
+},
+{
+"s": "NILKAMAL",
+"n": "Nilkamal"
+},
+{
+"s": "NIMBSPROJ",
+"n": "Nimbus Projects"
+},
+{
+"s": "NINSYS",
+"n": "NINtec Systems"
+},
+{
+"s": "NIPPOBATRY",
+"n": "Indo National"
+},
+{
+"s": "NIRAJ",
+"n": "Niraj Cement Struct"
+},
+{
+"s": "NIRAJISPAT",
+"n": "Niraj Ispat Inds"
+},
+{
+"s": "NIRLON",
+"n": "Nirlon"
+},
+{
+"s": "NIRMAN",
+"n": "Nirman Agri Genetics"
+},
+{
+"s": "NITCO",
+"n": "Nitco"
+},
+{
+"s": "NITINSPIN",
+"n": "Nitin Spinners"
+},
+{
+"s": "NITIRAJ",
+"n": "Nitiraj Engg"
+},
+{
+"s": "NITTAGELA",
+"n": "Nitta Gelatin"
+},
+{
+"s": "NIVABUPA",
+"n": "Niva Bupa Health Ins"
+},
+{
+"s": "NKIND",
+"n": "NK Industries"
+},
+{
+"s": "NLCINDIA",
+"n": "NLC India"
+},
+{
+"s": "NMDC",
+"n": "NMDC"
+},
+{
+"s": "NMSTEEL",
+"n": "NewMalayalam Steel"
+},
+{
+"s": "NOCIL",
+"n": "NOCIL"
+},
+{
+"s": "NOIDATOLL",
+"n": "Noida Toll Bridge Co"
+},
+{
+"s": "NORBTEAEXP",
+"n": "Norben Tea & Exports"
+},
+{
+"s": "NORTHARC",
+"n": "Northern Arc Capital"
+},
+{
+"s": "NOVAAGRI",
+"n": "Nova Agritech"
+},
+{
+"s": "NOVARTIND",
+"n": "Novartis"
+},
+{
+"s": "NPBET",
+"n": "NPBET"
+},
+{
+"s": "NPST",
+"n": "Network People S"
+},
+{
+"s": "NRAIL",
+"n": "NR Agarwal Inds"
+},
+{
+"s": "NRBBEARING",
+"n": "NRB Bearings"
+},
+{
+"s": "NRL",
+"n": "Nupur Recyclers"
+},
+{
+"s": "NRVANDANA",
+"n": "NR Vandana Tex Inds"
+},
+{
+"s": "NSIL",
+"n": "Nalwa Sons Invst"
+},
+{
+"s": "NSLNISP",
+"n": "NMDC Steel"
+},
+{
+"s": "NTPC",
+"n": "NTPC"
+},
+{
+"s": "NTPCGREEN",
+"n": "NTPC Green Energy"
+},
+{
+"s": "NUCLEUS",
+"n": "Nucleus Software Exp"
+},
+{
+"s": "NURECA",
+"n": "Nureca"
+},
+{
+"s": "NUVAMA",
+"n": "Nuvama Wealth"
+},
+{
+"s": "NUVOCO",
+"n": "Nuvoco Vistas"
+},
+{
+"s": "NXST",
+"n": "Nexus Select Trust"
+},
+{
+"s": "NYKAA",
+"n": "Nykaa"
+},
+{
+"s": "OAL",
+"n": "Oriental Aromatics"
+},
+{
+"s": "OBCL",
+"n": "OBCL"
+},
+{
+"s": "OBEROIRLTY",
+"n": "Oberoi Realty"
+},
+{
+"s": "OBSCP",
+"n": "OBSC Perfection"
+},
+{
+"s": "OCCLLTD",
+"n": "OCCL"
+},
+{
+"s": "ODIGMA",
+"n": "Odigma Consult Solut"
+},
+{
+"s": "OFSS",
+"n": "Oracle Finl. Service"
+},
+{
+"s": "OIL",
+"n": "Oil India"
+},
+{
+"s": "OILCOUNTUB",
+"n": "Oil Country Tubular"
+},
+{
+"s": "OILIETF",
+"n": "OILIETF"
+},
+{
+"s": "OLAELEC",
+"n": "Ola Electric Mobility"
+},
+{
+"s": "OLECTRA",
+"n": "Olectra Greentech"
+},
+{
+"s": "OLIL",
+"n": "Oneclick Logistics"
+},
+{
+"s": "OMAXAUTO",
+"n": "Omax Autos"
+},
+{
+"s": "OMAXE",
+"n": "Omaxe"
+},
+{
+"s": "OMFREIGHT",
+"n": "Om Freight Forwarder"
+},
+{
+"s": "OMFURN",
+"n": "Omfurn India"
+},
+{
+"s": "OMINFRAL",
+"n": "Om Infra"
+},
+{
+"s": "OMNI",
+"n": "Omnitech Engineering"
+},
+{
+"s": "OMPOWER",
+"n": "Om Power Trans"
+},
+{
+"s": "ONDOOR",
+"n": "On Door Concepts"
+},
+{
+"s": "ONELIFECAP",
+"n": "Onelife Capital Advisors"
+},
+{
+"s": "ONEPOINT",
+"n": "One Point One Solutions"
+},
+{
+"s": "ONESOURCE",
+"n": "Onesource Specialty"
+},
+{
+"s": "ONGC",
+"n": "ONGC"
+},
+{
+"s": "ONMOBILE",
+"n": "Onmobile Global"
+},
+{
+"s": "ONWARDTEC",
+"n": "Onward Technologies"
+},
+{
+"s": "ONYX",
+"n": "Onyx Biotec"
+},
+{
+"s": "OPTIEMUS",
+"n": "Optiemus infracom"
+},
+{
+"s": "OPTIVALUE",
+"n": "Optivalue Tek Consul"
+},
+{
+"s": "ORBTEXP",
+"n": "Orbit Exports"
+},
+{
+"s": "ORCHASP",
+"n": "Cybermate Infotek"
+},
+{
+"s": "ORCHPHARMA",
+"n": "Orchid Pharma"
+},
+{
+"s": "ORIANA",
+"n": "Oriana Power"
+},
+{
+"s": "ORICONENT",
+"n": "Oricon Enterprises"
+},
+{
+"s": "ORIENTALTL",
+"n": "Oriental Trimex"
+},
+{
+"s": "ORIENTBELL",
+"n": "Orient Bell"
+},
+{
+"s": "ORIENTCEM",
+"n": "Orient Cement"
+},
+{
+"s": "ORIENTCER",
+"n": "Orient Abrasives"
+},
+{
+"s": "ORIENTELEC",
+"n": "Orient Electric"
+},
+{
+"s": "ORIENTHOT",
+"n": "Oriental Hotels"
+},
+{
+"s": "ORIENTLTD",
+"n": "Orient Press"
+},
+{
+"s": "ORIENTPPR",
+"n": "Orient Paper"
+},
+{
+"s": "ORIENTTECH",
+"n": "Orient Technologies"
+},
+{
+"s": "ORISSAMINE",
+"n": "OMDC"
+},
+{
+"s": "ORKLAINDIA",
+"n": "Orkla India"
+},
+{
+"s": "ORTEL",
+"n": "Ortel Comm"
+},
+{
+"s": "ORTINGLOBE",
+"n": "Ortin Global"
+},
+{
+"s": "OSEINTRUST",
+"n": "OSEINTRUST"
+},
+{
+"s": "OSELDEVICE",
+"n": "Osel Devices"
+},
+{
+"s": "OSIAHYPER",
+"n": "Osia Hyper Retail"
+},
+{
+"s": "OSWALAGRO",
+"n": "Oswal Agro Mills"
+},
+{
+"s": "OSWALGREEN",
+"n": "Oswal Greentech"
+},
+{
+"s": "OSWALPUMPS",
+"n": "Oswal Pumps"
+},
+{
+"s": "OSWALSEEDS",
+"n": "ShreeOswal Seeds"
+},
+{
+"s": "OWAIS",
+"n": "Owais Metal & Min."
+},
+{
+"s": "PACEDIGITK",
+"n": "Pace Digitek"
+},
+{
+"s": "PAGEIND",
+"n": "Page Industries"
+},
+{
+"s": "PAISALO",
+"n": "Paisalo Digital"
+},
+{
+"s": "PAKKA",
+"n": "Pakka"
+},
+{
+"s": "PALASHSECU",
+"n": "Palash Securities"
+},
+{
+"s": "PALREDTEC",
+"n": "Palred Technologies"
+},
+{
+"s": "PANACEABIO",
+"n": "Panacea Biotec"
+},
+{
+"s": "PANACHE",
+"n": "Panache Digilife"
+},
+{
+"s": "PANAMAPET",
+"n": "Panama Petrochem"
+},
+{
+"s": "PANSARI",
+"n": "Pansari Developers"
+},
+{
+"s": "PAR",
+"n": "Par Drugs & Chemical"
+},
+{
+"s": "PARACABLES",
+"n": "Paramount Comm"
+},
+{
+"s": "PARADEEP",
+"n": "Paradeep Phsphts"
+},
+{
+"s": "PARAGMILK",
+"n": "Parag Milk Foods"
+},
+{
+"s": "PARAGON",
+"n": "Paragon Fine & Spl."
+},
+{
+"s": "PARAMATRIX",
+"n": "Paramatrix Tech"
+},
+{
+"s": "PARAMOUNT",
+"n": "Paramount Dye Tec"
+},
+{
+"s": "PARAMPARA",
+"n": "Parampara Dairy Deli"
+},
+{
+"s": "PARAS",
+"n": "Paras Defence"
+},
+{
+"s": "PARASPETRO",
+"n": "Paras Petrofils"
+},
+{
+"s": "PARIN",
+"n": "Parin Enterprises"
+},
+{
+"s": "PARKHOSPS",
+"n": "Park Medi World"
+},
+{
+"s": "PARKHOTELS",
+"n": "Apeejay Surrendra Park"
+},
+{
+"s": "PARSVNATH",
+"n": "Parsvnath Developers"
+},
+{
+"s": "PARTH",
+"n": "Parth Electricals"
+},
+{
+"s": "PARTYCRUS",
+"n": "Party Cruisers"
+},
+{
+"s": "PASHUPATI",
+"n": "Pashupati Cotspin"
+},
+{
+"s": "PASUPTAC",
+"n": "Pasupati Acrylon"
+},
+{
+"s": "PATANJALI",
+"n": "Patanjali Foods"
+},
+{
+"s": "PATELENG",
+"n": "Patel Engineering"
+},
+{
+"s": "PATELRMART",
+"n": "Patel Retail"
+},
+{
+"s": "PATILAUTOM",
+"n": "Patil Automation"
+},
+{
+"s": "PATINTLOG",
+"n": "Patel Integrated Log"
+},
+{
+"s": "PATTECH",
+"n": "Pattech Fitwell Tube"
+},
+{
+"s": "PAUSHAKLTD",
+"n": "Paushak"
+},
+{
+"s": "PAVNAIND",
+"n": "Pavna Industries"
+},
+{
+"s": "PAYTM",
+"n": "Paytm"
+},
+{
+"s": "PCBL",
+"n": "PCBL Chemical"
+},
+{
+"s": "PCCL",
+"n": "Petro Carbon & Chem."
+},
+{
+"s": "PCJEWELLER",
+"n": "PC Jeweller"
+},
+{
+"s": "PDMJEPAPER",
+"n": "Pudumjee Paper"
+},
+{
+"s": "PDSL",
+"n": "Pds In"
+},
+{
+"s": "PEARLPOLY",
+"n": "Pearl Polymers"
+},
+{
+"s": "PELATRO",
+"n": "Pelatro"
+},
+{
+"s": "PENIND",
+"n": "Pennar Industries"
+},
+{
+"s": "PENINLAND",
+"n": "Peninsula Land"
+},
+{
+"s": "PENTAGON",
+"n": "Pentagon Rubber"
+},
+{
+"s": "PERSISTENT",
+"n": "Persistent Systems"
+},
+{
+"s": "PETRONET",
+"n": "Petronet LNG"
+},
+{
+"s": "PFC",
+"n": "Power Finance Corp"
+},
+{
+"s": "PFIZER",
+"n": "Pfizer"
+},
+{
+"s": "PFOCUS",
+"n": "Prime Focus"
+},
+{
+"s": "PFS",
+"n": "PTC Financial Serv"
+},
+{
+"s": "PGEL",
+"n": "PG Electroplast"
+},
+{
+"s": "PGHH",
+"n": "P&G"
+},
+{
+"s": "PGHL",
+"n": "P&G Health"
+},
+{
+"s": "PGIL",
+"n": "Pearl Global Inds."
+},
+{
+"s": "PGINVIT",
+"n": "POWERGRID Infra"
+},
+{
+"s": "PHANTOMFX",
+"n": "Phantom Digi. Effect"
+},
+{
+"s": "PHARMABEES",
+"n": "NETFPHARMA"
+},
+{
+"s": "PHOENIXLTD",
+"n": "Phoenix Mills"
+},
+{
+"s": "PHOGLOBAL",
+"n": "Phoenix Overseas"
+},
+{
+"s": "PICCADIL",
+"n": "Piccadily Agro"
+},
+{
+"s": "PIDILITIND",
+"n": "Pidilite Industries"
+},
+{
+"s": "PIGL",
+"n": "Power & Instrument"
+},
+{
+"s": "PIIND",
+"n": "PI Industries"
+},
+{
+"s": "PILANIINVS",
+"n": "Pilani Investment"
+},
+{
+"s": "PILITA",
+"n": "PIL ITALICA Life"
+},
+{
+"s": "PINELABS",
+"n": "Pine Labs"
+},
+{
+"s": "PIONEEREMB",
+"n": "Pioneer Embroideries"
+},
+{
+"s": "PIONRINV",
+"n": "Pioneer Investcorp"
+},
+{
+"s": "PIRAMALFIN",
+"n": "Piramal Finance"
+},
+{
+"s": "PITTIENG",
+"n": "Pitti Engineering"
+},
+{
+"s": "PIXTRANS",
+"n": "Pix Transmission"
+},
+{
+"s": "PKTEA",
+"n": "Peria Karamalai Tea"
+},
+{
+"s": "PLADAINFO",
+"n": "Plada Infotech"
+},
+{
+"s": "PLASTIBLEN",
+"n": "Plastiblends India"
+},
+{
+"s": "PLATIND",
+"n": "Platinum Industries"
+},
+{
+"s": "PLAZACABLE",
+"n": "Plaza Wires"
+},
+{
+"s": "PML",
+"n": "Paul Merchants"
+},
+{
+"s": "PNB",
+"n": "PNB"
+},
+{
+"s": "PNBGILTS",
+"n": "PNB Gilts"
+},
+{
+"s": "PNBHOUSING",
+"n": "PNB Housing Finance"
+},
+{
+"s": "PNC",
+"n": "Pritish Nandy Comm"
+},
+{
+"s": "PNCINFRA",
+"n": "PNC Infratech"
+},
+{
+"s": "PNGJL",
+"n": "PN Gadgil Jewellers"
+},
+{
+"s": "PNGSREVA",
+"n": "PNGS Reva Diamond"
+},
+{
+"s": "POCL",
+"n": "Pondy Oxides"
+},
+{
+"s": "PODDARMENT",
+"n": "Poddar Pigments"
+},
+{
+"s": "POKARNA",
+"n": "Pokarna"
+},
+{
+"s": "POLICYBZR",
+"n": "PolicyBazaar"
+},
+{
+"s": "POLYCAB",
+"n": "Polycab India"
+},
+{
+"s": "POLYMED",
+"n": "Poly Medicure"
+},
+{
+"s": "POLYPLEX",
+"n": "Polyplex Corporation"
+},
+{
+"s": "POLYSIL",
+"n": "Polysil Irr Systems"
+},
+{
+"s": "PONNIERODE",
+"n": "Ponni Sugars (Erode)"
+},
+{
+"s": "POONAWALLA",
+"n": "Poonawalla Fincorp"
+},
+{
+"s": "POSITRON",
+"n": "Positron Energy"
+},
+{
+"s": "POWERGRID",
+"n": "Power Grid Corp"
+},
+{
+"s": "POWERICA",
+"n": "Powerica"
+},
+{
+"s": "POWERINDIA",
+"n": "Hitachi Energy"
+},
+{
+"s": "POWERMECH",
+"n": "Power Mech Projects"
+},
+{
+"s": "PPAP",
+"n": "PPAP Automotive"
+},
+{
+"s": "PPL",
+"n": "Prakash Pipes"
+},
+{
+"s": "PPLPHARMA",
+"n": "Piramal Pharma"
+},
+{
+"s": "PPSL",
+"n": "Picturepost Studios"
+},
+{
+"s": "PRABHA",
+"n": "Prabha Energy"
+},
+{
+"s": "PRADPME",
+"n": "Pradeep Metals"
+},
+{
+"s": "PRAENG",
+"n": "Prajay Engineers"
+},
+{
+"s": "PRAJIND",
+"n": "Praj Industries"
+},
+{
+"s": "PRAKASH",
+"n": "Prakash Industries"
+},
+{
+"s": "PRAKASHSTL",
+"n": "Prakash Steelage"
+},
+{
+"s": "PRAMARA",
+"n": "Pramara Promotions"
+},
+{
+"s": "PRANIK",
+"n": "Pranik Logistics"
+},
+{
+"s": "PRATHAM",
+"n": "Pratham Projects"
+},
+{
+"s": "PRAVEG",
+"n": "Praveg"
+},
+{
+"s": "PRAXIS",
+"n": "Praxis Home Retail"
+},
+{
+"s": "PRECAM",
+"n": "Precision Camshafts"
+},
+{
+"s": "PRECISION",
+"n": "Precision Metaliks"
+},
+{
+"s": "PRECOT",
+"n": "Precot"
+},
+{
+"s": "PRECWIRE",
+"n": "Precision Wires"
+},
+{
+"s": "PREMCO",
+"n": "Premco Global"
+},
+{
+"s": "PREMEXPLN",
+"n": "Premier Explosives"
+},
+{
+"s": "PREMIER",
+"n": "Premier"
+},
+{
+"s": "PREMIERENE",
+"n": "Premier Energies"
+},
+{
+"s": "PREMIERPOL",
+"n": "Premier Polyfilm"
+},
+{
+"s": "PREMIUM",
+"n": "Premium Plast"
+},
+{
+"s": "PRESSTONIC",
+"n": "Presstonic Engine"
+},
+{
+"s": "PRESTIGE",
+"n": "Prestige Estates"
+},
+{
+"s": "PRICOLLTD",
+"n": "Pricol"
+},
+{
+"s": "PRIMECAB",
+"n": "Prime Cable Inds."
+},
+{
+"s": "PRIMESECU",
+"n": "Prime Securities"
+},
+{
+"s": "PRIMO",
+"n": "Primo Chemicals"
+},
+{
+"s": "PRINCEPIPE",
+"n": "Prince Pipes"
+},
+{
+"s": "PRITI",
+"n": "Priti International"
+},
+{
+"s": "PRITIKA",
+"n": "Pritika Engg. Compnt"
+},
+{
+"s": "PRITIKAUTO",
+"n": "Pritika Auto Industr"
+},
+{
+"s": "PRIVISCL",
+"n": "Privi Speciality Che"
+},
+{
+"s": "PRIZOR",
+"n": "Prizor Viztech"
+},
+{
+"s": "PRLIND",
+"n": "Premier Roadlines"
+},
+{
+"s": "PROFX",
+"n": "Pro FX Tech"
+},
+{
+"s": "PROLIFE",
+"n": "Prolife Industries"
+},
+{
+"s": "PROPEQUITY",
+"n": "PE Analytics"
+},
+{
+"s": "PROSTARM",
+"n": "Prostarm Info System"
+},
+{
+"s": "PROTEAN",
+"n": "Protean e-Gov Tech."
+},
+{
+"s": "PROV",
+"n": "Proventus Agrocom"
+},
+{
+"s": "PROZONER",
+"n": "Prozone Realty"
+},
+{
+"s": "PRSMJOHNSN",
+"n": "Prism Johnson"
+},
+{
+"s": "PRUDENT",
+"n": "Prudent"
+},
+{
+"s": "PRUDMOULI",
+"n": "Prudential Sugar"
+},
+{
+"s": "PSB",
+"n": "Punjab & Sind Bank"
+},
+{
+"s": "PSFL",
+"n": "Paramount Spec Forg"
+},
+{
+"s": "PSPPROJECT",
+"n": "PSP Projects"
+},
+{
+"s": "PSRAJ",
+"n": "PS Raj Steels"
+},
+{
+"s": "PSUBANK",
+"n": "Kotak Mahindra Mutual Fun"
+},
+{
+"s": "PSUBANKADD",
+"n": "DSPPSBKETF"
+},
+{
+"s": "PSUBNKBEES",
+"n": "Nippon India ETF PSU Bank BeES"
+},
+{
+"s": "PSUBNKIETF",
+"n": "PSUBANKICI"
+},
+{
+"s": "PTC",
+"n": "PTC India"
+},
+{
+"s": "PTCIL",
+"n": "PTC Industries"
+},
+{
+"s": "PTL",
+"n": "PTL Enterprises"
+},
+{
+"s": "PULZ",
+"n": "Pulz Electronics"
+},
+{
+"s": "PUNJABCHEM",
+"n": "Punjab Chem. & Corp"
+},
+{
+"s": "PURPLEUTED",
+"n": "Purple United Sales"
+},
+{
+"s": "PURVA",
+"n": "Puravankara"
+},
+{
+"s": "PURVFLEXI",
+"n": "Purv Flexipack"
+},
+{
+"s": "PUSHPA",
+"n": "Pushpa Jewellers"
+},
+{
+"s": "PVP",
+"n": "PVP Ventures"
+},
+{
+"s": "PVRINOX",
+"n": "PVR"
+},
+{
+"s": "PVSL",
+"n": "Popular Vehicles and Services Ltd"
+},
+{
+"s": "PVTBANIETF",
+"n": "PVTBANIETF"
+},
+{
+"s": "PVTBANKADD",
+"n": "PVTBANKADD"
+},
+{
+"s": "PVTBKGROWW",
+"n": "PVTBKGROWW"
+},
+{
+"s": "PWL",
+"n": "Physicswallah"
+},
+{
+"s": "PYRAMID",
+"n": "Pyramid Technoplast"
+},
+{
+"s": "QFIL",
+"n": "Quality Foils"
+},
+{
+"s": "QGOLDHALF",
+"n": "Quantum Gold Fund - E T F"
+},
+{
+"s": "QLINE",
+"n": "Q-Line Biotech"
+},
+{
+"s": "QMSMEDI",
+"n": "QMS Medi Allied Ser."
+},
+{
+"s": "QNIFTY",
+"n": "Quantum Index"
+},
+{
+"s": "QPOWER",
+"n": "Quality Power Elect."
+},
+{
+"s": "QUADFUTURE",
+"n": "Quadrant Future Tek"
+},
+{
+"s": "QUADPRO",
+"n": "Quadpro Ites"
+},
+{
+"s": "QUESS",
+"n": "Quess Corp"
+},
+{
+"s": "QUESTLAB",
+"n": "Quest Laboratories"
+},
+{
+"s": "QUICKHEAL",
+"n": "Quick Heal Tech"
+},
+{
+"s": "QUICKTOUCH",
+"n": "Quicktouch Technolog"
+},
+{
+"s": "QUINT",
+"n": "Quint Digital"
+},
+{
+"s": "QVCEL",
+"n": "QVC Exports"
+},
+{
+"s": "RACE",
+"n": "Race Eco Chain"
+},
+{
+"s": "RACLGEAR",
+"n": "RACL Geartech"
+},
+{
+"s": "RADAAN",
+"n": "Radaan Media Works"
+},
+{
+"s": "RADHIKAJWE",
+"n": "Radhika Jeweltech"
+},
+{
+"s": "RADIANTCMS",
+"n": "Radiant Cash Mgmnt."
+},
+{
+"s": "RADICO",
+"n": "Radico Khaitan"
+},
+{
+"s": "RADIOCITY",
+"n": "Music Broadcast"
+},
+{
+"s": "RADIOWALLA",
+"n": "Radiowalla Network"
+},
+{
+"s": "RAILTEL",
+"n": "Railtel Corp"
+},
+{
+"s": "RAIN",
+"n": "Rain Industries"
+},
+{
+"s": "RAINBOW",
+"n": "Rainbow Children"
+},
+{
+"s": "RAJESHEXPO",
+"n": "Rajesh Exports"
+},
+{
+"s": "RAJINDLTD",
+"n": "Rajputana Industries"
+},
+{
+"s": "RAJMET",
+"n": "Rajnandini Metal"
+},
+{
+"s": "RAJOOENG",
+"n": "Rajoo Engineers"
+},
+{
+"s": "RAJPALAYAM",
+"n": "Rajapalayam Mills"
+},
+{
+"s": "RAJPUTANA",
+"n": "Rajputana Biodiesel"
+},
+{
+"s": "RAJRATAN",
+"n": "Rajratan Global Wire"
+},
+{
+"s": "RAJRILTD",
+"n": "Raj Rayon Inds"
+},
+{
+"s": "RAJSREESUG",
+"n": "Rajshree Sugars"
+},
+{
+"s": "RAJTV",
+"n": "Raj Television"
+},
+{
+"s": "RALLIS",
+"n": "Rallis India"
+},
+{
+"s": "RAMANEWS",
+"n": "Shree Rama Newsprint"
+},
+{
+"s": "RAMAPHO",
+"n": "Rama Phosphates"
+},
+{
+"s": "RAMASTEEL",
+"n": "Rama Steel Tubes"
+},
+{
+"s": "RAMCOCEM",
+"n": "Ramco Cements"
+},
+{
+"s": "RAMCOIND",
+"n": "Ramco Inds."
+},
+{
+"s": "RAMCOSYS",
+"n": "Ramco Systems"
+},
+{
+"s": "RAMKY",
+"n": "Ramky Infrastructure"
+},
+{
+"s": "RAMRAT",
+"n": "Ram Ratna Wires"
+},
+{
+"s": "RANASUG",
+"n": "Rana Sugars"
+},
+{
+"s": "RANEHOLDIN",
+"n": "Rane Holdings"
+},
+{
+"s": "RAPIDFLEET",
+"n": "Rapid Fleet Manage"
+},
+{
+"s": "RAPPID",
+"n": "Rappid Valves India"
+},
+{
+"s": "RATEGAIN",
+"n": "RateGain"
+},
+{
+"s": "RATNAMANI",
+"n": "Ratnamani Metals"
+},
+{
+"s": "RATNAVEER",
+"n": "Ratnaveer Precision"
+},
+{
+"s": "RAYMOND",
+"n": "Raymond"
+},
+{
+"s": "RAYMONDLSL",
+"n": "Raymond Lifestyle"
+},
+{
+"s": "RAYMONDREL",
+"n": "Raymond Realty"
+},
+{
+"s": "RBA",
+"n": "Restaurant Brands"
+},
+{
+"s": "RBLBANK",
+"n": "RBL Bank"
+},
+{
+"s": "RBMINFRA",
+"n": "RBM Infra"
+},
+{
+"s": "RBS",
+"n": "Ramdevbaba Solvent"
+},
+{
+"s": "RBZJEWEL",
+"n": "RBZ Jewellers"
+},
+{
+"s": "RCDL",
+"n": "Rajgor Castor Deriv"
+},
+{
+"s": "RCF",
+"n": "Rashtriya Chemical"
+},
+{
+"s": "RCOM",
+"n": "Reliance Communications"
+},
+{
+"s": "READYMIX",
+"n": "Readymix Constructio"
+},
+{
+"s": "RECLTD",
+"n": "RECL"
+},
+{
+"s": "REDINGTON",
+"n": "Redington"
+},
+{
+"s": "REDTAPE",
+"n": "Redtape"
+},
+{
+"s": "REFEX",
+"n": "Refex Industries"
+},
+{
+"s": "REFRACTORY",
+"n": "Refractory Shapes"
+},
+{
+"s": "REGAAL",
+"n": "Regaal Resources"
+},
+{
+"s": "REGENCERAM",
+"n": "Regency Ceramics"
+},
+{
+"s": "RELAXO",
+"n": "Relaxo Footwears"
+},
+{
+"s": "RELCHEMQ",
+"n": "Reliance Chemo"
+},
+{
+"s": "RELIABLE",
+"n": "Reliable Data Serv"
+},
+{
+"s": "RELIANCE",
+"n": "Reliance Industries"
+},
+{
+"s": "RELIGARE",
+"n": "Religare Enterprises"
+},
+{
+"s": "RELTD",
+"n": "Ravindra Energy"
+},
+{
+"s": "REMSONSIND",
+"n": "Remsons Industries"
+},
+{
+"s": "REMUS",
+"n": "Remus Pharmaceutical"
+},
+{
+"s": "RENUKA",
+"n": "Shree Renuka Sugars"
+},
+{
+"s": "REPCOHOME",
+"n": "Repco Home Finance"
+},
+{
+"s": "REPL",
+"n": "Rudrabhishek Entr"
+},
+{
+"s": "REPRO",
+"n": "Repro India"
+},
+{
+"s": "RESPONIND",
+"n": "Responsive Industries"
+},
+{
+"s": "RETAIL",
+"n": "JHS Svendgaard Retl"
+},
+{
+"s": "REXPIPES",
+"n": "REX Pipes and Cables"
+},
+{
+"s": "REXPRO",
+"n": "Rexpro Enterprises"
+},
+{
+"s": "RFBL",
+"n": "RFBL Flexi Pack"
+},
+{
+"s": "RGL",
+"n": "Renaissance Global"
+},
+{
+"s": "RHETAN",
+"n": "Rhetan TMT"
+},
+{
+"s": "RHFL",
+"n": "Reliance Home Finance"
+},
+{
+"s": "RHIM",
+"n": "RHI Magnesita"
+},
+{
+"s": "RHL",
+"n": "Robust Hotels"
+},
+{
+"s": "RICHA",
+"n": "Richa Info Systems"
+},
+{
+"s": "RICOAUTO",
+"n": "Rico Auto Inds"
+},
+{
+"s": "RIIL",
+"n": "Reliance Indl. Infra"
+},
+{
+"s": "RIIT",
+"n": "Raajmarg Infra Invt."
+},
+{
+"s": "RILINFRA",
+"n": "Rachana Infrastru"
+},
+{
+"s": "RISHABH",
+"n": "Rishabh Instruments"
+},
+{
+"s": "RITCO",
+"n": "Ritco"
+},
+{
+"s": "RITES",
+"n": "RITES"
+},
+{
+"s": "RITEZONE",
+"n": "Rite Zone Chemcon"
+},
+{
+"s": "RKDL",
+"n": "Ravi Kumar Distill"
+},
+{
+"s": "RKEC",
+"n": "RKEC Projects"
+},
+{
+"s": "RKFORGE",
+"n": "Ramkrishna Forgings"
+},
+{
+"s": "RKSWAMY",
+"n": "RK Swamy"
+},
+{
+"s": "RMC",
+"n": "RMC Switchgears"
+},
+{
+"s": "RMDRIP",
+"n": "RM Drip & Sprinklers"
+},
+{
+"s": "RML",
+"n": "Rane Madras"
+},
+{
+"s": "RNBDENIMS",
+"n": "R & B Denims"
+},
+{
+"s": "RNFI",
+"n": "RNFI Services"
+},
+{
+"s": "RNPL",
+"n": "Renol Polychem"
+},
+{
+"s": "ROADSTAR-IV",
+"n": "Roadstar Infra Inv."
+},
+{
+"s": "ROCKINGDCE",
+"n": "Rocking.Circular"
+},
+{
+"s": "ROHLTD",
+"n": "Royal Orchid Hotel"
+},
+{
+"s": "ROLEXRINGS",
+"n": "Rolex Rings"
+},
+{
+"s": "ROLLT",
+"n": "Rollatainers"
+},
+{
+"s": "ROML",
+"n": "Raj Oil Mills"
+},
+{
+"s": "ROSSARI",
+"n": "Rossari Biotech"
+},
+{
+"s": "ROSSELLIND",
+"n": "Rossell India"
+},
+{
+"s": "ROSSTECH",
+"n": "Rossell Techsys"
+},
+{
+"s": "ROTO",
+"n": "Roto Pumps"
+},
+{
+"s": "ROUTE",
+"n": "Route Mobile"
+},
+{
+"s": "ROXHITECH",
+"n": "Rox Hi-Tech"
+},
+{
+"s": "ROYALARC",
+"n": "Royal Arc Electrodes"
+},
+{
+"s": "RPEL",
+"n": "Raghav Productivity"
+},
+{
+"s": "RPGLIFE",
+"n": "RPG Life Sciences"
+},
+{
+"s": "RPOWER",
+"n": "Reliance Power"
+},
+{
+"s": "RPPINFRA",
+"n": "RPP Infra Projects"
+},
+{
+"s": "RPPL",
+"n": "Rajshree Polypack"
+},
+{
+"s": "RPSGVENT",
+"n": "RPSG Ventures"
+},
+{
+"s": "RPTECH",
+"n": "Rashi Peripheral"
+},
+{
+"s": "RRIL",
+"n": "RRIL"
+},
+{
+"s": "RRKABEL",
+"n": "RR Kabel"
+},
+{
+"s": "RSDFIN",
+"n": "RSD Finance"
+},
+{
+"s": "RSL",
+"n": "Rajputana Stainless"
+},
+{
+"s": "RSSOFTWARE",
+"n": "RS Software (India)"
+},
+{
+"s": "RSWM",
+"n": "RSWM"
+},
+{
+"s": "RSYSTEMS",
+"n": "R Systems Intl."
+},
+{
+"s": "RTL",
+"n": "Rama Telecom"
+},
+{
+"s": "RTNINDIA",
+"n": "RattanIndia Entr"
+},
+{
+"s": "RTNPOWER",
+"n": "RattanIndia Power"
+},
+{
+"s": "RUBFILA",
+"n": "Rubfila Intl"
+},
+{
+"s": "RUBICON",
+"n": "Rubicon Research"
+},
+{
+"s": "RUBYMILLS",
+"n": "Ruby Mills"
+},
+{
+"s": "RUCHINFRA",
+"n": "Ruchi Infra"
+},
+{
+"s": "RUCHIRA",
+"n": "Ruchira Papers"
+},
+{
+"s": "RUDRA",
+"n": "Rudra Global Infra"
+},
+{
+"s": "RULKA",
+"n": "Rulka Electricals"
+},
+{
+"s": "RUPA",
+"n": "Rupa & Company"
+},
+{
+"s": "RUSHIL",
+"n": "Rushil Decor"
+},
+{
+"s": "RUSTOMJEE",
+"n": "Keystone Realtors"
+},
+{
+"s": "RVHL",
+"n": "Ravinder Heights"
+},
+{
+"s": "RVNL",
+"n": "Rail Vikas Nigam"
+},
+{
+"s": "RVTH",
+"n": "Revathi Equip. Ind."
+},
+{
+"s": "S&SPOWER",
+"n": "S & S Power Switch"
+},
+{
+"s": "SAAKSHI",
+"n": "Saakshi Med & Panels"
+},
+{
+"s": "SAATVIKGL",
+"n": "Saatvik Green Energy"
+},
+{
+"s": "SABAR",
+"n": "Sabar Flex India"
+},
+{
+"s": "SABEVENTS",
+"n": "SAB Events"
+},
+{
+"s": "SACHEEROME",
+"n": "Sacheerome"
+},
+{
+"s": "SADBHAV",
+"n": "Sadbhav Engineering"
+},
+{
+"s": "SADBHIN",
+"n": "Sadbhav Infra"
+},
+{
+"s": "SADHAV",
+"n": "Sadhav Shipping"
+},
+{
+"s": "SADHNANIQ",
+"n": "Sadhana Nitro Chem"
+},
+{
+"s": "SAFARI",
+"n": "Safari Industries(I)"
+},
+{
+"s": "SAFEENTP",
+"n": "Safe Enterprises"
+},
+{
+"s": "SAGARDEEP",
+"n": "Sagardeep Alloys"
+},
+{
+"s": "SAGCEM",
+"n": "Sagar Cements"
+},
+{
+"s": "SAGILITY",
+"n": "Sagility"
+},
+{
+"s": "SAHAJSOLAR",
+"n": "Sahaj Solar"
+},
+{
+"s": "SAHANA",
+"n": "Sahana System"
+},
+{
+"s": "SAHASRA",
+"n": "Sahasra Electronic"
+},
+{
+"s": "SAHLIBHFI",
+"n": "Shalibhadra Finance"
+},
+{
+"s": "SAHYADRI",
+"n": "Sahyadri Industries"
+},
+{
+"s": "SAIFL",
+"n": "Sameera Agro & Infra"
+},
+{
+"s": "SAIL",
+"n": "SAIL"
+},
+{
+"s": "SAILIFE",
+"n": "Sai Life Sciences"
+},
+{
+"s": "SAIPARENT",
+"n": "Sai Parenteral's"
+},
+{
+"s": "SAJHOTELS",
+"n": "Saj Hotels"
+},
+{
+"s": "SAKAR",
+"n": "Sakar Healthcare"
+},
+{
+"s": "SAKHTISUG",
+"n": "Sakthi Sugars"
+},
+{
+"s": "SAKSOFT",
+"n": "Saksoft"
+},
+{
+"s": "SAKUMA",
+"n": "Sakuma Exports"
+},
+{
+"s": "SALASAR",
+"n": "Salasar Techno"
+},
+{
+"s": "SALONA",
+"n": "Salona Cotspin"
+},
+{
+"s": "SALSTEEL",
+"n": "SAL Steel"
+},
+{
+"s": "SALZERELEC",
+"n": "Salzer Electronics"
+},
+{
+"s": "SAMAY",
+"n": "Samay Project Servic"
+},
+{
+"s": "SAMBHAAV",
+"n": "Sambhaav Media"
+},
+{
+"s": "SAMBHV",
+"n": "Sambhv Steel Tubes"
+},
+{
+"s": "SAMHI",
+"n": "Samhi Hotels"
+},
+{
+"s": "SAMMAANCAP",
+"n": "Sammaan Capital"
+},
+{
+"s": "SAMPANN",
+"n": "Sampann Utpadan"
+},
+{
+"s": "SANATHAN",
+"n": "Sanathan Textiles"
+},
+{
+"s": "SANDESH",
+"n": "Sandesh"
+},
+{
+"s": "SANDHAR",
+"n": "Sandhar Technologies"
+},
+{
+"s": "SANDUMA",
+"n": "Sandur Manganese"
+},
+{
+"s": "SANGAMIND",
+"n": "Sangam India"
+},
+{
+"s": "SANGANI",
+"n": "Sangani Hospitals"
+},
+{
+"s": "SANGHVIMOV",
+"n": "Sanghvi Movers"
+},
+{
+"s": "SANGINITA",
+"n": "Sanginita Chemicals"
+},
+{
+"s": "SANOFI",
+"n": "Sanofi India"
+},
+{
+"s": "SANOFICONR",
+"n": "Sanofi Cons. Health"
+},
+{
+"s": "SANSERA",
+"n": "Sansera Engineering"
+},
+{
+"s": "SANSTAR",
+"n": "Sanstar"
+},
+{
+"s": "SANWARIA",
+"n": "Sanwaria Consumer"
+},
+{
+"s": "SAPPHIRE",
+"n": "Sapphire Foods"
+},
+{
+"s": "SAPPL",
+"n": "Shree Ajit Pulp"
+},
+{
+"s": "SARDAEN",
+"n": "Sarda Energy"
+},
+{
+"s": "SAREGAMA",
+"n": "Saregama India"
+},
+{
+"s": "SARLAPOLY",
+"n": "Sarla Performance"
+},
+{
+"s": "SAROJA",
+"n": "Saroja Pharma Ind"
+},
+{
+"s": "SARTELE",
+"n": "Sar Televenture"
+},
+{
+"s": "SARVESHWAR",
+"n": "Sarveshwar Foods"
+},
+{
+"s": "SASKEN",
+"n": "Sasken Technologies"
+},
+{
+"s": "SATECH",
+"n": "SA Tech Software"
+},
+{
+"s": "SATIA",
+"n": "Satia Industries"
+},
+{
+"s": "SATIN",
+"n": "Satin Creditcare"
+},
+{
+"s": "SATIPOLY",
+"n": "Sati Poly Plast"
+},
+{
+"s": "SATKARTAR",
+"n": "Sat Kartar Life"
+},
+{
+"s": "SATTVAENGG",
+"n": "Sattva Engineering"
+},
+{
+"s": "SAURASHCEM",
+"n": "Saurashtra Cement"
+},
+{
+"s": "SAVY",
+"n": "Savy Infra and Logi."
+},
+{
+"s": "SAWALIYA",
+"n": "Sawaliya Food Prod"
+},
+{
+"s": "SAYAJIHOTL",
+"n": "Sayaji Hotels"
+},
+{
+"s": "SBC",
+"n": "SBC Exports"
+},
+{
+"s": "SBCL",
+"n": "Shivalik Bimetal"
+},
+{
+"s": "SBFC",
+"n": "SBFC Finance"
+},
+{
+"s": "SBGLP",
+"n": "Suratwwala Group"
+},
+{
+"s": "SBIBPB",
+"n": "SBIBPB"
+},
+{
+"s": "SBICARD",
+"n": "SBI Cards And Payment"
+},
+{
+"s": "SBIETFCON",
+"n": "SBIETFCON"
+},
+{
+"s": "SBIETFIT",
+"n": "SBIETFIT"
+},
+{
+"s": "SBIETFPB",
+"n": "SBIETFPB"
+},
+{
+"s": "SBIETFQLTY",
+"n": "SBIETFQLTY"
+},
+{
+"s": "SBILIFE",
+"n": "SBI Life Insurance"
+},
+{
+"s": "SBILIQETF",
+"n": "SBILIQETF"
+},
+{
+"s": "SBIMIDMOM",
+"n": "SBIMIDMOM"
+},
+{
+"s": "SBIN",
+"n": "SBI"
+},
+{
+"s": "SBINEQWETF",
+"n": "SBINEQWETF"
+},
+{
+"s": "SBISILVER",
+"n": "SBISILVER"
+},
+{
+"s": "SBISMLETF",
+"n": "SBISMLETF"
+},
+{
+"s": "SBIVALETF",
+"n": "SBIVALETF"
+},
+{
+"s": "SCANSTL",
+"n": "Scan Steels"
+},
+{
+"s": "SCHAEFFLER",
+"n": "Schaeffler India"
+},
+{
+"s": "SCHAND",
+"n": "S Chand & Co"
+},
+{
+"s": "SCHNEIDER",
+"n": "Schneider Electric"
+},
+{
+"s": "SCI",
+"n": "Shipping Corporation"
+},
+{
+"s": "SCILAL",
+"n": "Ship.Corp.(I) Land"
+},
+{
+"s": "SCML",
+"n": "Sharp Chucks & Mach"
+},
+{
+"s": "SCODATUBES",
+"n": "Scoda Tubes"
+},
+{
+"s": "SCPL",
+"n": "Sheetal Cool Prods"
+},
+{
+"s": "SDBL",
+"n": "Som DistilleriesBrew"
+},
+{
+"s": "SDREAMS",
+"n": "SD Retail"
+},
+{
+"s": "SEAMECLTD",
+"n": "Seamec"
+},
+{
+"s": "SECMARK",
+"n": "SecMark Consultancy"
+},
+{
+"s": "SECURKLOUD",
+"n": "Securekloud Tech"
+},
+{
+"s": "SEDEMAC",
+"n": "Sedemac Mechatronics"
+},
+{
+"s": "SEIL",
+"n": "Shanti Educational"
+},
+{
+"s": "SEITINVIT",
+"n": "SEITINVIT"
+},
+{
+"s": "SEJALLTD",
+"n": "Sejal Glass"
+},
+{
+"s": "SEL",
+"n": "Sungarner Energies"
+},
+{
+"s": "SELECTIPO",
+"n": "SELECTIPO"
+},
+{
+"s": "SELLOWRAP",
+"n": "Sellowrap Industries"
+},
+{
+"s": "SELMC",
+"n": "SEL Mfg"
+},
+{
+"s": "SEMAC",
+"n": "Semac Construction"
+},
+{
+"s": "SENCO",
+"n": "Senco Gold"
+},
+{
+"s": "SENORES",
+"n": "Senores Pharmaceutic"
+},
+{
+"s": "SENSEXADD",
+"n": "SENSEXADD"
+},
+{
+"s": "SENSEXBETA",
+"n": "UTISENSETF"
+},
+{
+"s": "SENSEXETF",
+"n": "SENSEXETF"
+},
+{
+"s": "SENSEXIETF",
+"n": "SENSEXIETF"
+},
+{
+"s": "SEPC",
+"n": "SEPC"
+},
+{
+"s": "SERVICE",
+"n": "Service Care"
+},
+{
+"s": "SERVOTECH",
+"n": "Servotech Renewable"
+},
+{
+"s": "SESHAPAPER",
+"n": "Seshasayee Paper"
+},
+{
+"s": "SETCO",
+"n": "Setco Automotive"
+},
+{
+"s": "SETFGOLD",
+"n": "SBI MF - SBI Gol"
+},
+{
+"s": "SETFNIFBK",
+"n": "SETFBANK"
+},
+{
+"s": "SETL",
+"n": "Standard Engineering"
+},
+{
+"s": "SETUINFRA",
+"n": "Setubandhan Infra"
+},
+{
+"s": "SEYAIND",
+"n": "Seya Industries"
+},
+{
+"s": "SFL",
+"n": "Sheela Foam"
+},
+{
+"s": "SFML",
+"n": "Supreme Facility"
+},
+{
+"s": "SGFIN",
+"n": "SG Finserve"
+},
+{
+"s": "SGIL",
+"n": "Synergy Green Inds"
+},
+{
+"s": "SGL",
+"n": "STL Global"
+},
+{
+"s": "SGMART",
+"n": "SG Mart"
+},
+{
+"s": "SHADOWFAX",
+"n": "Shadowfax Tech."
+},
+{
+"s": "SHAH",
+"n": "Shah Metacorp"
+},
+{
+"s": "SHAHALLOYS",
+"n": "Shah Alloys"
+},
+{
+"s": "SHAILY",
+"n": "Shaily"
+},
+{
+"s": "SHAIVAL",
+"n": "Shaival Reality"
+},
+{
+"s": "SHAKTIPUMP",
+"n": "Shakti Pumps"
+},
+{
+"s": "SHALBY",
+"n": "Shalby"
+},
+{
+"s": "SHALPAINTS",
+"n": "Shalimar Paints"
+},
+{
+"s": "SHANKARA",
+"n": "Shankara Bldg. Prod"
+},
+{
+"s": "SHANTHALA",
+"n": "Shanthala FMCG Prod"
+},
+{
+"s": "SHANTI",
+"n": "Shanti Overseas"
+},
+{
+"s": "SHANTIGEAR",
+"n": "Shanthi Gears"
+},
+{
+"s": "SHANTIGOLD",
+"n": "Shanti Gold Internat"
+},
+{
+"s": "SHARDACROP",
+"n": "Sharda Cropchem"
+},
+{
+"s": "SHARDAMOTR",
+"n": "Sharda Motor"
+},
+{
+"s": "SHARDUL",
+"n": "Shardul Securities"
+},
+{
+"s": "SHAREINDIA",
+"n": "Share India"
+},
+{
+"s": "SHARIABEES",
+"n": "SHARIABEES"
+},
+{
+"s": "SHBAJRG",
+"n": "Shri Bajrang"
+},
+{
+"s": "SHEEL",
+"n": "Sheel Biotech"
+},
+{
+"s": "SHEETAL",
+"n": "Sheetal Universal"
+},
+{
+"s": "SHEKHAWATI",
+"n": "Shekhawati Indust."
+},
+{
+"s": "SHEMAROO",
+"n": "Shemaroo Enter"
+},
+{
+"s": "SHERA",
+"n": "Shera Energy"
+},
+{
+"s": "SHETHJI",
+"n": "Shreeji Global FMCG"
+},
+{
+"s": "SHIGAN",
+"n": "Shigan Quantum Tech."
+},
+{
+"s": "SHILCTECH",
+"n": "Shilchar Tech"
+},
+{
+"s": "SHILPAMED",
+"n": "Shilpa Medicare"
+},
+{
+"s": "SHINDL",
+"n": "Sharat Industries"
+},
+{
+"s": "SHIVALIK",
+"n": "Shivalik Rasayan"
+},
+{
+"s": "SHIVAMAUTO",
+"n": "Shivam Autotech"
+},
+{
+"s": "SHIVAMILLS",
+"n": "Shiva Mills"
+},
+{
+"s": "SHIVASHRIT",
+"n": "Shivashrit Foods"
+},
+{
+"s": "SHIVATEX",
+"n": "Shiva Texyarn"
+},
+{
+"s": "SHIVAUM",
+"n": "Shiv Aum Steels"
+},
+{
+"s": "SHK",
+"n": "SH Kelkar & Co"
+},
+{
+"s": "SHKSIL",
+"n": "Shri Hare-Krishna"
+},
+{
+"s": "SHOPERSTOP",
+"n": "Shoppers Stop"
+},
+{
+"s": "SHRADHA",
+"n": "Shradha Realty"
+},
+{
+"s": "SHREDIGCEM",
+"n": "Shree DigvijayCement"
+},
+{
+"s": "SHREECEM",
+"n": "Shree Cement"
+},
+{
+"s": "SHREEJISPG",
+"n": "Shreeji Ship.Global"
+},
+{
+"s": "SHREEKARNI",
+"n": "Shree Karni Fabcom"
+},
+{
+"s": "SHREEOSFM",
+"n": "Shree OSFM E-Mobil"
+},
+{
+"s": "SHREEPUSHK",
+"n": "Shree Pushkar Chem"
+},
+{
+"s": "SHREERAMA",
+"n": "Shree Rama Tech"
+},
+{
+"s": "SHREMINVIT",
+"n": "Shrem"
+},
+{
+"s": "SHRENIK",
+"n": "Shrenik"
+},
+{
+"s": "SHREYANIND",
+"n": "Shreyans Inds"
+},
+{
+"s": "SHRIAHIMSA",
+"n": "Shri Ahimsa Naturals"
+},
+{
+"s": "SHRIKANHA",
+"n": "Shri Kanha Stainless"
+},
+{
+"s": "SHRIKRISH",
+"n": "Shri Krishna Devcon"
+},
+{
+"s": "SHRINGARMS",
+"n": "Shringar House"
+},
+{
+"s": "SHRIPISTON",
+"n": "SPR Auto Technologie"
+},
+{
+"s": "SHRIRAMFIN",
+"n": "Shriram Finance"
+},
+{
+"s": "SHRIRAMPPS",
+"n": "Shriram Properties"
+},
+{
+"s": "SHRITECH",
+"n": "Shri Techtex"
+},
+{
+"s": "SHUBHLAXMI",
+"n": "Shubhlaxmi Jewel Art"
+},
+{
+"s": "SHUBHSHREE",
+"n": "Shubhshree Biofuels"
+},
+{
+"s": "SHYAMCENT",
+"n": "Shyam Century"
+},
+{
+"s": "SHYAMDHANI",
+"n": "Shyam Dhani Indust."
+},
+{
+"s": "SHYAMMETL",
+"n": "Shyam Metalics"
+},
+{
+"s": "SHYAMTEL",
+"n": "Shyam Telecom"
+},
+{
+"s": "SICAGEN",
+"n": "Sicagen India"
+},
+{
+"s": "SICALLOG",
+"n": "Sical Logistics"
+},
+{
+"s": "SIDDHICOTS",
+"n": "Siddhi Cotspin"
+},
+{
+"s": "SIDDHIKA",
+"n": "Siddhika Coating"
+},
+{
+"s": "SIEMENS",
+"n": "Siemens"
+},
+{
+"s": "SIGACHI",
+"n": "Sigachi Inds"
+},
+{
+"s": "SIGIND",
+"n": "Signet Industries"
+},
+{
+"s": "SIGMA",
+"n": "Sigma Solve"
+},
+{
+"s": "SIGMAADV",
+"n": "Sigma Advanced Syste"
+},
+{
+"s": "SIGNATURE",
+"n": "Signatureglobal Ind."
+},
+{
+"s": "SIGNORIA",
+"n": "Signoria Creation Ltd"
+},
+{
+"s": "SIGNPOST",
+"n": "Signpost India"
+},
+{
+"s": "SIKA",
+"n": "Sika Interplant Sys"
+},
+{
+"s": "SIKKO",
+"n": "Sikko Industries"
+},
+{
+"s": "SIL",
+"n": "Standard Industries"
+},
+{
+"s": "SILGO",
+"n": "Silgo Retail"
+},
+{
+"s": "SILINV",
+"n": "SIL Investments"
+},
+{
+"s": "SILKFLEX",
+"n": "Silkflex Polymers"
+},
+{
+"s": "SILKY",
+"n": "Silky Overseas"
+},
+{
+"s": "SILLYMONKS",
+"n": "Silly Monks Enter"
+},
+{
+"s": "SILVER",
+"n": "Aditya BSL Silver ETF"
+},
+{
+"s": "SILVERADD",
+"n": "DSP Silver ETF"
+},
+{
+"s": "SILVERAG",
+"n": "SILVRETF"
+},
+{
+"s": "SILVERBEES",
+"n": "SILVERBEES"
+},
+{
+"s": "SILVERBETA",
+"n": "SILVERETF"
+},
+{
+"s": "SILVERBND",
+"n": "SILVERBND"
+},
+{
+"s": "SILVERCASE",
+"n": "Zerodha Silver ETF"
+},
+{
+"s": "SILVERIETF",
+"n": "ICICI Prudential Silver ETF"
+},
+{
+"s": "SILVERTUC",
+"n": "Silver Touch"
+},
+{
+"s": "SIMBHALS",
+"n": "Simbhaoli Sugars"
+},
+{
+"s": "SIMCA",
+"n": "Simca Advertising"
+},
+{
+"s": "SIMPLEXINF",
+"n": "Simplex Infra"
+},
+{
+"s": "SINCLAIR",
+"n": "Sinclairs Hotels"
+},
+{
+"s": "SINDHUTRAD",
+"n": "Sindhu Trade Links"
+},
+{
+"s": "SINGERIND",
+"n": "Singer India"
+},
+{
+"s": "SINTERCOM",
+"n": "Sintercom India"
+},
+{
+"s": "SIRCA",
+"n": "SIRCA Paints India"
+},
+{
+"s": "SIS",
+"n": "SIS"
+},
+{
+"s": "SITINET",
+"n": "Siti Networks"
+},
+{
+"s": "SIYSIL",
+"n": "Siyaram Silk Mills"
+},
+{
+"s": "SJLOGISTIC",
+"n": "SJ Logistics"
+},
+{
+"s": "SJS",
+"n": "SJS Enterprises"
+},
+{
+"s": "SJVN",
+"n": "SJVN"
+},
+{
+"s": "SKFINDIA",
+"n": "SKF India"
+},
+{
+"s": "SKFINDUS",
+"n": "SKF India (Indust.)"
+},
+{
+"s": "SKIPPER",
+"n": "Skipper"
+},
+{
+"s": "SKMEGGPROD",
+"n": "SKM Egg Products"
+},
+{
+"s": "SKP",
+"n": "SKP Bearing Indus."
+},
+{
+"s": "SKYGOLD",
+"n": "Sky Gold & Diamonds"
+},
+{
+"s": "SLONE",
+"n": "Slone Infosystems"
+},
+{
+"s": "SMALLADD",
+"n": "SMALLADD"
+},
+{
+"s": "SMALLCAP",
+"n": "SMALLCAP"
+},
+{
+"s": "SMARTEN",
+"n": "Smarten Power System"
+},
+{
+"s": "SMARTLINK",
+"n": "Smartlink Holdings"
+},
+{
+"s": "SMARTWORKS",
+"n": "Smartworks Coworking"
+},
+{
+"s": "SMCGLOBAL",
+"n": "SMC Global Sec."
+},
+{
+"s": "SMLMAH",
+"n": "SML Mahindra"
+},
+{
+"s": "SMLT",
+"n": "Sarthak Metals"
+},
+{
+"s": "SMSPHARMA",
+"n": "SMS Pharmaceuticals"
+},
+{
+"s": "SMVD",
+"n": "SMVD Poly Pack"
+},
+{
+"s": "SNEHAA",
+"n": "Snehaa Organics"
+},
+{
+"s": "SNOWMAN",
+"n": "Snowman Logistics"
+},
+{
+"s": "SOBHA",
+"n": "Sobha"
+},
+{
+"s": "SOCL",
+"n": "Sundrex Oil Company"
+},
+{
+"s": "SOFTTECH",
+"n": "SoftTech"
+},
+{
+"s": "SOLARA",
+"n": "Solara Active Pharma"
+},
+{
+"s": "SOLARINDS",
+"n": "Solar Industries"
+},
+{
+"s": "SOLARWORLD",
+"n": "Solarworld Energy So"
+},
+{
+"s": "SOLEX",
+"n": "Solex Energy"
+},
+{
+"s": "SOMANYCERA",
+"n": "Somany Ceramics"
+},
+{
+"s": "SOMATEX",
+"n": "Soma Textiles"
+},
+{
+"s": "SOMICONVEY",
+"n": "Somi Conveyor"
+},
+{
+"s": "SONACOMS",
+"n": "Sona BLW Precision"
+},
+{
+"s": "SONAL",
+"n": "Sonal Mercantile"
+},
+{
+"s": "SONAMAC",
+"n": "Sona Machinery"
+},
+{
+"s": "SONAMLTD",
+"n": "Sonam"
+},
+{
+"s": "SONATSOFTW",
+"n": "Sonata Software"
+},
+{
+"s": "SONUINFRA",
+"n": "Sonu Infratech"
+},
+{
+"s": "SOTAC",
+"n": "Sotac Pharmaceutical"
+},
+{
+"s": "SOTL",
+"n": "Savita Oil Tech"
+},
+{
+"s": "SOUTHBANK",
+"n": "South Indian Bank"
+},
+{
+"s": "SOUTHWEST",
+"n": "SW Pinnacle"
+},
+{
+"s": "SPAL",
+"n": "SP Apparels"
+},
+{
+"s": "SPANDANA",
+"n": "Spandana Sphoorty"
+},
+{
+"s": "SPARC",
+"n": "Sun Pharma Adv. Res"
+},
+{
+"s": "SPCENET",
+"n": "Spacenet Entr"
+},
+{
+"s": "SPCL",
+"n": "Shivalic Power Con."
+},
+{
+"s": "SPCON",
+"n": "Srinibas Pradhan Con"
+},
+{
+"s": "SPEB",
+"n": "SPEB Adhesives"
+},
+{
+"s": "SPECIALITY",
+"n": "Speciality Restaurants"
+},
+{
+"s": "SPECTRUM",
+"n": "Spectrum Electrical"
+},
+{
+"s": "SPECTSTM",
+"n": "Spectrm Talent Mngmt"
+},
+{
+"s": "SPENCERS",
+"n": "Spencer's Retail"
+},
+{
+"s": "SPIC",
+"n": "Southern Petrochem"
+},
+{
+"s": "SPLIL",
+"n": "SPL Industries"
+},
+{
+"s": "SPLPETRO",
+"n": "Supreme Petrochem"
+},
+{
+"s": "SPMLINFRA",
+"n": "SPML Infra"
+},
+{
+"s": "SPORTKING",
+"n": "Sportking India"
+},
+{
+"s": "SPPPOLY",
+"n": "SPP Polymer"
+},
+{
+"s": "SPRL",
+"n": "SP Refractories"
+},
+{
+"s": "SPUNWEB",
+"n": "Spunweb Nonwoven"
+},
+{
+"s": "SRD",
+"n": "Shankar Lal Rampal"
+},
+{
+"s": "SREEL",
+"n": "Sreeleathers"
+},
+{
+"s": "SRF",
+"n": "SRF"
+},
+{
+"s": "SRGHFL",
+"n": "SRG Housing"
+},
+{
+"s": "SRHHYPOLTD",
+"n": "Sree Rayalaseema"
+},
+{
+"s": "SRIVASAVI",
+"n": "Srivasavi Adhesive"
+},
+{
+"s": "SRM",
+"n": "SRM Contractors Ltd"
+},
+{
+"s": "SRTL",
+"n": "Shree Ram Twistex"
+},
+{
+"s": "SSDL",
+"n": "Saraswati Saree Dep."
+},
+{
+"s": "SSEGL",
+"n": "Sathlokhar Synergys"
+},
+{
+"s": "SSFL",
+"n": "Srivari Spices Food"
+},
+{
+"s": "SSWL",
+"n": "Steel Strips Wheels"
+},
+{
+"s": "STALLION",
+"n": "Stallion India Fluor"
+},
+{
+"s": "STANLEY",
+"n": "Stanley Lifestyles"
+},
+{
+"s": "STAR",
+"n": "Strides Pharma"
+},
+{
+"s": "STARCEMENT",
+"n": "Star Cement"
+},
+{
+"s": "STARHEALTH",
+"n": "Star Health Insurance"
+},
+{
+"s": "STARPAPER",
+"n": "Star Paper Mills"
+},
+{
+"s": "STARTECK",
+"n": "Starteck Finance"
+},
+{
+"s": "STCINDIA",
+"n": "STC"
+},
+{
+"s": "STEELCAS",
+"n": "Steelcast"
+},
+{
+"s": "STEELCITY",
+"n": "Steel City Secs"
+},
+{
+"s": "STEELXIND",
+"n": "Steel Exchange India"
+},
+{
+"s": "STEL",
+"n": "STEL Holdings"
+},
+{
+"s": "STERTOOLS",
+"n": "Sterling Tools"
+},
+{
+"s": "STLNETWORK",
+"n": "STL Networks"
+},
+{
+"s": "STLTECH",
+"n": "Sterlite Tech"
+},
+{
+"s": "STOVEKRAFT",
+"n": "Stove Kraft"
+},
+{
+"s": "STRIDERS",
+"n": "Striders Impex"
+},
+{
+"s": "STUDDS",
+"n": "Studds Accessories"
+},
+{
+"s": "STUDIOLSD",
+"n": "Studio LSD"
+},
+{
+"s": "STYL",
+"n": "Seshaasai Technologi"
+},
+{
+"s": "STYLAMIND",
+"n": "Stylam Industries"
+},
+{
+"s": "STYLEBAAZA",
+"n": "Baazar Style Retail"
+},
+{
+"s": "STYRENIX",
+"n": "Styrenix Performance"
+},
+{
+"s": "SUBAHOTELS",
+"n": "Suba Hotels"
+},
+{
+"s": "SUBEXLTD",
+"n": "Subex"
+},
+{
+"s": "SUBROS",
+"n": "Subros"
+},
+{
+"s": "SUDARCOLOR",
+"n": "Sudarshan Colorants"
+},
+{
+"s": "SUDARSCHEM",
+"n": "Sudarshan Chemicals"
+},
+{
+"s": "SUDEEPPHRM",
+"n": "Sudeep Pharma"
+},
+{
+"s": "SUKHJITS",
+"n": "Sukhjit Starch"
+},
+{
+"s": "SULA",
+"n": "Sula Vineyards"
+},
+{
+"s": "SUMEETINDS",
+"n": "Sumeet Industries"
+},
+{
+"s": "SUMICHEM",
+"n": "Sumitomo Chemical"
+},
+{
+"s": "SUMIT",
+"n": "Sumit Woods"
+},
+{
+"s": "SUMMITSEC",
+"n": "Summit Securities"
+},
+{
+"s": "SUNCLAY",
+"n": "Sundaram-Clayton"
+},
+{
+"s": "SUNDARAM",
+"n": "Sundaram Multi Pap"
+},
+{
+"s": "SUNDARMFIN",
+"n": "Sundaram Finance"
+},
+{
+"s": "SUNDRMBRAK",
+"n": "Sundaram Brake Lin"
+},
+{
+"s": "SUNDRMFAST",
+"n": "Sundram Fasteners"
+},
+{
+"s": "SUNDROP",
+"n": "Sundrop Brands"
+},
+{
+"s": "SUNFLAG",
+"n": "Sunflag Iron"
+},
+{
+"s": "SUNLITE",
+"n": "Sunlite Recycling"
+},
+{
+"s": "SUNPHARMA",
+"n": "Sun Pharma Inds."
+},
+{
+"s": "SUNREST",
+"n": "Sunrest Lifescience"
+},
+{
+"s": "SUNTECH",
+"n": "Suntech Infra Soluti"
+},
+{
+"s": "SUNTECK",
+"n": "Sunteck Realty"
+},
+{
+"s": "SUNTV",
+"n": "Sun TV Network"
+},
+{
+"s": "SUPERHOUSE",
+"n": "Super house"
+},
+{
+"s": "SUPERSPIN",
+"n": "Super Spinning Mills"
+},
+{
+"s": "SUPRAJIT",
+"n": "Suprajit Engineering"
+},
+{
+"s": "SUPREME",
+"n": "Supreme Holdings"
+},
+{
+"s": "SUPREMEENG",
+"n": "Supreme Engineering"
+},
+{
+"s": "SUPREMEIND",
+"n": "Supreme Industries"
+},
+{
+"s": "SUPREMEINF",
+"n": "Supreme Infra"
+},
+{
+"s": "SUPREMEPWR",
+"n": "Supreme Power Equip"
+},
+{
+"s": "SUPRIYA",
+"n": "Supriya Lifescience"
+},
+{
+"s": "SURAJEST",
+"n": "Suraj Estate Develop"
+},
+{
+"s": "SURAJLTD",
+"n": "Suraj"
+},
+{
+"s": "SURAKSHA",
+"n": "Suraksha Diagnostic"
+},
+{
+"s": "SURANASOL",
+"n": "Surana Solar"
+},
+{
+"s": "SURANAT&P",
+"n": "Surana Telecom"
+},
+{
+"s": "SURANI",
+"n": "Surani Steel Tubes"
+},
+{
+"s": "SURYALA",
+"n": "Suryalata Spg Mills"
+},
+{
+"s": "SURYALAXMI",
+"n": "Suryalakshmi Cotton"
+},
+{
+"s": "SURYAROSNI",
+"n": "Surya Roshni"
+},
+{
+"s": "SURYODAY",
+"n": "Suryoday Small Fin"
+},
+{
+"s": "SUTLEJTEX",
+"n": "Sutlej Textiles"
+},
+{
+"s": "SUVEN",
+"n": "Suven Life Sciences"
+},
+{
+"s": "SUVIDHAA",
+"n": "Suvidhaa Infoserve"
+},
+{
+"s": "SUYOG",
+"n": "Suyog Telematics"
+},
+{
+"s": "SUZLON",
+"n": "Suzlon Energy"
+},
+{
+"s": "SVLL",
+"n": "Shree Vasu Logistics"
+},
+{
+"s": "SVPGLOB",
+"n": "SVP Global"
+},
+{
+"s": "SWANCORP",
+"n": "Swan Corp"
+},
+{
+"s": "SWANDEF",
+"n": "Swan Defence & Heavy"
+},
+{
+"s": "SWARAJ",
+"n": "Swaraj Suiting"
+},
+{
+"s": "SWARAJENG",
+"n": "Swaraj Engines"
+},
+{
+"s": "SWASTIK",
+"n": "Swastik Pipes"
+},
+{
+"s": "SWELECTES",
+"n": "Swelect Energy"
+},
+{
+"s": "SWIGGY",
+"n": "Swiggy"
+},
+{
+"s": "SWSOLAR",
+"n": "Sterling"
+},
+{
+"s": "SYLVANPLY",
+"n": "Sylvan Plyboard (I)"
+},
+{
+"s": "SYMPHONY",
+"n": "Symphony"
+},
+{
+"s": "SYNCOMF",
+"n": "Syncom Formulations"
+},
+{
+"s": "SYNGENE",
+"n": "Syngene Intl"
+},
+{
+"s": "SYNOPTICS",
+"n": "Synoptics Techno."
+},
+{
+"s": "SYRMA",
+"n": "Syrma SGS Technology"
+},
+{
+"s": "SYSTANGO",
+"n": "Systango Technologie"
+},
+{
+"s": "SYSTMTXC",
+"n": "Systematix Corp"
+},
+{
+"s": "TAALTECH",
+"n": "TAAL Tech"
+},
+{
+"s": "TAC",
+"n": "TAC Infosec Ltd"
+},
+{
+"s": "TAINWALCHM",
+"n": "Tainwala Chemicals"
+},
+{
+"s": "TAJGVK",
+"n": "Taj GVK Hotels"
+},
+{
+"s": "TAKE",
+"n": "Take Solutions"
+},
+{
+"s": "TALBROAUTO",
+"n": "Talbros Automotive"
+},
+{
+"s": "TAMBOLIIN",
+"n": "Tamboli Industries"
+},
+{
+"s": "TANKUP",
+"n": "Tankup Engineers"
+},
+{
+"s": "TANLA",
+"n": "Tanla Platforms"
+},
+{
+"s": "TAPIFRUIT",
+"n": "Tapi FruitProcessing"
+},
+{
+"s": "TARACHAND",
+"n": "Tara Chand Infra."
+},
+{
+"s": "TARAPUR",
+"n": "Tarapur Transformers"
+},
+{
+"s": "TARC",
+"n": "TARC"
+},
+{
+"s": "TARIL",
+"n": "Transformers India"
+},
+{
+"s": "TARMAT",
+"n": "Tarmat"
+},
+{
+"s": "TARSONS",
+"n": "Tarsons Products"
+},
+{
+"s": "TASTYBITE",
+"n": "Tasty Bite Eatables"
+},
+{
+"s": "TATACAP",
+"n": "Tata Capital"
+},
+{
+"s": "TATACHEM",
+"n": "Tata Chemicals"
+},
+{
+"s": "TATACOMM",
+"n": "Tata Communications"
+},
+{
+"s": "TATACONSUM",
+"n": "Tata Consumer Produc"
+},
+{
+"s": "TATAELXSI",
+"n": "Tata Elxsi"
+},
+{
+"s": "TATAGOLD",
+"n": "TATAGOLD"
+},
+{
+"s": "TATAINVEST",
+"n": "Tata Investment Corp"
+},
+{
+"s": "TATAPOWER",
+"n": "Tata Power"
+},
+{
+"s": "TATASTEEL",
+"n": "Tata Steel"
+},
+{
+"s": "TATATECH",
+"n": "Tata Technologies"
+},
+{
+"s": "TATSILV",
+"n": "TATSILV"
+},
+{
+"s": "TATVA",
+"n": "Tatva Chintan"
+},
+{
+"s": "TAURIAN",
+"n": "Taurian MPS"
+},
+{
+"s": "TBI",
+"n": "TBI Corn"
+},
+{
+"s": "TBOTEK",
+"n": "TBO Tek"
+},
+{
+"s": "TBZ",
+"n": "TBZ"
+},
+{
+"s": "TCC",
+"n": "TCC Concept"
+},
+{
+"s": "TCI",
+"n": "TCI"
+},
+{
+"s": "TCIEXP",
+"n": "TCI Express"
+},
+{
+"s": "TCIFINANCE",
+"n": "TCI Finance"
+},
+{
+"s": "TCL",
+"n": "Thaai Casting"
+},
+{
+"s": "TCPLPACK",
+"n": "TCPL Packaging"
+},
+{
+"s": "TCS",
+"n": "TCS"
+},
+{
+"s": "TDPOWERSYS",
+"n": "TD Power Systems"
+},
+{
+"s": "TEAMGTY",
+"n": "Team India Guaranty"
+},
+{
+"s": "TEAMLEASE",
+"n": "TeamLease Services"
+},
+{
+"s": "TEAMTECH",
+"n": "Teamtech Formwork So"
+},
+{
+"s": "TECH",
+"n": "Aditya BSL Nifty IT ETF"
+},
+{
+"s": "TECHD",
+"n": "TechD Cybersecurity"
+},
+{
+"s": "TECHERA",
+"n": "TechEra Engineering (India) Limited"
+},
+{
+"s": "TECHLABS",
+"n": "Trident Techlabs"
+},
+{
+"s": "TECHM",
+"n": "Tech Mahindra"
+},
+{
+"s": "TECHNOE",
+"n": "Techno Electric"
+},
+{
+"s": "TECHNVISN",
+"n": "TechNVision"
+},
+{
+"s": "TECILCHEM",
+"n": "Tecil Chemical"
+},
+{
+"s": "TEGA",
+"n": "Tega Industries"
+},
+{
+"s": "TEJASCARGO",
+"n": "Tejas Cargo India"
+},
+{
+"s": "TEJASNET",
+"n": "Tejas Networks"
+},
+{
+"s": "TEMBO",
+"n": "Tembo Global Inds"
+},
+{
+"s": "TENNIND",
+"n": "Tenneco Clean Air"
+},
+{
+"s": "TERASOFT",
+"n": "Tera Software"
+},
+{
+"s": "TEXINFRA",
+"n": "Texmaco Infra"
+},
+{
+"s": "TEXMOPIPES",
+"n": "Texmo Pipes"
+},
+{
+"s": "TEXRAIL",
+"n": "Texmaco Rail"
+},
+{
+"s": "TFCILTD",
+"n": "TFCI"
+},
+{
+"s": "TFL",
+"n": "Transwarranty Fin"
+},
+{
+"s": "TGBHOTELS",
+"n": "TGB Banquets"
+},
+{
+"s": "TGL",
+"n": "Teerth Gopicon"
+},
+{
+"s": "THACKER",
+"n": "Thacker & Co"
+},
+{
+"s": "THAKDEV",
+"n": "Thakkers Developer"
+},
+{
+"s": "THANGAMAYL",
+"n": "Thangamayil Jeweller"
+},
+{
+"s": "THEINVEST",
+"n": "Inv Trust of India"
+},
+{
+"s": "THEJO",
+"n": "Thejo Engg"
+},
+{
+"s": "THELEELA",
+"n": "Leela Palaces Hotels"
+},
+{
+"s": "THEMISMED",
+"n": "Themis Medicare"
+},
+{
+"s": "THERMAX",
+"n": "Thermax"
+},
+{
+"s": "THESL",
+"n": "Thinking Hats"
+},
+{
+"s": "THOMASCOOK",
+"n": "Thomas Cook India"
+},
+{
+"s": "THOMASCOTT",
+"n": "Thomas Scott India"
+},
+{
+"s": "THYROCARE",
+"n": "Thyrocare Tech"
+},
+{
+"s": "TI",
+"n": "Tilaknagar Inds"
+},
+{
+"s": "TICL",
+"n": "TwamevÂ Construction"
+},
+{
+"s": "TIGERLOGS",
+"n": "Tiger Logistics"
+},
+{
+"s": "TIIL",
+"n": "Technocraft Inds"
+},
+{
+"s": "TIINDIA",
+"n": "Tube Investments"
+},
+{
+"s": "TIJARIA",
+"n": "Tijaria Polypipes"
+},
+{
+"s": "TIL",
+"n": "TIL"
+},
+{
+"s": "TIMESCAN",
+"n": "Timescan Logistics"
+},
+{
+"s": "TIMETECHNO",
+"n": "Time Technoplast"
+},
+{
+"s": "TIMEX",
+"n": "Timex Group"
+},
+{
+"s": "TIMKEN",
+"n": "Timken India"
+},
+{
+"s": "TINNARUBR",
+"n": "Tinna Rubber"
+},
+{
+"s": "TIPSFILMS",
+"n": "Tips Films"
+},
+{
+"s": "TIPSMUSIC",
+"n": "Tips Music"
+},
+{
+"s": "TIRUMALCHM",
+"n": "Thirumalai Chemicals"
+},
+{
+"s": "TIRUPATI",
+"n": "Shree Tirupati FIBC"
+},
+{
+"s": "TIRUPATIFL",
+"n": "Tirupati Forge"
+},
+{
+"s": "TITAGARH",
+"n": "Titagarh Railsystems"
+},
+{
+"s": "TITAN",
+"n": "Titan Co"
+},
+{
+"s": "TMB",
+"n": "Tamilnad Mercantile"
+},
+{
+"s": "TMCV",
+"n": "Tata Motors Commercial"
+},
+{
+"s": "TMPV",
+"n": "Tata Motors Passenger"
+},
+{
+"s": "TNIDETF",
+"n": "TNIDETF"
+},
+{
+"s": "TNPETRO",
+"n": "TN Petro Products"
+},
+{
+"s": "TNPL",
+"n": "TN Newsprint"
+},
+{
+"s": "TNTELE",
+"n": "TN Telecommunication"
+},
+{
+"s": "TOKYOPLAST",
+"n": "Tokyo Plast Intl"
+},
+{
+"s": "TOLINS",
+"n": "Tolins Tyres"
+},
+{
+"s": "TORNTPHARM",
+"n": "Torrent Pharma"
+},
+{
+"s": "TORNTPOWER",
+"n": "Torrent Power"
+},
+{
+"s": "TOTAL",
+"n": "Total Transport"
+},
+{
+"s": "TOUCHWOOD",
+"n": "Touchwood Enter"
+},
+{
+"s": "TPHQ",
+"n": "Teamo Productions HQ"
+},
+{
+"s": "TPLPLASTEH",
+"n": "TPL Plastech"
+},
+{
+"s": "TRACXN",
+"n": "Tracxn Technologies"
+},
+{
+"s": "TRANSPEK",
+"n": "Transpek Industry"
+},
+{
+"s": "TRANSRAILL",
+"n": "Transrail Lighting"
+},
+{
+"s": "TRANSTEEL",
+"n": "Transteel Seat Tech"
+},
+{
+"s": "TRANSWIND",
+"n": "Transwind Infra"
+},
+{
+"s": "TRANSWORLD",
+"n": "Transworld Shipping"
+},
+{
+"s": "TRAVELFOOD",
+"n": "Travel Food Services"
+},
+{
+"s": "TREEHOUSE",
+"n": "Tree House Education"
+},
+{
+"s": "TREJHARA",
+"n": "Trejhara Solutions"
+},
+{
+"s": "TREL",
+"n": "Transindia Real Est"
+},
+{
+"s": "TRENT",
+"n": "Trent"
+},
+{
+"s": "TRF",
+"n": "TRF"
+},
+{
+"s": "TRIDENT",
+"n": "Trident"
+},
+{
+"s": "TRIDHYA",
+"n": "Tridhya Tech"
+},
+{
+"s": "TRIGYN",
+"n": "Trigyn Technologies"
+},
+{
+"s": "TRITURBINE",
+"n": "Triveni Turbine"
+},
+{
+"s": "TRIVENI",
+"n": "Triveni Engg"
+},
+{
+"s": "TROM",
+"n": "Trom Industries"
+},
+{
+"s": "TRU",
+"n": "TruCap Finance"
+},
+{
+"s": "TRUALT",
+"n": "TruAlt Bioenergy"
+},
+{
+"s": "TRUST",
+"n": "Trust Fintech Ltd"
+},
+{
+"s": "TSC",
+"n": "TSC India"
+},
+{
+"s": "TSFINV",
+"n": "TSF Investments"
+},
+{
+"s": "TTKHLTCARE",
+"n": "TTK Healthcare"
+},
+{
+"s": "TTKPRESTIG",
+"n": "TTK Prestige"
+},
+{
+"s": "TTL",
+"n": "TT"
+},
+{
+"s": "TTML",
+"n": "Tata Tele (Maha)"
+},
+{
+"s": "TUNWAL",
+"n": "Tunwal E-Motors"
+},
+{
+"s": "TVSELECT",
+"n": "TVS Electronics"
+},
+{
+"s": "TVSHLTD",
+"n": "TVS Holdings"
+},
+{
+"s": "TVSINVIT",
+"n": "TVSINVIT"
+},
+{
+"s": "TVSMOTOR",
+"n": "TVS Motor Company"
+},
+{
+"s": "TVSSCS",
+"n": "TVS Supply Chain Sol"
+},
+{
+"s": "TVSSRICHAK",
+"n": "TVS Srichakra"
+},
+{
+"s": "TVTODAY",
+"n": "TV Today Network"
+},
+{
+"s": "TVVISION",
+"n": "TV Vision"
+},
+{
+"s": "TWCGOLDETF",
+"n": "TWCGOLDETF"
+},
+{
+"s": "UBL",
+"n": "United Breweries"
+},
+{
+"s": "UCAL",
+"n": "UCAL"
+},
+{
+"s": "UCL",
+"n": "Ushanti Colour Chem"
+},
+{
+"s": "UCOBANK",
+"n": "UCO Bank"
+},
+{
+"s": "UDS",
+"n": "Updater Services"
+},
+{
+"s": "UEL",
+"n": "Ujaas Energy"
+},
+{
+"s": "UFBL",
+"n": "United Foodbrands"
+},
+{
+"s": "UFLEX",
+"n": "Uflex"
+},
+{
+"s": "UFO",
+"n": "UFO Moviez India"
+},
+{
+"s": "UGARSUGAR",
+"n": "Ugar Sugar Works"
+},
+{
+"s": "UGROCAP",
+"n": "Ugro Capital"
+},
+{
+"s": "UHTL",
+"n": "United Heat Transfer"
+},
+{
+"s": "UJJIVANSFB",
+"n": "Ujjivan Small Fin"
+},
+{
+"s": "ULTRACEMCO",
+"n": "UltraTech Cement"
+},
+{
+"s": "ULTRAMAR",
+"n": "Ultramar & Pigments"
+},
+{
+"s": "UMA",
+"n": "Uma Converter"
+},
+{
+"s": "UMAEXPORTS",
+"n": "Uma Exports"
+},
+{
+"s": "UMESLTD",
+"n": "Usha Martin Edu"
+},
+{
+"s": "UMIYA-MRO",
+"n": "Umiya Buildcon"
+},
+{
+"s": "UNICHEMLAB",
+"n": "Unichem Laboratories"
+},
+{
+"s": "UNIDT",
+"n": "United Drilling"
+},
+{
+"s": "UNIECOM",
+"n": "Unicomm. eSolutions"
+},
+{
+"s": "UNIENTER",
+"n": "Uniphos Enterprises"
+},
+{
+"s": "UNIHEALTH",
+"n": "Unihealth Hospitals"
+},
+{
+"s": "UNIINFO",
+"n": "Uniinfo Telecom"
+},
+{
+"s": "UNILEX",
+"n": "Unilex Colours &Chem"
+},
+{
+"s": "UNIMECH",
+"n": "Unimech Aerospace"
+},
+{
+"s": "UNIONBANK",
+"n": "Union Bank of India"
+},
+{
+"s": "UNIONGOLD",
+"n": "UNIONGOLD"
+},
+{
+"s": "UNIPARTS",
+"n": "Uniparts India"
+},
+{
+"s": "UNITDSPR",
+"n": "United Spirits"
+},
+{
+"s": "UNITECH",
+"n": "Unitech"
+},
+{
+"s": "UNITEDPOLY",
+"n": "United Polyfab"
+},
+{
+"s": "UNITEDTEA",
+"n": "United Nilgiri"
+},
+{
+"s": "UNIVASTU",
+"n": "Univastu India"
+},
+{
+"s": "UNIVCABLES",
+"n": "Universal Cables"
+},
+{
+"s": "UNIVPHOTO",
+"n": "Universus Photo"
+},
+{
+"s": "UNOMINDA",
+"n": "UNO Minda"
+},
+{
+"s": "UPL",
+"n": "UPL"
+},
+{
+"s": "URAVIDEF",
+"n": "Uravi Defence&Tech."
+},
+{
+"s": "URBAN",
+"n": "Urban Env Waste Mgt"
+},
+{
+"s": "URBANCO",
+"n": "Urban Company"
+},
+{
+"s": "URJA",
+"n": "Urja Global"
+},
+{
+"s": "USASEEDS",
+"n": "Upsurge Seeds"
+},
+{
+"s": "USHAFIN",
+"n": "Usha Financial Serv."
+},
+{
+"s": "USHAMART",
+"n": "Usha Martin"
+},
+{
+"s": "USK",
+"n": "Udayshivakumar Infra"
+},
+{
+"s": "UTFDAIPIGI-MF",
+"n": "UTFDAIPIGI"
+},
+{
+"s": "UTFDAIPIPI-MF",
+"n": "UTFDAIPIPI"
+},
+{
+"s": "UTIAMC",
+"n": "UTI Asset Management"
+},
+{
+"s": "UTKARSHBNK",
+"n": "Utkarsh Small Fin."
+},
+{
+"s": "UTLSOLAR",
+"n": "Fujiyama Power Syste"
+},
+{
+"s": "UTSSAV",
+"n": "Utssav CZ Gold Jewel"
+},
+{
+"s": "UTTAMSUGAR",
+"n": "Uttam Sugar Mills"
+},
+{
+"s": "UWCSL",
+"n": "Ultra Wiring"
+},
+{
+"s": "UYFINCORP",
+"n": "UY Fincorp"
+},
+{
+"s": "VADILALIND",
+"n": "Vadilal Industries"
+},
+{
+"s": "VAIBHAVGBL",
+"n": "Vaibhav Global"
+},
+{
+"s": "VAISHALI",
+"n": "Vaishali Pharma"
+},
+{
+"s": "VAKRANGEE",
+"n": "Vakrangee"
+},
+{
+"s": "VALIANTLAB",
+"n": "Valiant Laboratories"
+},
+{
+"s": "VALIANTORG",
+"n": "Valiant Organics"
+},
+{
+"s": "VALUE",
+"n": "Mirae Asset Nifty 500 Value 50 ETF"
+},
+{
+"s": "VARDHACRLC",
+"n": "Vardhman Acrylics"
+},
+{
+"s": "VARDMNPOLY",
+"n": "Vardhman Polytex"
+},
+{
+"s": "VARROC",
+"n": "Varroc Engineering"
+},
+{
+"s": "VASA",
+"n": "Vasa Retail"
+},
+{
+"s": "VASCONEQ",
+"n": "Vascon Engineers"
+},
+{
+"s": "VASWANI",
+"n": "Vaswani Industries"
+},
+{
+"s": "VBL",
+"n": "Varun Beverages"
+},
+{
+"s": "VCL",
+"n": "Vaxtex Cotfab"
+},
+{
+"s": "VDEAL",
+"n": "Vdeal System"
+},
+{
+"s": "VEDL",
+"n": "Vedanta"
+},
+{
+"s": "VEEDOL",
+"n": "Veedol Corporation"
+},
+{
+"s": "VEEKAYEM",
+"n": "Veekayem Fashion"
+},
+{
+"s": "VELJAN",
+"n": "Veljan Denison"
+},
+{
+"s": "VELS",
+"n": "Vels Film Internatl."
+},
+{
+"s": "VENKEYS",
+"n": "Venky's India"
+},
+{
+"s": "VENTIVE",
+"n": "Ventive Hospitality"
+},
+{
+"s": "VENUSPIPES",
+"n": "Venus Pipes & Tubes"
+},
+{
+"s": "VENUSREM",
+"n": "Venus Remedies"
+},
+{
+"s": "VERA",
+"n": "Vera Synthetic"
+},
+{
+"s": "VERANDA",
+"n": "Veranda Learning"
+},
+{
+"s": "VERITAAS",
+"n": "Veritaas Advertising"
+},
+{
+"s": "VERTEXPLUS",
+"n": "Vertexplus Tech."
+},
+{
+"s": "VERTIS",
+"n": "Vertis Infrastructur"
+},
+{
+"s": "VERTOZ",
+"n": "Vertoz Limited"
+},
+{
+"s": "VESUVIUS",
+"n": "Vesuvius India"
+},
+{
+"s": "VETO",
+"n": "Veto Switch Gears"
+},
+{
+"s": "VGINFOTECH",
+"n": "Virtual Galaxy Info."
+},
+{
+"s": "VGL",
+"n": "Varvee Global"
+},
+{
+"s": "VGUARD",
+"n": "V-Guard Inds."
+},
+{
+"s": "VHL",
+"n": "Vardhman Holdings"
+},
+{
+"s": "VHLTD",
+"n": "Viceroy Hotels"
+},
+{
+"s": "VIAZ",
+"n": "Viaz Tyres"
+},
+{
+"s": "VICTORYEV",
+"n": "Victory Electric"
+},
+{
+"s": "VIDHIING",
+"n": "Vidhi Specialty"
+},
+{
+"s": "VIDYAWIRES",
+"n": "Vidya Wires"
+},
+{
+"s": "VIESL",
+"n": "Vision Infra Equip."
+},
+{
+"s": "VIGOR",
+"n": "Vigor Plast India"
+},
+{
+"s": "VIJAYA",
+"n": "VDC"
+},
+{
+"s": "VIJAYPD",
+"n": "Vijaypd Ceutical"
+},
+{
+"s": "VIJIFIN",
+"n": "Viji Finance"
+},
+{
+"s": "VIKASECO",
+"n": "Vikas Ecotech"
+},
+{
+"s": "VIKASLIFE",
+"n": "Vikas Lifecare"
+},
+{
+"s": "VIKRAMSOLR",
+"n": "Vikram Solar"
+},
+{
+"s": "VIKRAN",
+"n": "Vikran Engineering"
+},
+{
+"s": "VILAS",
+"n": "Vilas Transcore"
+},
+{
+"s": "VILINBIO",
+"n": "Vilin Bio Med"
+},
+{
+"s": "VIMTALABS",
+"n": "Vimta Labs"
+},
+{
+"s": "VINATIORGA",
+"n": "Vinati Organics"
+},
+{
+"s": "VINCOFE",
+"n": "Vintage Coffee"
+},
+{
+"s": "VINDHYATEL",
+"n": "Vindhya Telelinks"
+},
+{
+"s": "VINEETLAB",
+"n": "Vineet Laborator"
+},
+{
+"s": "VINNY",
+"n": "Vinny Overseas"
+},
+{
+"s": "VINSYS",
+"n": "Vinsys IT Services"
+},
+{
+"s": "VINYAS",
+"n": "Vinyas Innova Techno"
+},
+{
+"s": "VINYLINDIA",
+"n": "Vinyl Chemicals"
+},
+{
+"s": "VIPCLOTHNG",
+"n": "VIP Clothing"
+},
+{
+"s": "VIPIND",
+"n": "VIP Industries"
+},
+{
+"s": "VIPULLTD",
+"n": "Vipul"
+},
+{
+"s": "VIRINCHI",
+"n": "Virinchi"
+},
+{
+"s": "VISACHROME",
+"n": "VISA Chrome"
+},
+{
+"s": "VISAKAIND",
+"n": "Visaka Industries"
+},
+{
+"s": "VISAMAN",
+"n": "Visaman Global Sales"
+},
+{
+"s": "VISHNU",
+"n": "Vishnu Chemicals"
+},
+{
+"s": "VISHNUINFR",
+"n": "Vishnusurya Projects"
+},
+{
+"s": "VISHWARAJ",
+"n": "Vishwaraj Sugar"
+},
+{
+"s": "VISHWAS",
+"n": "Vishwas Agri Seeds Ltd"
+},
+{
+"s": "VITAL",
+"n": "Vital Chemtech"
+},
+{
+"s": "VIVIANA",
+"n": "Viviana Power Tech"
+},
+{
+"s": "VIVIDEL",
+"n": "Vivid Electromech"
+},
+{
+"s": "VIVIDHA",
+"n": "Visagar Polytex"
+},
+{
+"s": "VIVIMEDLAB",
+"n": "Vivimed Labs"
+},
+{
+"s": "VIVO",
+"n": "Vivo Collab Solut"
+},
+{
+"s": "VIYASH",
+"n": "Viyash Scientific"
+},
+{
+"s": "VLEGOV",
+"n": "VL E-Governance & IT"
+},
+{
+"s": "VLINFRA",
+"n": "VL Infraprojects"
+},
+{
+"s": "VLSFINANCE",
+"n": "VLS Finance"
+},
+{
+"s": "VMARCIND",
+"n": "V-Marc India"
+},
+{
+"s": "VMART",
+"n": "V-Mart Retail"
+},
+{
+"s": "VMM",
+"n": "Vishal Mega Mart"
+},
+{
+"s": "VMSTMT",
+"n": "VMS TMT"
+},
+{
+"s": "VOLERCAR",
+"n": "Voler Car"
+},
+{
+"s": "VOLTAMP",
+"n": "Voltamp Transformers"
+},
+{
+"s": "VOLTAS",
+"n": "Voltas"
+},
+{
+"s": "VPRPL",
+"n": "Vishnu Prakash R"
+},
+{
+"s": "VR",
+"n": "VR Infraspace"
+},
+{
+"s": "VRAJ",
+"n": "Vraj Iron & Steel"
+},
+{
+"s": "VRLLOG",
+"n": "VRL Logistics"
+},
+{
+"s": "VSCL",
+"n": "Vadivarhe Spl Chem"
+},
+{
+"s": "VSSL",
+"n": "Vardhman Steel"
+},
+{
+"s": "VSTIND",
+"n": "VST Industries"
+},
+{
+"s": "VSTL",
+"n": "Vibhor Steel Tubes"
+},
+{
+"s": "VSTTILLERS",
+"n": "VST Tillers Tractors"
+},
+{
+"s": "VTL",
+"n": "Vardhman Textiles"
+},
+{
+"s": "WAAREEENER",
+"n": "Waaree Energies"
+},
+{
+"s": "WAAREEINDO",
+"n": "Indosolar"
+},
+{
+"s": "WAAREERTL",
+"n": "Waaree Renewables"
+},
+{
+"s": "WABAG",
+"n": "VA Tech Wabag"
+},
+{
+"s": "WAKEFIT",
+"n": "Wakefit Innovations"
+},
+{
+"s": "WALCHANNAG",
+"n": "Walchandnagar Inds"
+},
+{
+"s": "WALPAR",
+"n": "Walpar Nutritions"
+},
+{
+"s": "WANBURY",
+"n": "Wanbury"
+},
+{
+"s": "WCIL",
+"n": "Western Carriers"
+},
+{
+"s": "WEALTH",
+"n": "Wealth First"
+},
+{
+"s": "WEBELSOLAR",
+"n": "Websol Energy System"
+},
+{
+"s": "WEIZMANIND",
+"n": "Weizmann"
+},
+{
+"s": "WEL",
+"n": "Wonder Electricals"
+},
+{
+"s": "WELCORP",
+"n": "Welspun Corp"
+},
+{
+"s": "WELENT",
+"n": "Welspun Enterprises"
+},
+{
+"s": "WELINV",
+"n": "Welspun Investments"
+},
+{
+"s": "WELSPLSOL",
+"n": "Welspun Specialty"
+},
+{
+"s": "WELSPUNLIV",
+"n": "Welspun Living"
+},
+{
+"s": "WENDT",
+"n": "Wendt India"
+},
+{
+"s": "WESTLIFE",
+"n": "Westlife Development"
+},
+{
+"s": "WEWIN",
+"n": "We Win"
+},
+{
+"s": "WEWORK",
+"n": "Wework India Managem"
+},
+{
+"s": "WHEELS",
+"n": "Wheels India"
+},
+{
+"s": "WHIRLPOOL",
+"n": "Whirlpool Of India"
+},
+{
+"s": "WHITEFORCE",
+"n": "Happy Square"
+},
+{
+"s": "WILLAMAGOR",
+"n": "Williamson Magor"
+},
+{
+"s": "WINDLAS",
+"n": "Windlas Biotech"
+},
+{
+"s": "WINDMACHIN",
+"n": "Windsor Machines"
+},
+{
+"s": "WINNY",
+"n": "Winny Imm & Edu Ser"
+},
+{
+"s": "WINSOL",
+"n": "Winsol Engineers"
+},
+{
+"s": "WINSOME-BZ",
+"n": "Winsome Yarns"
+},
+{
+"s": "WIPL",
+"n": "The Western Indian"
+},
+{
+"s": "WIPRO",
+"n": "Wipro"
+},
+{
+"s": "WOCKPHARMA",
+"n": "Wockhardt"
+},
+{
+"s": "WOMANCART",
+"n": "Womancart"
+},
+{
+"s": "WONDERLA",
+"n": "Wonderla Holidays"
+},
+{
+"s": "WORTHPERI",
+"n": "Worth Peripherals"
+},
+{
+"s": "WPIL",
+"n": "WPIL"
+},
+{
+"s": "WSI",
+"n": "WS Industries India"
+},
+{
+"s": "WSTCSTPAPR",
+"n": "West Coast Paper"
+},
+{
+"s": "WTICAB",
+"n": "Wise Travel India"
+},
+{
+"s": "XCHANGING",
+"n": "Xchanging Solutions"
+},
+{
+"s": "XELPMOC",
+"n": "Xelpmoc Design"
+},
+{
+"s": "XPROINDIA",
+"n": "Xpro India"
+},
+{
+"s": "XTGLOBAL",
+"n": "Xtglobal Infotech"
+},
+{
+"s": "YAAP",
+"n": "Yaap Digital"
+},
+{
+"s": "YASHO",
+"n": "Yasho Industries"
+},
+{
+"s": "YASHOPTICS",
+"n": "Yash Optics & Lens Ltd"
+},
+{
+"s": "YATHARTH",
+"n": "Yatharth Hospital"
+},
+{
+"s": "YATRA",
+"n": "Yatra Online"
+},
+{
+"s": "YCCL",
+"n": "Yasons Chemex Care"
+},
+{
+"s": "YESBANK",
+"n": "Yes Bank"
+},
+{
+"s": "YUDIZ",
+"n": "Yudiz Solutions"
+},
+{
+"s": "YUKEN",
+"n": "Yuken India"
+},
+{
+"s": "ZAGGLE",
+"n": "Zaggle Prepaid Ocean"
+},
+{
+"s": "ZEAL",
+"n": "Zeal Global Services"
+},
+{
+"s": "ZEEL",
+"n": "Zee Entertainment"
+},
+{
+"s": "ZEELEARN",
+"n": "Zee Learn"
+},
+{
+"s": "ZEEMEDIA",
+"n": "Zee Media Corp"
+},
+{
+"s": "ZENITHDRUG",
+"n": "Zenith Drugs"
+},
+{
+"s": "ZENITHEXPO",
+"n": "Zenith Exports"
+},
+{
+"s": "ZENITHSTL",
+"n": "Zenith Steel Pipes"
+},
+{
+"s": "ZENSARTECH",
+"n": "Zensar Technologies"
+},
+{
+"s": "ZENTEC",
+"n": "Zen Technologies"
+},
+{
+"s": "ZFCVINDIA",
+"n": "ZF Comm Vehic Contr"
+},
+{
+"s": "ZFSTEERING",
+"n": "ZF Steering Gear"
+},
+{
+"s": "ZIMLAB",
+"n": "Zim Laboratories"
+},
+{
+"s": "ZODIAC",
+"n": "Zodiac Energy"
+},
+{
+"s": "ZODIACLOTH",
+"n": "Zodiac Clothing Co"
+},
+{
+"s": "ZOTA",
+"n": "Zota Health Care"
+},
+{
+"s": "ZSARACOM",
+"n": "Saraswati Commercial"
+},
+{
+"s": "ZTECH",
+"n": "Z-Tech (India)"
+},
+{
+"s": "ZUARI",
+"n": "Zuari Agro Chem"
+},
+{
+"s": "ZUARIIND",
+"n": "Zuari Industries"
+},
+{
+"s": "ZYDUSLIFE",
+"n": "Zydus"
+},
+{
+"s": "ZYDUSWELL",
+"n": "Zydus Wellness"
+}
+]
+}

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sectoral Options · Marle-G</title>
+<style>
+  :root{--bg:#080a0e;--card:#14171e;--bg2:#0e1116;--border:rgba(255,255,255,.08);--ink:#eef1f6;--muted:#9aa3b4;--dim:#646c7a;
+    --mono:'SF Mono',ui-monospace,Consolas,monospace;--saffron:#ff9933;--green:#22c55e;--red:#ef4444;--amber:#fbbf24;--india-green:#138808;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(1100px 520px at 50% -10%,rgba(255,153,51,.05),transparent 60%),var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--border);background:rgba(8,10,14,.8);position:sticky;top:0;z-index:10}
+  .brand{font-family:var(--mono);font-weight:800;letter-spacing:.18em;font-size:13px;display:flex;align-items:center;gap:9px}
+  .brand .mark{width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,var(--saffron),var(--india-green))}
+  .brand .w{background:linear-gradient(90deg,var(--saffron),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tabs{display:flex;gap:13px;font-family:var(--mono);font-size:11px;flex-wrap:wrap}
+  .tabs a{color:var(--dim);text-decoration:none}.tabs a.on{color:var(--saffron)}.tabs a:hover{color:var(--ink)}
+  .wrap{max-width:1040px;margin:0 auto;padding:22px 22px 70px}
+  h1{font-size:22px;margin-bottom:3px} .sub{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:14px}
+  .caveat{background:rgba(251,191,36,.10);border:1px solid var(--amber);border-radius:11px;padding:11px 14px;font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.55;margin-bottom:14px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px}
+  .hd{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:9px}
+  .sec{font-size:17px;font-weight:800}
+  .src{font-family:var(--mono);font-size:9px;color:var(--dim)}
+  .gr{display:inline-block;width:21px;text-align:center;font-weight:800;border-radius:5px;color:#0b0b0b}
+  .strat{font-family:var(--mono);font-size:13px;font-weight:700;margin:2px 0 6px}
+  .kv{display:flex;gap:14px;font-family:var(--mono);font-size:11px;color:var(--muted);flex-wrap:wrap}
+  .pos{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-top:11px;font-family:var(--mono);font-size:11.5px}
+  .leg{display:inline-block;padding:2px 7px;border-radius:5px;margin:2px 3px 2px 0;font-size:10.5px}
+  .sell{background:rgba(255,153,51,.14);color:var(--saffron);border:1px solid rgba(255,153,51,.3)}
+  .buy{background:rgba(96,165,250,.14);color:#60a5fa;border:1px solid rgba(96,165,250,.3)}
+  .legend{font-family:var(--mono);font-size:10px;color:var(--dim);line-height:1.55;margin-top:14px}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span></span></div>
+  <div class="tabs">
+    <a href="marle_g_pod.html">home</a><a href="marle_g_equity.html">equity</a><a href="marle_g_intraday.html">intraday</a>
+    <a href="marle_g_niftysim.html">nifty&nbsp;sim</a><a href="#" class="on">sectoral</a><a href="marle_g_cascade.html">cascade</a>
+    <a href="marle_g_vol.html">vol</a><a href="marle_g_regime.html">regime</a><a href="marle_g_mindhive.html">mindhive</a><a href="marle_g_portfolio.html">portfolio</a>
+  </div>
+</div>
+<main class="wrap">
+  <h1>🧩 Sectoral Options Books</h1>
+  <div class="sub">the strategy tournament run per sector index — best strategy + this week's paper position. Paper only; no real orders.</div>
+  <div class="caveat">⚠ Sector indices have <b>no published VIX</b>, so options are priced with an <b>IV proxy = 30-day realized vol × ~1.15 vol-risk-premium</b>. Absolute P&amp;L is approximate; the <b style="color:var(--ink)">best-strategy-per-sector and relative ranking</b> are the signal.</div>
+  <div id="out"><div class="card"><span style="color:var(--dim);font-family:var(--mono);font-size:12px">⟳ running 4 sector tournaments (first load ~45s)…</span></div></div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const GC={A:'var(--green)',B:'#4ade80',C:'var(--amber)',D:'#fb923c',F:'var(--red)'};
+function spark(eq){
+  if(!eq||eq.length<2)return '';
+  const mn=Math.min(...eq),mx=Math.max(...eq),rng=(mx-mn)||1,W=120,H=26;
+  const pts=eq.map((v,i)=>`${(i/(eq.length-1)*W).toFixed(1)},${(H-(v-mn)/rng*H).toFixed(1)}`).join(' ');
+  const col=eq[eq.length-1]>=eq[0]?'var(--green)':'var(--red)';
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}"><polyline fill="none" stroke="${col}" stroke-width="1.4" points="${pts}"/></svg>`;
+}
+function posHtml(p){
+  if(!p) return '<div class="pos" style="color:var(--dim)">no current position</div>';
+  if(p.status) return `<div class="pos" style="color:var(--amber)">this week: ${p.status}</div>`;
+  const legs=(p.legs||[]).map(l=>`<span class="leg ${l.side==='SELL'?'sell':'buy'}">${l.side} ${l.strike}${l.opt}</span>`).join('');
+  const mc=p.mtm_pnl>=0?'var(--green)':'var(--red)';
+  return `<div class="pos"><div style="color:var(--dim);font-size:9px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px">This week · entry ${p.entry_date} @ ${p.entry_spot} · DTE ${p.dte_days}d</div>
+    ${legs}
+    <div style="margin-top:7px">premium <b>${p.premium}</b> pts · MTM <b style="color:${mc}">${p.mtm_pnl>0?'+':''}${p.mtm_pnl}</b> (${p.mtm_pnl_pct_spot>0?'+':''}${p.mtm_pnl_pct_spot}% of spot)</div></div>`;
+}
+async function load(){
+  try{
+    const r=await (await fetch('/api/sectoral')).json();
+    const cards=(r.sectors||[]).map(s=>{
+      if(s.error) return `<div class="card"><div class="sec">${s.underlying}</div><div style="color:var(--dim);font-family:var(--mono);font-size:11px;margin-top:8px">${s.error}</div></div>`;
+      const b=s.best, bench=s.benchmark||{};
+      return `<div class="card">
+        <div class="hd"><div class="sec">${s.underlying}</div><div class="src">${s.iv_source} · ${s.n_cycles} cyc · ${s.asof}</div></div>
+        <div style="display:flex;align-items:center;gap:9px"><span class="gr" style="background:${GC[b.grade]}">${b.grade}</span><div class="strat">${b.base}</div></div>
+        <div class="kv"><span>Sharpe <b style="color:var(--ink)">${b.sharpe}</b></span><span>CAGR <b style="color:${b.cagr>=0?'var(--green)':'var(--red)'}">${b.cagr}%</b></span><span>maxDD <b style="color:var(--red)">${b.maxdd}%</b></span><span>win ${b.winrate}%</span></div>
+        ${spark(b.equity)}
+        <div class="kv" style="margin-top:2px"><span style="color:var(--dim)">vs buy-hold: Sharpe ${bench.sharpe!=null?bench.sharpe:'—'} · CAGR ${bench.cagr!=null?bench.cagr+'%':'—'}</span></div>
+        ${posHtml(s.current_position)}
+      </div>`;
+    }).join('');
+    $('out').innerHTML=`<div class="grid">${cards}</div>
+      <div class="legend">${r.note||''} Each sector's best <b>option-selling</b> strategy is chosen by Sharpe over ~6y of weekly cycles; the "this week" box is the live paper position marked to the latest price. (C)=enter at close. Monitor-only; not advice.</div>`;
+  }catch(e){ $('out').innerHTML='<div class="card"><span style="color:var(--red)">backend offline? run: python marleg_server.py</span></div>'; }
+}
+load();
+</script>
+  <script src="marle_g_nav.js"></script>
+</body>
+</html>

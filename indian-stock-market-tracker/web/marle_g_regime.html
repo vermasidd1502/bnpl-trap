@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Regime Dial · Marle-G</title>
+<style>
+  :root{--bg:#080a0e;--card:#14171e;--bg2:#0e1116;--border:rgba(255,255,255,.08);--ink:#eef1f6;--muted:#9aa3b4;--dim:#646c7a;
+    --mono:'SF Mono',ui-monospace,Consolas,monospace;--saffron:#ff9933;--green:#22c55e;--red:#ef4444;--amber:#fbbf24;--india-green:#138808;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(1100px 520px at 50% -10%,rgba(255,153,51,.05),transparent 60%),var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--border);background:rgba(8,10,14,.8);position:sticky;top:0;z-index:10}
+  .brand{font-family:var(--mono);font-weight:800;letter-spacing:.18em;font-size:13px;display:flex;align-items:center;gap:9px}
+  .brand .mark{width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,var(--saffron),var(--india-green))}
+  .brand .w{background:linear-gradient(90deg,var(--saffron),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tabs{display:flex;gap:15px;font-family:var(--mono);font-size:11px;flex-wrap:wrap}
+  .tabs a{color:var(--dim);text-decoration:none}.tabs a.on{color:var(--saffron)}.tabs a:hover{color:var(--ink)}
+  .wrap{max-width:980px;margin:0 auto;padding:22px 22px 80px}
+  h1{font-size:22px;margin-bottom:3px} .sub{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:20px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px}
+  .gaugewrap{text-align:center}
+  .gnum{font-family:var(--mono);font-size:52px;font-weight:800;line-height:1}
+  .greg{font-family:var(--mono);font-size:13px;font-weight:700;margin-top:8px}
+  .track{position:relative;height:16px;border-radius:9px;margin:20px 0 6px;
+    background:linear-gradient(90deg,var(--red) 0%,var(--amber) 50%,var(--green) 100%);opacity:.85}
+  .marker{position:absolute;top:-7px;width:4px;height:30px;background:var(--ink);border-radius:2px;box-shadow:0 0 8px rgba(255,255,255,.5)}
+  .ticks{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:.05em}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+  .stat{background:var(--bg2);border:1px solid var(--border);border-radius:11px;padding:14px}
+  .stat .n{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--dim)}
+  .stat .v{font-family:var(--mono);font-size:22px;font-weight:800;margin:4px 0}
+  .stat .pbar{height:5px;border-radius:3px;background:rgba(255,255,255,.06);overflow:hidden;margin:6px 0 4px}
+  .stat .pbar span{display:block;height:100%;background:var(--saffron)}
+  .stat .m{font-family:var(--mono);font-size:10px;color:var(--muted);line-height:1.4}
+  .sh{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-bottom:12px}
+  .secrow{display:flex;align-items:center;gap:10px;margin:6px 0;font-family:var(--mono);font-size:11.5px}
+  .secrow .nm{width:230px;color:var(--muted)}.secrow .bar{flex:1;height:8px;background:rgba(255,255,255,.05);border-radius:4px;overflow:hidden}
+  .secrow .bar span{display:block;height:100%;background:linear-gradient(90deg,var(--saffron),var(--india-green))}
+  .legend{font-family:var(--mono);font-size:10px;color:var(--dim);line-height:1.6;margin-top:6px}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span></span></div>
+  <div class="tabs">
+    <a href="marle_g_pod.html">home</a><a href="marle_g_equity.html">equity</a><a href="marle_g_cascade.html">cascade</a>
+    <a href="marle_g_vol.html">vol</a><a href="#" class="on">regime</a><a href="marle_g_macro_preview.html">macro</a><a href="marle_g_portfolio.html">portfolio</a>
+  </div>
+</div>
+<main class="wrap">
+  <h1>🌡️ Regime Dial</h1>
+  <div class="sub">the scenario-alpha gate — is the market DISPERSED (stock-pickers, theses live) or COHERENT (macro-driven, theses dormant)?</div>
+
+  <div class="card gaugewrap" id="gauge"><div style="color:var(--dim);font-family:var(--mono);font-size:13px;padding:30px">computing regime across the universe… (first load ~30s)</div></div>
+
+  <div class="card">
+    <div class="sh">The three reads</div>
+    <div class="stats" id="stats"></div>
+  </div>
+
+  <div class="card">
+    <div class="sh">Where the incoherence is — top-dispersion sectors (where a thesis may be activating)</div>
+    <div id="sectors"></div>
+  </div>
+
+  <div class="legend">
+    <b>Cross-sectional dispersion</b> = how differently stocks move each day (high = idiosyncratic, story-driven). <b>Avg pairwise correlation</b> = how together they move (high = macro-driven). <b>India VIX</b> = fear/vol level.
+    Gauge blends them: <span style="color:var(--green)">HIGH (≥60)</span> = stock-picker's market, deploy the scenario engine; <span style="color:var(--red)">LOW (≤35)</span> = everything on macro, single-name theses dormant — wait.
+    Grounded in the cross-sectional-dispersion-forecasts-alpha literature. The dispersing sectors are where to hunt for an activating narrative.
+  </div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const col=g=>g>=60?'var(--green)':g<=35?'var(--red)':'var(--amber)';
+async function load(){
+  try{
+    const r=await (await fetch('/api/regime')).json();
+    $('gauge').innerHTML=`
+      <div class="gnum" style="color:${col(r.gauge)}">${r.gauge}<span style="font-size:20px;color:var(--dim)">/100</span></div>
+      <div class="greg" style="color:${col(r.gauge)}">${r.regime}</div>
+      <div class="track"><div class="marker" style="left:calc(${r.gauge}% - 2px)"></div></div>
+      <div class="ticks"><span>0 · COHERENT (macro)</span><span>50 · transitional</span><span>DISPERSED (stock-pickers) · 100</span></div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:10px">${r.universe} names · as of ${r.asof}</div>`;
+    const stat=(n,val,pct,m)=>`<div class="stat"><div class="n">${n}</div><div class="v">${val}</div>
+      <div class="pbar"><span style="width:${pct}%"></span></div>
+      <div class="m">${pct}th pctile vs 1y · ${m}</div></div>`;
+    $('stats').innerHTML=
+      stat('Cross-sectional dispersion', r.dispersion_now+'%', r.dispersion_pctile, 'high = idiosyncratic / story-driven')+
+      stat('Avg pairwise correlation', r.avg_correlation, r.corr_pctile, 'high = macro-driven, names move together')+
+      stat('India VIX', r.vix, r.vix_pctile||0, 'high = risk-off, correlations spike');
+    const secs=(r.sector_dispersion||[]); const mx=Math.max(...secs.map(s=>s[1]),0.001);
+    $('sectors').innerHTML=secs.slice(0,8).map(([nm,d])=>`<div class="secrow"><span class="nm">${nm}</span><div class="bar"><span style="width:${d/mx*100}%"></span></div><b style="width:54px;text-align:right">${d}%</b></div>`).join('');
+  }catch(e){ $('gauge').innerHTML='<div style="color:var(--dim);padding:30px;font-family:var(--mono)">backend offline — run marleg_server.py</div>'; }
+}
+load();
+</script>
+  <script src="marle_g_nav.js"></script>
+</body>
+</html>

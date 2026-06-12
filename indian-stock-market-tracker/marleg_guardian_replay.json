@@ -1,0 +1,167 @@
+{
+ "TEJASNET": {
+  "symbol": "TEJASNET",
+  "entries_tested": 55,
+  "window": "2026-03-13 -> 2026-06-10",
+  "policies": {
+   "NAIVE": {
+    "median_ret_pct": -3.0,
+    "mean_ret_pct": 5.23,
+    "worst_pct": -3.0,
+    "stopped_pct": 63.6,
+    "noise_stop_pct_of_stops": 85.7,
+    "avg_hold_sessions": 6.9
+   },
+   "CLOSE3": {
+    "median_ret_pct": -3.18,
+    "mean_ret_pct": 5.42,
+    "worst_pct": -9.77,
+    "stopped_pct": 54.5,
+    "noise_stop_pct_of_stops": 86.7,
+    "avg_hold_sessions": 8.4
+   },
+   "GUARDIAN": {
+    "median_ret_pct": -0.59,
+    "mean_ret_pct": -0.06,
+    "worst_pct": -9.51,
+    "stopped_pct": 100.0,
+    "noise_stop_pct_of_stops": 76.4,
+    "avg_hold_sessions": 1.7
+   },
+   "GUARDIAN2": {
+    "median_ret_pct": 9.01,
+    "mean_ret_pct": 6.02,
+    "worst_pct": -14.01,
+    "stopped_pct": 90.9,
+    "noise_stop_pct_of_stops": 70.0,
+    "avg_hold_sessions": 11.4
+   },
+   "DEFENSE": {
+    "median_ret_pct": 3.22,
+    "mean_ret_pct": 8.09,
+    "worst_pct": -10.74,
+    "stopped_pct": 100.0,
+    "noise_stop_pct_of_stops": 43.6,
+    "avg_hold_sessions": 7.1
+   },
+   "NOSTOP": {
+    "median_ret_pct": 11.06,
+    "mean_ret_pct": 10.65,
+    "worst_pct": -8.26,
+    "stopped_pct": 0.0,
+    "noise_stop_pct_of_stops": 0.0,
+    "avg_hold_sessions": 17.2
+   }
+  }
+ },
+ "ADANIPORTS": {
+  "symbol": "ADANIPORTS",
+  "entries_tested": 55,
+  "window": "2026-03-13 -> 2026-06-10",
+  "policies": {
+   "NAIVE": {
+    "median_ret_pct": 1.86,
+    "mean_ret_pct": 6.32,
+    "worst_pct": -3.0,
+    "stopped_pct": 32.7,
+    "noise_stop_pct_of_stops": 100.0,
+    "avg_hold_sessions": 11.7
+   },
+   "CLOSE3": {
+    "median_ret_pct": 3.33,
+    "mean_ret_pct": 7.52,
+    "worst_pct": -5.86,
+    "stopped_pct": 20.0,
+    "noise_stop_pct_of_stops": 100.0,
+    "avg_hold_sessions": 13.8
+   },
+   "GUARDIAN": {
+    "median_ret_pct": 2.77,
+    "mean_ret_pct": 5.38,
+    "worst_pct": -0.77,
+    "stopped_pct": 27.3,
+    "noise_stop_pct_of_stops": 93.3,
+    "avg_hold_sessions": 11.8
+   },
+   "GUARDIAN2": {
+    "median_ret_pct": 11.03,
+    "mean_ret_pct": 11.01,
+    "worst_pct": -0.77,
+    "stopped_pct": 0.0,
+    "noise_stop_pct_of_stops": 0.0,
+    "avg_hold_sessions": 17.2
+   },
+   "DEFENSE": {
+    "median_ret_pct": -0.1,
+    "mean_ret_pct": 2.31,
+    "worst_pct": -5.34,
+    "stopped_pct": 87.3,
+    "noise_stop_pct_of_stops": 100.0,
+    "avg_hold_sessions": 7.7
+   },
+   "NOSTOP": {
+    "median_ret_pct": 11.03,
+    "mean_ret_pct": 11.01,
+    "worst_pct": -0.77,
+    "stopped_pct": 0.0,
+    "noise_stop_pct_of_stops": 0.0,
+    "avg_hold_sessions": 17.2
+   }
+  }
+ },
+ "RELIANCE": {
+  "symbol": "RELIANCE",
+  "entries_tested": 55,
+  "window": "2026-03-13 -> 2026-06-10",
+  "policies": {
+   "NAIVE": {
+    "median_ret_pct": -3.0,
+    "mean_ret_pct": -1.88,
+    "worst_pct": -3.0,
+    "stopped_pct": 81.8,
+    "noise_stop_pct_of_stops": 33.3,
+    "avg_hold_sessions": 7.2
+   },
+   "CLOSE3": {
+    "median_ret_pct": -3.27,
+    "mean_ret_pct": -2.18,
+    "worst_pct": -5.71,
+    "stopped_pct": 74.5,
+    "noise_stop_pct_of_stops": 58.5,
+    "avg_hold_sessions": 9.2
+   },
+   "GUARDIAN": {
+    "median_ret_pct": -0.51,
+    "mean_ret_pct": -0.99,
+    "worst_pct": -4.56,
+    "stopped_pct": 100.0,
+    "noise_stop_pct_of_stops": 36.4,
+    "avg_hold_sessions": 1.5
+   },
+   "GUARDIAN2": {
+    "median_ret_pct": -3.48,
+    "mean_ret_pct": -1.22,
+    "worst_pct": -6.0,
+    "stopped_pct": 89.1,
+    "noise_stop_pct_of_stops": 30.6,
+    "avg_hold_sessions": 8.7
+   },
+   "DEFENSE": {
+    "median_ret_pct": -2.15,
+    "mean_ret_pct": 0.25,
+    "worst_pct": -3.93,
+    "stopped_pct": 96.4,
+    "noise_stop_pct_of_stops": 15.1,
+    "avg_hold_sessions": 6.8
+   },
+   "NOSTOP": {
+    "median_ret_pct": -3.48,
+    "mean_ret_pct": -2.83,
+    "worst_pct": -11.38,
+    "stopped_pct": 0.0,
+    "noise_stop_pct_of_stops": 0.0,
+    "avg_hold_sessions": 17.2
+   }
+  }
+ }
+}

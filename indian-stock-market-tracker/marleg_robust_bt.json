@@ -1,0 +1,124 @@
+{
+ "n_obs": 476,
+ "universe": 34,
+ "period": "2y",
+ "topn": 8,
+ "swing_hold": 15,
+ "n_trials_assumed": 16,
+ "from": "2024-07-11",
+ "to": "2026-06-10",
+ "results": [
+  {
+   "strategy": "buyhold",
+   "gross_sharpe": 0.14,
+   "net_sharpe": 0.14,
+   "avg_cost_bps_day": 0.0,
+   "ann_return_pct": 1.9,
+   "maxdd_pct": -15.0,
+   "subperiod_sharpes": [
+    -0.39,
+    0.89,
+    1.04,
+    -0.65
+   ],
+   "boot_ci95": [
+    -1.26,
+    1.58
+   ],
+   "psr_vs0": 0.577,
+   "dsr_vs_selection": 0.0,
+   "dsr_benchmark_sr": 5.39,
+   "verdict": "FRAGILE"
+  },
+  {
+   "strategy": "swing",
+   "gross_sharpe": -0.02,
+   "net_sharpe": -0.27,
+   "avg_cost_bps_day": 1.4,
+   "ann_return_pct": -4.0,
+   "maxdd_pct": -17.3,
+   "subperiod_sharpes": [
+    -0.71,
+    0.46,
+    1.75,
+    -1.75
+   ],
+   "boot_ci95": [
+    -1.68,
+    1.21
+   ],
+   "psr_vs0": 0.354,
+   "dsr_vs_selection": 0.0,
+   "dsr_benchmark_sr": 5.39,
+   "verdict": "FRAGILE"
+  },
+  {
+   "strategy": "intraday",
+   "gross_sharpe": -0.47,
+   "net_sharpe": -2.98,
+   "avg_cost_bps_day": 12.0,
+   "ann_return_pct": -36.0,
+   "maxdd_pct": -50.8,
+   "subperiod_sharpes": [
+    -3.64,
+    -1.52,
+    -4.05,
+    -3.25
+   ],
+   "boot_ci95": [
+    -4.15,
+    -1.79
+   ],
+   "psr_vs0": 0.0,
+   "dsr_vs_selection": 0.0,
+   "dsr_benchmark_sr": 5.39,
+   "verdict": "FRAGILE"
+  },
+  {
+   "strategy": "full",
+   "gross_sharpe": 0.67,
+   "net_sharpe": -5.12,
+   "avg_cost_bps_day": 33.0,
+   "ann_return_pct": -73.5,
+   "maxdd_pct": -76.0,
+   "subperiod_sharpes": [
+    -5.54,
+    -3.85,
+    -7.33,
+    -5.18
+   ],
+   "boot_ci95": [
+    -6.48,
+    -3.69
+   ],
+   "psr_vs0": 0.0,
+   "dsr_vs_selection": 0.0,
+   "dsr_benchmark_sr": 5.39,
+   "verdict": "FRAGILE"
+  },
+  {
+   "strategy": "overnight",
+   "gross_sharpe": 1.69,
+   "net_sharpe": -7.28,
+   "avg_cost_bps_day": 33.0,
+   "ann_return_pct": -67.5,
+   "maxdd_pct": -72.6,
+   "subperiod_sharpes": [
+    -8.78,
+    -6.78,
+    -13.4,
+    -5.73
+   ],
+   "boot_ci95": [
+    -9.4,
+    -5.59
+   ],
+   "psr_vs0": 0.0,
+   "dsr_vs_selection": 0.0,
+   "dsr_benchmark_sr": 5.39,
+   "verdict": "FRAGILE"
+  }
+ ],
+ "note": "Net of realistic Indian costs, turnover-aware. DSR corrects for having searched ~16 strategy variants. SURVIVES requires net Sharpe>0, PSR>0.95, DSR>0.90, bootstrap-CI lower bound>0, and stable subperiods.",
+ "asof": "2026-06-10 13:58 IST"
+}

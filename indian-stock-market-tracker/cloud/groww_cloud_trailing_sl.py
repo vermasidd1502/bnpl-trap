@@ -52,8 +52,8 @@ def net_positions():
         if not s:
             continue
         a = agg.setdefault(s, {"bought": 0, "sold": 0, "product": p.get("product", "MIS")})
-        a["bought"] += p.get("debit_quantity", 0)
-        a["sold"] += p.get("credit_quantity", 0)
+        a["bought"] += p.get("credit_quantity", 0)   # DEMAT semantics: credit=BOUGHT
+        a["sold"] += p.get("debit_quantity", 0)
         a["product"] = p.get("product", a["product"])
     out = []
     for s, a in agg.items():

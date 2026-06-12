@@ -56,6 +56,20 @@
 
   window.closeStock = function () { document.getElementById('mgm-ov').classList.remove('show'); };
 
+  window.addToVolume = async function () {
+    const c = window._mgmCur; if (!c || !c.sym) return;
+    const btn = document.getElementById('mgm-volbtn'); if (btn) btn.textContent = '⟳ adding…';
+    try {
+      const r = await fetch('/api/volume_pod/add', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ symbol: c.sym, sector: c.sector || 'Others', industry: c.industry || c.sector || 'Others' }) });
+      const j = await r.json();
+      if (btn) {
+        btn.textContent = j.error ? ('✕ ' + j.error) : (j.warn ? ('• ' + c.sym + ' already monitored') : ('✓ ' + c.sym + ' added to volume monitor'));
+        btn.style.color = j.error ? '#ef4444' : '#22c55e';
+      }
+    } catch (e) { if (btn) { btn.textContent = '✕ failed'; btn.style.color = '#ef4444'; } }
+  };
+
   const vpColor = b => (b === 'long' || b === 'long-trail' || b === 'watch') ? '#22c55e'
     : (b === 'wait' || b === 'trim') ? '#fbbf24' : '#ef4444';
   function renderVP(vp) {
@@ -95,6 +109,7 @@
         <div class="mgm-grid">${Object.entries(health).map(([k, v]) => `<div class="mgm-g"><div class="k">${k}</div><div class="vv">${v == null ? '—' : (typeof v === 'number' ? Math.round(v * 100) / 100 : v)}</div></div>`).join('')}</div>
         <div class="mgm-narr">${narr.map(s => `<h4>${s.h}</h4><p>${s.p}</p>`).join('')}</div>`
       : `<div style="color:#9aa3b4;font-size:12.5px;margin-top:6px">Fundamentals unavailable for this name.</div>`;
+    window._mgmCur = { sym: sym, sector: (f && f.sector) || '', industry: (f && f.industry) || '' };
     box.innerHTML = `
       <div class="mgm-h">
         <div><div class="sym">${sym}</div><div class="nm">${(f && f.name) || ''}${f && f.sector ? ' · ' + f.sector : ''}${f && f.industry ? ' / ' + f.industry : ''}</div></div>
@@ -102,6 +117,6 @@
         <div class="mgm-x" onclick="window.closeStock()">✕</div>
       </div>
       <div class="mgm-b">${renderVP(vp)}${fundHtml}</div>
-      <div class="mgm-f"><a href="marle_g_chart.html?q=${sym}" style="font-family:var(--mono,monospace);font-size:12px;color:#ff9933;text-decoration:none;font-weight:700">📈 Interactive chart</a><a href="marle_g_equity.html?q=${sym}">Open full analysis →</a></div>`;
+      <div class="mgm-f"><a href="#" id="mgm-volbtn" onclick="event.preventDefault();addToVolume()" style="font-family:var(--mono,monospace);font-size:12px;color:#22c55e;text-decoration:none;font-weight:700;cursor:pointer">➕ Volume monitor</a><a href="marle_g_intraday.html?q=${sym}" style="font-family:var(--mono,monospace);font-size:12px;color:#ff9933;text-decoration:none;font-weight:700">⏱ Intraday →</a><a href="marle_g_chart.html?q=${sym}" style="font-family:var(--mono,monospace);font-size:12px;color:#ff9933;text-decoration:none;font-weight:700">📈 Chart</a><a href="marle_g_equity.html?q=${sym}">Full →</a></div>`;
   };
 })();

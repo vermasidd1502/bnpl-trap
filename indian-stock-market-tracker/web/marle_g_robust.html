@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Robustness Lab · Marle-G</title>
+<style>
+  :root{--bg:#080a0e;--card:#14171e;--bg2:#0e1116;--border:rgba(255,255,255,.08);--ink:#eef1f6;--muted:#9aa3b4;--dim:#646c7a;
+    --mono:'SF Mono',ui-monospace,Consolas,monospace;--saffron:#ff9933;--green:#22c55e;--red:#ef4444;--amber:#fbbf24;--india-green:#138808;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(1100px 520px at 50% -10%,rgba(255,153,51,.05),transparent 60%),var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--border);background:rgba(8,10,14,.8);position:sticky;top:0;z-index:10}
+  .brand{font-family:var(--mono);font-weight:800;letter-spacing:.18em;font-size:13px;display:flex;align-items:center;gap:9px}
+  .brand .mark{width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,var(--saffron),var(--india-green))}
+  .brand .w{background:linear-gradient(90deg,var(--saffron),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tabs{display:flex;gap:13px;font-family:var(--mono);font-size:11px;flex-wrap:wrap}
+  .tabs a{color:var(--dim);text-decoration:none}.tabs a.on{color:var(--saffron)}.tabs a:hover{color:var(--ink)}
+  .wrap{max-width:1040px;margin:0 auto;padding:22px 22px 70px}
+  h1{font-size:22px;margin-bottom:3px} .sub{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:14px}
+  .insight{background:linear-gradient(135deg,rgba(239,68,68,.10),rgba(255,153,51,.07));border:1px solid rgba(239,68,68,.32);border-radius:12px;padding:13px 15px;font-size:13px;line-height:1.6;color:var(--muted);margin-bottom:14px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px}
+  .sh{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-bottom:10px}
+  table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11.5px}
+  th{font-size:9px;text-transform:uppercase;color:var(--dim);text-align:right;padding:6px 7px;border-bottom:1px solid var(--border)}
+  th.l,td.l{text-align:left}
+  td{padding:7px 7px;text-align:right;border-bottom:1px solid rgba(255,255,255,.04)}
+  .vb{font-size:9px;font-weight:800;padding:2px 7px;border-radius:5px}
+  .surv{background:rgba(34,197,94,.16);color:var(--green)}
+  .frag{background:rgba(239,68,68,.15);color:var(--red)}
+  .spk{font-family:var(--mono);font-size:9.5px;color:var(--dim)}
+  .defs{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+  .def{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px}
+  .def .t{font-family:var(--mono);font-size:11px;font-weight:800;color:var(--ink)}
+  .def .d{font-size:11px;color:var(--muted);line-height:1.5;margin-top:4px}
+  .legend{font-family:var(--mono);font-size:10px;color:var(--dim);line-height:1.55;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span></span></div>
+  <div class="tabs"></div>
+</div>
+<main class="wrap">
+  <h1>🔬 Robustness Lab</h1>
+  <div class="sub">every headline edge, re-tested the honest way — net of Indian costs, deflated for multiple testing. Paper / research only.</div>
+  <div id="insight"></div>
+  <div class="card"><div class="sh">Strategy scorecard — net of costs, selection-adjusted</div><div id="table"></div></div>
+  <div class="card">
+    <div class="sh">What each test means</div>
+    <div class="defs">
+      <div class="def"><div class="t">Net Sharpe</div><div class="d">After realistic Indian round-trip costs (delivery STT + slippage). Turnover-aware: daily-flatten strategies pay every day; a positional swing pays only when the basket changes.</div></div>
+      <div class="def"><div class="t">PSR — Probabilistic Sharpe</div><div class="d">P(true Sharpe &gt; 0), adjusting for skew &amp; fat tails. Want &gt; 0.95. Low PSR = the Sharpe could easily be noise.</div></div>
+      <div class="def"><div class="t">DSR — Deflated Sharpe</div><div class="d">PSR after correcting for how many strategies were searched. Picking the best of ~16 inflates Sharpe; DSR is the selection-honest probability. Want &gt; 0.90.</div></div>
+      <div class="def"><div class="t">Bootstrap CI &amp; subperiods</div><div class="d">95% confidence band on the Sharpe from block-resampling, plus the Sharpe in 4 time slices. If 0 is inside the band or slices flip sign, the edge isn't stable.</div></div>
+    </div>
+  </div>
+  <div class="legend" id="note"></div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const col=x=>x>0?'var(--green)':x<0?'var(--red)':'var(--muted)';
+function fmt(x){return (x>0?'+':'')+x;}
+async function load(){
+  try{
+    const r=await (await fetch('/api/robust_bt')).json();
+    if(r.error){ $('table').innerHTML='<span style="color:var(--dim)">'+r.error+'</span>'; return; }
+    const anySurv=r.results.some(x=>x.verdict==='SURVIVES');
+    $('insight').innerHTML=`<div class="insight">⚠ <b style="color:var(--ink)">Net of costs, ${anySurv?'few':'none'} of these survive.</b>
+      The volume signal's gross Sharpes look strong, but daily-rebalanced legs (overnight/full) pay ~33 bps <i>every day</i> in delivery costs — that erases the gross gap edge and turns Sharpe deeply negative. Even the low-turnover swing is flat, and after deflating for the ~${r.n_trials_assumed} strategies searched, the DSR collapses. <b style="color:var(--ink)">Lesson:</b> the edge (if any) is positional, not daily; large-cap volume conviction over ${r.n_obs} days isn't a tradeable signal net of costs. <span style="color:var(--dim)">${r.from} → ${r.to}, ${r.universe} names.</span></div>`;
+    const rows=r.results.map(x=>{
+      const vb=x.verdict==='SURVIVES'?'<span class="vb surv">SURVIVES</span>':'<span class="vb frag">FRAGILE</span>';
+      const ci=`[${x.boot_ci95[0]}, ${x.boot_ci95[1]}]`;
+      const subs=(x.subperiod_sharpes||[]).map(s=>`<span style="color:${col(s)}">${fmt(s)}</span>`).join(' · ');
+      return `<tr>
+        <td class="l" style="font-weight:700">${x.strategy}</td>
+        <td style="color:var(--dim)">${x.gross_sharpe}</td>
+        <td style="color:${col(x.net_sharpe)};font-weight:800">${x.net_sharpe}</td>
+        <td style="color:var(--dim)">${x.avg_cost_bps_day}b</td>
+        <td style="color:${col(x.ann_return_pct)}">${fmt(x.ann_return_pct)}%</td>
+        <td style="color:var(--red)">${x.maxdd_pct}%</td>
+        <td>${x.psr_vs0??'—'}</td>
+        <td>${x.dsr_vs_selection??'—'}</td>
+        <td class="l spk">${ci}<br>${subs}</td>
+        <td>${vb}</td></tr>`;}).join('');
+    $('table').innerHTML=`<table><thead><tr>
+      <th class="l">Strategy</th><th>Gross SR</th><th>Net SR</th><th>Cost/day</th><th>Ann R</th><th>MaxDD</th>
+      <th>PSR</th><th>DSR</th><th class="l">CI95 / subperiods</th><th>Verdict</th>
+      </tr></thead><tbody>${rows}</tbody></table>`;
+    $('note').innerHTML=(r.note||'')+` · as of ${r.asof||'—'}. Refresh: <code>python marleg_robust_bt.py</code>. Monitor-only; not advice.`;
+  }catch(e){ $('table').innerHTML='<span style="color:var(--red)">backend offline? run: python marleg_server.py</span>'; }
+}
+load();
+</script>
+  <script src="marle_g_nav.js"></script>
+</body>
+</html>

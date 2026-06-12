@@ -1,0 +1,66 @@
+{
+ "profile": "adaptive",
+ "cash": 96469.20000000001,
+ "start": 100000.0,
+ "positions": [
+  {
+   "sym": "ADANIENT",
+   "contracts": 9,
+   "spread": {
+    "k_long": 2950,
+    "k_short": 3350,
+    "expiry": "2026-07-30",
+    "sigma": 0.382,
+    "debit": 133.31,
+    "max_val": 400
+   },
+   "now": 133.31,
+   "entry_spot": 2961.0,
+   "t": "2026-06-09"
+  },
+  {
+   "sym": "OIL",
+   "contracts": 65,
+   "spread": {
+    "k_long": 480,
+    "k_short": 540,
+    "expiry": "2026-07-30",
+    "sigma": 0.355,
+    "debit": 18.2,
+    "max_val": 60
+   },
+   "now": 18.2,
+   "entry_spot": 475.35,
+   "t": "2026-06-09"
+  },
+  {
+   "sym": "ADANIENSOL",
+   "contracts": 17,
+   "spread": {
+    "k_long": 1580,
+    "k_short": 1800,
+    "expiry": "2026-07-30",
+    "sigma": 0.383,
+    "debit": 67.53,
+    "max_val": 220
+   },
+   "now": 67.53,
+   "entry_spot": 1571.0,
+   "t": "2026-06-09"
+  }
+ ],
+ "closed": [],
+ "steps": 1,
+ "cfg": {
+  "risk": 1.2,
+  "maxpos": 5
+ },
+ "regime": "RISK-ON",
+ "equity": 100000,
+ "last_actions": [
+  "OPEN ADANIENT 2950/3350C x9 debit 133.31",
+  "OPEN OIL 480/540C x65 debit 18.2",
+  "OPEN ADANIENSOL 1580/1800C x17 debit 67.53"
+ ],
+ "asof": "2026-06-09"
+}

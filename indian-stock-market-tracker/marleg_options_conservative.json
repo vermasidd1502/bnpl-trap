@@ -1,0 +1,49 @@
+{
+ "profile": "conservative",
+ "cash": 99108.67000000001,
+ "start": 100000.0,
+ "positions": [
+  {
+   "sym": "ADANIENT",
+   "contracts": 3,
+   "spread": {
+    "k_long": 2950,
+    "k_short": 3350,
+    "expiry": "2026-07-30",
+    "sigma": 0.382,
+    "debit": 133.31,
+    "max_val": 400
+   },
+   "now": 133.31,
+   "entry_spot": 2961.0,
+   "t": "2026-06-09"
+  },
+  {
+   "sym": "OIL",
+   "contracts": 27,
+   "spread": {
+    "k_long": 480,
+    "k_short": 540,
+    "expiry": "2026-07-30",
+    "sigma": 0.355,
+    "debit": 18.2,
+    "max_val": 60
+   },
+   "now": 18.2,
+   "entry_spot": 475.35,
+   "t": "2026-06-09"
+  }
+ ],
+ "closed": [],
+ "steps": 1,
+ "cfg": {
+  "risk": 0.5,
+  "maxpos": 2
+ },
+ "equity": 100000,
+ "last_actions": [
+  "OPEN ADANIENT 2950/3350C x3 debit 133.31",
+  "OPEN OIL 480/540C x27 debit 18.2"
+ ],
+ "asof": "2026-06-09"
+}

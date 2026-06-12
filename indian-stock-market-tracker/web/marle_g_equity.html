@@ -83,7 +83,7 @@
 <div class="nav">
   <div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span></span></div>
   <div class="tabs">
-    <a href="marle_g_pod.html">home</a><a href="#" class="on">equity</a><a href="marle_g_volume.html">volume</a><a href="marle_g_canslim.html">canslim</a><a href="marle_g_options.html">options</a>
+    <a href="marle_g_pod.html">home</a><a href="#" class="on">equity</a><a href="marle_g_live.html">live</a><a href="marle_g_volume.html">volume</a><a href="marle_g_cascade.html">cascade</a><a href="marle_g_vol.html">vol</a><a href="marle_g_canslim.html">canslim</a><a href="marle_g_options.html">options</a>
     <a href="marle_g_funds.html">funds</a><a href="marle_g_portfolio.html">portfolio</a>
     <a href="marle_g_macro_preview.html">macro</a><a href="marle_g_dashboard.html">dashboard</a><a href="marle_g_profile.html">profile</a>
   </div>
@@ -153,6 +153,22 @@
     <div id="fund-health"></div>
     <div id="fund-narr" style="margin-top:14px"></div>
   </div>
+
+  <div class="card" style="margin-top:16px">
+    <div class="sh">Financials trend &amp; price projection · the cone</div>
+    <div id="proj-acct"></div>
+    <div id="proj-cone" style="margin-top:12px"></div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <div class="sh">Smart money · institutional flow (quarterly shareholding Δ)</div>
+    <div id="smart"></div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <div class="sh">Business analyst · moat · Porter 5-forces · SWOT · firm-vs-sector verdict</div>
+    <div id="business"></div>
+  </div>
 </main>
 <div class="toast" id="toast"></div>
 
@@ -162,7 +178,7 @@ const pct=(x,d=2)=>(x==null||isNaN(x))?'—':(x>0?'+':'')+(+x).toFixed(d)+'%';
 const cls=x=>x>0?'pos':x<0?'neg':'neu';
 function _seed(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return ((h>>>0)%100000)/100000;}
 function rng(seed){let s=Math.floor(seed*1e9)||1;return ()=>{s=(s*1103515245+12345)&0x7fffffff;return s/0x7fffffff;};}
-const NAMES={RELIANCE:'Reliance Industries',HDFCBANK:'HDFC Bank',TCS:'Tata Consultancy',INFY:'Infosys',ICICIBANK:'ICICI Bank',SBIN:'State Bank of India',TATAMOTORS:'Tata Motors',ITC:'ITC',BHARTIARTL:'Bharti Airtel',MARUTI:'Maruti Suzuki'};
+const NAMES={RELIANCE:'Reliance Industries',HDFCBANK:'HDFC Bank',TCS:'Tata Consultancy',INFY:'Infosys',ICICIBANK:'ICICI Bank',SBIN:'State Bank of India',TMPV:'Tata Motors PV',TMCV:'Tata Motors CV',ITC:'ITC',BHARTIARTL:'Bharti Airtel',MARUTI:'Maruti Suzuki'};
 let CUR=null;
 
 function analyse(tk){
@@ -254,6 +270,7 @@ function render(a){
   V.innerHTML=`<div class="v-tkr">${a.tk} · NSE</div><div class="v-name">${a.name}</div>
     <div class="v-big ${a.verdict}">${a.verdict}</div>
     <div class="v-conv">conviction ${a.conv}/100 · VCS ${a.vcs>0?'+':''}${a.vcs}</div>
+    ${a.entry?`<div style="margin-top:7px"><span style="font-family:var(--mono);font-size:11px;font-weight:800;padding:4px 10px;border-radius:6px;background:${a.entry.includes('EARLY')?'rgba(34,197,94,.18)':a.entry.includes('DEAD')?'rgba(161,161,170,.16)':a.entry.includes('CHASING')?'rgba(239,68,68,.18)':'rgba(251,191,36,.16)'};color:${a.entry.includes('EARLY')?'var(--green)':a.entry.includes('DEAD')?'var(--dim)':a.entry.includes('CHASING')?'var(--red)':'var(--amber)'}">⏱ ENTRY · ${a.entry}${a.rsi!=null?' (RSI '+a.rsi+')':''}</span></div>`:''}
     ${a.target?`<div class="v-conv" style="color:${a.verdict==='LONG'?'var(--green)':'var(--red)'};font-weight:700">🎯 Target ₹${a.target.toLocaleString()} (${a.tgtpct>0?'+':''}${a.tgtpct}%) · stop ₹${a.stopL.toLocaleString()} · R:R ${a.rr}:1 · ATR ${a.atr}</div>`:''}
     <div class="v-driver">${a.driver}</div>
     <div class="v-px"><span class="p">₹${a.ltp.toLocaleString()}</span><span class="c ${cls(a.chg)}">${pct(a.chg)}</span></div>`;
@@ -325,6 +342,97 @@ async function loadFundamentals(tk){
     narrEl.innerHTML=(f.narrative||[]).map(s=>`<div style="margin-bottom:13px"><div style="font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--saffron);font-weight:700;margin-bottom:4px">${s.h}</div><div style="font-size:13px;line-height:1.65;color:var(--muted)">${s.p}</div></div>`).join('');
   }catch(e){ head.innerHTML='<span style="color:var(--dim)">fundamentals unavailable — backend offline</span>'; }
 }
+async function loadProjection(tk){
+  const acct=$('proj-acct'), cone=$('proj-cone');
+  acct.innerHTML='<span style="color:var(--dim);font-family:var(--mono);font-size:12px">⟳ loading financials & projection…</span>'; cone.innerHTML='';
+  try{
+    const p=await (await fetch('/api/projection/'+encodeURIComponent(tk))).json();
+    if(p.error){ acct.innerHTML='<span style="color:var(--dim)">projection unavailable for this name</span>'; return; }
+    const cr=v=>v==null?'—':'₹'+Math.round(v/1e7).toLocaleString('en-IN')+'Cr';
+    const inr=v=>'₹'+Math.round(v).toLocaleString('en-IN');
+    const st=p.statements;
+    if(st){
+      const cols=st.years.map(y=>`<th style="text-align:right;color:var(--dim);font-size:9px">${y}</th>`).join('');
+      const row=(lbl,arr,fmt)=>`<tr><td style="text-align:left;color:var(--muted)">${lbl}</td>${arr.map(v=>`<td style="text-align:right">${fmt(v)}</td>`).join('')}</tr>`;
+      acct.innerHTML=`<div style="font-family:var(--mono);font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Accounting · revenue 3y CAGR <b style="color:var(--green)">${st.rev_cagr}%</b> · net-income CAGR <b style="color:${st.ni_cagr>=0?'var(--green)':'var(--red)'}">${st.ni_cagr}%</b></div>
+        <table cellpadding="5" style="width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11.5px"><thead><tr><th style="text-align:left;color:var(--dim);font-size:9px">FY</th>${cols}</tr></thead>
+        <tbody>${row('Revenue',st.revenue,cr)}${row('Net income',st.net_income,cr)}${row('Op margin',st.op_margin,v=>v==null?'—':v+'%')}</tbody></table>`;
+    } else { acct.innerHTML='<span style="color:var(--dim);font-family:var(--mono);font-size:11px">statements unavailable</span>'; }
+    const grahamNote=p.graham_excluded?' <span style="color:var(--dim)">(Graham excluded — asset-light compounder)</span>':'';
+    const anchor=`1-yr anchor <b>${inr(p.central_1y)}</b> <span style="color:var(--dim)">(${(p.anchors_used||[]).join(', ')})</span> → expected <b style="color:${p.exp_return_1y>=0?'var(--green)':'var(--red)'}">${p.exp_return_1y>0?'+':''}${p.exp_return_1y}%</b> · realized vol ${(p.sigma*100).toFixed(0)}%${grahamNote}`;
+    const rows=p.horizons.map(h=>`<tr><td style="text-align:left">${h.label}</td>
+      <td style="text-align:right">${inr(h.center)} <span style="color:${h.ret>=0?'var(--green)':'var(--red)'}">${h.ret>0?'+':''}${h.ret}%</span></td>
+      <td style="text-align:right;color:var(--muted)">${inr(h.lo68)}–${inr(h.hi68)}</td>
+      <td style="text-align:right;color:var(--dim)">${inr(h.lo90)}–${inr(h.hi90)}</td>
+      <td style="width:80px"><div style="height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden"><span style="display:block;height:100%;width:${h.vol_share}%;background:var(--saffron)"></span></div></td></tr>`).join('');
+    cone.innerHTML=`<div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:8px">${anchor}</div>
+      <table cellpadding="5" style="width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11.5px">
+      <thead><tr><th style="text-align:left;color:var(--dim);font-size:9px">HORIZON</th><th style="text-align:right;color:var(--dim);font-size:9px">EXPECTED</th><th style="text-align:right;color:var(--dim);font-size:9px">68% RANGE</th><th style="text-align:right;color:var(--dim);font-size:9px">90% RANGE</th><th style="text-align:right;color:var(--dim);font-size:9px">% NOISE</th></tr></thead>
+      <tbody>${rows}</tbody></table>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:8px;line-height:1.5">Short-horizon "expected" ≈ today (drift tiny) — the <b>range</b> is the real story; the saffron bar = % of the move that's pure volatility. Only the 1-yr carries a fundamental anchor. Model output, not advice.</div>`;
+  }catch(e){ acct.innerHTML='<span style="color:var(--dim);font-family:var(--mono);font-size:11px">projection unavailable — backend offline</span>'; }
+}
+async function loadSmartMoney(tk){
+  const el=$('smart'); el.innerHTML='<span style="color:var(--dim);font-family:var(--mono);font-size:12px">⟳ loading institutional flow…</span>';
+  try{
+    const f=await (await fetch('/api/smartmoney/'+encodeURIComponent(tk))).json();
+    if(f.error){ el.innerHTML='<span style="color:var(--dim);font-family:var(--mono);font-size:11px">shareholding data unavailable for this name</span>'; return; }
+    const vc=f.verdict==='ACCUMULATING'?'var(--green)':f.verdict==='DISTRIBUTING'?'var(--red)':'var(--amber)';
+    const pc=f.promoter_action==='BUYING'?'var(--green)':f.promoter_action==='SELLING'?'var(--red)':'var(--dim)';
+    const dcol=x=>x>0?'var(--green)':x<0?'var(--red)':'var(--dim)';
+    const sgn=x=>x==null?'—':(x>0?'+':'')+(+x).toFixed(2);
+    const row=(lbl,o)=>!o?'':`<tr><td style="text-align:left;color:var(--muted)">${lbl}</td>
+      <td style="text-align:right">${o.now!=null?(+o.now).toFixed(2)+'%':'—'}</td>
+      <td style="text-align:right;color:${dcol(o.d1q)}">${sgn(o.d1q)}</td>
+      <td style="text-align:right;color:${dcol(o.d4q)}">${sgn(o.d4q)}</td></tr>`;
+    el.innerHTML=`<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px;font-family:var(--mono);font-size:12px">
+        <span style="font-weight:800;padding:4px 10px;border-radius:7px;background:rgba(0,0,0,.25);color:${vc};border:1px solid ${vc}">${f.verdict}</span>
+        <span>institutions <b style="color:${dcol(f.inst_delta_1q)}">${sgn(f.inst_delta_1q)}%</b> 1Q · <b style="color:${dcol(f.inst_delta_4q)}">${sgn(f.inst_delta_4q)}%</b> 4Q</span>
+        <span>promoters <b style="color:${pc}">${f.promoter_action}</b></span>
+        <span style="color:var(--dim)">as of ${f.asof}</span></div>
+      <table cellpadding="5" style="width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11.5px">
+      <thead><tr><th style="text-align:left;color:var(--dim);font-size:9px">HOLDER</th><th style="text-align:right;color:var(--dim);font-size:9px">NOW</th><th style="text-align:right;color:var(--dim);font-size:9px">Δ 1Q</th><th style="text-align:right;color:var(--dim);font-size:9px">Δ 4Q</th></tr></thead>
+      <tbody>${row('Promoters',f.promoter)}${row('FIIs (foreign)',f.fii)}${row('DIIs (domestic)',f.dii)}</tbody></table>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:8px;line-height:1.5">India's 13F-equivalent: rising FII+DII = institutions accumulating; promoter BUYING = insider conviction; DII = the structural domestic bid. Source: quarterly shareholding (screener.in)${f.yf_institutions_pct!=null?` · yfinance cross-check inst ${f.yf_institutions_pct}% / promoters ${f.yf_insiders_pct}%`:''}.</div>`;
+  }catch(e){ el.innerHTML='<span style="color:var(--dim);font-family:var(--mono);font-size:11px">institutional flow unavailable — backend offline</span>'; }
+}
+async function loadBusiness(tk){
+  const el=$('business'); el.innerHTML='<span style="color:var(--dim);font-family:var(--mono);font-size:12px">⟳ analysing the franchise…</span>';
+  try{
+    const b=await (await fetch('/api/business/'+encodeURIComponent(tk))).json();
+    if(b.error){ el.innerHTML='<span style="color:var(--dim);font-family:var(--mono);font-size:11px">business data unavailable for this name</span>'; return; }
+    const mc=b.moat>=65?'var(--green)':b.moat>=45?'var(--amber)':'var(--red)';
+    const c=b.components||{}, m=b.metrics||{}, sw=b.swot||{};
+    const bar=(lbl,v)=>{v=v||0;const w=Math.max(3,Math.min(100,v));const col=v>=65?'var(--green)':v>=45?'var(--amber)':'var(--red)';
+      return `<div style="display:flex;align-items:center;gap:8px;margin:3px 0;font-family:var(--mono);font-size:11px"><span style="width:94px;color:var(--muted)">${lbl}</span><div style="flex:1;height:7px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden"><span style="display:block;height:100%;width:${w}%;background:${col}"></span></div><b style="width:30px;text-align:right;color:${col}">${v}</b></div>`;};
+    const forces=Object.entries(b.forces||{}).map(([k,v])=>`<div style="background:var(--bg2);border-radius:8px;padding:7px 10px"><div style="font-size:9px;color:var(--dim);text-transform:uppercase;font-family:var(--mono)">${k}</div><div style="font-size:12px;font-weight:700;margin-top:2px;font-family:var(--mono)">${v}</div></div>`).join('');
+    const bull=(sw.strengths||[]).concat(sw.opportunities||[]);
+    const bear=(sw.weaknesses||[]).concat(sw.threats||[]);
+    const chips=(arr,col,sign)=>arr.length?arr.map(s=>`<div style="font-size:12px;line-height:1.55;color:var(--muted);margin:3px 0"><b style="color:${col}">${sign}</b> ${s}</div>`).join(''):'<span style="color:var(--dim);font-size:11px">—</span>';
+    const vc=b.override===true?'var(--saffron)':b.override===false?'var(--red)':'var(--dim)';
+    const vtag=b.override===true?'OVERRIDE':b.override===false?'CONFIRMS':'NEUTRAL';
+    el.innerHTML=`
+      <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:11px;font-family:var(--mono)">
+        <div style="font-size:28px;font-weight:900;color:${mc}">${b.moat}<span style="font-size:13px;color:var(--dim)">/100</span></div>
+        <div style="font-size:13px;font-weight:800;color:${mc}">MOAT · ${b.moat_label}</div>
+        <div style="color:var(--muted);font-size:12px">${b.position} · #${b.mcap_rank} of ${(b.peers_listed||0)+1} in ${b.industry}</div>
+      </div>
+      ${bar('Pricing power',c.pricing_power)}${bar('Dominance',c.dominance)}${bar('Durability',c.durability)}${bar('Resilience',c.resilience)}
+      <div style="font-family:var(--mono);font-size:10.5px;color:var(--dim);margin:9px 0 2px;line-height:1.5">op-margin ${m.op_margin}% (stability ${m.margin_stability}, ${m.margin_vs_peers_pctile}th pctile vs peers) · ROE ${m.roe}% · rev growth ${m.rev_growth}% · D/E ${m.de==null?'—':m.de}</div>
+      <div class="sh" style="margin-top:14px">Porter's 5 forces</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:8px;margin-top:6px">${forces}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px">
+        <div><div class="sh">Bull case</div>${chips(bull,'var(--green)','+')}</div>
+        <div><div class="sh">Bear case</div>${chips(bear,'var(--red)','−')}</div>
+      </div>
+      <div style="margin-top:14px;background:rgba(0,0,0,.25);border:1px solid ${vc};border-radius:10px;padding:12px 14px">
+        <div style="font-family:var(--mono);font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px">Firm vs sector · ${vtag}</div>
+        <div style="font-size:12px;color:var(--muted);font-family:var(--mono);margin-bottom:5px">${b.sector_signal||''}</div>
+        <div style="font-size:13px;line-height:1.6;color:${vc};font-weight:600">➤ ${b.divergence_verdict||''}</div>
+      </div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:9px;line-height:1.55">MACRO (regime) → SECTOR (cascade) → <b style="color:var(--muted)">FIRM</b> (this). Evidence-anchored + adversarial: does the franchise OVERRIDE its sector's cascade signal? Monitor-only; not advice.</div>`;
+  }catch(e){ el.innerHTML='<span style="color:var(--dim);font-family:var(--mono);font-size:11px">business analyst unavailable — backend offline</span>'; }
+}
 async function loadScore(tk){
   const el=$('score'); el.innerHTML='<span style="color:var(--dim);font-family:var(--mono);font-size:12px">⟳ loading signal & news…</span>';
   try{
@@ -359,6 +467,9 @@ async function scan(){
     loadFundamentals(a.tk);
     loadUniversal(a.tk);
     loadScore(a.tk);
+    loadProjection(a.tk);
+    loadSmartMoney(a.tk);
+    loadBusiness(a.tk);
   }catch(e){
     $('verdict').innerHTML='<div style="font-family:var(--mono);color:var(--red);padding:20px">⚠ '+e.message+'<br><span style="color:var(--dim);font-size:11px">backend offline? run: python marleg_server.py</span></div>';
   }
@@ -405,5 +516,6 @@ const _qp=new URLSearchParams(location.search).get('q'); if(_qp)$('q').value=_qp
 scan();
 </script>
 <script src="marleg_stockmodal.js"></script>
+  <script src="marle_g_nav.js"></script>
 </body>
 </html>

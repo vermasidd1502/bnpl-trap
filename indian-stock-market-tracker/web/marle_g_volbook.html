@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Volume Day-Book · Marle-G</title>
+<style>
+  :root{--bg:#080a0e;--card:#14171e;--bg2:#0e1116;--border:rgba(255,255,255,.08);--ink:#eef1f6;--muted:#9aa3b4;--dim:#646c7a;
+    --mono:'SF Mono',ui-monospace,Consolas,monospace;--saffron:#ff9933;--green:#22c55e;--red:#ef4444;--amber:#fbbf24;--india-green:#138808;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(1100px 520px at 50% -10%,rgba(255,153,51,.05),transparent 60%),var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--border);background:rgba(8,10,14,.8);position:sticky;top:0;z-index:10}
+  .brand{font-family:var(--mono);font-weight:800;letter-spacing:.18em;font-size:13px;display:flex;align-items:center;gap:9px}
+  .brand .mark{width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,var(--saffron),var(--india-green))}
+  .brand .w{background:linear-gradient(90deg,var(--saffron),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tabs{display:flex;gap:13px;font-family:var(--mono);font-size:11px;flex-wrap:wrap}
+  .tabs a{color:var(--dim);text-decoration:none}.tabs a.on{color:var(--saffron)}.tabs a:hover{color:var(--ink)}
+  .wrap{max-width:1000px;margin:0 auto;padding:22px 22px 70px}
+  h1{font-size:22px;margin-bottom:3px} .sub{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:14px}
+  .insight{background:linear-gradient(135deg,rgba(34,197,94,.10),rgba(255,153,51,.07));border:1px solid rgba(34,197,94,.3);border-radius:12px;padding:13px 15px;font-size:13px;line-height:1.6;color:var(--muted);margin-bottom:14px}
+  .legs{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:14px}
+  .leg{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:15px}
+  .leg .h{font-family:var(--mono);font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+  .leg .sub2{font-family:var(--mono);font-size:9px;color:var(--dim);margin:2px 0 8px}
+  .leg .big{font-family:var(--mono);font-size:26px;font-weight:900}
+  .leg .kv{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:5px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px}
+  .sh{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-bottom:10px}
+  table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px}
+  th{font-size:9px;text-transform:uppercase;color:var(--dim);text-align:right;padding:6px 7px;border-bottom:1px solid var(--border)}
+  th.l,td.l{text-align:left}
+  td{padding:6px 7px;text-align:right;border-bottom:1px solid rgba(255,255,255,.04)}
+  .legend{font-family:var(--mono);font-size:10px;color:var(--dim);line-height:1.55;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span></span></div>
+  <div class="tabs">
+    <a href="marle_g_pod.html">home</a><a href="marle_g_equity.html">equity</a><a href="marle_g_intraday.html">intraday</a>
+    <a href="marle_g_niftysim.html">nifty&nbsp;sim</a><a href="marle_g_sectoral.html">sectoral</a><a href="#" class="on">day-book</a>
+    <a href="marle_g_regime.html">regime</a><a href="marle_g_mindhive.html">mindhive</a><a href="marle_g_portfolio.html">portfolio</a>
+  </div>
+</div>
+<main class="wrap">
+  <h1>⚡ Volume Day-Book</h1>
+  <div class="sub">trade the day's top volume-conviction names — with the honest backtest. Paper only; for thrill, not (necessarily) edge.</div>
+  <div id="insight"></div>
+  <div class="legs" id="legs"></div>
+  <div class="card"><div class="sh">Today's picks — top volume-conviction (ud) to trade next session</div><div id="picks"></div></div>
+  <div class="card"><div class="sh">⏳ Persistence — days on the list (auto-recorded daily)</div><div id="ledger" style="font-family:var(--mono);font-size:12px;color:var(--dim)">⟳ loading the ledger…</div></div>
+  <div class="legend" id="note"></div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+function spark(eq,col){
+  if(!eq||eq.length<2)return '';
+  const mn=Math.min(...eq),mx=Math.max(...eq),rng=(mx-mn)||1,W=200,H=40;
+  const pts=eq.map((v,i)=>`${(i/(eq.length-1)*W).toFixed(1)},${(H-(v-mn)/rng*H).toFixed(1)}`).join(' ');
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}"><polyline fill="none" stroke="${col}" stroke-width="1.5" points="${pts}"/></svg>`;
+}
+function legCard(name,sub,t,hot){
+  const col=t.sharpe>=0?'var(--green)':'var(--red)';
+  return `<div class="leg" style="${hot?'border-color:rgba(34,197,94,.5);box-shadow:0 0 0 1px rgba(34,197,94,.2)':''}">
+    <div class="h" style="color:${hot?'var(--green)':'var(--ink)'}">${name}${hot?' ★':''}</div>
+    <div class="sub2">${sub}</div>
+    <div class="big" style="color:${col}">${t.cum_return_pct>0?'+':''}${t.cum_return_pct}%</div>
+    <div class="kv">Sharpe <b style="color:${col}">${t.sharpe}</b> · win ${t.win_rate}% · maxDD ${t.maxdd_pct}%</div>
+    ${spark(t.equity,col)}</div>`;
+}
+async function load(){
+  try{
+    const r=await (await fetch('/api/volume_book')).json();
+    if(r.error){ $('picks').innerHTML='<span style="color:var(--dim)">'+r.error+'</span>'; return; }
+    const ov=r.overnight,intr=r.intraday;
+    $('insight').innerHTML=`<div class="insight">💡 <b style="color:var(--ink)">The edge is overnight, not intraday.</b> Volume-conviction names gap up <b>overnight</b> (Sharpe ${ov.sharpe}, +${ov.cum_return_pct}%) and then <b>fade intraday</b> (Sharpe ${intr.sharpe}, ${intr.cum_return_pct}%). Day-trading them open→close loses; the move already happened by the open. The honest play: <b>buy at close, sell at the open.</b> <span style="color:var(--dim)">(Documented overnight-return anomaly; Sharpe is optimistic — no costs, and the gap isn't always fillable.)</span></div>`;
+    $('legs').innerHTML=
+      legCard('Intraday','open → close · the day-trade',r.intraday,false)+
+      legCard('Overnight','prev close → open · the gap',r.overnight,true)+
+      legCard('Full hold','close → close · buy the basket',r.full,false);
+    const rows=(r.picks||[]).map(p=>`<tr><td class="l">${p.sym}</td><td class="l" style="color:var(--muted)">${(p.name||'').slice(0,26)}</td><td style="color:var(--saffron)">${p.ud}</td><td>${p.rvol}</td><td style="color:${p.chg>=0?'var(--green)':'var(--red)'}">${p.chg>0?'+':''}${p.chg}%</td></tr>`).join('');
+    $('picks').innerHTML=`<table><thead><tr><th class="l">Sym</th><th class="l">Name</th><th>ud (up/dn vol)</th><th>rvol</th><th>today</th></tr></thead><tbody>${rows||'<tr><td colspan=5 style="color:var(--dim)">no names pass the filter today</td></tr>'}</tbody></table>`;
+    $('note').innerHTML=(r.note||'')+` · ${r.universe} names · as of ${r.asof}. Monitor-only; not advice.`;
+  }catch(e){ $('picks').innerHTML='<span style="color:var(--red)">backend offline? run: python marleg_server.py</span>'; }
+}
+load();
+async function loadLedger(){
+  try{
+    const r=await (await fetch('/api/volume_ledger')).json();
+    const c=r.current||{}, st=r.study||{};
+    if(c.error){ $('ledger').innerHTML=c.error; return; }
+    const badge=k=>k==='NEW'?'<span style="color:var(--saffron);font-weight:800">NEW</span>':'<span style="color:var(--green);font-weight:800">'+k+'</span>';
+    const rows=(c.list||[]).map(x=>`<tr><td class="l">${badge(x.badge)}</td><td class="l" style="font-weight:700;color:var(--ink)">${x.sym}</td><td>${x.ud}</td><td>#${x.rank}</td></tr>`).join('');
+    const dropped=(c.dropped_since_prev||[]).map(d=>`${d.sym} (was ${d.had_streak}d)`).join(', ');
+    const buckets=(st.by_streak||[]).map(b=>`<tr><td class="l">${b.bucket}</td><td>${b.n}</td><td style="color:${b.fwd10_med_pct>=0?'var(--green)':'var(--red)'}">${b.fwd10_med_pct>0?'+':''}${b.fwd10_med_pct}%</td><td style="color:${b.fwd21_med_pct>=0?'var(--green)':'var(--red)'}">${b.fwd21_med_pct>0?'+':''}${b.fwd21_med_pct}%</td><td>${b.win10_pct}%</td></tr>`).join('');
+    const drop=st.dropoff?`<tr><td class="l" style="color:var(--amber)">DROP-OFF (4d+)</td><td>${st.dropoff.n}</td><td>${st.dropoff.fwd10_med_pct>0?'+':''}${st.dropoff.fwd10_med_pct}%</td><td>${st.dropoff.fwd21_med_pct>0?'+':''}${st.dropoff.fwd21_med_pct}%</td><td>${st.dropoff.win10_pct}%</td></tr>`:'';
+    $('ledger').innerHTML=`<table><thead><tr><th class="l">Days</th><th class="l">Sym</th><th>ud</th><th>Rank</th></tr></thead><tbody>${rows||'<tr><td colspan=4 style="color:var(--dim)">list empty today</td></tr>'}</tbody></table>
+      ${dropped?`<div style="margin-top:7px;color:var(--amber)">dropped since prev: ${dropped}</div>`:''}
+      <div style="margin:13px 0 6px;color:var(--dim);text-transform:uppercase;font-size:9px;letter-spacing:.08em">decade study — forward returns by streak age</div>
+      <table><thead><tr><th class="l">Streak</th><th>n</th><th>10d med</th><th>21d med</th><th>win10</th></tr></thead><tbody>${buckets}${drop}</tbody></table>
+      <div style="margin-top:9px;color:var(--muted);line-height:1.5">${st.verdict||''}</div>`;
+  }catch(e){ $('ledger').innerHTML='backend offline?'; }
+}
+loadLedger();
+</script>
+  <script src="marle_g_nav.js"></script>
+</body>
+</html>

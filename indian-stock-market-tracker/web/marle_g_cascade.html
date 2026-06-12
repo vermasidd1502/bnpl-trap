@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Event Cascade · Marle-G</title>
+<style>
+  :root{--bg:#080a0e;--card:#14171e;--bg2:#0e1116;--border:rgba(255,255,255,.08);--ink:#eef1f6;--muted:#9aa3b4;--dim:#646c7a;
+    --mono:'SF Mono',ui-monospace,Consolas,monospace;--saffron:#ff9933;--green:#22c55e;--red:#ef4444;--amber:#fbbf24;--india-green:#138808;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(1200px 560px at 50% -10%,rgba(255,153,51,.06),transparent 60%),var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--border);background:rgba(8,10,14,.8);position:sticky;top:0;z-index:10}
+  .brand{font-family:var(--mono);font-weight:800;letter-spacing:.18em;font-size:13px;display:flex;align-items:center;gap:9px}
+  .brand .mark{width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,var(--saffron),var(--india-green))}
+  .brand .w{background:linear-gradient(90deg,var(--saffron),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tabs{display:flex;gap:16px;font-family:var(--mono);font-size:11px;flex-wrap:wrap}
+  .tabs a{color:var(--dim);text-decoration:none}.tabs a.on{color:var(--saffron)}.tabs a:hover{color:var(--ink)}
+  .wrap{max-width:1280px;margin:0 auto;padding:20px 22px 80px}
+  .head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+  .head h1{font-size:23px}
+  .ctrl{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:12px 0 6px}
+  select,button{font-family:var(--mono);font-size:12px;border-radius:9px;padding:9px 12px;border:1px solid var(--border);background:var(--bg2);color:var(--ink);cursor:pointer}
+  button.go{background:linear-gradient(135deg,var(--saffron),var(--india-green));color:#0a0b0f;font-weight:800;border:none}
+  button.on{background:linear-gradient(135deg,var(--saffron),var(--india-green));color:#0a0b0f;font-weight:800;border:none}
+  #label{font-family:var(--mono);font-size:12px;color:var(--amber);margin:2px 0 4px}
+  #summary{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:16px}
+  .tier{margin-bottom:18px}
+  .tierhead{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .tierhead .bar{flex:1;height:1px;background:var(--border)}
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:11px}
+  .leg{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:13px 14px;position:relative;overflow:hidden}
+  .leg.long{border-left:3px solid var(--green)} .leg.short{border-left:3px solid var(--red)}
+  .leg .glow{position:absolute;inset:0;opacity:.06;pointer-events:none}
+  .leg.long .glow{background:radial-gradient(120px 60px at 0% 0%,var(--green),transparent)}
+  .leg.short .glow{background:radial-gradient(120px 60px at 0% 0%,var(--red),transparent)}
+  .leg .top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+  .leg .name{font-weight:700;font-size:13.5px}
+  .badge{font-family:var(--mono);font-size:9px;font-weight:800;padding:3px 7px;border-radius:5px;white-space:nowrap}
+  .badge.long{background:rgba(34,197,94,.18);color:var(--green)} .badge.short{background:rgba(239,68,68,.18);color:var(--red)}
+  .impactbar{height:5px;border-radius:3px;background:rgba(255,255,255,.06);margin:9px 0 8px;overflow:hidden}
+  .impactbar span{display:block;height:100%}
+  .leg.long .impactbar span{background:var(--green)} .leg.short .impactbar span{background:var(--red)}
+  .via{font-family:var(--mono);font-size:10px;color:var(--muted);line-height:1.45;margin-bottom:9px}
+  .via b{color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:5px}
+  .chip{font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:5px;background:var(--bg2);border:1px solid var(--border);color:var(--muted);cursor:pointer}
+  .chip.buying{background:rgba(34,197,94,.16);color:var(--green);border-color:transparent}
+  .chip.fading{background:rgba(239,68,68,.16);color:var(--red);border-color:transparent}
+  .chip:hover{color:var(--ink)}
+  .conf{font-family:var(--mono);font-size:9px;font-weight:800;padding:3px 7px;border-radius:5px;background:rgba(255,153,51,.16);color:var(--saffron);margin-left:6px}
+  .legend{font-family:var(--mono);font-size:10px;color:var(--dim);line-height:1.6;margin-top:14px;border-top:1px solid var(--border);padding-top:12px}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span></span></div>
+  <div class="tabs">
+    <a href="marle_g_pod.html">home</a><a href="marle_g_equity.html">equity</a><a href="marle_g_live.html">live</a>
+    <a href="marle_g_volume.html">volume</a><a href="#" class="on">cascade</a><a href="marle_g_paper.html">paper</a>
+    <a href="marle_g_macro_preview.html">macro</a><a href="marle_g_portfolio.html">portfolio</a>
+  </div>
+</div>
+<main class="wrap">
+  <div class="head"><h1>🎨 Event Cascade</h1></div>
+  <div class="ctrl">
+    <select id="ev"></select>
+    <button class="go" onclick="run()">propagate ▸</button>
+    <button id="cbtn" onclick="toggleConfirm()">⚡ confirm with live volume: OFF</button>
+  </div>
+  <div id="label"></div>
+  <div id="summary"></div>
+  <div id="tiers"></div>
+  <div class="legend">
+    An event moves macro/commodity <b>factors</b> (crude, fuel, rupee, rates…); factors hit <b>industries</b>; industries chain downstream — propagated across up to 5 tiers (signal decays each tier).
+    <span style="color:var(--green)">Green = LONG</span> · <span style="color:var(--red)">Red = SHORT</span> · bar = structural impact · "via" = what transmitted it.
+    Turn on <b>confirm with live volume</b> to badge members the market is actually moving (BUYING for longs, FADING for shorts) — your "go along with the move" filter.
+    <br>Empirical: the raw cascade is a hypothesis map, not standalone alpha (oil-up L/S backtests negative in India; oil-down cost-relief longs work). Trade only volume-confirmed legs. Monitor-only.
+  </div>
+</main>
+<script src="marleg_stockmodal.js" onerror="window.openStock=function(s){location.href='marle_g_equity.html?t='+s}"></script>
+<script>
+const $=id=>document.getElementById(id);
+let CONFIRM=false, LASTCASC=null;
+function openStockSafe(s){ try{ openStock(s); }catch(e){ location.href='marle_g_equity.html?t='+s; } }
+
+async function loadEvents(){
+  try{
+    const evs=await (await fetch('/api/cascade/events')).json();
+    $('ev').innerHTML=evs.map(e=>`<option value="${e.key}">${e.key} — ${e.label}</option>`).join('');
+  }catch(e){ $('summary').textContent='backend offline — run python marleg_server.py'; }
+}
+function toggleConfirm(){ CONFIRM=!CONFIRM; $('cbtn').classList.toggle('on',CONFIRM); $('cbtn').textContent='⚡ confirm with live volume: '+(CONFIRM?'ON':'OFF'); if(LASTCASC) render(LASTCASC); }
+
+async function liveFor(syms){
+  const out={};
+  for(let i=0;i<syms.length;i+=20){
+    const chunk=syms.slice(i,i+20);
+    try{ const d=await (await fetch('/api/live?syms='+encodeURIComponent(chunk.join(',')))).json();
+      chunk.forEach(s=>{ if(d[s]&&d[s].price!=null) out[s]=d[s]; }); }catch(e){}
+  }
+  return out;
+}
+async function run(){
+  const ev=$('ev').value; $('tiers').innerHTML='<div style="color:var(--dim);font-family:var(--mono);font-size:12px">propagating…</div>';
+  try{ const casc=await (await fetch('/api/cascade?event='+encodeURIComponent(ev))).json();
+    if(casc.error){ $('tiers').innerHTML='<div style="color:var(--red)">'+casc.error+'</div>'; return; }
+    LASTCASC=casc; render(casc);
+  }catch(e){ $('tiers').textContent='error: '+e; }
+}
+async function render(casc){
+  $('label').textContent=casc.label;
+  const legs=casc.legs||[];
+  const L=legs.filter(l=>l.side==='LONG').length, S=legs.filter(l=>l.side==='SHORT').length;
+  const maxT=Math.max(0,...legs.map(l=>l.tier));
+  $('summary').innerHTML=`<span style="color:var(--green)">${L} LONG</span> · <span style="color:var(--red)">${S} SHORT</span> industries across ${maxT} tiers · ${legs.reduce((a,l)=>a+l.members.length,0)} member stocks`;
+  const maxImp=Math.max(...legs.map(l=>Math.abs(l.impact)),0.001);
+
+  let live={};
+  if(CONFIRM){
+    $('summary').innerHTML+=' · <span style="color:var(--saffron)">confirming…</span>';
+    const allMembers=[...new Set(legs.flatMap(l=>l.members.slice(0,12)))];
+    live=await liveFor(allMembers);
+  }
+  const tiers={};
+  legs.forEach(l=>{ (tiers[l.tier]=tiers[l.tier]||[]).push(l); });
+  let html='';
+  Object.keys(tiers).map(Number).sort((a,b)=>a-b).forEach(t=>{
+    const cards=tiers[t].sort((a,b)=>Math.abs(b.impact)-Math.abs(a.impact)).map(l=>{
+      const cls=l.side.toLowerCase();
+      let chips=l.members.slice(0,12).map(s=>{
+        let c='chip';
+        if(CONFIRM&&live[s]){ const q=live[s];
+          const ok=(l.side==='LONG'&&q.chg>0.2)||(l.side==='SHORT'&&q.chg<-0.2);
+          if(ok&&(q.volr||0)>0.7) c+=(l.side==='LONG'?' buying':' fading');
+        }
+        const t=CONFIRM&&live[s]?` title="${live[s].chg>0?'+':''}${live[s].chg}% · ${live[s].volr}x"`:'';
+        return `<span class="${c}"${t} onclick="openStockSafe('${s}')">${s}</span>`;
+      }).join('');
+      let conf='';
+      if(CONFIRM){ const ok=l.members.slice(0,12).filter(s=>{const q=live[s];return q&&((l.side==='LONG'&&q.chg>0.2)||(l.side==='SHORT'&&q.chg<-0.2))&&(q.volr||0)>0.7;}).length;
+        if(ok) conf=`<span class="conf">✓ ${ok} confirming</span>`; }
+      return `<div class="leg ${cls}"><div class="glow"></div>
+        <div class="top"><div class="name">${l.industry}${conf}</div><span class="badge ${cls}">${l.side}</span></div>
+        <div class="impactbar"><span style="width:${Math.abs(l.impact)/maxImp*100}%"></span></div>
+        <div class="via">via <b>${l.via}</b>${l.mechanism?' — '+l.mechanism:''}</div>
+        <div class="chips">${chips}</div></div>`;
+    }).join('');
+    html+=`<div class="tier"><div class="tierhead">Tier ${t} <span class="bar"></span> ${tiers[t].length} ${tiers[t].length>1?'industries':'industry'}</div><div class="cards">${cards}</div></div>`;
+  });
+  $('tiers').innerHTML=html;
+}
+loadEvents().then(run);
+</script>
+  <script src="marle_g_nav.js"></script>
+</body>
+</html>

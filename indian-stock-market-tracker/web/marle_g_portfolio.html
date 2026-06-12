@@ -50,7 +50,6 @@
     <a href="marle_g_funds.html">funds</a><a href="#" class="on">portfolio</a>
     <a href="marle_g_macro_preview.html">macro</a><a href="marle_g_dashboard.html">dashboard</a><a href="marle_g_profile.html">profile</a>
   </div>
-  <span class="preview-tag">PREVIEW</span>
 </div>
 
 <main class="wrap">
@@ -171,7 +170,12 @@ async function renderLive(){
     ['Cash · clear',inr(cash),'',''],['Margin used',inr(used),'',''],
   ].map(s=>`<div class="scard ${s[2]}"><div class="n">${s[0]}</div><div class="v ${s[3]}">${s[1]}</div></div>`).join('');
   const plist=(P&&P.positions)||[];
-  const posRows=plist.map(p=>{const sym=p.trading_symbol||'—',net=(p.quantity!=null?p.quantity:((p.credit_quantity||0)-(p.debit_quantity||0))),rp=p.realised_pnl||0;return `<tr><td><span class="sym">${sym}</span> <span class="tag">${p.product||''} · ${p.segment||''}</span></td><td>${net}</td><td>${inr(p.net_price||p.credit_price||0)}</td><td class="${cls(rp)}">${inr(rp)}</td></tr>`;}).join('');
+  const posRows=plist.map(p=>{
+    const sym=p.trading_symbol||'—', rp=p.realised_pnl||0, cq=p.credit_quantity||0, dq=p.debit_quantity||0;
+    const net=(p.quantity!=null?p.quantity:(dq-cq));
+    const isShort=(p.segment==='FNO'?cq>dq:net<0);   // FNO credit = sold/short
+    const dir=isShort?' <span class="tag" style="color:var(--red)">SHORT</span>':(net>0?' <span class="tag" style="color:var(--green)">LONG</span>':'');
+    return `<tr><td><span class="sym">${sym}</span> <span class="tag">${p.product||''} · ${p.segment||''}</span>${dir}</td><td>${net}</td><td>${inr(p.net_price||p.credit_price||0)}</td><td class="${cls(rp)}">${inr(rp)}</td></tr>`;}).join('');
   $('body').innerHTML=`
     <div class="card">
       <div class="sh"><span>Holdings · <span style="color:var(--green)">● LIVE · Groww</span></span><span><button class="btn" onclick="render()">↻ refresh</button></span></div>
@@ -182,6 +186,8 @@ async function renderLive(){
     ${plist.length?`<div class="card"><div class="sh">Intraday / positions</div><table class="h"><thead><tr><th>Symbol</th><th>Net qty</th><th>Price</th><th>Realised P&L</th></tr></thead><tbody>${posRows}</tbody></table></div>`:''}`;
 }
 render();
+setInterval(()=>{ if(MODE==='live') renderLive(); }, 20000);   // live book auto-refreshes (surveillance)
 </script>
+  <script src="marle_g_nav.js"></script>
 </body>
 </html>

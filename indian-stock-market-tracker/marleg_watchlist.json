@@ -1,0 +1,343 @@
+{
+ "asof": "2026-06-08",
+ "regime": "NIFTY 23,123 (-1.1% 5d), below 50-DMA -> cautious / below trend",
+ "triggered": [
+  {
+   "s": "ADANIENT",
+   "sector": "Metals & Mining",
+   "ud": 3.01,
+   "udma": 2.03,
+   "fib": 0.94,
+   "rsi": 68.3,
+   "tag": "EXTENDED",
+   "secRS": 21,
+   "price": 2970.0,
+   "stop": 2802.7,
+   "target": 3304.7
+  },
+  {
+   "s": "ADANIENSOL",
+   "sector": "Power",
+   "ud": 1.72,
+   "udma": 1.61,
+   "fib": 0.99,
+   "rsi": 78.1,
+   "tag": "CHASING",
+   "secRS": 26,
+   "price": 1570.4,
+   "stop": 1447.3,
+   "target": 1816.5
+  }
+ ],
+ "watch": [],
+ "avoid": [
+  {
+   "s": "SBICARD",
+   "sector": "Financial Services",
+   "ud": 0.19,
+   "udma": 0.64,
+   "fib": 0.0,
+   "rsi": 15.2,
+   "tag": "EARLY",
+   "secRS": 63,
+   "price": 574.5
+  },
+  {
+   "s": "SHREECEM",
+   "sector": "Construction Materials",
+   "ud": 0.2,
+   "udma": 1.09,
+   "fib": 0.16,
+   "rsi": 36.1,
+   "tag": "EARLY",
+   "secRS": 68,
+   "price": 23535.0
+  },
+  {
+   "s": "HINDUNILVR",
+   "sector": "Fast Moving Consumer Goods",
+   "ud": 0.3,
+   "udma": 1.12,
+   "fib": 0.14,
+   "rsi": 29.6,
+   "tag": "EARLY",
+   "secRS": 79,
+   "price": 2110.1
+  },
+  {
+   "s": "BRITANNIA",
+   "sector": "Fast Moving Consumer Goods",
+   "ud": 0.3,
+   "udma": 0.73,
+   "fib": 0.01,
+   "rsi": 14.3,
+   "tag": "EARLY",
+   "secRS": 79,
+   "price": 5078.5
+  },
+  {
+   "s": "DABUR",
+   "sector": "Fast Moving Consumer Goods",
+   "ud": 0.3,
+   "udma": 1.56,
+   "fib": 0.08,
+   "rsi": 21.3,
+   "tag": "EARLY",
+   "secRS": 79,
+   "price": 419.8
+  },
+  {
+   "s": "CONCOR",
+   "sector": "Services",
+   "ud": 0.35,
+   "udma": 1.31,
+   "fib": 0.19,
+   "rsi": 13.2,
+   "tag": "EARLY",
+   "secRS": 89,
+   "price": 445.4
+  },
+  {
+   "s": "BAJFINANCE",
+   "sector": "Financial Services",
+   "ud": 0.36,
+   "udma": 1.36,
+   "fib": 0.3,
+   "rsi": 32.8,
+   "tag": "EARLY",
+   "secRS": 63,
+   "price": 871.1
+  },
+  {
+   "s": "ULTRACEMCO",
+   "sector": "Construction Materials",
+   "ud": 0.39,
+   "udma": 1.14,
+   "fib": 0.16,
+   "rsi": 29.8,
+   "tag": "EARLY",
+   "secRS": 68,
+   "price": 10795.0
+  },
+  {
+   "s": "SBILIFE",
+   "sector": "Financial Services",
+   "ud": 0.41,
+   "udma": 0.86,
+   "fib": 0.0,
+   "rsi": 25.3,
+   "tag": "EARLY",
+   "secRS": 63,
+   "price": 1764.4
+  },
+  {
+   "s": "ICICIGI",
+   "sector": "Financial Services",
+   "ud": 0.41,
+   "udma": 0.7,
+   "fib": 0.17,
+   "rsi": 36.1,
+   "tag": "EARLY",
+   "secRS": 63,
+   "price": 1738.4
+  },
+  {
+   "s": "BAJAJFINSV",
+   "sector": "Financial Services",
+   "ud": 0.43,
+   "udma": 0.91,
+   "fib": 0.09,
+   "rsi": 34.8,
+   "tag": "EARLY",
+   "secRS": 63,
+   "price": 1674.6
+  },
+  {
+   "s": "PIIND",
+   "sector": "Chemicals",
+   "ud": 0.46,
+   "udma": 1.32,
+   "fib": 0.0,
+   "rsi": 21.4,
+   "tag": "EARLY",
+   "secRS": 74,
+   "price": 2680.8
+  },
+  {
+   "s": "HDFCLIFE",
+   "sector": "Financial Services",
+   "ud": 0.47,
+   "udma": 1.48,
+   "fib": 0.0,
+   "rsi": 20.9,
+   "tag": "EARLY",
+   "secRS": 63,
+   "price": 564.5
+  },
+  {
+   "s": "ICICIPRULI",
+   "sector": "Financial Services",
+   "ud": 0.48,
+   "udma": 1.1,
+   "fib": 0.0,
+   "rsi": 26.6,
+   "tag": "EARLY",
+   "secRS": 63,
+   "price": 475.4
+  },
+  {
+   "s": "IRFC",
+   "sector": "Financial Services",
+   "ud": 0.51,
+   "udma": 1.03,
+   "fib": 0.17,
+   "rsi": 38.9,
+   "tag": "EARLY",
+   "secRS": 63,
+   "price": 94.7
+  },
+  {
+   "s": "ICICIBANK",
+   "sector": "Financial Services",
+   "ud": 0.54,
+   "udma": 0.88,
+   "fib": 0.19,
+   "rsi": 52.8,
+   "tag": "DEAD-ZONE",
+   "secRS": 63,
+   "price": 1250.2
+  },
+  {
+   "s": "CHOLAFIN",
+   "sector": "Financial Services",
+   "ud": 0.54,
+   "udma": 1.15,
+   "fib": 0.23,
+   "rsi": 41.7,
+   "tag": "EARLY",
+   "secRS": 63,
+   "price": 1456.0
+  },
+  {
+   "s": "SHRIRAMFIN",
+   "sector": "Financial Services",
+   "ud": 0.63,
+   "udma": 0.92,
+   "fib": 0.19,
+   "rsi": 41.0,
+   "tag": "EARLY",
+   "secRS": 63,
+   "price": 896.7
+  },
+  {
+   "s": "DLF",
+   "sector": "Realty",
+   "ud": 0.65,
+   "udma": 1.51,
+   "fib": 0.28,
+   "rsi": 40.0,
+   "tag": "EARLY",
+   "secRS": 84,
+   "price": 561.3
+  },
+  {
+   "s": "AMBUJACEM",
+   "sector": "Construction Materials",
+   "ud": 0.67,
+   "udma": 1.18,
+   "fib": 0.11,
+   "rsi": 40.3,
+   "tag": "EARLY",
+   "secRS": 68,
+   "price": 415.3
+  },
+  {
+   "s": "UPL",
+   "sector": "Chemicals",
+   "ud": 0.69,
+   "udma": 1.01,
+   "fib": 0.24,
+   "rsi": 44.4,
+   "tag": "EARLY",
+   "secRS": 74,
+   "price": 625.0
+  },
+  {
+   "s": "ITC",
+   "sector": "Fast Moving Consumer Goods",
+   "ud": 0.74,
+   "udma": 1.42,
+   "fib": 0.02,
+   "rsi": 23.4,
+   "tag": "EARLY",
+   "secRS": 79,
+   "price": 279.5
+  },
+  {
+   "s": "IRCTC",
+   "sector": "Consumer Services",
+   "ud": 0.74,
+   "udma": 1.22,
+   "fib": 0.1,
+   "rsi": 41.9,
+   "tag": "EARLY",
+   "secRS": 95,
+   "price": 516.1
+  },
+  {
+   "s": "GODREJPROP",
+   "sector": "Realty",
+   "ud": 0.79,
+   "udma": 1.42,
+   "fib": 0.27,
+   "rsi": 38.7,
+   "tag": "EARLY",
+   "secRS": 84,
+   "price": 1654.6
+  },
+  {
+   "s": "TRENT",
+   "sector": "Consumer Services",
+   "ud": 0.83,
+   "udma": 1.47,
+   "fib": 0.25,
+   "rsi": 51.2,
+   "tag": "DEAD-ZONE",
+   "secRS": 95,
+   "price": 2724.1
+  },
+  {
+   "s": "ABFRL",
+   "sector": "Consumer Services",
+   "ud": 0.9,
+   "udma": 1.81,
+   "fib": 0.22,
+   "rsi": 39.5,
+   "tag": "EARLY",
+   "secRS": 95,
+   "price": 59.3
+  },
+  {
+   "s": "GODREJCP",
+   "sector": "Fast Moving Consumer Goods",
+   "ud": 0.97,
+   "udma": 1.03,
+   "fib": 0.07,
+   "rsi": 39.4,
+   "tag": "EARLY",
+   "secRS": 79,
+   "price": 997.0
+  },
+  {
+   "s": "KOTAKBANK",
+   "sector": "Financial Services",
+   "ud": 1.1,
+   "udma": 1.34,
+   "fib": 0.26,
+   "rsi": 43.9,
+   "tag": "EARLY",
+   "secRS": 63,
+   "price": 377.1
+  }
+ ]
+}

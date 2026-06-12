@@ -1,0 +1,56 @@
+{
+ "profile": "conservative",
+ "start": 100000.0,
+ "positions": [
+  {
+   "sym": "FEDERALBNK",
+   "side": "LONG",
+   "qty": 32,
+   "entry": 312.4,
+   "stop": 305.1,
+   "target": 327.1,
+   "entry_day": "2026-06-10",
+   "why": "REAL ud winner",
+   "now": 313.55,
+   "upnl": 36.8
+  },
+  {
+   "sym": "ALKEM",
+   "side": "LONG",
+   "qty": 1,
+   "entry": 5356.5,
+   "stop": 5205.5,
+   "target": 5658.5,
+   "entry_day": "2026-06-10",
+   "why": "REAL ud winner",
+   "now": 5324.0,
+   "upnl": -32.5
+  },
+  {
+   "sym": "APOLLOHOSP",
+   "side": "LONG",
+   "qty": 1,
+   "entry": 8570.0,
+   "stop": 8408.1,
+   "target": 8893.7,
+   "entry_day": "2026-06-10",
+   "why": "REAL ud winner",
+   "now": 8516.5,
+   "upnl": -53.5
+  }
+ ],
+ "closed": [],
+ "log": [
+  "06-10 13:18 LONG 32 FEDERALBNK @ 312.4 (overnight)",
+  "06-10 13:18 LONG 1 ALKEM @ 5356.5 (overnight)",
+  "06-10 13:18 LONG 1 APOLLOHOSP @ 8570.0 (overnight)"
+ ],
+ "entered_day": "2026-06-10",
+ "mode": "overnight",
+ "realized": 0,
+ "equity": 99950.8,
+ "ret_pct": -0.05,
+ "open": 3,
+ "n_closed": 0,
+ "asof": "2026-06-10 14:22 IST"
+}

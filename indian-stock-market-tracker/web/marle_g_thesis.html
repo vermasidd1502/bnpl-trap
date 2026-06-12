@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thesis Ledger · Marle-G</title>
+<style>
+  :root{--bg:#080a0e;--card:#14171e;--bg2:#0e1116;--border:rgba(255,255,255,.08);--ink:#eef1f6;--muted:#9aa3b4;--dim:#646c7a;
+    --mono:'SF Mono',ui-monospace,Consolas,monospace;--saffron:#ff9933;--green:#22c55e;--red:#ef4444;--amber:#fbbf24;--india-green:#138808;--blue:#5b9bd5;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(1100px 520px at 50% -10%,rgba(255,153,51,.05),transparent 60%),var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--border);background:rgba(8,10,14,.8);position:sticky;top:0;z-index:10}
+  .brand{font-family:var(--mono);font-weight:800;letter-spacing:.18em;font-size:13px;display:flex;align-items:center;gap:9px}
+  .brand .mark{width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,var(--saffron),var(--india-green))}
+  .brand .w{background:linear-gradient(90deg,var(--saffron),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tabs{display:flex;gap:15px;font-family:var(--mono);font-size:11px;flex-wrap:wrap}
+  .tabs a{color:var(--dim);text-decoration:none}.tabs a.on{color:var(--saffron)}.tabs a:hover{color:var(--ink)}
+  .wrap{max-width:1080px;margin:0 auto;padding:22px 22px 80px}
+  h1{font-size:22px;margin-bottom:3px}.sub{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:14px}
+  .gate{font-family:var(--mono);font-size:12px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:18px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:15px}
+  .top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+  .name{font-size:17px;font-weight:800}
+  .badge{font-family:var(--mono);font-size:9px;font-weight:800;padding:3px 8px;border-radius:5px;letter-spacing:.04em}
+  .b-rev{background:rgba(255,153,51,.18);color:var(--saffron)} .b-evo{background:rgba(91,155,213,.18);color:var(--blue)}
+  .conv{font-family:var(--mono);font-size:10px;color:var(--dim);margin-left:auto}
+  .verdict{font-family:var(--mono);font-size:11px;font-weight:700;padding:5px 10px;border-radius:7px;display:inline-block;margin:6px 0}
+  .v-under{background:rgba(34,197,94,.16);color:var(--green)} .v-track{background:rgba(251,191,36,.14);color:var(--amber)} .v-over{background:rgba(239,68,68,.16);color:var(--red)}
+  .curve{margin:12px 0 8px}
+  .clabel{font-family:var(--mono);font-size:9px;color:var(--dim);display:flex;justify-content:space-between;margin-bottom:3px}
+  .ctrack{position:relative;height:8px;border-radius:5px;background:linear-gradient(90deg,#1a2230,#27313f)}
+  .cmark{position:absolute;top:-4px;width:14px;height:16px;border-radius:4px;transform:translateX(-50%);font-family:var(--mono);font-size:8px;text-align:center;line-height:16px;font-weight:800;color:#0a0b0f}
+  .m-ad{background:var(--green)} .m-mk{background:var(--amber)}
+  .mech{font-size:12.5px;color:var(--muted);line-height:1.6;margin:8px 0}
+  .row{font-family:var(--mono);font-size:11px;color:var(--muted);margin:5px 0;line-height:1.5}.row b{color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+  .chip{font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:5px;background:var(--bg2);border:1px solid var(--border);color:var(--muted);cursor:pointer}
+  .chip:hover{color:var(--ink)} .chip.ind{background:rgba(34,197,94,.1);color:var(--green);border-color:transparent}
+  .cstick{font-family:var(--mono);font-size:11px;margin-top:6px}
+  .caveat{font-family:var(--mono);font-size:10.5px;color:var(--amber);background:rgba(251,191,36,.07);border-radius:8px;padding:8px 11px;margin-top:8px;line-height:1.5}
+  .legend{font-family:var(--mono);font-size:10px;color:var(--dim);line-height:1.6;margin-top:6px}
+  .pos{color:var(--green)}.neg{color:var(--red)}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span></span></div>
+  <div class="tabs">
+    <a href="marle_g_pod.html">home</a><a href="marle_g_cascade.html">cascade</a><a href="marle_g_regime.html">regime</a>
+    <a href="#" class="on">thesis</a><a href="marle_g_vol.html">vol</a><a href="marle_g_equity.html">equity</a><a href="marle_g_portfolio.html">portfolio</a>
+  </div>
+</div>
+<main class="wrap">
+  <h1>📓 Thesis Ledger</h1>
+  <div class="sub">structural grey-swan scenario book — framed by <b>Evolutionary vs Revolutionary</b> + the <b>adoption-vs-market gap</b> (the edge)</div>
+  <div class="gate" id="gate">checking the regime gate…</div>
+  <div id="theses"><div style="color:var(--dim);font-family:var(--mono);font-size:12px">loading scenario book…</div></div>
+  <div class="legend">
+    <b>Nature</b>: <span style="color:var(--saffron)">Revolutionary</span> = discontinuous, convex, under-the-radar · <span style="color:var(--blue)">Evolutionary</span> = gradual, linear, ride-the-trend.
+    <b>The curve</b>: <span style="color:var(--green)">●adoption</span> (where the real thing is) vs <span style="color:var(--amber)">●market</span> (where price is). Adoption RIGHT of market = <span style="color:var(--green)">under-priced (position early)</span>; market right of adoption = crowded/fade.
+    The "candlestick" (basket 3m/1y) shows where the market already is. Gate everything with the Regime Dial. Monitor-only — not advice.
+  </div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const AD={latent:0,inflection:1,steep:2,mature:3}, MK={latent:0,anticipating:1,"playing-out":2,fading:3};
+const pos=(k,map)=>map[k]/3*100;
+async function gate(){
+  try{ const r=await (await fetch('/api/regime')).json();
+    const c=r.gauge>=60?'var(--green)':r.gauge<=35?'var(--red)':'var(--amber)';
+    $('gate').innerHTML=`🌡️ Scenario-alpha gate: <b style="color:${c}">${r.gauge}/100 · ${r.regime.split('—')[0].trim()}</b> — ${r.gauge>=60?'theses LIVE, deploy':r.gauge<=35?'theses DORMANT, wait':'partial edge; favour the under-priced gaps'}`;
+  }catch(e){ $('gate').textContent='regime gate unavailable'; }
+}
+async function load(){
+  try{
+    const L=await (await fetch('/api/thesis')).json();
+    $('theses').innerHTML=L.map(t=>{
+      const nb=t.nature.includes('Revolutionary')?'b-rev':'b-evo';
+      const vc=t.gap>=1?'v-under':t.gap<=-1?'v-over':'v-track';
+      const m=t.momentum||{};
+      const cstick=(m.r1y!=null)?`basket "candlestick": <span class="${m.r3m>=0?'pos':'neg'}">${m.r3m>0?'+':''}${m.r3m}% 3m</span> · <span class="${m.r1y>=0?'pos':'neg'}">${m.r1y>0?'+':''}${m.r1y}% 1y</span> <span style="color:var(--dim)">(where the market already is)</span>`:'';
+      const inds=t.winners.map(w=>`<span class="chip ind">${w}</span>`).join('');
+      const longs=t.basket.long.slice(0,12).map(s=>`<span class="chip" onclick="location.href='marle_g_equity.html?t='+'${s}'">${s}</span>`).join('');
+      return `<div class="card">
+        <div class="top"><span class="name">${t.name}</span>
+          <span class="badge ${nb}">${t.nature}</span>
+          <span class="conv">conviction ${'●'.repeat(t.conviction)}${'○'.repeat(5-t.conviction)}</span></div>
+        <div class="verdict ${vc}">${t.gap_verdict}</div>
+        <div class="curve">
+          <div class="clabel"><span>latent</span><span>inflection</span><span>steep</span><span>mature</span></div>
+          <div class="ctrack"><div class="cmark m-ad" style="left:${pos(t.adoption,AD)}%" title="adoption">A</div><div class="cmark m-mk" style="left:${pos(t.anticipation,MK)}%" title="market">M</div></div>
+        </div>
+        <div class="row"><b>payoff:</b> ${t.payoff}</div>
+        <div class="mech">${t.mechanism}</div>
+        <div class="row"><b>winners (industries):</b></div><div class="chips">${inds}</div>
+        <div class="row" style="margin-top:8px"><b>basket:</b></div><div class="chips">${longs}</div>
+        <div class="cstick">${cstick}</div>
+        <div class="row"><b>network effect:</b> ${t.network_effect}</div>
+        <div class="row"><b>confirm:</b> ${t.confirmation}</div>
+        <div class="caveat">⚠ India reality: ${t.india_caveat}</div>
+      </div>`;
+    }).join('');
+  }catch(e){ $('theses').innerHTML='<div style="color:var(--dim);font-family:var(--mono);font-size:12px">backend offline — run marleg_server.py</div>'; }
+}
+gate(); load();
+</script>
+  <script src="marle_g_nav.js"></script>
+</body>
+</html>

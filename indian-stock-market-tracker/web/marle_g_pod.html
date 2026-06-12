@@ -27,6 +27,10 @@
   .ticker{display:flex;gap:26px;flex-wrap:wrap;padding:9px 26px;border-bottom:1px solid var(--border);background:var(--bg2);font-family:var(--mono);font-size:11.5px}
   .ticker .t{color:var(--muted)} .ticker .t b{color:var(--ink)} .up{color:var(--green)} .down{color:var(--red)}
   .ticker .chip{color:var(--saffron)}
+  .navstatus{font-family:var(--mono);font-size:10.5px;color:var(--dim);display:flex;align-items:center;gap:9px;letter-spacing:.04em}
+  .navstatus .dot{width:7px;height:7px;border-radius:50%;background:var(--dim);display:inline-block;animation:pulse 1.7s infinite}
+  .navstatus .sep{color:var(--border)}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 
   /* hero */
   .hero{position:relative;overflow:hidden;padding:64px 26px 40px;text-align:center}
@@ -67,17 +71,15 @@
 
 <div class="nav">
   <div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span></span></div>
-  <div class="meta">INDIA · NSE/BSE · paper pod</div>
+  <div class="navstatus" id="navstatus">
+    <span class="dot" id="mktdot"></span><span id="mktlabel">market —</span>
+    <span class="sep">·</span><span id="growwlabel">groww —</span>
+    <span class="sep">·</span><span>NSE/BSE</span>
+  </div>
 </div>
 
-<div class="ticker">
-  <span class="t">NIFTY 50 <b>24,180.5</b> <span class="down">−1.42%</span></span>
-  <span class="t">SENSEX <b>79,420</b> <span class="down">−1.28%</span></span>
-  <span class="t">INDIA VIX <b>17.8</b> <span class="up">+6.1%</span></span>
-  <span class="t">USD/INR <b>85.92</b> <span class="down">+0.34%</span></span>
-  <span class="t">REPO <b>6.00%</b></span>
-  <span class="t">REGIME <span class="chip">RISK-OFF</span></span>
-  <span class="t" style="color:var(--dim)">· representative figures</span>
+<div class="ticker" id="ticker">
+  <span class="t" style="color:var(--dim)">connecting to live data…</span>
 </div>
 
 <section class="hero">
@@ -115,6 +117,100 @@
     </a>
   </div>
 
+  <div class="sec-h">Signals &amp; research engines</div>
+  <div class="grid">
+    <a class="tile" href="marle_g_live.html">
+      <div class="ic">🟢</div>
+      <div class="ttl">Live Monitor <span class="badge b-live">real-time</span></div>
+      <div class="ds">Self-updating price+volume tape — <b style="color:var(--saffron)">Groww real-time LTP</b>, pace-adjusted RVOL, BUYING/FADING tags, auto-adds movers. No browser refresh.</div>
+      <div class="meta">/api/live · Groww-first, yfinance fallback</div>
+    </a>
+
+    <a class="tile" href="marle_g_volume.html">
+      <div class="ic">📊</div>
+      <div class="ttl">Volume Pod <span class="badge b-live">live</span></div>
+      <div class="ds">Sector → industry volume map across the universe — U/D, accumulation/distribution, per-stock 8-quadrant position on the golden-ratio ladder.</div>
+      <div class="meta">/api/volume_pod · 90 granular industries</div>
+    </a>
+
+    <a class="tile green" href="marle_g_cascade.html">
+      <div class="ic">🎨</div>
+      <div class="ttl">Event Cascade <span class="badge b-live">new</span></div>
+      <div class="ds"><b style="color:var(--saffron)">The painting.</b> An event ripples through 5 tiers of industries → a volume-confirmed long/short basket. Oil, war, monsoon, rates, rupee, infra.</div>
+      <div class="meta">/api/cascade · factor→industry graph + event-study</div>
+    </a>
+
+    <a class="tile" href="marle_g_vol.html">
+      <div class="ic">📈</div>
+      <div class="ttl">Vol Lab <span class="badge b-live">new</span></div>
+      <div class="ds">Options as vol — IV vs realized + Greeks on your real book; straddle / iron-butterfly / condor compare with payoff curves + the vol-risk-premium backtest.</div>
+      <div class="meta">/api/vol · /api/structures · Black-Scholes</div>
+    </a>
+
+    <a class="tile green" href="marle_g_regime.html">
+      <div class="ic">🌡️</div>
+      <div class="ttl">Regime Dial <span class="badge b-live">new</span></div>
+      <div class="ds"><b style="color:var(--saffron)">The scenario-alpha gate.</b> Cross-sectional dispersion + correlation + VIX → is it a stock-picker's market (theses LIVE) or macro-driven (dormant)? Shows where the incoherence is.</div>
+      <div class="meta">/api/regime · dispersion-forecasts-alpha</div>
+    </a>
+
+    <a class="tile green" href="marle_g_thesis.html">
+      <div class="ic">📓</div>
+      <div class="ttl">Thesis Ledger <span class="badge b-live">new</span></div>
+      <div class="ds"><b style="color:var(--saffron)">The scenario book.</b> Structural grey-swan theses (AI/data-centre, water, housing…) framed by evolutionary-vs-revolutionary + the adoption-vs-market gap = where you're early.</div>
+      <div class="meta">/api/thesis · narrative cartography</div>
+    </a>
+
+    <a class="tile green" href="marle_g_mindhive.html">
+      <div class="ic">🧠</div>
+      <div class="ttl">Mindhive <span class="badge b-live">new</span></div>
+      <div class="ds"><b style="color:var(--saffron)">The mind.</b> A local, zero-API chatbot that fuses regime + cascades + grey-swan theses + firm moats into one queryable story — ask "what's the story", "what if war", "what's under-priced".</div>
+      <div class="meta">/api/mindhive · deterministic · ₹0 API</div>
+    </a>
+
+    <a class="tile green" href="marle_g_intraday.html">
+      <div class="ic">⏱️</div>
+      <div class="ttl">Intraday Vol <span class="badge b-live">new</span></div>
+      <div class="ds"><b style="color:var(--saffron)">FIN 537 realized variance.</b> RV from 5-min returns + HAR vol forecast, the Bollinger/Keltner squeeze (coiling → breakout), and the Pearson intraday U-shape.</div>
+      <div class="meta">/api/intraday · RV · HAR · squeeze</div>
+    </a>
+
+    <a class="tile green" href="marle_g_niftysim.html">
+      <div class="ic">🏆</div>
+      <div class="ttl">Nifty Sim <span class="badge b-live">new</span></div>
+      <div class="ds"><b style="color:var(--saffron)">Strategy tournament.</b> ~12 Nifty options strategies backtested over years (BS-priced from VIX), ranked &amp; A–F graded on Sharpe/drawdown/expectancy. EOD vs open tested.</div>
+      <div class="meta">/api/nifty_sim · leaderboard</div>
+    </a>
+
+    <a class="tile green" href="marle_g_sectoral.html">
+      <div class="ic">🧩</div>
+      <div class="ttl">Sectoral Options <span class="badge b-live">new</span></div>
+      <div class="ds"><b style="color:var(--saffron)">Sector option books.</b> The tournament run on Bank Nifty / Fin Nifty / Nifty IT — best strategy per sector + this week's paper position (realized-vol IV proxy).</div>
+      <div class="meta">/api/sectoral · per-sector book</div>
+    </a>
+
+    <a class="tile green" href="marle_g_volbook.html">
+      <div class="ic">⚡</div>
+      <div class="ttl">Volume Day-Book <span class="badge b-live">new</span></div>
+      <div class="ds"><b style="color:var(--saffron)">The thrill book.</b> Trade the top volume-conviction names each day — with the honest backtest: intraday vs overnight vs hold. Spoiler: the edge is overnight, not intraday.</div>
+      <div class="meta">/api/volume_book · daily picks</div>
+    </a>
+
+    <a class="tile green" href="marle_g_autotrader.html">
+      <div class="ic">🤖</div>
+      <div class="ttl">Auto-Trader <span class="badge b-live">LIVE</span></div>
+      <div class="ds"><b style="color:var(--saffron)">Live paper bot.</b> Auto-enters the day's volume-conviction names, manages stops/targets, squares off at the close. Paper only — watch it trade in real time.</div>
+      <div class="meta">/api/autotrader · running</div>
+    </a>
+
+    <a class="tile green" href="marle_g_quality.html">
+      <div class="ic">🔬</div>
+      <div class="ttl">Signal Quality <span class="badge b-live">new</span></div>
+      <div class="ds"><b style="color:var(--saffron)">Real vs fake.</b> Sustained winners vs misleading one-day spikes, short candidates (bad ud / 0.618 golden), dated targets, and the Pareto "best timeframe."</div>
+      <div class="meta">/api/signal_quality · winners · shorts · Pareto</div>
+    </a>
+  </div>
+
   <div class="sec-h">Context &amp; account</div>
   <div class="grid">
     <a class="tile green" href="marle_g_macro_preview.html">
@@ -133,9 +229,16 @@
 
     <a class="tile" href="marle_g_portfolio.html">
       <div class="ic">💼</div>
-      <div class="ttl">Portfolio <span class="badge b-live">live</span></div>
-      <div class="ds">Tax-aware paper book — shares + MF units, mark-to-market, P&amp;L history, STCG/LTCG lots. Ports from Apollo.</div>
-      <div class="meta">SQLite · XIRR · India tax engine</div>
+      <div class="ttl">Portfolio <span class="badge b-live">live · Groww</span></div>
+      <div class="ds">Paper⇄<b style="color:var(--green)">Live</b> toggle — your <b style="color:var(--saffron)">real Groww book</b> (holdings/F&amp;O/MTF) with live P&amp;L, plus tax-aware STCG/LTCG lots. Auto-refresh.</div>
+      <div class="meta">/api/holdings · /api/positions · India tax engine</div>
+    </a>
+
+    <a class="tile" href="marle_g_paper.html">
+      <div class="ic">📝</div>
+      <div class="ttl">Paper Trading <span class="badge b-live">live</span></div>
+      <div class="ds">MTF-swing paper engine — 4 risk profiles (conservative→aggressive + adaptive), validated long signal, ATR chandelier stops, live marks.</div>
+      <div class="meta">marleg_paper_mtf.py · ₹100k books</div>
     </a>
 
     <a class="tile" href="marle_g_profile.html">
@@ -156,10 +259,40 @@
 </main>
 
 <div class="foot">
-  <div><b>Stack:</b> Flask · SQLite · yfinance .NS/.BO · AMFI / mfapi.in · custom NSE/RBI scrapers · QuantLib/CVXPY (portfolio).</div>
-  <div><b>Constraint:</b> USA-based — no Indian broker API → monitor + paper portfolio. Free sources only. India sibling of Apollo (US).</div>
+  <div><b>Stack:</b> Flask · yfinance .NS/.BO · AMFI / mfapi.in · <b>Groww API</b> (real-time LTP + live account) · custom NSE/RBI scrapers · Black-Scholes vol engine.</div>
+  <div><b>Setup:</b> USA-based; Groww API wired for real-time data + read-only account (orders stay paper/your decision). India sibling of Apollo (US).</div>
   <div style="margin-top:6px">Marle·G · Siddharth Verma · UIUC FIN 580 · 2026</div>
 </div>
 
+<script>
+const _pct=x=>(x>0?'+':'')+(+x).toFixed(2)+'%';
+const _cls=x=>x>0?'up':x<0?'down':'';
+async function _macro(){
+  try{
+    const m=await (await fetch('/api/macro')).json();
+    const i=m.indices||{}, reg=m.regime||{};
+    const cell=(lbl,o)=>o?`<span class="t">${lbl} <b>${(+o.v).toLocaleString('en-IN',{maximumFractionDigits:2})}</b> <span class="${_cls(o.chg)}">${_pct(o.chg)}</span></span>`:'';
+    document.getElementById('ticker').innerHTML=
+      cell('NIFTY 50',i.NIFTY)+cell('SENSEX',i.SENSEX)+cell('INDIA VIX',i.VIX)+cell('USD/INR',i.USDINR)
+      +`<span class="t">REGIME <span class="chip">${reg.regime||'—'}</span> <span style="color:var(--dim)">${reg.trend||''}</span></span>`
+      +`<span class="t" style="color:var(--dim)">· live · NSE</span>`;
+  }catch(e){ document.getElementById('ticker').innerHTML='<span class="t" style="color:var(--dim)">live data offline — start marleg_server.py</span>'; }
+}
+function _mkt(){
+  const d=new Date(Date.now()+5.5*3600000);                 // IST wall clock via UTC fields
+  const day=d.getUTCDay(), mins=d.getUTCHours()*60+d.getUTCMinutes();
+  const open=day>=1&&day<=5&&mins>=555&&mins<=930;           // Mon-Fri 09:15-15:30 IST
+  const dot=document.getElementById('mktdot'), lab=document.getElementById('mktlabel');
+  dot.style.background=open?'var(--green)':'var(--dim)';
+  lab.textContent=open?'market open':'market closed'; lab.style.color=open?'var(--green)':'var(--dim)';
+}
+async function _groww(){
+  try{ const g=await (await fetch('/api/groww/health')).json(); const l=document.getElementById('growwlabel');
+    l.textContent=g.connected?'groww live':'groww off'; l.style.color=g.connected?'var(--green)':'var(--dim)';
+  }catch(e){}
+}
+_macro(); _mkt(); _groww();
+setInterval(_macro,45000); setInterval(_mkt,30000); setInterval(_groww,120000);
+</script>
 </body>
 </html>

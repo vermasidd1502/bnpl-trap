@@ -1,0 +1,108 @@
+{
+ "profile": "aggressive",
+ "start": 100000.0,
+ "positions": [
+  {
+   "sym": "FEDERALBNK",
+   "side": "LONG",
+   "qty": 96,
+   "entry": 312.4,
+   "stop": 305.1,
+   "target": 327.1,
+   "entry_day": "2026-06-10",
+   "why": "REAL ud winner",
+   "now": 313.55,
+   "upnl": 110.4
+  },
+  {
+   "sym": "ALKEM",
+   "side": "LONG",
+   "qty": 5,
+   "entry": 5356.5,
+   "stop": 5205.5,
+   "target": 5658.5,
+   "entry_day": "2026-06-10",
+   "why": "REAL ud winner",
+   "now": 5324.0,
+   "upnl": -162.5
+  },
+  {
+   "sym": "APOLLOHOSP",
+   "side": "LONG",
+   "qty": 3,
+   "entry": 8570.0,
+   "stop": 8408.1,
+   "target": 8893.7,
+   "entry_day": "2026-06-10",
+   "why": "REAL ud winner",
+   "now": 8516.5,
+   "upnl": -160.5
+  },
+  {
+   "sym": "BANKBARODA",
+   "side": "LONG",
+   "qty": 110,
+   "entry": 271.5,
+   "stop": 265.1,
+   "target": 284.2,
+   "entry_day": "2026-06-10",
+   "why": "REAL ud winner",
+   "now": 271.4,
+   "upnl": -11.0
+  },
+  {
+   "sym": "SBIN",
+   "side": "LONG",
+   "qty": 29,
+   "entry": 1006.8,
+   "stop": 988.2,
+   "target": 1044.1,
+   "entry_day": "2026-06-10",
+   "why": "REAL ud winner",
+   "now": 1007.3,
+   "upnl": 14.5
+  },
+  {
+   "sym": "FORTIS",
+   "side": "LONG",
+   "qty": 30,
+   "entry": 997.5,
+   "stop": 972.4,
+   "target": 1047.6,
+   "entry_day": "2026-06-10",
+   "why": "REAL ud winner",
+   "now": 997.3,
+   "upnl": -6.0
+  },
+  {
+   "sym": "IDFCFIRSTB",
+   "side": "LONG",
+   "qty": 410,
+   "entry": 73.1,
+   "stop": 71.5,
+   "target": 76.3,
+   "entry_day": "2026-06-10",
+   "why": "REAL ud winner",
+   "now": 72.9,
+   "upnl": -82.0
+  }
+ ],
+ "closed": [],
+ "log": [
+  "06-10 13:18 LONG 96 FEDERALBNK @ 312.4 (overnight)",
+  "06-10 13:18 LONG 5 ALKEM @ 5356.5 (overnight)",
+  "06-10 13:18 LONG 3 APOLLOHOSP @ 8570.0 (overnight)",
+  "06-10 13:18 LONG 110 BANKBARODA @ 271.5 (overnight)",
+  "06-10 13:18 LONG 29 SBIN @ 1006.8 (overnight)",
+  "06-10 13:18 LONG 30 FORTIS @ 997.5 (overnight)",
+  "06-10 13:18 LONG 410 IDFCFIRSTB @ 73.1 (overnight)"
+ ],
+ "entered_day": "2026-06-10",
+ "mode": "overnight",
+ "realized": 0,
+ "equity": 99702.9,
+ "ret_pct": -0.3,
+ "open": 7,
+ "n_closed": 0,
+ "asof": "2026-06-10 14:22 IST"
+}

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nifty Sim · Marle-G</title>
+<style>
+  :root{--bg:#080a0e;--card:#14171e;--bg2:#0e1116;--border:rgba(255,255,255,.08);--ink:#eef1f6;--muted:#9aa3b4;--dim:#646c7a;
+    --mono:'SF Mono',ui-monospace,Consolas,monospace;--saffron:#ff9933;--green:#22c55e;--red:#ef4444;--amber:#fbbf24;--india-green:#138808;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(1100px 520px at 50% -10%,rgba(255,153,51,.05),transparent 60%),var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--border);background:rgba(8,10,14,.8);position:sticky;top:0;z-index:10}
+  .brand{font-family:var(--mono);font-weight:800;letter-spacing:.18em;font-size:13px;display:flex;align-items:center;gap:9px}
+  .brand .mark{width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,var(--saffron),var(--india-green))}
+  .brand .w{background:linear-gradient(90deg,var(--saffron),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tabs{display:flex;gap:13px;font-family:var(--mono);font-size:11px;flex-wrap:wrap}
+  .tabs a{color:var(--dim);text-decoration:none}.tabs a.on{color:var(--saffron)}.tabs a:hover{color:var(--ink)}
+  .wrap{max-width:1040px;margin:0 auto;padding:22px 22px 70px}
+  h1{font-size:22px;margin-bottom:3px} .sub{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:16px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px;overflow-x:auto}
+  .caveat{background:rgba(251,191,36,.10);border:1px solid var(--amber);border-radius:11px;padding:11px 14px;font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.55;margin-bottom:13px}
+  .verdict{background:var(--bg2);border:1px solid var(--border);border-radius:11px;padding:13px 15px;margin-bottom:13px;font-family:var(--mono);font-size:12.5px}
+  table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px;min-width:760px}
+  th{font-size:9px;text-transform:uppercase;letter-spacing:.04em;color:var(--dim);text-align:right;padding:6px 7px;border-bottom:1px solid var(--border)}
+  th.l,td.l{text-align:left}
+  td{padding:6px 7px;text-align:right;border-bottom:1px solid rgba(255,255,255,.04)}
+  tr:hover td{background:rgba(255,255,255,.02)}
+  .gr{display:inline-block;width:20px;text-align:center;font-weight:800;border-radius:5px}
+  .fam{font-size:8px;text-transform:uppercase;letter-spacing:.04em;padding:1px 5px;border-radius:4px;margin-left:5px}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span></span></div>
+  <div class="tabs">
+    <a href="marle_g_pod.html">home</a><a href="marle_g_equity.html">equity</a><a href="marle_g_intraday.html">intraday</a>
+    <a href="#" class="on">nifty&nbsp;sim</a><a href="marle_g_cascade.html">cascade</a><a href="marle_g_vol.html">vol</a>
+    <a href="marle_g_regime.html">regime</a><a href="marle_g_thesis.html">thesis</a><a href="marle_g_mindhive.html">mindhive</a><a href="marle_g_portfolio.html">portfolio</a>
+  </div>
+</div>
+<main class="wrap">
+  <h1>🏆 Nifty Options Tournament</h1>
+  <div class="sub">~12 strategies backtested over years on weekly Nifty cycles · ranked + A–F graded · EOD vs open entry tested.</div>
+
+  <div class="caveat">⚠ Options are <b>Black-Scholes priced with India VIX</b> as the implied vol — no skew/smile, no bid-ask spread, and VIX is a 30-day measure used on weekly options. <b style="color:var(--ink)">Absolute P&amp;L is approximate; the relative ranking across strategies is the trustworthy signal.</b> Returns = per-cycle P&amp;L as a fraction of spot (unleveraged notional). Monitor-only; not advice.</div>
+
+  <div id="verdict"></div>
+  <div class="card"><div id="board"><span style="color:var(--dim);font-family:var(--mono);font-size:12px">⟳ backtesting ~12 strategies over 6 years (first load ~10s)…</span></div></div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const GC={A:'var(--green)',B:'#4ade80',C:'var(--amber)',D:'#fb923c',F:'var(--red)'};
+const FC={sell:'var(--saffron)',buy:'var(--red)',directional:'#60a5fa',hybrid:'#c084fc',benchmark:'var(--dim)'};
+function spark(eq){
+  if(!eq||eq.length<2)return '';
+  const mn=Math.min(...eq),mx=Math.max(...eq),rng=(mx-mn)||1,W=90,H=22;
+  const pts=eq.map((v,i)=>`${(i/(eq.length-1)*W).toFixed(1)},${(H-(v-mn)/rng*H).toFixed(1)}`).join(' ');
+  const col=eq[eq.length-1]>=eq[0]?'var(--green)':'var(--red)';
+  return `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}"><polyline fill="none" stroke="${col}" stroke-width="1.3" points="${pts}"/></svg>`;
+}
+async function load(){
+  try{
+    const r=await (await fetch('/api/nifty_sim')).json();
+    if(r.error){ $('board').innerHTML='<span style="color:var(--dim)">'+r.error+'</span>'; return; }
+    if(r.timing_edge){const t=r.timing_edge;
+      $('verdict').innerHTML=`<div class="verdict"><b style="color:var(--saffron)">Entry-timing verdict:</b> EOD avg Sharpe <b>${t.eod_avg_sharpe}</b> vs Open <b>${t.open_avg_sharpe}</b> → <b style="color:var(--ink)">${t.winner}</b> <span style="color:var(--dim)">· ${r.n_cycles} weekly cycles · ${r.period} · ${r.asof}</span></div>`;}
+    const rows=r.leaderboard.map(b=>`<tr>
+      <td>${b.rank}</td>
+      <td class="l">${b.name}<span class="fam" style="color:${FC[b.family]};border:1px solid ${FC[b.family]}">${b.family}</span></td>
+      <td><span class="gr" style="background:${GC[b.grade]};color:#0b0b0b">${b.grade}</span></td>
+      <td style="color:${b.sharpe>=1?'var(--green)':b.sharpe>=0?'var(--ink)':'var(--red)'};font-weight:700">${b.sharpe}</td>
+      <td style="color:${b.cagr>=0?'var(--green)':'var(--red)'}">${b.cagr}%</td>
+      <td style="color:var(--red)">${b.maxdd}%</td>
+      <td>${b.winrate}%</td>
+      <td style="color:${b.expectancy>=0?'var(--green)':'var(--red)'}">${b.expectancy}%</td>
+      <td>${b.time_in_mkt}%</td>
+      <td class="l">${spark(b.equity)}</td></tr>`).join('');
+    $('board').innerHTML=`<table>
+      <thead><tr><th>#</th><th class="l">Strategy</th><th>Gr</th><th>Sharpe</th><th>CAGR</th><th>MaxDD</th><th>Win</th><th>Exp/cyc</th><th>In-mkt</th><th class="l">Equity</th></tr></thead>
+      <tbody>${rows}</tbody></table>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:10px;line-height:1.55">(C) = enter at close · (O) = enter at open. Ranked by Sharpe. Grade: A ≥ 1.5 (DD &lt; 25%) · B ≥ 1.0 · C ≥ 0.5 · D ≥ 0 · F &lt; 0. Premium-selling harvests India's positive vol-risk-premium; long-vol pays it; the benchmark is buy-and-hold Nifty.</div>`;
+  }catch(e){ $('board').innerHTML='<span style="color:var(--red)">backend offline? run: python marleg_server.py</span>'; }
+}
+load();
+</script>
+  <script src="marle_g_nav.js"></script>
+</body>
+</html>

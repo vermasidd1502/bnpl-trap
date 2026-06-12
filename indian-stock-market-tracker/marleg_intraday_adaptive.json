@@ -1,0 +1,31 @@
+{
+ "profile": "adaptive",
+ "cash": 24895.0,
+ "start": 100000.0,
+ "positions": [
+  {
+   "sym": "SBIN",
+   "qty": 75,
+   "entry": 1001.4,
+   "now": 1001.4,
+   "stop": 989.4,
+   "target": 1025.4,
+   "tag": "BUYING",
+   "volr": 1.22,
+   "t": "2026-06-09 13:26"
+  }
+ ],
+ "closed": [],
+ "steps": 1,
+ "cfg": {
+  "risk": 0.9,
+  "maxpos": 5
+ },
+ "regime": "RISK-ON",
+ "equity": 100000,
+ "last_actions": [
+  "BUY 75 SBIN @ 1001.4 (vol 1.22x)"
+ ],
+ "asof": "2026-06-09 13:26",
+ "eod": false
+}

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vol Lab · Marle-G</title>
+<style>
+  :root{--bg:#080a0e;--card:#14171e;--bg2:#0e1116;--border:rgba(255,255,255,.08);--ink:#eef1f6;--muted:#9aa3b4;--dim:#646c7a;
+    --mono:'SF Mono',ui-monospace,Consolas,monospace;--saffron:#ff9933;--green:#22c55e;--red:#ef4444;--amber:#fbbf24;--india-green:#138808;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(1200px 560px at 50% -10%,rgba(255,153,51,.06),transparent 60%),var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--border);background:rgba(8,10,14,.8);position:sticky;top:0;z-index:10}
+  .brand{font-family:var(--mono);font-weight:800;letter-spacing:.18em;font-size:13px;display:flex;align-items:center;gap:9px}
+  .brand .mark{width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,var(--saffron),var(--india-green))}
+  .brand .w{background:linear-gradient(90deg,var(--saffron),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tabs{display:flex;gap:15px;font-family:var(--mono);font-size:11px;flex-wrap:wrap}
+  .tabs a{color:var(--dim);text-decoration:none}.tabs a.on{color:var(--saffron)}.tabs a:hover{color:var(--ink)}
+  .wrap{max-width:1240px;margin:0 auto;padding:20px 22px 80px}
+  h1{font-size:22px;margin-bottom:4px} h2{font-size:13px;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--dim);margin:22px 0 10px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:15px}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+  input,select,button{font-family:var(--mono);font-size:12px;border-radius:8px;padding:8px 11px;border:1px solid var(--border);background:var(--bg2);color:var(--ink)}
+  button{cursor:pointer} button.go{background:linear-gradient(135deg,var(--saffron),var(--india-green));color:#0a0b0f;font-weight:800;border:none}
+  table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px}
+  th{font-size:9px;text-transform:uppercase;letter-spacing:.04em;color:var(--dim);text-align:right;padding:8px 9px;border-bottom:1px solid var(--border)}
+  th:first-child,td:first-child{text-align:left}
+  td{padding:8px 9px;text-align:right;border-bottom:1px solid rgba(255,255,255,.04)}
+  .long{color:var(--green)}.short{color:var(--red)}.pos{color:var(--green)}.neg{color:var(--red)}.dim{color:var(--dim)}
+  .pill{font-family:var(--mono);font-size:9px;font-weight:800;padding:2px 7px;border-radius:5px}
+  .pill.l{background:rgba(34,197,94,.16);color:var(--green)} .pill.s{background:rgba(239,68,68,.16);color:var(--red)}
+  .big{font-family:var(--mono);font-size:20px;font-weight:800}
+  .kv{font-family:var(--mono);font-size:11.5px;color:var(--muted);line-height:1.8}
+  .kv b{color:var(--ink)}
+  .legend{font-family:var(--mono);font-size:10px;color:var(--dim);line-height:1.6;margin-top:14px;border-top:1px solid var(--border);padding-top:12px}
+  .verdict{font-family:var(--mono);font-size:12px;font-weight:700;padding:8px 11px;border-radius:8px;background:var(--bg2);margin-top:8px}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span></span></div>
+  <div class="tabs">
+    <a href="marle_g_pod.html">home</a><a href="marle_g_equity.html">equity</a><a href="marle_g_live.html">live</a>
+    <a href="marle_g_cascade.html">cascade</a><a href="#" class="on">vol</a><a href="marle_g_paper.html">paper</a>
+    <a href="marle_g_portfolio.html">portfolio</a>
+  </div>
+</div>
+<main class="wrap">
+  <h1>📈 Vol Lab</h1>
+  <div class="kv" id="vix">loading India VIX…</div>
+
+  <h2>Position vol-scan (IV vs realized + Greeks)</h2>
+  <div class="card">
+    <div class="row">
+      <input id="opt" value="TCS26JUL2000PE" size="18" spellcheck="false">
+      <select id="side"><option value="short">short</option><option value="long">long</option></select>
+      <input id="qty" value="450" size="6">
+      <button class="go" onclick="scan()">scan ▸</button>
+    </div>
+    <div id="scanout" class="kv">— enter an option (UND+YY+MON+STRIKE+CE/PE) and scan —</div>
+  </div>
+
+  <h2>NIFTY structures now — straddle vs butterfly vs condor</h2>
+  <div class="card"><div id="cmp" class="dim" style="font-family:var(--mono);font-size:12px">loading…</div></div>
+
+  <h2>Backtest — which structure wins when (NIFTY, 5y monthly)</h2>
+  <div class="card"><div id="bt" class="dim" style="font-family:var(--mono);font-size:12px">loading backtest (slow first call)…</div></div>
+
+  <div class="legend">
+    Vol traded as an asset (Bennett, <i>Trading Volatility</i>). IV via Black-Scholes on the live premium (Groww IV is null on illiquid strikes); RV = annualised realized.
+    <span class="long">LONG vol</span> (straddle/strangle) profits on a big move (+vega, −theta); <span class="short">SHORT vol</span> (iron butterfly/condor, short straddle) profits if range-bound (−vega, +theta).
+    Rule: cheap IV → buy vol; rich IV → sell vol. Backtest P&L per 1 index unit; ATM, 1-sd wings, monthly, no costs. Short-vol carries tail risk (max-loss column). Monitor-only — no orders.
+  </div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const pct=x=>x==null?'—':(x*100).toFixed(1)+'%';
+const sgn=x=>(x>0?'+':'')+x;
+
+function payoffSVG(grid,payoff){
+  const W=150,H=42,n=grid.length;
+  const xs=grid, ys=payoff;
+  const xmin=xs[0],xmax=xs[n-1],ymin=Math.min(...ys),ymax=Math.max(...ys);
+  const X=v=>(v-xmin)/(xmax-xmin)*W, Y=v=>H-(v-ymin)/((ymax-ymin)||1)*H;
+  const pts=xs.map((x,i)=>`${X(x).toFixed(1)},${Y(ys[i]).toFixed(1)}`).join(' ');
+  const zy=Y(0).toFixed(1);
+  return `<svg width="${W}" height="${H}" style="vertical-align:middle">
+    <line x1="0" y1="${zy}" x2="${W}" y2="${zy}" stroke="rgba(255,255,255,.18)" stroke-dasharray="2 2"/>
+    <polyline points="${pts}" fill="none" stroke="var(--saffron)" stroke-width="1.5"/></svg>`;
+}
+
+async function scan(){
+  const opt=$('opt').value.trim(),side=$('side').value,qty=$('qty').value;
+  $('scanout').textContent='scanning…';
+  try{
+    const r=await (await fetch(`/api/vol?opt=${encodeURIComponent(opt)}&side=${side}&qty=${qty}`)).json();
+    if(r.error){ $('scanout').textContent=r.error; return; }
+    const g=r.position_greeks||{}, vcls=(r.iv_vs_rv20||0)>0?'short':'long';
+    const verdict=r.vol_verdict?`<div class="verdict ${(r.vol_verdict||'').includes('RICH')?'short':'long'}">${r.vol_verdict}</div>`:'';
+    $('scanout').innerHTML=`<b>${r.underlying} ${r.right} ${Math.round(r.strike)}</b> · exp ${r.expiry} (${r.days_to_expiry}d) · spot ${r.spot} · premium ${r.premium}<br>
+      IV <b>${pct(r.iv)}</b> · RV20 ${pct(r.rv20)} · RV60 ${pct(r.rv60)} · IV−RV20 <b class="${vcls}">${pct(r.iv_vs_rv20)}</b>
+      ${verdict}
+      ${r.position_greeks?`<div style="margin-top:6px">position greeks (${side} ${qty}): delta <b>${sgn(g.delta)}</b> · gamma ${sgn(g.gamma)} · vega <b class="${g.vega<0?'short':'long'}">${sgn(g.vega)}</b>/volpt · theta <b class="${g.theta>0?'long':'short'}">${sgn(g.theta)}</b>/day</div>`:''}`;
+  }catch(e){ $('scanout').textContent='backend offline — run python marleg_server.py'; }
+}
+
+async function loadCompare(){
+  try{
+    const d=await (await fetch('/api/structures/compare')).json();
+    $('vix').innerHTML=`India VIX <b>${(d.vix||0).toFixed(2)}</b> (market IV regime) · NIFTY spot <b>${d.spot}</b> · 30d 1σ move ≈ <b>${d.em}</b>`;
+    const rows=d.structures.map(s=>{
+      const g=s.greeks, cls=s.vol_stance.includes('LONG')?'long':'short';
+      const kind=s.net_premium<0?'<span class="dim">credit</span>':'<span class="dim">debit</span>';
+      return `<tr><td>${s.structure.replace(/_/g,' ')}</td>
+        <td><span class="pill ${cls=='long'?'l':'s'}">${s.vol_stance}</span></td>
+        <td>${Math.abs(s.net_premium)} ${kind}</td>
+        <td class="pos">${s.max_profit}</td><td class="neg">${s.max_loss}</td>
+        <td>${g.delta.toFixed(2)}</td><td class="${g.vega<0?'short':'long'}">${g.vega.toFixed(1)}</td>
+        <td class="${g.theta>0?'long':'short'}">${g.theta.toFixed(2)}</td>
+        <td>${payoffSVG(s.grid,s.payoff)}</td></tr>`;
+    }).join('');
+    $('cmp').innerHTML=`<table><thead><tr><th>structure</th><th>stance</th><th>net prem</th><th>max P</th><th>max L</th><th>Δ</th><th>vega</th><th>θ/day</th><th>payoff @ expiry</th></tr></thead><tbody>${rows}</tbody></table>`;
+  }catch(e){ $('cmp').textContent='backend offline'; }
+}
+async function loadBT(){
+  try{
+    const d=await (await fetch('/api/structures/backtest?years=5')).json();
+    if(d.error){ $('bt').textContent=d.error; return; }
+    const rows=d.rows.map(r=>`<tr><td>${r.structure.replace(/_/g,' ')}</td>
+      <td class="${r.avg>0?'pos':'neg'}">${r.avg}</td><td>${r.win}%</td>
+      <td class="${(r.rich||0)>0?'pos':'neg'}">${r.rich}</td><td class="${(r.cheap||0)>0?'pos':'neg'}">${r.cheap}</td></tr>`).join('');
+    $('bt').innerHTML=`<div class="kv" style="margin-bottom:8px">${d.cycles} monthly cycles · vol-risk-premium <b class="pos">${sgn((d.vrp*100).toFixed(1))}%</b> (VIX ${pct(d.avg_vix)} vs RV ${pct(d.avg_rv)}) · ${d.n_rich} rich / ${d.n_cheap} cheap regimes</div>
+      <table><thead><tr><th>structure</th><th>avg P&L/mo</th><th>win%</th><th>rich-IV</th><th>cheap-IV</th></tr></thead><tbody>${rows}</tbody></table>`;
+  }catch(e){ $('bt').textContent='backend offline'; }
+}
+scan(); loadCompare(); loadBT();
+</script>
+  <script src="marle_g_nav.js"></script>
+</body>
+</html>

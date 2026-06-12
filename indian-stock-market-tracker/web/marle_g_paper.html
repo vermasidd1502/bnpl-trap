@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paper Trading · Marle-G</title>
+<style>
+  :root{--bg:#080a0e;--card:#14171e;--bg2:#0e1116;--border:rgba(255,255,255,.08);--ink:#eef1f6;--muted:#9aa3b4;--dim:#646c7a;
+    --mono:'SF Mono',ui-monospace,Consolas,monospace;--saffron:#ff9933;--green:#22c55e;--red:#ef4444;--amber:#fbbf24;--india-green:#138808;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(1100px 520px at 50% -10%,rgba(255,153,51,.05),transparent 60%),var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--border);background:rgba(8,10,14,.8);position:sticky;top:0;z-index:10}
+  .brand{font-family:var(--mono);font-weight:800;letter-spacing:.18em;font-size:13px;display:flex;align-items:center;gap:9px}
+  .brand .mark{width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,var(--saffron),var(--india-green))}
+  .brand .w{background:linear-gradient(90deg,var(--saffron),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tabs{display:flex;gap:16px;font-family:var(--mono);font-size:11px;flex-wrap:wrap}
+  .tabs a{color:var(--dim);text-decoration:none}.tabs a.on{color:var(--saffron)}.tabs a:hover{color:var(--ink)}
+  .wrap{max-width:1320px;margin:0 auto;padding:20px 22px 70px}
+  .head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:8px}
+  .head h1{font-size:24px} .head .sub{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  #refresh{font-family:var(--mono);font-size:10px;color:var(--dim);margin-bottom:16px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px}
+  .card.best{border-color:var(--saffron);box-shadow:0 0 0 1px rgba(255,153,51,.2)}
+  .pname{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);font-weight:700}
+  .pbadge{font-family:var(--mono);font-size:9px;font-weight:800;padding:2px 7px;border-radius:5px;background:rgba(255,153,51,.16);color:var(--saffron);margin-left:6px}
+  .eq{font-family:var(--mono);font-size:26px;font-weight:800;margin-top:6px}
+  .ret{font-family:var(--mono);font-size:13px;font-weight:700}
+  .meta{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:6px;line-height:1.6}
+  .pos{font-family:var(--mono);font-size:11px;width:100%;border-collapse:collapse;margin-top:10px}
+  .pos th{font-size:8.5px;text-transform:uppercase;color:var(--dim);text-align:right;padding:5px 4px;border-bottom:1px solid var(--border)}
+  .pos th:first-child,.pos td:first-child{text-align:left}
+  .pos td{padding:5px 4px;text-align:right;border-bottom:1px solid rgba(255,255,255,.04)}
+  .pos .sym{font-weight:700}
+  .pos .tag{font-size:8px;color:var(--dim)}
+  .pos .near-stop{color:var(--red)} .pos .near-tgt{color:var(--green)}
+  .pos2{color:var(--green)}.neg2{color:var(--red)}.neu2{color:var(--dim)}
+  .empty{font-family:var(--mono);font-size:11px;color:var(--dim);padding:10px 0}
+  .regime{font-family:var(--mono);font-size:10px;color:var(--amber);margin-top:3px}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span></span></div>
+  <div class="tabs">
+    <a href="marle_g_pod.html">home</a><a href="marle_g_equity.html">equity</a><a href="marle_g_volume.html">volume</a>
+    <a href="#" class="on">paper</a><a href="marle_g_macro_preview.html">macro</a><a href="marle_g_portfolio.html">portfolio</a>
+  </div>
+</div>
+<main class="wrap">
+  <div class="head"><h1>📝 Paper Trading — MTF swing</h1><span class="sub" id="asof"></span></div>
+  <div id="refresh">auto-refreshes every 60s · prices ≈15-min delayed (EOD strategy; no need to babysit)</div>
+  <div class="grid" id="grid"><div class="empty">loading paper books…</div></div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const inr=n=>'₹'+Math.round(n).toLocaleString('en-IN');
+const pct=x=>(x>0?'+':'')+(+x).toFixed(2)+'%';
+const c2=x=>x>0?'pos2':x<0?'neg2':'neu2';
+async function load(){
+  try{
+    const r=await fetch('/api/paper'); const d=await r.json();
+    const order=['adaptive','conservative','balanced','aggressive'];
+    let asof='';
+    $('grid').innerHTML=order.filter(n=>d[n]).map(n=>{
+      const b=d[n]; asof=b.asof||asof;
+      const cfg=b.cfg||{};
+      const rows=(b.positions||[]).map(p=>{
+        const nearStop=p.dist_stop!=null&&p.dist_stop<4, nearTgt=p.dist_tgt!=null&&p.dist_tgt<4;
+        return `<tr><td><span class="sym">${p.sym}</span><div class="tag">${p.tag||''} · ${p.held}d</div></td>
+          <td>${p.qty}</td><td>${p.entry}</td><td>${p.now}</td>
+          <td class="${nearStop?'near-stop':''}">${p.stop}</td>
+          <td class="${nearTgt?'near-tgt':''}">${p.target}</td>
+          <td class="${c2(p.upnl)}">${inr(p.upnl)}</td></tr>`;}).join('');
+      return `<div class="card ${n==='adaptive'?'best':''}">
+        <div class="pname">${n}${n==='adaptive'?'<span class="pbadge">RECOMMENDED</span>':''}</div>
+        <div class="eq">${inr(b.equity)}</div>
+        <div class="ret ${c2(b.ret)}">${pct(b.ret)} since start · uP&L <span class="${c2(b.upnl)}">${inr(b.upnl)}</span></div>
+        ${n==='adaptive'&&b.regime?`<div class="regime">regime: ${b.regime}</div>`:''}
+        <div class="meta">cash ${inr(b.cash)} · realized ${inr(b.realized)} · open ${b.open} · closed ${b.closed}
+          · risk ${cfg.risk}%/trade · max ${cfg.maxpos} · deploy≤${cfg.deploy}%</div>
+        ${rows?`<table class="pos"><thead><tr><th>stock</th><th>qty</th><th>entry</th><th>now</th><th>stop</th><th>tgt</th><th>uP&L</th></tr></thead><tbody>${rows}</tbody></table>`:'<div class="empty">no open positions (cash / defensive)</div>'}
+      </div>`;
+    }).join('');
+    $('asof').textContent='as of '+asof+' close · ₹100,000 start each';
+    if($('refresh')) $('refresh').textContent='● prices as of '+((d.price_ts||'').replace('T',' ').slice(0,19)||'—')+' IST · source yfinance (≈ real-time–15min) · auto-refresh 30s';
+  }catch(e){ $('grid').innerHTML='<div class="empty">backend offline — run: python marleg_server.py</div>'; }
+}
+load(); setInterval(load, 30000);
+</script>
+  <script src="marle_g_nav.js"></script>
+</body>
+</html>

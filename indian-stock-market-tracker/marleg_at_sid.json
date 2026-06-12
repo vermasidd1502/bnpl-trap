@@ -1,0 +1,108 @@
+{
+ "profile": "sid",
+ "start": 100000.0,
+ "positions": [
+  {
+   "sym": "FEDERALBNK",
+   "side": "LONG",
+   "qty": 64,
+   "entry": 312.4,
+   "stop": 305.1,
+   "target": 327.1,
+   "entry_day": "2026-06-10",
+   "why": "REAL ud winner",
+   "now": 313.55,
+   "upnl": 73.6
+  },
+  {
+   "sym": "ALKEM",
+   "side": "LONG",
+   "qty": 3,
+   "entry": 5356.5,
+   "stop": 5205.5,
+   "target": 5658.5,
+   "entry_day": "2026-06-10",
+   "why": "REAL ud winner",
+   "now": 5324.0,
+   "upnl": -97.5
+  },
+  {
+   "sym": "APOLLOHOSP",
+   "side": "LONG",
+   "qty": 2,
+   "entry": 8570.0,
+   "stop": 8408.1,
+   "target": 8893.7,
+   "entry_day": "2026-06-10",
+   "why": "REAL ud winner",
+   "now": 8516.5,
+   "upnl": -107.0
+  },
+  {
+   "sym": "BANKBARODA",
+   "side": "LONG",
+   "qty": 73,
+   "entry": 271.5,
+   "stop": 265.1,
+   "target": 284.2,
+   "entry_day": "2026-06-10",
+   "why": "REAL ud winner",
+   "now": 271.4,
+   "upnl": -7.3
+  },
+  {
+   "sym": "SBICARD",
+   "side": "SHORT",
+   "qty": 34,
+   "entry": 586.4,
+   "stop": 733.0,
+   "target": 562.4,
+   "entry_day": "2026-06-10",
+   "why": "distribution (bad ud 0.15)",
+   "now": 586.6,
+   "upnl": -6.8
+  },
+  {
+   "sym": "JINDALSTEL",
+   "side": "SHORT",
+   "qty": 17,
+   "entry": 1131.1,
+   "stop": 1306.2,
+   "target": 1081.2,
+   "entry_day": "2026-06-10",
+   "why": "distribution (bad ud 0.25)",
+   "now": 1123.1,
+   "upnl": 136.0
+  },
+  {
+   "sym": "RELIANCE",
+   "side": "SHORT",
+   "qty": 15,
+   "entry": 1269.5,
+   "stop": 1466.6,
+   "target": 1226.5,
+   "entry_day": "2026-06-10",
+   "why": "distribution (bad ud 0.32)",
+   "now": 1269.2,
+   "upnl": 4.5
+  }
+ ],
+ "closed": [],
+ "log": [
+  "06-10 13:18 LONG 64 FEDERALBNK @ 312.4 (overnight)",
+  "06-10 13:18 LONG 3 ALKEM @ 5356.5 (overnight)",
+  "06-10 13:18 LONG 2 APOLLOHOSP @ 8570.0 (overnight)",
+  "06-10 13:18 LONG 73 BANKBARODA @ 271.5 (overnight)",
+  "06-10 13:18 SHORT 34 SBICARD @ 586.4 (overnight)",
+  "06-10 13:18 SHORT 17 JINDALSTEL @ 1131.1 (overnight)",
+  "06-10 13:18 SHORT 15 RELIANCE @ 1269.5 (overnight)"
+ ],
+ "entered_day": "2026-06-10",
+ "mode": "overnight",
+ "realized": 0,
+ "equity": 99995.5,
+ "ret_pct": -0.0,
+ "open": 7,
+ "n_closed": 0,
+ "asof": "2026-06-10 14:22 IST"
+}

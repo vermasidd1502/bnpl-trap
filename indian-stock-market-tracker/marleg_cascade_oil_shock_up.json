@@ -1,0 +1,130 @@
+{
+ "event": "oil_shock_up",
+ "label": "Crude oil spikes (supply shock / OPEC cut / conflict premium)",
+ "fired": [
+  {
+   "industry": "Specialty Chemicals",
+   "tier": 1,
+   "impact": -0.295,
+   "side": "SHORT",
+   "members": [
+    "AARTIIND",
+    "ACUTAAS",
+    "ADVENZYMES",
+    "AETHER",
+    "ALKYLAMINE",
+    "ANURAS",
+    "ATUL",
+    "BALAMINES",
+    "CLEAN",
+    "DEEPAKNTR",
+    "FLUOROCHEM",
+    "GHCL",
+    "GRWRHITECH",
+    "HSCL",
+    "JUBLINGREA",
+    "LXCHEM",
+    "NAVINFLUOR",
+    "NEOGEN",
+    "PCBL",
+    "PIDILITIND",
+    "PRIVISCL",
+    "SRF",
+    "STYRENIX",
+    "SUDARSCHEM",
+    "TATACHEM"
+   ],
+   "via": "crude",
+   "mechanism": "petrochemical feedstock cost up",
+   "confirmed": [
+    {
+     "sym": "ACUTAAS",
+     "chg": -2.54,
+     "volr": 0.8,
+     "tag": "FLAT",
+     "strength": 2.03
+    },
+    {
+     "sym": "ANURAS",
+     "chg": -1.08,
+     "volr": 1.08,
+     "tag": "FADING",
+     "strength": 1.17
+    }
+   ],
+   "tested": 12,
+   "conf_frac": 0.17,
+   "conviction": 0.124
+  },
+  {
+   "industry": "Pharma - Formulations",
+   "tier": 2,
+   "impact": 0.129,
+   "side": "LONG",
+   "members": [
+    "AJANTPHARM",
+    "ALKEM",
+    "AUROPHARMA",
+    "CAPLIPOINT",
+    "CIPLA",
+    "CONCORDBIO",
+    "DRREDDY",
+    "EMCURE",
+    "ERIS",
+    "GLAXO",
+    "GLENMARK",
+    "IPCALAB",
+    "JBCHEPHARM",
+    "JUBLPHARMA",
+    "LUPIN",
+    "MANKIND",
+    "MARKSANS",
+    "NATCOPHARM",
+    "PFIZER",
+    "PPLPHARMA",
+    "SANOFICONR",
+    "SHILPAMED",
+    "SPARC",
+    "SUNPHARMA",
+    "TORNTPHARM",
+    "WOCKPHARMA",
+    "ZYDUSLIFE"
+   ],
+   "via": "inr_usd",
+   "mechanism": "US/EU export realisation up",
+   "confirmed": [
+    {
+     "sym": "CAPLIPOINT",
+     "chg": 5.26,
+     "volr": 2.6,
+     "tag": "BUYING",
+     "strength": 13.68
+    },
+    {
+     "sym": "AJANTPHARM",
+     "chg": 1.97,
+     "volr": 1.4,
+     "tag": "BUYING",
+     "strength": 2.76
+    },
+    {
+     "sym": "CONCORDBIO",
+     "chg": 1.86,
+     "volr": 0.87,
+     "tag": "FLAT",
+     "strength": 1.62
+    },
+    {
+     "sym": "GLENMARK",
+     "chg": 1.19,
+     "volr": 0.72,
+     "tag": "FLAT",
+     "strength": 0.86
+    }
+   ],
+   "tested": 12,
+   "conf_frac": 0.33,
+   "conviction": 0.068
+  }
+ ]
+}
