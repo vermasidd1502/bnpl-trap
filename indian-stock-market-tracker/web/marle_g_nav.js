@@ -13,7 +13,7 @@
      ["marle_g_thesis.html", "thesis"], ["marle_g_smartmoney.html", "smart-money"], ["marle_g_mindhive.html", "mindhive"]],
     [["marle_g_portfolio.html", "portfolio"], ["marle_g_winners.html", "winners"], ["marle_g_risk.html", "risk"], ["marle_g_profile.html", "profile"],
      ["marle_g_dashboard.html", "dashboard"], ["marle_g_funds.html", "funds"], ["marle_g_options.html", "options"]],
-    [["marle_g_chart.html", "chart"], ["marle_g_canslim.html", "canslim"], ["marle_g_architecture_3d.html", "3D"]]
+    [["marle_g_chart.html", "chart"], ["marle_g_canslim.html", "canslim"], ["marle_g_architecture_3d.html", "3D"], ["marle_g_diag.html", "diag"]]
   ];
   var cur = (location.pathname.split("/").pop() || "marle_g_pod.html").toLowerCase();
   var sep = '<span style="color:var(--dim);opacity:.4;padding:0 3px">|</span>';
@@ -121,4 +121,42 @@
     if (typeof window.podRefresh === "function") { try { window.podRefresh(); return; } catch (e) {} }
     location.reload();                                // fallback: soft full reload (data is server-cached, so cheap)
   }, EVERY);
+})();
+
+/* ---- universal manual Refresh button: injected into every nav bar ---- */
+(function () {
+  function stamp(el) {
+    var d = new Date();
+    el.textContent = "updated " + d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
+  }
+  function build(nav) {
+    if (!nav || nav.querySelector(".mg-refresh")) return;
+    var b = document.createElement("button");
+    b.className = "mg-refresh";
+    b.title = "Refresh this page's data";
+    b.innerHTML = '<span class="mg-rico" style="display:inline-block">⟳</span><span class="mg-rtxt">refresh</span>';
+    b.style.cssText = "margin-left:14px;display:inline-flex;align-items:center;gap:6px;font-family:var(--mono,ui-monospace,monospace);" +
+      "font-size:11px;font-weight:700;color:var(--dim,#646c7a);background:rgba(255,255,255,.03);" +
+      "border:1px solid var(--border,rgba(255,255,255,.08));border-radius:8px;padding:6px 11px;cursor:pointer;flex:0 0 auto";
+    b.addEventListener("mouseenter", function () { b.style.color = "var(--saffron,#ff9933)"; b.style.borderColor = "var(--saffron,#ff9933)"; });
+    b.addEventListener("mouseleave", function () { b.style.color = "var(--dim,#646c7a)"; b.style.borderColor = "var(--border,rgba(255,255,255,.08))"; });
+    b.addEventListener("click", function () {
+      var ic = b.querySelector(".mg-rico"), txt = b.querySelector(".mg-rtxt");
+      ic.style.transition = "transform .6s ease"; ic.style.transform = "rotate(360deg)";
+      setTimeout(function () { ic.style.transition = "none"; ic.style.transform = "rotate(0deg)"; }, 640);
+      // Prefer the page's own soft refresh; fall back to a full reload (data is server-cached, cheap).
+      if (typeof window.podRefresh === "function") {
+        try { window.podRefresh(); stamp(txt); return; } catch (e) {}
+      }
+      location.reload();
+    });
+    nav.appendChild(b);
+  }
+  document.querySelectorAll(".nav").forEach(build);
+})();
+
+/* ---- load the per-page animated guide engine (adds the "▶ guide" button) ---- */
+(function () {
+  if (document.querySelector('script[src*="marle_g_guide.js"]')) return;
+  var s = document.createElement("script"); s.src = "marle_g_guide.js"; document.head.appendChild(s);
 })();

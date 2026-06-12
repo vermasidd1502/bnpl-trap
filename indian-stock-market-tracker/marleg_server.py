@@ -1199,6 +1199,30 @@ def api_weekend_stock(ticker):
 def api_portfolio_var():
     return jsonify(cached("portfolio_var", lambda: marleg_var.portfolio_risk(), 300))
 
+@app.route("/api/whatif")
+def api_whatif():
+    """Scenario tool: add/trim a position -> recomputed beta, weekend VaR, correlation, diversification."""
+    tk = (request.args.get("tk") or "").upper().strip()
+    qty = request.args.get("qty") or "0"
+    side = (request.args.get("side") or "buy").lower()
+    key = f"whatif:{tk}:{qty}:{side}"
+    return jsonify(cached(key, lambda: marleg_var.whatif(tk, qty, side), 120))
+
+@app.route("/api/diag")
+def api_diag():
+    """System self-diagnosis — auth, feeds, processes, freshness, modules, routes, tasks."""
+    import marleg_diag
+    def self_test(path):
+        try:
+            r = app.test_client().get(path)
+            return {"code": r.status_code, "ok": r.status_code == 200,
+                    "snippet": r.get_data(as_text=True)[:200]}
+        except Exception as e:
+            return {"code": 0, "ok": False, "snippet": str(e)[:200]}
+    # short TTL so the page reflects "now", but repeated clicks don't hammer feeds
+    return jsonify(cached("diag", lambda: marleg_diag.diagnose(
+        groww_getter=groww, cache=_CACHE, self_test=self_test), 20))
+
 @app.route("/api/nifty_sim")
 def api_nifty_sim():
     return jsonify(cached("nifty_sim", marleg_nifty_sim.run_tournament, 21600))   # heavy multi-year backtest -> cache 6h

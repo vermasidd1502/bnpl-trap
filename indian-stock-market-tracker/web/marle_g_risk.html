@@ -45,6 +45,25 @@
   </details>
 
   <div class="cards" id="cards"></div>
+
+  <div class="card" id="whatifCard" style="border-left:3px solid var(--saffron)">
+    <div class="sh">🔮 What-if — simulate a trade before you place it</div>
+    <div style="display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-bottom:6px">
+      <input id="wiTk" placeholder="ticker e.g. DLINKINDIA" autocomplete="off"
+        style="font-family:var(--mono);font-size:12px;background:#0b0d12;border:1px solid var(--border);border-radius:8px;color:var(--ink);padding:8px 11px;width:190px;text-transform:uppercase">
+      <input id="wiQty" type="number" min="1" placeholder="qty"
+        style="font-family:var(--mono);font-size:12px;background:#0b0d12;border:1px solid var(--border);border-radius:8px;color:var(--ink);padding:8px 11px;width:90px" data-no-suggest>
+      <span style="display:inline-flex;border:1px solid var(--border);border-radius:8px;overflow:hidden">
+        <button id="wiBuy" class="wiSeg on" onclick="wiSetSide('buy')">buy</button>
+        <button id="wiSell" class="wiSeg" onclick="wiSetSide('sell')">trim</button>
+      </span>
+      <button id="wiBtn" onclick="simulate()"
+        style="font-family:var(--mono);font-size:12px;font-weight:700;background:var(--saffron);color:#0b0d12;border:none;border-radius:8px;padding:8px 16px;cursor:pointer">Simulate →</button>
+    </div>
+    <div class="sh" style="text-transform:none;letter-spacing:0;color:var(--dim)">Adds (or trims) the position against your live book and re-runs beta, VaR, correlation &amp; diversification — parametric, instant, no order placed.</div>
+    <div id="wiOut" style="margin-top:12px"></div>
+  </div>
+
   <div class="card"><div class="sh">Monte Carlo — weekend (3-day) P&amp;L distribution · 30k fat-tailed sims</div><div id="hist"></div>
     <div class="sh" style="margin-top:10px">Probability of losing more than…</div><div id="probs"></div></div>
   <div class="card"><div class="sh">Risk decomposition — systematic (market) vs idiosyncratic (stock-specific)</div><div id="decomp"></div></div>
@@ -106,6 +125,59 @@ async function load(){
     $('sug').innerHTML=(r.suggestions||[]).map(s=>`<div class="sug">• ${esc(s)}</div>`).join('')||'<div class="sug neu">no flags</div>';
   }catch(e){ $('sub').textContent='backend offline?'; }
 }
+/* ---- what-if scenario tool ---- */
+(function(){var st=document.createElement('style');st.textContent=
+  ".wiSeg{font-family:var(--mono);font-size:11px;font-weight:700;background:#0b0d12;color:var(--dim);border:none;padding:8px 13px;cursor:pointer}"+
+  ".wiSeg.on{background:var(--saffron);color:#0b0d12}";document.head.appendChild(st);})();
+let wiSide='buy';
+function wiSetSide(s){wiSide=s;$('wiBuy').classList.toggle('on',s==='buy');$('wiSell').classList.toggle('on',s==='sell');}
+function dlt(d,unit,goodWhenDown){ // colored delta chip; goodWhenDown=true -> falling is green
+  if(Math.abs(d)<(unit==='₹'?1:0.005)) return '<span class="neu" style="font-size:10px">no change</span>';
+  const up=d>0, good=goodWhenDown?!up:up, col=good?'var(--green)':'var(--red)';
+  const val=unit==='₹'?inr(Math.abs(d)):(unit==='×'?Math.abs(d).toFixed(2)+'×':Math.abs(d)+unit);
+  return `<span style="color:${col};font-size:10px">${up?'▲':'▼'} ${val}</span>`;
+}
+async function simulate(){
+  const tk=($('wiTk').value||'').trim().toUpperCase(), qty=$('wiQty').value;
+  if(!tk||!(+qty>0)){ $('wiOut').innerHTML='<div class="sug neu">enter a ticker and a quantity.</div>'; return; }
+  const btn=$('wiBtn'); btn.disabled=true; btn.textContent='simulating…';
+  $('wiOut').innerHTML='<div class="sug neu">running scenario against your live book…</div>';
+  try{
+    const r=await (await fetch(`/api/whatif?tk=${encodeURIComponent(tk)}&qty=${encodeURIComponent(qty)}&side=${wiSide}`)).json();
+    if(r.error){ $('wiOut').innerHTML=`<div class="sug neg">${esc(r.error)}</div>`; return; }
+    renderWhatif(r);
+  }catch(e){ $('wiOut').innerHTML='<div class="sug neg">scenario failed — backend offline?</div>'; }
+  finally{ btn.disabled=false; btn.textContent='Simulate →'; }
+}
+function renderWhatif(r){
+  const c=r.candidate,b=r.before,a=r.after,d=r.delta;
+  const vcol=r.verdict.indexOf('DIVERS')===0?'var(--green)':r.verdict.indexOf('RISK')===0?'var(--red)':'var(--amber)';
+  const corrCol=c.corr_to_book<0.35?'var(--green)':c.corr_to_book>0.6?'var(--red)':'var(--amber)';
+  const rows=[
+    ['Exposure', inr(b.exposure), inr(a.exposure), dlt(d.exposure,'₹',false)],
+    ['Portfolio beta', b.beta, a.beta, dlt(d.beta,'',true)],
+    ['Daily volatility', b.vol_day_pct+'%', a.vol_day_pct+'%', dlt(+(a.vol_day_pct-b.vol_day_pct).toFixed(2),'%',true)],
+    ['Weekend VaR 99%', inr(b.var99_wk), inr(a.var99_wk), dlt(d.var99_wk,'₹',true)],
+    ['% systematic (market)', b.pct_sys+'%', a.pct_sys+'%', dlt(d.pct_sys,'%',true)],
+    ['Avg pair-correlation', b.avg_corr, a.avg_corr, dlt(+(a.avg_corr-b.avg_corr).toFixed(2),'',true)],
+    ['Diversification ratio', b.div_ratio+'×', a.div_ratio+'×', dlt(d.div_ratio,'×',false)],
+  ];
+  $('wiOut').innerHTML=`
+    <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-bottom:12px">
+      <div style="font-family:var(--mono);font-size:13px"><b>${wiSide==='sell'?'TRIM':'ADD'} ${c.qty} × ${c.sym}</b> @ ₹${c.ltp} = <b>${inr(c.value)}</b></div>
+      <div style="font-family:var(--mono);font-size:11px;font-weight:800;padding:5px 12px;border-radius:8px;background:${vcol}22;color:${vcol}">${r.verdict}</div>
+    </div>
+    <div class="cards" style="margin-bottom:12px">
+      <div class="mc"><div class="n">candidate beta</div><div class="v">${c.beta}</div><div class="s">vol ${c.vol_pct}%/day</div></div>
+      <div class="mc"><div class="n">corr to your book</div><div class="v" style="color:${corrCol}">${c.corr_to_book}</div><div class="s">${c.corr_to_book<0.35?'diversifies':c.corr_to_book>0.6?'moves together':'partial'}</div></div>
+      <div class="mc"><div class="n">its risk-share after</div><div class="v">${c.risk_share_after}%</div><div class="s">of total book risk</div></div>
+    </div>
+    <table class="h"><thead><tr><th>metric</th><th>now</th><th>after</th><th>Δ</th></tr></thead><tbody>
+      ${rows.map(x=>`<tr><td class="neu" style="text-align:left">${x[0]}</td><td>${x[1]}</td><td><b>${x[2]}</b></td><td>${x[3]}</td></tr>`).join('')}
+    </tbody></table>
+    <div style="margin-top:12px">${(r.notes||[]).map(n=>`<div class="sug">• ${esc(n)}</div>`).join('')}</div>`;
+}
+
 load(); setInterval(load,180000);
 </script>
 </body>

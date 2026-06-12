@@ -240,6 +240,149 @@ def portfolio_risk(N=30000, seed=7):
             "suggestions": sug}
 
 
+def _metrics(book, R, mkt, var_m):
+    """All portfolio risk metrics for a given book dict {sym:{val}} against return frame R.
+    Returns a flat dict — used to diff a hypothetical book against the current one."""
+    syms = list(book); V = sum(book[s]["val"] for s in syms); n = len(syms)
+    w = np.array([book[s]["val"] / V for s in syms])
+    sub = R[syms]
+    betas = {s: float(np.cov(sub[s], mkt)[0, 1] / var_m) for s in syms}
+    beta_p = float(w @ np.array([betas[s] for s in syms]))
+    ewma = np.array([_ewma_vol(sub[s]) for s in syms])
+    corr = sub.corr().values
+    cov = np.outer(ewma, ewma) * corr
+    sig_p = float(np.sqrt(max(w @ cov @ w, 1e-12)))               # EWMA conditional daily vol
+    Rp = sub.values @ w
+    exk = max(0.2, float(pd.Series(Rp).kurtosis())); d = max(4.5, 6.0 / exk + 4)
+    t99 = stats.t.ppf(0.99, d) * np.sqrt((d - 2) / d)
+    var1 = t99 * sig_p * V                                        # 1-day Student-t 99% VaR
+    sys_var = beta_p ** 2 * var_m
+    pct_sys = float(min(1.0, sys_var / (sig_p ** 2)))
+    off = corr[np.triu_indices(n, 1)]
+    avg_corr = float(off.mean()) if len(off) else 0.0
+    vols = sub.std().values
+    div_ratio = float((w @ vols) / sig_p) if sig_p else 1.0
+    comp = w * ((cov @ w) / sig_p) / sig_p                        # risk-share per name
+    return {"V": V, "beta": beta_p, "vol_day_pct": sig_p * 100, "var99_1d": var1,
+            "var99_wk": var1 * np.sqrt(3), "pct_sys": pct_sys * 100, "avg_corr": avg_corr,
+            "div_ratio": div_ratio, "comp": {syms[i]: float(comp[i]) for i in range(n)}}
+
+
+def whatif(ticker, qty, side="buy"):
+    """Scenario: add (buy) or trim (sell) `qty` of `ticker` and show how portfolio risk shifts.
+    Returns before/after metrics + the candidate's standalone profile (beta, vol, correlation to
+    the existing book, post-trade risk-share). No Monte-Carlo — parametric, so it's instant."""
+    tk = (ticker or "").upper().strip()
+    qty = float(qty or 0)
+    if not tk or qty <= 0:
+        return {"error": "need a ticker and a positive quantity"}
+    book, cash = _book()
+    book = {s: d for s, d in book.items() if d["val"] >= 500}
+    if not book:
+        return {"error": "no live positions to compare against"}
+    cur_syms = list(book)
+    need = sorted(set(cur_syms + [tk]))
+    px = yf.download([s + ".NS" for s in need] + ["^NSEI"], period="1y", interval="1d",
+                     progress=False, group_by="ticker", auto_adjust=False)
+
+    def close(s):
+        try:
+            return px[s + ".NS"]["Close"].dropna()
+        except Exception:
+            return pd.Series(dtype=float)
+    cand_close = close(tk)
+    if cand_close.empty:
+        return {"error": f"no price data for {tk} (check the symbol)"}
+    cand_ltp = float(cand_close.iloc[-1])
+    cand_val = qty * cand_ltp
+
+    R = pd.DataFrame({s: np.log(close(s)).diff() for s in need})
+    R["MKT"] = np.log(close("^NSEI") if not close("^NSEI").empty else px["^NSEI"]["Close"].dropna()).diff()
+    R = R.dropna()
+    mkt = R["MKT"]; var_m = float(mkt.var())
+
+    # before = current book; after = current ± candidate
+    before = {s: {"val": book[s]["val"]} for s in cur_syms}
+    after = {s: {"val": book[s]["val"]} for s in cur_syms}
+    if side == "sell":
+        held_val = book.get(tk, {}).get("val", 0.0)
+        new_val = max(0.0, held_val - cand_val)
+        if new_val <= 500:
+            after.pop(tk, None)
+        else:
+            after[tk] = {"val": new_val}
+        if tk not in book:
+            return {"error": f"{tk} isn't in your book — nothing to trim"}
+    else:  # buy / add
+        after[tk] = {"val": book.get(tk, {}).get("val", 0.0) + cand_val}
+
+    m_before = _metrics(before, R, mkt, var_m)
+    m_after = _metrics(after, R, mkt, var_m)
+
+    # candidate standalone profile
+    cand_beta = float(np.cov(R[tk], mkt)[0, 1] / var_m)
+    cand_vol = float(R[tk].std() * 100)
+    # correlation of candidate to the *existing* book's return stream
+    w_b = np.array([before[s]["val"] for s in cur_syms]); w_b = w_b / w_b.sum()
+    book_ret = R[cur_syms].values @ w_b
+    cand_corr_book = float(np.corrcoef(R[tk].values, book_ret)[0, 1])
+    cand_share_after = m_after["comp"].get(tk, 0.0) * 100
+
+    dW = m_after["V"] - m_before["V"]
+    dBeta = m_after["beta"] - m_before["beta"]
+    dVaRwk = m_after["var99_wk"] - m_before["var99_wk"]
+    dDiv = m_after["div_ratio"] - m_before["div_ratio"]
+    dSys = m_after["pct_sys"] - m_before["pct_sys"]
+
+    # verdict
+    notes = []
+    if cand_corr_book < 0.3:
+        notes.append(f"Low correlation to your book ({cand_corr_book:.2f}) — it genuinely diversifies; it won't fall in lockstep with what you already hold.")
+    elif cand_corr_book > 0.6:
+        notes.append(f"Highly correlated to your book ({cand_corr_book:.2f}) — it moves with your existing names, so it adds exposure more than diversification.")
+    else:
+        notes.append(f"Moderate correlation to your book ({cand_corr_book:.2f}).")
+    if dBeta < -0.02:
+        notes.append(f"Pulls portfolio beta DOWN {m_before['beta']:.2f} → {m_after['beta']:.2f} — less market-geared (good if you're over-levered to Nifty).")
+    elif dBeta > 0.02:
+        notes.append(f"Pushes portfolio beta UP {m_before['beta']:.2f} → {m_after['beta']:.2f} — more market-geared.")
+    if dDiv > 0.03:
+        notes.append("Improves the diversification ratio — risk per rupee falls.")
+    elif dDiv < -0.03:
+        notes.append("Lowers the diversification ratio — concentrates risk.")
+    if side == "buy":
+        notes.append(f"Weekend 99% VaR { 'rises' if dVaRwk>0 else 'falls'} ₹{abs(dVaRwk):,.0f} → ₹{m_after['var99_wk']:,.0f} ({m_after['var99_wk']/cash*100:.0f}% of free cash ₹{cash:,.0f}).")
+        if cand_val > cash:
+            notes.append(f"⚠ Position size ₹{cand_val:,.0f} exceeds your free cash ₹{cash:,.0f} — only doable on MTF leverage.")
+
+    diversifier = cand_corr_book < 0.35 and dDiv >= 0 and dBeta <= 0.05
+    if diversifier:
+        verdict = "DIVERSIFIER — lowers risk per rupee"
+    elif dBeta > 0.05:
+        verdict = "RISK-ADDER — raises portfolio beta"
+    elif cand_corr_book > 0.6:
+        verdict = "RISK-ADDER — correlated, adds exposure"
+    else:
+        verdict = "NEUTRAL — modest effect"
+
+    return {
+        "candidate": {"sym": tk, "qty": qty, "ltp": round(cand_ltp, 2), "value": round(cand_val),
+                      "side": side, "beta": round(cand_beta, 2), "vol_pct": round(cand_vol, 1),
+                      "corr_to_book": round(cand_corr_book, 2), "risk_share_after": round(cand_share_after)},
+        "cash": round(cash), "verdict": verdict, "notes": notes,
+        "before": {"exposure": round(m_before["V"]), "beta": round(m_before["beta"], 2),
+                   "vol_day_pct": round(m_before["vol_day_pct"], 2), "var99_1d": round(m_before["var99_1d"]),
+                   "var99_wk": round(m_before["var99_wk"]), "pct_sys": round(m_before["pct_sys"]),
+                   "avg_corr": round(m_before["avg_corr"], 2), "div_ratio": round(m_before["div_ratio"], 2)},
+        "after": {"exposure": round(m_after["V"]), "beta": round(m_after["beta"], 2),
+                  "vol_day_pct": round(m_after["vol_day_pct"], 2), "var99_1d": round(m_after["var99_1d"]),
+                  "var99_wk": round(m_after["var99_wk"]), "pct_sys": round(m_after["pct_sys"]),
+                  "avg_corr": round(m_after["avg_corr"], 2), "div_ratio": round(m_after["div_ratio"], 2)},
+        "delta": {"exposure": round(dW), "beta": round(dBeta, 2), "var99_wk": round(dVaRwk),
+                  "div_ratio": round(dDiv, 2), "pct_sys": round(dSys)},
+    }
+
+
 def main():
     try:
         sys.stdout.reconfigure(encoding="utf-8")

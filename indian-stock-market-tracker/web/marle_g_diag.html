@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>System Diagnosis · Marle-G</title>
+<style>
+  :root{ --bg:#080a0e;--bg2:#0e1116;--card:#14171e;--border:rgba(255,255,255,.08);
+    --ink:#eef1f6;--muted:#9aa3b4;--dim:#646c7a;--mono:'SF Mono',ui-monospace,Consolas,monospace;
+    --saffron:#ff9933;--india-green:#138808;--green:#22c55e;--red:#ef4444;--amber:#fbbf24;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(1100px 520px at 50% -10%,rgba(255,153,51,.05),transparent 60%),var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--border);background:rgba(8,10,14,.8);backdrop-filter:blur(10px);position:sticky;top:0;z-index:10}
+  .brand{font-family:var(--mono);font-weight:800;letter-spacing:.18em;font-size:13px;display:flex;align-items:center;gap:9px}
+  .brand .mark{width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,var(--saffron),var(--india-green))}
+  .brand .w{background:linear-gradient(90deg,var(--saffron),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tabs{display:flex;gap:16px;font-family:var(--mono);font-size:11px;flex-wrap:wrap}
+  .tabs a{color:var(--dim);text-decoration:none}.tabs a.on{color:var(--saffron)}.tabs a:hover{color:var(--ink)}
+  .wrap{max-width:1080px;margin:0 auto;padding:22px 24px 70px}
+  .head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+  .head h1{font-size:20px;font-weight:800;letter-spacing:-.01em}
+  .head .sub{font-family:var(--mono);font-size:10.5px;color:var(--dim);margin-top:4px}
+  .clock{font-family:var(--mono);font-size:11px;color:var(--muted);text-align:right;line-height:1.6}
+  .clock b{color:var(--saffron)}
+  .banner{display:flex;align-items:center;gap:18px;border-radius:14px;padding:20px 22px;margin-bottom:18px;border:1px solid var(--border);background:var(--card)}
+  .banner.ok{border-left:4px solid var(--green)}
+  .banner.warn{border-left:4px solid var(--amber)}
+  .banner.fail{border-left:4px solid var(--red)}
+  .banner .big{font-size:34px;font-weight:800;letter-spacing:-.02em}
+  .banner.ok .big{color:var(--green)}.banner.warn .big{color:var(--amber)}.banner.fail .big{color:var(--red)}
+  .banner .meta{font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.7}
+  .banner .counts{margin-left:auto;display:flex;gap:10px}
+  .pill{font-family:var(--mono);font-size:11px;font-weight:800;padding:7px 13px;border-radius:9px;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:62px}
+  .pill .k{font-size:8.5px;font-weight:600;color:var(--dim);letter-spacing:.05em;text-transform:uppercase}
+  .pill.ok{background:rgba(34,197,94,.12);color:var(--green)}
+  .pill.warn{background:rgba(251,191,36,.12);color:var(--amber)}
+  .pill.fail{background:rgba(239,68,68,.12);color:var(--red)}
+  .btn{font-family:var(--mono);font-size:11px;font-weight:700;padding:9px 16px;border-radius:9px;border:1px solid var(--border);background:var(--bg2);color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+  .btn:hover{border-color:var(--saffron);color:var(--saffron)}
+  .btn.spin .ic{animation:sp .8s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .sect{margin-bottom:18px}
+  .sect h2{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-weight:700;margin:0 0 9px 2px}
+  .check{display:flex;align-items:flex-start;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:11px;padding:12px 15px;margin-bottom:8px}
+  .dot{width:11px;height:11px;border-radius:50%;margin-top:4px;flex:0 0 auto;box-shadow:0 0 0 3px rgba(255,255,255,.03)}
+  .dot.ok{background:var(--green);box-shadow:0 0 10px rgba(34,197,94,.5)}
+  .dot.warn{background:var(--amber);box-shadow:0 0 10px rgba(251,191,36,.5)}
+  .dot.fail{background:var(--red);box-shadow:0 0 10px rgba(239,68,68,.5);animation:pulse 1.4s ease-in-out infinite}
+  @keyframes pulse{50%{opacity:.4}}
+  .check .body{flex:1;min-width:0}
+  .check .name{font-weight:700;font-size:13px}
+  .check .detail{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:3px;word-break:break-word}
+  .fix{margin-top:8px;display:flex;align-items:center;gap:8px;background:#0b0d12;border:1px solid rgba(255,153,51,.22);border-radius:8px;padding:7px 10px}
+  .fix code{font-family:var(--mono);font-size:10.5px;color:var(--saffron);flex:1;word-break:break-all}
+  .fix .cp{font-family:var(--mono);font-size:9px;color:var(--dim);cursor:pointer;border:1px solid var(--border);border-radius:5px;padding:3px 8px;flex:0 0 auto}
+  .fix .cp:hover{color:var(--ink);border-color:var(--saffron)}
+  .empty{text-align:center;padding:46px;color:var(--muted);font-family:var(--mono);font-size:12px}
+  .skel{height:46px;border-radius:11px;background:linear-gradient(90deg,#11141a,#171b22,#11141a);background-size:200% 100%;animation:sh 1.3s infinite;margin-bottom:8px}
+  @keyframes sh{to{background-position:-200% 0}}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span></span></div>
+  <div class="tabs"></div>
+</div>
+
+<main class="wrap">
+  <div class="head">
+    <div>
+      <h1>System Diagnosis</h1>
+      <div class="sub" id="asof">running checks…</div>
+    </div>
+    <div class="clock" id="clock"></div>
+  </div>
+
+  <div id="banner"></div>
+  <div style="margin-bottom:18px"><button class="btn" id="rerun" onclick="run(true)"><span class="ic">⟳</span> Re-run diagnosis</button></div>
+  <div id="checks">
+    <div class="skel"></div><div class="skel"></div><div class="skel"></div><div class="skel"></div>
+  </div>
+</main>
+
+<script src="marle_g_nav.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+// NOT MG_SELF_REFRESH: nav.js calls window.podRefresh() on its 60s tick (server caches 20s).
+window.podRefresh=()=>run(false);
+
+const CATS=[
+  ['process','Processes — server · recorder · guardian'],
+  ['feed','Data feeds — Groww · yfinance · market'],
+  ['data','Data freshness'],
+  ['modules','Code health'],
+  ['route','Live route probes'],
+  ['sched','Scheduled tasks'],
+];
+
+function clocks(){
+  const now=new Date();
+  const o={weekday:'short',hour:'2-digit',minute:'2-digit',hour12:true};
+  const ist=now.toLocaleString('en-US',{timeZone:'Asia/Kolkata',...o});
+  const ct =now.toLocaleString('en-US',{timeZone:'America/Chicago',...o});
+  $('clock').innerHTML=`IST <b>${ist}</b><br>US-CT ${ct}`;
+}
+setInterval(clocks,1000); clocks();
+
+function esc(s){return (s||'').replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));}
+
+function copy(btn,txt){
+  navigator.clipboard.writeText(txt).then(()=>{const o=btn.textContent;btn.textContent='copied ✓';setTimeout(()=>btn.textContent=o,1200);}).catch(()=>{});
+}
+window._cp=copy;
+
+function checkRow(c){
+  const fix = c.fix ? `<div class="fix"><code>${esc(c.fix)}</code><span class="cp" onclick="_cp(this,this.previousElementSibling.textContent)">copy</span></div>` : '';
+  return `<div class="check">
+    <span class="dot ${c.status}"></span>
+    <div class="body">
+      <div class="name">${esc(c.name)}</div>
+      <div class="detail">${esc(c.detail)}</div>
+      ${fix}
+    </div></div>`;
+}
+
+function render(d){
+  const o=d.overall||'warn', s=d.summary||{ok:0,warn:0,fail:0};
+  $('asof').textContent=`${d.ist}  ·  market ${d.market_open?'OPEN':'closed'}  ·  ${d.checks.length} checks in ${d.elapsed_ms}ms`;
+  const verdict = o==='ok'?'ALL SYSTEMS GO':o==='warn'?'RUNNING WITH WARNINGS':'ACTION NEEDED';
+  const line = o==='ok'?'Every dependency healthy. Trade with confidence.'
+    : o==='warn'?'Pod works — some non-critical items are stale or idle (often just market-closed).'
+    : 'One or more critical dependencies are down. Fix the red items below.';
+  $('banner').innerHTML=`<div class="banner ${o}">
+    <div class="big">${o==='ok'?'✓':o==='warn'?'!':'✕'}</div>
+    <div><div style="font-weight:800;font-size:15px;margin-bottom:3px">${verdict}</div>
+      <div class="meta">${line}</div></div>
+    <div class="counts">
+      <div class="pill ok"><span>${s.ok||0}</span><span class="k">healthy</span></div>
+      <div class="pill warn"><span>${s.warn||0}</span><span class="k">warn</span></div>
+      <div class="pill fail"><span>${s.fail||0}</span><span class="k">down</span></div>
+    </div></div>`;
+
+  let html='';
+  for(const [cat,label] of CATS){
+    const rows=d.checks.filter(c=>c.cat===cat);
+    if(!rows.length) continue;
+    // sort fail -> warn -> ok within a section so problems float up
+    const rank={fail:0,warn:1,ok:2};
+    rows.sort((a,b)=>rank[a.status]-rank[b.status]);
+    html+=`<div class="sect"><h2>${label}</h2>${rows.map(checkRow).join('')}</div>`;
+  }
+  $('checks').innerHTML=html||`<div class="empty">No checks returned.</div>`;
+}
+
+async function run(manual){
+  const btn=$('rerun'); if(manual)btn.classList.add('spin');
+  try{
+    const r=await fetch('/api/diag'+(manual?('?t='+Date.now()):''));
+    const d=await r.json();
+    render(d);
+  }catch(e){
+    $('checks').innerHTML=`<div class="empty">Diagnosis endpoint unreachable — the server itself may be down.<br><br>
+      Fix: <code style="color:var(--saffron)">Start-Process python -ArgumentList 'marleg_server.py' -WindowStyle Hidden</code></div>`;
+    $('banner').innerHTML=`<div class="banner fail"><div class="big">✕</div>
+      <div><div style="font-weight:800;font-size:15px">SERVER UNREACHABLE</div>
+      <div class="meta">/api/diag did not respond. Start the Marle-G server, then re-run.</div></div></div>`;
+  }finally{ if(manual)setTimeout(()=>btn.classList.remove('spin'),600); }
+}
+run(false);
+</script>
+</body>
+</html>
