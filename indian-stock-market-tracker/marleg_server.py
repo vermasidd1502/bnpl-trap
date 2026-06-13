@@ -35,6 +35,8 @@ import marleg_winners            # live winners/losers board (book marked to liv
 import marleg_overextension      # don't-chase guard (room vs ceiling, 52w-high golden number)
 import marleg_weekend            # weekend-carry edge (Friday-momentum -> Monday) + live scan
 import marleg_var                # portfolio VaR + Monte-Carlo + CAPM beta (FIN-537 risk engine)
+import marleg_options_monitor as mom   # live options monitor: depth/OI/IV/Greeks + constructed chain
+import marleg_mf                        # mutual-fund universe: search + category/sector classification
 import marleg_regime            # dispersion/correlation regime dial (scenario-alpha gate)
 import marleg_thesis            # structural grey-swan scenario book (Thesis Ledger)
 import marleg_smartmoney         # institutional-flow / smart-money (shareholding deltas)
@@ -668,6 +670,20 @@ def api_macro():
         return out
     return jsonify(cached("macro", do, 120))
 
+@app.route("/api/mf_search")
+def api_mf_search():
+    q = request.args.get("q") or ""
+    return jsonify(cached("mf_search:" + q.lower(), lambda: marleg_mf.search(q), 300))
+
+@app.route("/api/mf_directory")
+def api_mf_directory():
+    return jsonify(cached("mf_directory", marleg_mf.directory, 21600))   # classify whole universe -> cache 6h
+
+@app.route("/api/mf_category")
+def api_mf_category():
+    bucket = request.args.get("bucket") or ""
+    return jsonify(cached("mf_cat:" + bucket, lambda: marleg_mf.category(bucket), 21600))
+
 @app.route("/api/mf/<code>")
 def api_mf(code):
     def do():
@@ -1198,6 +1214,23 @@ def api_weekend_stock(ticker):
 @app.route("/api/portfolio_var")
 def api_portfolio_var():
     return jsonify(cached("portfolio_var", lambda: marleg_var.portfolio_risk(), 300))
+
+@app.route("/api/has_options/<tk>")
+def api_has_options(tk):
+    return jsonify({"sym": tk.upper(), "has_options": mom.has_options(tk)})
+
+@app.route("/api/option_chain/<underlying>")
+def api_option_chain(underlying):
+    n = int(request.args.get("n") or 5)
+    key = f"opt_chain:{underlying.upper()}:{n}"
+    return jsonify(cached(key, lambda: mom.chain(underlying, n=n), 30))
+
+@app.route("/api/option_monitor/<sym>")
+def api_option_monitor(sym):
+    side = (request.args.get("side") or "long").lower()
+    qty = int(request.args.get("qty") or 0)
+    key = f"opt_mon:{sym.upper()}:{side}:{qty}"
+    return jsonify(cached(key, lambda: mom.analyze(sym, side=side, qty=qty), 20))
 
 @app.route("/api/whatif")
 def api_whatif():
