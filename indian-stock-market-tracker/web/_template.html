@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- ▸ CHANGE: page title -->
+<title>New Page · Marle-G</title>
+<!-- Shared design system. DO NOT re-declare :root tokens — they all live in marle_g.css. -->
+<link rel="stylesheet" href="marle_g.css">
+</head>
+<body>
+
+<!-- ▸ Top nav. marle_g_nav.js fills the tabs and auto-injects the Refresh + ▶guide buttons.
+        Just keep this block exactly as-is. -->
+<div class="nav">
+  <div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span></span></div>
+  <div class="tabs"></div>
+</div>
+
+<main class="wrap">
+  <div class="head">
+    <div>
+      <!-- ▸ CHANGE: page heading + one-line subtitle -->
+      <h1>New Page</h1>
+      <div class="sub" id="sub">loading…</div>
+    </div>
+    <div class="clock" id="clock"></div>
+  </div>
+
+  <!-- ▸ OPTIONAL: an explainer the user can expand -->
+  <details><summary>ℹ️ What this page shows</summary>
+    <p>One or two sentences explaining the page and how to read it.</p>
+  </details>
+
+  <!-- ▸ KPI tiles. Fill #cards from your data in load(). -->
+  <div class="cards" id="cards">
+    <div class="skel"></div><div class="skel"></div><div class="skel"></div>
+  </div>
+
+  <!-- ▸ A content card with a data table. Fill #tbl in load(). -->
+  <div class="card">
+    <div class="sh">Section title</div>
+    <div id="tbl"></div>
+  </div>
+
+  <!-- ▸ A notes/suggestions card. -->
+  <div class="card">
+    <div class="sh">⚑ Notes</div>
+    <div id="notes"></div>
+  </div>
+</main>
+
+<!-- nav.js MUST load (it brings the design system's nav, refresh button, and the ▶guide).
+     Include marleg_stockmodal.js too if this page opens stock popups. -->
+<script src="marle_g_nav.js"></script>
+<script>
+/* ---------- helpers (the shared vocabulary every page uses) ---------- */
+const $=id=>document.getElementById(id);
+const inr=n=>(n<0?'−₹':'₹')+Math.abs(Math.round(n)).toLocaleString('en-IN');
+const pct=(x,d=2)=>(x>0?'+':'')+(+x).toFixed(d)+'%';
+const cls=x=>x>0?'pos':x<0?'neg':'neu';
+const esc=s=>(s||'').replace(/[<>]/g,'');
+
+/* dual IST · US-CT clock — keep on every page (the user trades NSE from US Central) */
+function clocks(){
+  const now=new Date(),o={weekday:'short',hour:'2-digit',minute:'2-digit',hour12:true};
+  $('clock').innerHTML='IST <b>'+now.toLocaleString('en-US',{timeZone:'Asia/Kolkata',...o})+
+    '</b><br>US-CT '+now.toLocaleString('en-US',{timeZone:'America/Chicago',...o});
+}
+setInterval(clocks,1000);clocks();
+
+/* component builders — compose pages from these instead of hand-writing markup */
+function statCard(name,value,sub,color,hero){
+  return `<div class="mc ${hero?'hero':''}"><div class="n">${name}</div>
+    <div class="v" ${color?`style="color:${color}"`:''}>${value}</div><div class="s">${sub||''}</div></div>`;
+}
+function dataTable(cols,rows){ // cols:[labels]  rows:[[cells...]]
+  return `<table class="h"><thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead>
+    <tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+}
+
+/* ---------- live data ---------- */
+/* podRefresh() is what the universal Refresh button calls (soft reload, no full page reload). */
+window.podRefresh=load;
+async function load(){
+  try{
+    // ▸ CHANGE: point at your endpoint. The Flask server (marleg_server.py) serves /api/*.
+    const r=await (await fetch('/api/YOUR_ENDPOINT')).json();
+    if(r.error){ $('sub').textContent=r.error; return; }
+    $('sub').textContent='live · '+(r.asof||'');
+
+    // ▸ CHANGE: map your data into the components.
+    $('cards').innerHTML=[
+      statCard('Metric A', r.a ?? '—', 'context', 'var(--ink)', true),
+      statCard('Metric B', r.b ?? '—', 'context'),
+      statCard('Metric C', r.c ?? '—', 'context'),
+    ].join('');
+
+    $('tbl').innerHTML=dataTable(
+      ['name','value','change'],
+      (r.rows||[]).map(x=>[x.name, x.value, `<span class="${cls(x.chg)}">${pct(x.chg)}</span>`])
+    );
+
+    $('notes').innerHTML=(r.notes||[]).map(n=>`<div class="sug">• ${esc(n)}</div>`).join('')
+      || '<div class="sug neu">no notes</div>';
+  }catch(e){ $('sub').textContent='backend offline?'; }
+}
+load();
+setInterval(load,60000);   // or set window.MG_SELF_REFRESH=true and poll faster
+</script>
+</body>
+</html>
