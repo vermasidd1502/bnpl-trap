@@ -14,6 +14,7 @@ import sys, warnings
 warnings.filterwarnings("ignore")
 import numpy as np, pandas as pd, yfinance as yf
 import groww_client as gc
+import marleg_winners as mw     # live book for the Monday board + Friday candidate seeding (was only imported locally -> NameError -> empty board)
 
 
 def _load(tk, years=4):

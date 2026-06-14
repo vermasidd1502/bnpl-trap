@@ -95,7 +95,7 @@ window.MG_SELF_REFRESH=true;   // self-manages refresh
 const $=id=>document.getElementById(id);
 const esc=s=>(s||'').replace(/[<>]/g,'');
 function openSym(s){try{window.openStock&&window.openStock(s);}catch(e){}}
-let MODE='friday';
+let MODE=(new URLSearchParams(location.search).get('mode')==='monday')?'monday':'friday';
 function clocks(){const now=new Date(),o={weekday:'short',hour:'2-digit',minute:'2-digit',hour12:true};
   $('clock').innerHTML='IST <b>'+now.toLocaleString('en-US',{timeZone:'Asia/Kolkata',...o})+'</b><br>US-CT '+now.toLocaleString('en-US',{timeZone:'America/Chicago',...o});}
 setInterval(clocks,1000);clocks();
@@ -175,7 +175,7 @@ function renderStock(r){
 }
 $('q').addEventListener('keydown',ev=>{if(ev.key==='Enter')searchStock();});
 
-load();
+setMode(MODE);   // honor ?mode=monday|friday on open; sets buttons + subtitle + loads
 setInterval(load, 300000);   // refresh every 5 min (heavy board, server-cached)
 </script>
 </body>
