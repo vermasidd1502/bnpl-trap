@@ -326,9 +326,10 @@ def api_volume_pod():
     except Exception:
         return jsonify({"error": "no volume cache yet — run: python marleg_volume_scan.py", "sectors": []})
 
-def _gated_live():
-    """Gated-longs scan cache + LIVE price overlay (target% recomputed vs live)."""
-    with open(os.path.join(HERE, "marleg_gated_cache.json"), encoding="utf-8") as f:
+def _gated_live(fname="marleg_gated_cache.json", record_tenure=True):
+    """Gated-longs scan cache + LIVE price overlay (target% recomputed vs live).
+    fname picks the daily (structural) vs hourly (intraday) cache; tenure is daily-only."""
+    with open(os.path.join(HERE, fname), encoding="utf-8") as f:
         d = json.load(f)
     try:
         import yfinance as yf
@@ -352,26 +353,30 @@ def _gated_live():
             d["asof"] = (d.get("asof") or "") + "  ·  live px " + ist.strftime("%H:%M")
     except Exception:
         pass
-    # daily-persist the gated list + stamp each pick with its tenure (streak / on-since)
-    try:
-        import marleg_gated_history as gh
-        gh.annotate(d.get("picks", []), sym_key="s")
-    except Exception:
-        pass
+    # daily-persist the gated list + stamp each pick with its tenure (streak / on-since) — daily list only
+    if record_tenure:
+        try:
+            import marleg_gated_history as gh
+            gh.annotate(d.get("picks", []), sym_key="s")
+        except Exception:
+            pass
     return d
 
 
 @app.route("/api/gated")
 def api_gated():
+    mode = (request.args.get("mode") or "daily").lower()
+    fname = "marleg_gated_hourly.json" if mode == "hourly" else "marleg_gated_cache.json"
+    key = "gated_hourly" if mode == "hourly" else "gated_live"
     try:
-        return jsonify(cached("gated_live", _gated_live, 300))
+        return jsonify(cached(key, lambda: _gated_live(fname, record_tenure=(mode != "hourly")), 300))
     except Exception:
         pass
     try:
-        with open(os.path.join(HERE, "marleg_gated_cache.json"), encoding="utf-8") as f:
+        with open(os.path.join(HERE, fname), encoding="utf-8") as f:
             return jsonify(json.load(f))
     except Exception:
-        return jsonify({"error": "no gated screen yet — run: python marleg_gated_scan.py", "picks": []})
+        return jsonify({"error": f"no {mode} gated screen yet — run: python marleg_gated_scan.py", "picks": []})
 
 @app.route("/api/volume_pod/add", methods=["POST"])
 def api_volume_pod_add():
@@ -1553,11 +1558,35 @@ def _daily_scan_refresh_loop():
         time.sleep(3 * 3600)
 
 
+def _gated_hourly_refresh_loop():
+    """Full gated scan into a SEPARATE hourly cache (marleg_gated_hourly.json), at most once an
+    hour and only during NSE hours. The user asked for the full scan at both cadences; keeping it
+    off the daily cache means the daily list's tenure (a day-over-day concept) stays clean."""
+    import datetime as _dt, subprocess as _sp, sys as _sys
+    last = 0.0
+    while True:
+        try:
+            ist = _dt.datetime.utcnow() + _dt.timedelta(hours=5, minutes=30)
+            mkt = ist.weekday() < 5 and 555 <= ist.hour * 60 + ist.minute <= 930   # 09:15..15:30 IST
+            if mkt and (time.time() - last) >= 3600:
+                print("[hourly-gated] running full gated scan -> marleg_gated_hourly.json ...")
+                _sp.run([_sys.executable, os.path.join(HERE, "marleg_gated_scan.py"), "--out", "marleg_gated_hourly.json"],
+                        cwd=HERE, timeout=1800)
+                last = time.time()
+                with _LOCK:
+                    _CACHE.pop("gated_hourly", None)
+                print("[hourly-gated] done.")
+        except Exception as e:
+            print("[hourly-gated] error:", e)
+        time.sleep(600)   # check every 10 min; fires at most hourly during market hours
+
+
 if __name__ == "__main__":
     # MARLEG_HOST/MARLEG_PORT let the Pod Suite launcher (and anything else) relocate us
     _host = os.environ.get("MARLEG_HOST", "127.0.0.1")
     _port = int(os.environ.get("MARLEG_PORT", "8777"))
     import sys
-    threading.Thread(target=_daily_scan_refresh_loop, daemon=True).start()   # auto-keep lists fresh daily
+    threading.Thread(target=_daily_scan_refresh_loop, daemon=True).start()    # auto-keep lists fresh daily
+    threading.Thread(target=_gated_hourly_refresh_loop, daemon=True).start()  # full gated scan hourly (market hours)
     print(f"Marle-G surveillance backend -> http://{_host}:{_port}/")
     app.run(host=_host, port=_port, threaded=True)

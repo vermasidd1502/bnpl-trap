@@ -194,22 +194,36 @@ function gatedTenure(p){
          `<span style="color:var(--dim);font-size:9.5px"> · since ${p.on_since||'—'}</span>${tot}`;
 }
 function toggleGated(){ const f=$('gatedpanel'); const sh=f.style.display==='none'; f.style.display=sh?'block':'none'; if(sh) loadGated(); }
+let GATEDMODE='daily';
+function setGatedMode(m){ GATEDMODE=m; loadGated(); }
+function gtogBtn(m,label){ const on=GATEDMODE===m;
+  return `<button onclick="setGatedMode('${m}')" style="font-family:var(--mono);font-size:11px;font-weight:700;padding:6px 12px;border-radius:8px;cursor:pointer;border:1px solid ${on?'var(--green)':'var(--border)'};background:${on?'var(--green)':'var(--bg2)'};color:${on?'#0a0b0f':'var(--muted)'}">${label}</button>`; }
 async function loadGated(){
-  const f=$('gatedpanel'); f.innerHTML='<span style="color:var(--dim);font-family:var(--mono);font-size:12px">⟳ loading gated longs…</span>';
+  const f=$('gatedpanel');
+  const toggle=`<div style="display:flex;gap:6px;margin-bottom:10px">${gtogBtn('daily','📅 Daily · swing')}${gtogBtn('hourly','⚡ Hourly · intraday')}</div>`;
+  f.innerHTML=toggle+'<span style="color:var(--dim);font-family:var(--mono);font-size:12px">⟳ loading '+GATEDMODE+' gated list…</span>';
   try{
-    const d=await (await fetch('/api/gated')).json();
-    if(d.error){ f.innerHTML='<span style="color:var(--dim)">'+d.error+'</span>'; return; }
-    f.innerHTML=`<div class="sh" style="color:var(--green)">🎯 GATED LONGS · ${d.n}/${d.universe} pass all 3 gates · leading sector + U/D&gt;MA&rising + price&gt;0.618 fib · as of ${d.asof||''}</div>`+
-      `<div style="font-family:var(--mono);font-size:9.5px;color:var(--dim);margin:-4px 0 8px">🔥 <b>on list</b> = consecutive days the name has re-qualified (snapshotted daily). A multi-day streak is a stronger, stickier signal than a one-day flash.</div>`+
-      (d.picks&&d.picks.length?`<table><thead><tr><th>Symbol</th><th>On list</th><th>Sector</th><th>U/D vs MA</th><th>Fib</th><th>Price</th><th>Target</th></tr></thead><tbody>`+
+    const d=await (await fetch('/api/gated?mode='+GATEDMODE)).json();
+    if(d.error){ f.innerHTML=toggle+'<div style="color:var(--dim);font-family:var(--mono);font-size:12px;padding:8px">'+d.error+(GATEDMODE==='hourly'?' — the hourly scan runs once an hour during market hours; check back shortly.':'')+'</div>'; return; }
+    const note = GATEDMODE==='daily'
+      ? `<div style="font-family:var(--mono);font-size:9.5px;color:var(--dim);margin:-4px 0 8px">🔥 <b>on list</b> = consecutive days re-qualified (daily snapshot). A multi-day streak is stickier than a one-day flash.</div>`
+      : `<div style="font-family:var(--mono);font-size:9.5px;color:var(--dim);margin:-4px 0 8px">⚡ intraday view — recomputed hourly on the latest bar. Day-streak tenure lives on the Daily list.</div>`;
+    const longs = (d.picks&&d.picks.length)?`<table><thead><tr><th>Symbol</th><th>On list</th><th>Sector</th><th>U/D vs MA</th><th>Fib</th><th>Price</th><th>Target</th></tr></thead><tbody>`+
         d.picks.map(p=>`<tr class="stk" onclick="openStock('${p.s}')"><td><span class="sym">${p.s}</span><span class="cmp">${p.n||''}</span><span class="edit" title="chart" onclick="event.stopPropagation();location.href='marle_g_chart.html?q=${p.s}'">📈</span></td>
           <td style="text-align:left">${gatedTenure(p)}</td>
           <td style="text-align:left;color:var(--muted)">${p.sector}</td>
           <td><b style="color:var(--green)">${p.ud}</b> &gt; ${p.ud_ma}</td><td>${p.fib}</td>
           <td>₹${(p.price||0).toLocaleString('en-IN')}</td>
           <td><b style="color:var(--green)">₹${(p.target||0).toLocaleString('en-IN')}</b> (+${p.tgtpct}%)</td></tr>`).join('')+`</tbody></table>`
-        :'<div style="color:var(--muted);padding:12px">No stocks pass all gates right now — the gates are strict by design.</div>');
-  }catch(e){ f.innerHTML='<span style="color:var(--dim)">unavailable</span>'; }
+        :'<div style="color:var(--muted);padding:12px">No stocks pass all gates right now — the gates are strict by design.</div>';
+    const weak = (d.shorts&&d.shorts.length)?
+      `<div class="sh" style="color:var(--red);margin-top:18px">⚠️ WEAKEST CONFLUENCE · ${d.shorts.length} names · AVOID longs / hedge ref</div>`+
+      `<div style="font-family:var(--mono);font-size:9.5px;color:var(--dim);margin:-4px 0 8px">Inverse gate (lagging sector + U/D falling + broken below fib). Backtested: <b style="color:var(--red)">shorting these LOST ~0.8–1.1% net</b> — they mean-revert up. Names to <b>avoid going long / hedge against</b>, NOT a short signal.</div>`+
+      `<table><thead><tr><th>Symbol</th><th>Sector</th><th>U/D vs MA</th><th>Fib</th><th>Price</th></tr></thead><tbody>`+
+      d.shorts.slice(0,20).map(p=>`<tr class="stk" onclick="openStock('${p.s}')"><td><span class="sym">${p.s}</span><span class="cmp">${p.n||''}</span></td><td style="text-align:left;color:var(--muted)">${p.sector}</td><td><b style="color:var(--red)">${p.ud}</b> &lt; ${p.ud_ma}</td><td>${p.fib}</td><td>₹${(p.price||0).toLocaleString('en-IN')}</td></tr>`).join('')+`</tbody></table>`
+      :'';
+    f.innerHTML=toggle+`<div class="sh" style="color:var(--green)">🎯 GATED LONGS · ${GATEDMODE} · ${d.n}/${d.universe} pass all 3 gates · as of ${d.asof||''}</div>`+note+longs+weak;
+  }catch(e){ f.innerHTML=toggle+'<span style="color:var(--dim)">unavailable</span>'; }
 }
 window.MG_SELF_REFRESH = true;   // self-refreshes every 5 min (below) — nav.js skips its 60s full reload
 load();

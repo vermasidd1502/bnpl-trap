@@ -6,7 +6,7 @@ only when ALL gates fire at the latest bar:
   3. FIBONACCI    : price above the 0.618 retracement of its 120-day range
 Writes marleg_gated_cache.json (served by /api/gated).
 """
-import json, os, time
+import json, os, sys, time
 import numpy as np
 import pandas as pd
 import yfinance as yf
@@ -20,6 +20,7 @@ U = mvs.load_universe()                             # full Groww NSE-equity univ
 
 
 def main():
+    out_path = os.path.join(HERE, sys.argv[sys.argv.index("--out") + 1]) if "--out" in sys.argv else OUT
     print(f"downloading {len(U)} symbols (1y)...")
     data = yf.download([s + ".NS" for s in U], period="1y", interval="1d",
                        group_by="ticker", progress=False, threads=True)
@@ -71,11 +72,31 @@ def main():
                       "price": round(price, 2), "target": round(price + 2 * atr, 1),
                       "tgtpct": round(2 * atr / price * 100, 1), "stop": round(price - atr, 1)})
     picks.sort(key=lambda x: -x["ud"])
+    # WEAKEST CONFLUENCE (inverse gate): lagging sector + U/D < MA & falling + price < 0.382 fib.
+    # Backtested (marleg_short_gate_study) as NO short edge — these mean-revert UP, shorting them
+    # loses ~0.8-1.1% net of cost. Surfaced as AVOID-on-longs / hedge reference, NOT a short signal.
+    shorts = []
+    for s in close.columns:
+        sec = secmap[s]
+        if not (sec_rank.get(sec, 1) >= 0.60):
+            continue
+        if not (ud_now[s] < ud_ma[s] and ud_now[s] < ud_10[s]):
+            continue
+        if not (fibpos[s] < 0.382):
+            continue
+        shorts.append({"s": s, "n": NAMES.get(s, s), "sector": sec,
+                       "ud": round(float(ud_now[s]), 2), "ud_ma": round(float(ud_ma[s]), 2),
+                       "fib": round(float(fibpos[s]), 2),
+                       "sec_rank": round(float(sec_rank.get(sec, 1)) * 100),
+                       "price": round(float(close[s].iloc[-1]), 2)})
+    shorts.sort(key=lambda x: x["ud"])        # weakest (lowest U/D) first
     from datetime import datetime, timezone, timedelta
     ist = datetime.now(timezone(timedelta(hours=5, minutes=30))).strftime("%Y-%m-%d %H:%M IST")  # true IST (machine is US-CT)
-    json.dump({"asof": ist, "n": len(picks),
-               "universe": close.shape[1], "picks": picks}, open(OUT, "w", encoding="utf-8"), ensure_ascii=False)
-    print(f"gated longs: {len(picks)} / {close.shape[1]}  ->  {OUT}")
+    json.dump({"asof": ist, "n": len(picks), "n_weak": len(shorts),
+               "universe": close.shape[1], "picks": picks, "shorts": shorts},
+              open(out_path, "w", encoding="utf-8"), ensure_ascii=False)
+    print(f"gated longs: {len(picks)} / {close.shape[1]}  ->  {out_path}")
+    print(f"weakest/avoid: {len(shorts)} names")
     for p in picks[:12]:
         print(f"  {p['s']:<12} {p['sector']:<26} U/D {p['ud']}>{p['ud_ma']}  fib {p['fib']}  -> tgt {p['target']} (+{p['tgtpct']}%)")
 

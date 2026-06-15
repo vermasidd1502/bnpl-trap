@@ -37,3 +37,12 @@ marleg_gated_history.json
 
 # daily EOD-scan refresh lockfile (runtime)
 marleg_eod_running.lock
+
+# fib study output (research artifact, regenerable)
+marleg_fib_study.json
+
+# short-gate study output (research artifact, regenerable)
+marleg_short_gate_study.json
+
+# hourly gated cache (runtime, regenerated each hour during market hours)
+marleg_gated_hourly.json
