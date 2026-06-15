@@ -683,6 +683,17 @@ def api_macro():
         return out
     return jsonify(cached("macro", do, 120))
 
+@app.route("/api/fundamentals_cache")
+def api_fundamentals_cache():
+    """Compact precomputed fundamentals {sym: {q,pe,roe,growth,cov}} for the volume pod (batch-built)."""
+    def do():
+        try:
+            with open(os.path.join(HERE, "marleg_fundamentals_cache.json"), encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return {}
+    return jsonify(cached("fund_cache", do, 600))
+
 @app.route("/api/mf_search")
 def api_mf_search():
     q = request.args.get("q") or ""

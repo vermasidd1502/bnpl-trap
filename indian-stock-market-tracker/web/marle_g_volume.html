@@ -107,10 +107,18 @@ let DATA={sectors:[]}, SORT='ud', Q='';
 const udcolor=u=>u>=1.5?'var(--green)':u<=0.7?'var(--red)':'var(--amber)';
 const cls=x=>x>0?'pos':x<0?'neg':'neu';
 const pct=x=>(x>0?'+':'')+(+x).toFixed(2)+'%';
+let FUND={};
+function fundCell(sym){
+  const f=FUND[sym]; if(!f||!('q' in f)) return '<span style="color:var(--dim)">—</span>';
+  const qc=f.q>=70?'var(--green)':f.q>=45?'var(--amber)':'var(--red)';
+  return `<span style="font-size:10px"><b style="color:${qc}">Q${f.q==null?'—':f.q}</b> · PE ${f.pe==null?'—':f.pe} · ROE ${f.roe==null?'—':f.roe+'%'}</span>`;
+}
 
 async function load(){
   try{const r=await fetch('/api/volume_pod');DATA=await r.json();}catch(e){DATA={sectors:[]};}
-  $('sub').textContent=DATA.error?DATA.error:`${DATA.universe||0} stocks · ${(DATA.sectors||[]).length} sectors · as of ${DATA.asof||'—'}`;
+  try{FUND=await (await fetch('/api/fundamentals_cache')).json()||{};}catch(e){FUND={};}
+  const _fn=Object.values(FUND).filter(v=>v&&'q' in v).length;
+  $('sub').textContent=DATA.error?DATA.error:`${DATA.universe||0} stocks · ${(DATA.sectors||[]).length} sectors · fundamentals cached ${_fn} · as of ${DATA.asof||'—'}`;
   render();
 }
 function setSort(s){SORT=s;$('byud').classList.toggle('on',s==='ud');$('byrvol').classList.toggle('on',s==='rvol');render();}
@@ -131,13 +139,14 @@ function render(){
     const inds=Object.entries(byInd).sort((a,b)=>b[1].length-a[1].length);
     const rows=inds.map(([ind,list])=>`
       <div class="ind">${ind} · ${list.length}</div>
-      <table><thead><tr><th>Symbol</th><th>U/D</th><th>RVOL</th><th>Chg</th><th>Price</th><th>Bias · target</th></tr></thead><tbody>
+      <table><thead><tr><th>Symbol</th><th>U/D</th><th>RVOL</th><th>Chg</th><th>Price</th><th>Q·PE·ROE</th><th>Bias · target</th></tr></thead><tbody>
       ${list.map(s=>`<tr class="stk" onclick="openStock('${s.s}')">
         <td><span class="sym">${s.s}</span><span class="cmp">${s.n||''}</span><span class="edit" title="open interactive chart" onclick="event.stopPropagation();location.href='marle_g_chart.html?q=${s.s}'">📈</span><span class="edit" title="edit sector/industry" onclick="event.stopPropagation();editStock('${s.s}','${sec.sector}','${(s.industry||'').replace(/'/g,'')}')">✎</span></td>
         <td><span class="udcell"><span class="t"><span style="width:${Math.max(4,Math.min(100,s.ud/3*100))}%;background:${udcolor(s.ud)}"></span></span><b style="color:${udcolor(s.ud)}">${s.ud}</b></span></td>
         <td>${s.rvol==null?'—':s.rvol+'×'}</td>
         <td class="${cls(s.chg)}">${pct(s.chg)}</td>
         <td>₹${(s.price||0).toLocaleString('en-IN')}</td>
+        <td>${fundCell(s.s)}</td>
         <td><span class="vb ${s.verdict||'FLAT'}">${s.verdict||'—'}</span>${s.target?`<div class="tgt">→ ₹${s.target.toLocaleString('en-IN')} (${s.tgtpct>0?'+':''}${s.tgtpct}%)</div>`:''}</td></tr>`).join('')}
       </tbody></table>`).join('');
     return `<div class="sector${openAll||i===0?' open':''}">

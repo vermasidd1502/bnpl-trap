@@ -117,6 +117,33 @@ EDGES = [
     ("gas_discovery", "EPC & Infrastructure", +0.45, "field development + pipeline capex"),
     ("gas_discovery", "Oil & Gas - Integrated", +0.20, "domestic feedstock optionality"),
     ("gas_discovery", "Refiner & OMC", +0.20, "lower import dependence eases under-recovery risk"),
+    # ---- PHARMA / HEALTHCARE value chain (independent event family) ----------------
+    # USFDA action (warning letters / import alerts): bad for US-facing plants
+    ("usfda_action", "Pharma - Formulations", -0.50, "US-facing plants: import alerts + remediation cost"),
+    ("usfda_action", "Drug Manufacturers - Specialty & Generic", -0.45, "US approvals / supply at risk"),
+    ("usfda_action", "Pharma - CDMO/API", -0.20, "compliance overhang on contract sites"),
+    # China API / KSM supply shock: domestic API makers gain, formulators' input cost up
+    ("api_china_supply", "Pharma - CDMO/API", +0.60, "domestic API/KSM pricing power + import-substitution"),
+    ("api_china_supply", "Pharma - Formulations", -0.35, "API input cost up"),
+    ("api_china_supply", "Drug Manufacturers - Specialty & Generic", -0.20, "raw-material cost up"),
+    ("api_china_supply", "Agrochemicals / Pesticides", +0.25, "shared chem intermediates — domestic gain"),
+    # drug price control (NLEM / DPCO expansion): pricing pressure across the chain
+    ("drug_price_control", "Pharma - Formulations", -0.45, "price caps on branded/essential drugs"),
+    ("drug_price_control", "Drug Manufacturers - Specialty & Generic", -0.30, "domestic price ceilings"),
+    ("drug_price_control", "Hospitals", -0.18, "device/consumable margin caps (stents/implants)"),
+    ("drug_price_control", "Pharmaceutical Retailers", -0.22, "retail margin caps"),
+    # US generic price erosion (the classic export headwind)
+    ("us_generic_pricing", "Pharma - Formulations", +0.55, "US generic realisations (erosion = down)"),
+    ("us_generic_pricing", "Drug Manufacturers - Specialty & Generic", +0.50, "US generic pricing"),
+    # patent cliff (a big drug goes off-patent): Indian generics opportunity
+    ("patent_cliff", "Drug Manufacturers - Specialty & Generic", +0.50, "first-to-file / gDrug revenue"),
+    ("patent_cliff", "Pharma - Formulations", +0.35, "generic launch upside"),
+    ("patent_cliff", "Pharma - CDMO/API", +0.30, "API supply for the new generic"),
+    # intra-chain (industry -> industry)
+    ("Pharma - Formulations", "Pharma - CDMO/API", +0.35, "formulation demand pulls API/CDMO"),
+    ("Hospitals", "Diagnostics", +0.30, "hospital footfall drives diagnostics"),
+    ("Hospitals", "Medical Devices", +0.25, "procedure volumes drive device demand"),
+    ("Hospitals", "Healthcare Distribution", +0.20, "drug + consumable throughput"),
 ]
 
 # ----- events: which factors/industries get the initial (tier-1) shock ----------
@@ -161,6 +188,27 @@ EVENTS = {
     "infra_push": {
         "label": "Govt capex / infra push (budget)",
         "seeds": [("infra_capex", +1.0)],
+    },
+    # ---- PHARMA: independent event family ----
+    "pharma_usfda": {
+        "label": "USFDA crackdown / import-alert wave on Indian pharma — US-facing formulators hit",
+        "seeds": [("usfda_action", +1.0)],
+    },
+    "pharma_api_china": {
+        "label": "China API/KSM supply shock — domestic API makers gain, formulators' input cost up",
+        "seeds": [("api_china_supply", +1.0)],
+    },
+    "pharma_price_control": {
+        "label": "Drug price control expands (NLEM/DPCO) — pricing pressure across pharma",
+        "seeds": [("drug_price_control", +1.0)],
+    },
+    "pharma_us_erosion": {
+        "label": "US generic price erosion deepens — export realisations fall",
+        "seeds": [("us_generic_pricing", -1.0)],
+    },
+    "pharma_patent_cliff": {
+        "label": "Major patent cliff — Indian generics opportunity (first-to-file)",
+        "seeds": [("patent_cliff", +1.0)],
     },
 }
 
