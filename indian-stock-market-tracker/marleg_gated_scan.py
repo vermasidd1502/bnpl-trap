@@ -26,23 +26,19 @@ U = mvs.load_universe()                             # full Groww NSE-equity univ
 
 def main():
     out_path = os.path.join(HERE, sys.argv[sys.argv.index("--out") + 1]) if "--out" in sys.argv else OUT
-    print(f"downloading {len(U)} symbols (1y)...")
-    data = yf.download([s + ".NS" for s in U], period="1y", interval="1d",
-                       group_by="ticker", progress=False, threads=True)
-    close, volume, high, low = {}, {}, {}, {}
-    for s in U:
-        t = s + ".NS"
-        try:
-            c = data[t]["Close"].dropna()
-            if len(c) > 130:
-                close[s] = c; volume[s] = data[t]["Volume"]; high[s] = data[t]["High"]; low[s] = data[t]["Low"]
-        except Exception:
-            pass
-    close = pd.DataFrame(close)
-    volume = pd.DataFrame(volume).reindex(close.index)
-    print(f"universe with data: {close.shape[1]} stocks")
-    if close.shape[1] < 200:        # yfinance throttled this run — do NOT clobber good caches with thin data
-        print(f"[throttled] only {close.shape[1]} names with data. Keeping prior caches, exiting without overwrite.")
+    import marleg_data as md
+    # liquidity-bias the universe so the Groww fallback (capped) picks liquid names first
+    try:
+        tax = set(json.load(open(os.path.join(HERE, "marleg_industry_taxonomy.json"), encoding="utf-8")).get("by_symbol", {}))
+        U2 = [s for s in U if s in tax] + [s for s in U if s not in tax]
+    except Exception:
+        U2 = U
+    print(f"loading {len(U2)} symbols (1y) via marleg_data (groww/yfinance auto-switch)...")
+    panel = md.daily_panel(U2, period="1y")
+    close, volume, high, low = panel["close"], panel["volume"], panel["high"], panel["low"]
+    print(f"universe with data: {close.shape[1]} stocks (source: {panel['source']})")
+    if close.shape[1] < 60:         # even the Groww fallback failed — don't clobber good caches
+        print(f"[no data] only {close.shape[1]} names. Keeping prior caches, exiting without overwrite.")
         return
 
     # GATE 1 — granular INDUSTRY relative strength (replaces the old coarse sector gate).
