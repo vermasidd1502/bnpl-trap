@@ -96,9 +96,20 @@ def industry_table(close, volume=None):
             uu = float(np.nansum([upv.get(s, 0.0) for s in mm]))
             dd = float(np.nansum([dnv.get(s, 0.0) for s in mm]))
             tilt = round(uu / dd, 2) if dd else None
+        # per-stock member detail for the drill-down (symbol, name, 20d, U/D, above 50DMA)
+        md = []
+        for s in mm:
+            ud_s = None
+            if volume is not None:
+                dv = float(dnv.get(s, 0.0))
+                ud_s = round(float(upv.get(s, 0.0)) / dv, 2) if dv else None
+            md.append({"s": s, "n": (bysym.get(s) or {}).get("name") or s,
+                       "ret20": round(float(ret20[s]) * 100, 1), "ud": ud_s, "up": bool(above.get(s, False))})
+        md.sort(key=lambda x: -(x["ret20"] if x["ret20"] is not None else -999))
         rows.append({"group": g, "macro": group_macro.get(g, g), "kind": kind.get(g, "?"), "n": len(mm),
                      "ret20": round(r20 * 100, 2), "ret50": round(r50 * 100, 2) if r50 is not None else None,
-                     "breadth": round(brd * 100), "rs": round((r20 - mkt20) * 100, 2), "udtilt": tilt})
+                     "breadth": round(brd * 100), "rs": round((r20 - mkt20) * 100, 2), "udtilt": tilt,
+                     "members": md})
 
     df = pd.DataFrame(rows)
     if df.empty:

@@ -69,6 +69,29 @@
   .empty{text-align:center;padding:50px;color:var(--muted);font-family:var(--mono);font-size:12px}
   .skel{height:118px;border-radius:12px;background:linear-gradient(90deg,#11141a,#171b22,#11141a);background-size:200% 100%;animation:sh 1.3s infinite}
   @keyframes sh{to{background-position:-200% 0}}
+  .tile{cursor:pointer}
+  .sechd.clk{cursor:pointer} .sechd.clk:hover{color:var(--saffron)} .sechd .all{font-family:var(--mono);font-size:9px;color:var(--dim);font-weight:600}
+  table.rank tr[data-group]{cursor:pointer}
+  /* drill-down modal */
+  .modal{position:fixed;inset:0;z-index:1000;background:rgba(4,6,10,.74);backdrop-filter:blur(4px);display:none;align-items:flex-start;justify-content:center;padding:38px 16px;overflow-y:auto}
+  .modal.on{display:flex}
+  .mcard{background:var(--bg2);border:1px solid var(--border);border-radius:16px;max-width:980px;width:100%;padding:20px 22px 26px;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+  .mhd{display:flex;align-items:flex-start;gap:12px;border-bottom:1px solid var(--border);padding-bottom:14px;margin-bottom:15px}
+  .mhd .mt{font-size:18px;font-weight:800;letter-spacing:-.01em} .mhd .ms{font-family:var(--mono);font-size:10.5px;color:var(--dim);margin-top:5px}
+  .mhd .x{margin-left:auto;font-family:var(--mono);font-size:15px;color:var(--dim);cursor:pointer;border:1px solid var(--border);border-radius:8px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .mhd .x:hover{color:var(--ink);border-color:var(--saffron)}
+  .mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:9px}
+  .mstk{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 11px;cursor:pointer;transition:.13s}
+  .mstk:hover{border-color:var(--saffron);transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.35)}
+  .mstk .sy{font-family:var(--mono);font-weight:800;font-size:12.5px;color:var(--ink)}
+  .mstk .nm{font-size:10.5px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mstk .mm{display:flex;gap:9px;margin-top:7px;font-family:var(--mono);font-size:9.5px;color:var(--dim);align-items:center;flex-wrap:wrap}
+  .mstk .mm b{color:var(--muted);font-weight:700}
+  .mstk .acts{margin-top:8px;display:flex;gap:5px}
+  .mstk .acts a{font-family:var(--mono);font-size:9px;color:var(--dim);border:1px solid var(--border);border-radius:6px;padding:2px 7px;text-decoration:none}
+  .mstk .acts a:hover{color:var(--saffron);border-color:var(--saffron)}
+  .msub{font-family:var(--mono);font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--dim);font-weight:700;margin:15px 2px 8px;display:flex;gap:8px;align-items:center}
+  .msub .ret{text-transform:none;letter-spacing:0}
 </style>
 </head>
 <body>
@@ -111,7 +134,8 @@
   </div>
 
   <div class="legend"><span>lagging</span><span class="scale"></span><span>leading</span>
-    <span style="margin-left:14px">★ = top-40% (passes gate&nbsp;1)</span></div>
+    <span style="margin-left:14px">★ = top-40% (passes gate&nbsp;1)</span>
+    <span style="margin-left:14px;color:var(--saffron)">👆 click any tile → its stocks → a stock → chart</span></div>
 
   <div class="leaders" id="leaders" style="margin-top:14px"></div>
   <div id="body"><div class="grid">
@@ -120,8 +144,18 @@
   </div></div>
 </main>
 
+<div id="modal" class="modal">
+  <div class="mcard">
+    <div class="mhd"><div><div class="mt" id="mtitle"></div><div class="ms" id="msub"></div></div>
+      <div class="x" onclick="closeModal()">✕</div></div>
+    <div id="mbody"></div>
+  </div>
+</div>
+
 <script>
-let DATA = null, VIEW = "heatmap", FILT = "all", GRP = "rank";
+let DATA = null, VIEW = "heatmap", FILT = "all", GRP = "rank", MEMBERS = null;
+const ae = s => String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;");
+const enc = s => encodeURIComponent(s);
 
 function clock(){
   const now = new Date();
@@ -148,7 +182,7 @@ function fctr(groups){
 
 function tile(x){
   const ac = accent(x.rank_pct);
-  return `<div class="tile ${x.leading?'lead':''}" style="--accent:${ac}">
+  return `<div class="tile ${x.leading?'lead':''}" data-group="${ae(x.group)}" style="--accent:${ac}" title="click → ${x.n} stocks in ${ae(x.group)}">
     <div class="t-top"><span class="rk">#${x.lead_rank}${x.leading?' ★':''}</span>
       <span class="kb ${x.kind}">${x.kind}</span></div>
     <div class="t-name">${x.group}</div>
@@ -174,7 +208,7 @@ function render(){
   if (VIEW==="ranked"){
     body.innerHTML = `<table class="rank"><thead><tr><th>#</th><th>industry / group</th><th>sector</th><th>type</th>
       <th>20d</th><th>50d</th><th>breadth</th><th>RS</th><th>U/D</th><th>n</th></tr></thead><tbody>` +
-      g.map(x=>`<tr><td style="color:${accent(x.rank_pct)};font-weight:800">${x.lead_rank}${x.leading?' ★':''}</td>
+      g.map(x=>`<tr data-group="${ae(x.group)}" title="click → ${x.n} stocks"><td style="color:${accent(x.rank_pct)};font-weight:800">${x.lead_rank}${x.leading?' ★':''}</td>
         <td class="nm">${x.group}</td><td style="color:var(--dim)">${x.macro||''}</td>
         <td>${x.kind}</td><td class="${sign(x.ret20)}">${pct(x.ret20)}</td>
         <td class="${sign(x.ret50)}">${pct(x.ret50)}</td><td>${x.breadth}%</td>
@@ -188,7 +222,7 @@ function render(){
     // order sectors by their best (lowest rank_pct) member
     const order = Object.keys(bysec).sort((a,b)=>Math.min(...bysec[a].map(z=>z.rank_pct))-Math.min(...bysec[b].map(z=>z.rank_pct)));
     body.innerHTML = order.map(sec=>`<div class="secgroup">
-      <div class="sechd">${sec}<span class="bar"></span></div>
+      <div class="sechd clk" data-macro="${ae(sec)}" title="click → every stock in ${ae(sec)}">${sec} <span class="all">▸ all stocks</span><span class="bar"></span></div>
       <div class="grid">${bysec[sec].sort((a,b)=>a.lead_rank-b.lead_rank).map(tile).join("")}</div></div>`).join("");
     return;
   }
@@ -206,6 +240,53 @@ function wireSeg(id, set){
 wireSeg("viewSeg", b=>VIEW=b.dataset.v);
 wireSeg("filtSeg", b=>FILT=b.dataset.f);
 wireSeg("grpSeg",  b=>GRP=b.dataset.g);
+
+// ---- multi-layer drill-down: sector/industry -> its stocks -> chart ----
+async function ensureMembers(){
+  if (MEMBERS) return MEMBERS;
+  try { MEMBERS = await (await fetch("/api/industry_members")).json(); }
+  catch(e){ MEMBERS = {by_industry:{}, by_macro:{}}; }
+  return MEMBERS;
+}
+function stockCard(m){
+  const ret = m.ret20!=null ? `<span class="${sign(m.ret20)}">${pct(m.ret20)}</span>` : "";
+  const ud  = m.ud!=null ? `<span>U/D <b>${m.ud}</b></span>` : "";
+  const up  = m.up ? `<span class="up">▲50d</span>` : "";
+  return `<div class="mstk" data-sym="${ae(m.s)}">
+    <div class="sy">${m.s}</div><div class="nm">${(m.n||"").replace(/[<>]/g,"")}</div>
+    <div class="mm">${ret}${ud}${up}</div>
+    <div class="acts"><a href="marle_g_intraday.html?q=${enc(m.s)}" onclick="event.stopPropagation()">⏱ intraday</a><a href="marle_g_equity.html?q=${enc(m.s)}" onclick="event.stopPropagation()">🔬 equity</a></div>
+  </div>`;
+}
+function showModal(title, sub, inner){
+  document.getElementById("mtitle").textContent = title;
+  document.getElementById("msub").innerHTML = sub;
+  document.getElementById("mbody").innerHTML = inner;
+  document.getElementById("modal").classList.add("on");
+}
+function closeModal(){ document.getElementById("modal").classList.remove("on"); }
+async function openGroup(group){
+  const row = (DATA.groups||[]).find(x=>x.group===group) || {};
+  let mem = (row.members && row.members.length) ? row.members : null;   // live metrics if the RS cache has them
+  if (!mem){ const M = await ensureMembers(); mem = (row.kind==="sector" ? M.by_macro[group] : M.by_industry[group]) || M.by_industry[group] || M.by_macro[group] || []; }
+  const ctx = row.ret20!=null ? ` · 20d <span class="ret ${sign(row.ret20)}">${pct(row.ret20)}</span> · breadth ${row.breadth}%${row.leading?' · ★ leading':''}` : "";
+  showModal(group, `${row.kind||"group"} · ${mem.length} stocks${ctx} · click a stock → chart`, `<div class="mgrid">${mem.map(stockCard).join("")}</div>`);
+}
+async function openSector(macro){
+  const M = await ensureMembers(); const list = M.by_macro[macro] || [];
+  const byInd = {}; list.forEach(x=>{ (byInd[x.industry]=byInd[x.industry]||[]).push(x); });
+  const inner = Object.keys(byInd).sort().map(ind=>`<div class="msub">${ind} <span class="all" style="color:var(--dim)">· ${byInd[ind].length}</span></div><div class="mgrid">${byInd[ind].map(stockCard).join("")}</div>`).join("");
+  showModal(macro, `${list.length} stocks across ${Object.keys(byInd).length} industries · click a stock → chart`, inner || `<div class="empty">no stocks</div>`);
+}
+document.getElementById("body").addEventListener("click", e=>{
+  const g = e.target.closest("[data-group]"); if (g){ openGroup(g.getAttribute("data-group")); return; }
+  const s = e.target.closest("[data-macro]"); if (s){ openSector(s.getAttribute("data-macro")); return; }
+});
+document.getElementById("modal").addEventListener("click", e=>{
+  if (e.target.id==="modal"){ closeModal(); return; }
+  const c = e.target.closest(".mstk"); if (c && !e.target.closest(".acts")) location.href = "marle_g_chart.html?q=" + enc(c.getAttribute("data-sym"));
+});
+document.addEventListener("keydown", e=>{ if (e.key==="Escape") closeModal(); });
 
 async function load(){
   try{

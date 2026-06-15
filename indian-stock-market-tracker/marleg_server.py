@@ -396,6 +396,27 @@ def api_industry_rs():
         return jsonify({"error": str(e), "groups": []})
 
 
+@app.route("/api/industry_members")
+def api_industry_members():
+    """Static taxonomy-backed member lists (symbol+name) per industry and per macro sector —
+    always complete + throttle-proof, the drill-down's fallback when the live RS cache is thin."""
+    def load():
+        tax = json.load(open(os.path.join(HERE, "marleg_industry_taxonomy.json"), encoding="utf-8"))
+        by_ind, by_macro = {}, {}
+        for s, m in tax.get("by_symbol", {}).items():
+            ind = m.get("industry") or "Others"
+            macro = m.get("macro") or "Others"
+            nm = m.get("name") or s
+            by_ind.setdefault(ind, []).append({"s": s, "n": nm})
+            by_macro.setdefault(macro, []).append({"s": s, "n": nm, "industry": ind})
+        for d in (by_ind, by_macro):
+            for k in d:
+                d[k].sort(key=lambda x: x["s"])
+        return {"by_industry": by_ind, "by_macro": by_macro,
+                "industries": sorted(by_ind), "macros": sorted(by_macro)}
+    return jsonify(cached("industry_members", load, 3600))
+
+
 @app.route("/api/volume_pod/add", methods=["POST"])
 def api_volume_pod_add():
     """Add or re-classify a stock in the Volume Pod. Creates new sectors/industries freely."""
