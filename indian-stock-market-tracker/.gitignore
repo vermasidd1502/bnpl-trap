@@ -74,3 +74,6 @@ marleg_industry_gate_study.json
 
 # closing-pressure / square-off study output (research artifact, regenerable)
 marleg_closing_pressure_study.json
+
+# industry-momentum rotation backtest output (research artifact, regenerable)
+marleg_industry_momentum_bt.json

@@ -67,9 +67,10 @@ def day_records(sym, df):
                      "l15_ret": (close / p1515 - 1) if not np.isnan(p1515) else np.nan,  # 15:15 -> close
                      "clv": (close - lo) / (hi - lo) if hi > lo else 0.5,
                      "crowd": crowd})
-    # link next-day open within this symbol
+    # link next-day open + next-day INTRADAY (open->close) within this symbol
     for i in range(len(recs) - 1):
         recs[i]["nextopen_ret"] = recs[i + 1]["open"] / recs[i]["close"] - 1
+        recs[i]["nextday_intra"] = recs[i + 1]["close"] / recs[i + 1]["open"] - 1   # does the close predict tomorrow's intraday?
     return recs
 
 
@@ -115,6 +116,10 @@ def main():
     hicl = [r for r in allrecs if r.get("nextopen_ret") is not None and r["clv"] > 0.7]
     locl = [r for r in allrecs if r.get("nextopen_ret") is not None and r["clv"] < 0.3]
     res["CLV_to_nextopen"] = {"closed_top30%": agg(hicl, "nextopen_ret"), "closed_bottom30%": agg(locl, "nextopen_ret")}
+    # Q4: does the last-5-min/close predict the NEXT DAY's INTRADAY (open->close)?
+    res["Q4_close_to_nextday_intraday"] = {
+        "CLV_closed_top30%": agg(hicl, "nextday_intra"), "CLV_closed_bottom30%": agg(locl, "nextday_intra"),
+        "after_soldoff_close": agg(sold, "nextday_intra"), "after_strong_close": agg(strong, "nextday_intra")}
 
     payload = {"universe": got, "stock_days": len(allrecs), "cost_pct": COST, "results": res}
     json.dump(payload, open(OUT, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
@@ -132,6 +137,7 @@ def main():
     show("Q2b· last 15 min 15:15->close", res["Q2b_last15_1515_to_close"])
     show("Q3 · next-day OPEN after close (is the dip mechanical?)", res["Q3_nextopen_after_close"])
     show("CLV· close-location -> next-day open", res["CLV_to_nextopen"])
+    show("Q4 · close -> NEXT-DAY INTRADAY (open->close) — does the close predict tomorrow's session?", res["Q4_close_to_nextday_intraday"])
     print(f"\n(cost ~{COST}% round-trip MIS; close-window moves are small — read the SIGN + pos%, not just size)")
     print(f"wrote {OUT}")
 
