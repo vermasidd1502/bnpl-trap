@@ -60,6 +60,11 @@ def main():
     hh = close.rolling(120).max().iloc[-1]; ll = close.rolling(120).min().iloc[-1]
     fibpos = (close.iloc[-1] - ll) / (hh - ll).replace(0, np.nan)
 
+    def _rsi(c, n=14):
+        dd = c.diff(); up = dd.clip(lower=0).rolling(n).mean(); dn = (-dd.clip(upper=0)).rolling(n).mean()
+        v = (100 - 100 / (1 + up / dn.replace(0, np.nan))).iloc[-1]
+        return float(v) if v == v else 50.0
+
     picks = []
     for s in close.columns:
         sec = secmap[s]
@@ -76,6 +81,13 @@ def main():
         tr = pd.concat([(h - l), (h - pc).abs(), (l - pc).abs()], axis=1).max(axis=1)
         atr = float(tr.rolling(14).mean().iloc[-1])
         gr = ind_grow.get(grp, {})
+        ret5 = round(float(c.iloc[-1] / c.iloc[-6] - 1) * 100, 1) if c.dropna().shape[0] > 6 else None
+        rsi = round(_rsi(c))
+        # entry quality (backtested: gate_pullback — buying the gated leader ON A 5d DIP — is the best entry;
+        # RSI>70 hot = bull-only; near-high + ripping = chasing). PULLBACK is the prime setup.
+        entry = ("PULLBACK" if (ret5 is not None and ret5 < 0) else
+                 "HOT" if rsi > 70 else
+                 "EXTENDED" if (fibpos[s] >= 0.98 and (ret5 or 0) > 3) else "OK")
         picks.append({"s": s, "n": NAMES.get(s, s), "sector": sec,
                       "industry": grp, "ind_kind": gr.get("kind"),
                       "ind_rank": round(float(ind_rank.get(grp, 1)) * 100),
@@ -83,10 +95,12 @@ def main():
                       "sector_leading": bool(sec_rank.get(sec, 1) <= 0.40),
                       "ud": round(float(ud_now[s]), 2), "ud_ma": round(float(ud_ma[s]), 2),
                       "fib": round(float(fibpos[s]), 2), "sec_rank": round(float(sec_rank.get(sec, 1)) * 100),
+                      "ret5": ret5, "rsi": rsi, "entry": entry,
                       "price": round(price, 2), "target": round(price + 2 * atr, 1),
                       "tgtpct": round(2 * atr / price * 100, 1), "stop": round(price - atr, 1)})
-    # leaders in a leading group first (lowest industry rank), then strongest volume
-    picks.sort(key=lambda x: (x["ind_rank"], -x["ud"]))
+    # leader-in-leading-group first (lowest industry rank); within that, PULLBACK setups first, then strongest volume
+    _ep = {"PULLBACK": 0, "OK": 1, "EXTENDED": 2, "HOT": 3}
+    picks.sort(key=lambda x: (x["ind_rank"], _ep.get(x["entry"], 9), -x["ud"]))
     # WEAKEST CONFLUENCE (inverse gate): lagging sector + U/D < MA & falling + price < 0.382 fib.
     # Backtested (marleg_short_gate_study) as NO short edge — these mean-revert UP, shorting them
     # loses ~0.8-1.1% net of cost. Surfaced as AVOID-on-longs / hedge reference, NOT a short signal.
@@ -112,8 +126,16 @@ def main():
     # persist the full industry-RS table so /api/industry_rs (rotation heatmap) needs no re-download
     mir.save_cache(ind_table, ist, universe=close.shape[1])
     leading = [g for g in ind_table if g.get("leading")][:14]
+    # MACRO REGIME GATE (the durable, backtested edge): NIFTY-proxy vs 50DMA + breadth -> deploy or cash.
+    mkt = (1 + close.pct_change().mean(axis=1)).cumprod()
+    bull = bool(mkt.iloc[-1] > mkt.rolling(50).mean().iloc[-1])
+    breadth = round(float((close.iloc[-1] > close.rolling(50).mean().iloc[-1]).mean()) * 100)
+    regime = {"bull": bull, "breadth": breadth,
+              "verdict": "DEPLOY — bull regime, gate OPEN" if bull else "CASH / CAUTION — bear regime, gate SHUT",
+              "note": ("Backtested: bull-gating the long book (mkt>50DMA) ~halves drawdown + lifts Sharpe above the market. "
+                       "In bear, the long edge turns negative — stand aside or run mean-reversion only.")}
     json.dump({"asof": ist, "n": len(picks), "n_weak": len(shorts), "universe": close.shape[1],
-               "leading_industries": leading, "picks": picks, "shorts": shorts},
+               "regime": regime, "leading_industries": leading, "picks": picks, "shorts": shorts},
               open(out_path, "w", encoding="utf-8"), ensure_ascii=False)
     print(f"gated longs: {len(picks)} / {close.shape[1]}  ->  {out_path}")
     print(f"weakest/avoid: {len(shorts)} names | leading groups: {len(leading)}")

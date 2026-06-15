@@ -109,6 +109,9 @@
     <div class="clock" id="clock"></div>
   </div>
 
+  <div id="regime"></div>
+  <div id="tradeleaders"></div>
+
   <div class="why">
     <b>Why this exists.</b> O'Neil's "L" — buy a leader inside a <b>leading industry group</b>, not just a leading sector.
     Backtested: gating the screener on the coarse 25-bucket sector was actually <span class="r">value-destroying</span> at
@@ -288,11 +291,57 @@ document.getElementById("modal").addEventListener("click", e=>{
 });
 document.addEventListener("keydown", e=>{ if (e.key==="Escape") closeModal(); });
 
+// ---- ⭐ Leaders to trade (regime gate + leader-in-leading-industry, from the gated screen) ----
+function injectLeaderCSS(){
+  if(document.getElementById("leadcss")) return;
+  const s=document.createElement("style"); s.id="leadcss";
+  s.textContent=".regbar{border:1px solid var(--rc);border-left:4px solid var(--rc);border-radius:12px;padding:12px 16px;margin-bottom:14px;background:var(--card)}"
+   +".regbar .regk{font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--dim);font-weight:700}"
+   +".regbar .regv{font-size:16px;font-weight:800;color:var(--rc);margin-top:3px}"
+   +".regbar .regm{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:5px;line-height:1.5}"
+   +".lhead{font-family:var(--mono);font-size:11px;font-weight:800;letter-spacing:.03em;color:var(--ink);margin:0 0 8px 2px}"
+   +".ltbl{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:8px}"
+   +".ltbl table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11px}"
+   +".ltbl th{text-align:left;color:var(--dim);font-size:8.5px;letter-spacing:.05em;text-transform:uppercase;padding:8px 10px;border-bottom:1px solid var(--border)}"
+   +".ltbl td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.04)}"
+   +".ltbl .lrow{cursor:pointer}.ltbl .lrow:hover td{background:rgba(255,153,51,.09)}"
+   +".ltbl .lrk{color:var(--saffron);font-weight:800}"
+   +".ltbl .lsym{font-weight:800;color:var(--ink)}.ltbl .lnm{color:var(--muted);margin-left:7px;font-family:Inter,sans-serif;font-size:10px}"
+   +".lnote{font-family:var(--mono);font-size:9.5px;color:var(--dim);margin:0 2px 18px;line-height:1.6}";
+  document.head.appendChild(s);
+}
+async function loadLeaders(){
+  let d; try{ d = await (await fetch("/api/gated?mode=daily")).json(); }catch(e){ return; }
+  injectLeaderCSS();
+  const rg = d.regime || {}, bull = rg.bull, rc = bull ? "var(--green)" : "var(--red)";
+  document.getElementById("regime").innerHTML = `<div class="regbar" style="--rc:${rc}">
+    <div class="regk">MACRO GATE · the one durable, backtested edge</div>
+    <div class="regv">${bull?"🟢":"🔴"} ${(rg.verdict||"—").replace(/[<>]/g,"")}</div>
+    <div class="regm">breadth ${rg.breadth??"–"}% of names above their 50DMA · ${(rg.note||"").replace(/[<>]/g,"")}</div></div>`;
+  const picks = d.picks || [];
+  const tl = document.getElementById("tradeleaders");
+  if(!picks.length){ tl.innerHTML = `<div class="lhead">⭐ Leaders to trade</div><div class="lnote">No names clear all gates right now (strict by design).</div>`; return; }
+  const etag = e => ({PULLBACK:["🟢 pullback","var(--green)"],OK:["ready","var(--muted)"],EXTENDED:["⚠ extended","var(--amber)"],HOT:["🔴 hot","var(--red)"]})[e]||["",""];
+  const rows = picks.slice(0,14).map((p,i)=>{ const [el,ec]=etag(p.entry);
+    return `<tr class="lrow" onclick="location.href='marle_g_chart.html?q=${enc(p.s)}'">
+      <td class="lrk">${i+1}</td>
+      <td><span class="lsym">${p.s}</span><span class="lnm">${(p.n||"").replace(/[<>]/g,"").slice(0,22)}</span></td>
+      <td><span style="color:var(--saffron)">${p.industry||p.sector||""}</span> <span style="color:var(--dim);font-size:9px">#${p.ind_rank}</span></td>
+      <td style="color:${ec};font-weight:700">${el}</td>
+      <td>${p.ud}</td><td class="${p.rsi>70?'down':''}">${p.rsi??"–"}</td>
+      <td class="${(p.ret5||0)<0?'down':'up'}">${p.ret5!=null?((p.ret5>0?"+":"")+p.ret5+"%"):"–"}</td>
+      <td><b style="color:var(--green)">+${p.tgtpct}%</b></td></tr>`; }).join("");
+  tl.innerHTML = `<div class="lhead">⭐ Leaders to trade — leader-in-a-leading-industry${bull?"":" · ⚠ gate SHUT (bear): candidates only, the book backtests NEGATIVE in bear"}</div>
+    <div class="ltbl" style="${bull?'':'opacity:.55'}"><table><thead><tr><th>#</th><th>stock</th><th>industry · rank</th><th>entry</th><th>U/D</th><th>RSI</th><th>5d</th><th>target</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <div class="lnote">Best entry (backtested) = <b style="color:var(--green)">🟢 pullback</b> — the gated leader bought on a 5-day DIP. <b style="color:var(--red)">🔴 hot</b> (RSI&gt;70) is a bull-only chase; <b style="color:var(--amber)">⚠ extended</b> = wait. Deploy only when the macro gate above is OPEN. Click a row → chart.</div>`;
+}
+
 async function load(){
   try{
     DATA = await (await fetch("/api/industry_rs")).json();
   }catch(e){ DATA = {groups:[]}; }
   render();
+  loadLeaders();
 }
 window.podRefresh = load;
 load();
