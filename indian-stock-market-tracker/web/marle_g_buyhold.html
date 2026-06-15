@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Buy &amp; Hold · Marle-G</title>
+<link rel="stylesheet" href="marle_g.css">
+<style>
+  .bhsearch{width:100%;max-width:420px;background:#0b0d12;border:1px solid var(--border);color:var(--ink);
+    border-radius:10px;padding:12px 14px;font-family:var(--mono);font-size:13px;text-transform:uppercase;margin-bottom:16px}
+  .gauge{height:16px;border-radius:8px;background:linear-gradient(90deg,#ef4444,#fbbf24 50%,#22c55e);position:relative;margin:10px 0 4px}
+  .gauge i{position:absolute;top:-5px;width:3px;height:26px;background:#fff;transform:translateX(-50%);box-shadow:0 0 7px rgba(255,255,255,.9)}
+  .blk{flex:1;background:var(--bg2);border-radius:9px;padding:11px;text-align:center}
+  .blk .n{font-family:var(--mono);font-size:9px;color:var(--dim);text-transform:uppercase}
+  .blk .v{font-family:var(--mono);font-size:20px;font-weight:800;margin-top:4px}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span></span></div>
+  <div class="tabs"></div>
+</div>
+
+<main class="wrap">
+  <div class="head">
+    <div><h1>📈 Buy &amp; Hold</h1>
+      <div class="sub">compounder score = quality × valuation × durability · the <i>investing</i> counterweight to the trading pods</div></div>
+    <div class="clock" id="clock"></div>
+  </div>
+
+  <details><summary>ℹ️ How to read this</summary>
+    <p><b>Compounder score (0–100)</b> blends <b>quality</b> (fundamentals + Piotroski), <b>valuation</b> (PEG/PE — cheaper is better), and <b>durability</b> (3-yr CAGR, risk-adjusted return, drawdown resilience, above the 200-DMA). This is a <b>years</b> horizon — low churn, the opposite of the gated/intraday lists. Backtest of the score's predictive power is a pending follow-up; today the score is a transparent composite, not yet a validated signal.</p>
+  </details>
+
+  <input class="bhsearch" id="q" placeholder="any stock — e.g. RELIANCE, TITAN, PIDILITIND" autocomplete="off">
+  <div id="detail"></div>
+
+  <div class="card">
+    <div class="sh">🏆 Best long-term holds — universe durability screen</div>
+    <div id="screen"><div class="empty">loading screen…</div></div>
+  </div>
+</main>
+
+<script src="marle_g_nav.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const inr=n=>'₹'+Math.round(n).toLocaleString('en-IN');
+const esc=s=>(s||'').replace(/[<>]/g,'');
+const scol=s=>s>=70?'var(--green)':s>=55?'#84cc16':s>=40?'var(--amber)':'var(--red)';
+function clocks(){const now=new Date(),o={weekday:'short',hour:'2-digit',minute:'2-digit',hour12:true};
+  $('clock').innerHTML='IST <b>'+now.toLocaleString('en-US',{timeZone:'Asia/Kolkata',...o})+'</b><br>US-CT '+now.toLocaleString('en-US',{timeZone:'America/Chicago',...o});}
+setInterval(clocks,1000);clocks();
+
+async function loadStock(tk){
+  tk=(tk||'').trim().toUpperCase(); if(!tk)return; $('q').value=tk;
+  $('detail').innerHTML='<div class="card"><span style="color:var(--dim);font-family:var(--mono);font-size:12px">⟳ scoring '+esc(tk)+' (quality + valuation + durability)… ~10s</span></div>';
+  try{
+    const d=await (await fetch('/api/buyhold/'+encodeURIComponent(tk))).json();
+    if(d.error){ $('detail').innerHTML='<div class="card"><span class="neg">'+esc(d.error)+'</span></div>'; return; }
+    const b=d.blocks||{}, dur=d.durability||{}, pr=d.projection;
+    const pos=Math.max(0,Math.min(100,d.total||0));
+    $('detail').innerHTML=`<div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px">
+        <div><span style="font-size:20px;font-weight:800">${esc(d.tk)}</span> <span style="color:var(--dim);font-family:var(--mono);font-size:11px">${esc(d.name||'')}</span></div>
+        <div style="font-family:var(--mono);font-weight:800;color:${scol(d.total)}">${esc(d.verdict)}</div>
+      </div>
+      <div class="gauge"><i style="left:${pos}%"></i></div>
+      <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--dim)"><span>0 avoid</span><span>55 hold</span><span>70 compounder</span></div>
+      <div style="font-family:var(--mono);font-size:34px;font-weight:800;color:${scol(d.total)};margin:6px 0">${d.total==null?'—':d.total}<span style="font-size:14px;color:var(--dim)">/100</span></div>
+      <div style="display:flex;gap:12px;margin:12px 0">
+        <div class="blk"><div class="n">Quality</div><div class="v">${b.quality??'—'}</div></div>
+        <div class="blk"><div class="n">Valuation</div><div class="v">${b.valuation??'—'}</div></div>
+        <div class="blk"><div class="n">Durability</div><div class="v">${b.durability??'—'}</div></div>
+      </div>
+      <table class="h"><tbody>
+        <tr><td style="text-align:left">3-yr CAGR</td><td>${dur.cagr3??'—'}%</td><td style="text-align:left">Sharpe-like</td><td>${dur.sharpe??'—'}</td></tr>
+        <tr><td style="text-align:left">1-yr return</td><td>${dur.cagr1??'—'}%</td><td style="text-align:left">Max drawdown</td><td class="neg">${dur.maxdd??'—'}%</td></tr>
+        <tr><td style="text-align:left">Above 200-DMA</td><td>${dur.above200?'✅ yes':'—'}</td><td style="text-align:left">From 52w high</td><td>${dur.dist_52wh??'—'}%</td></tr>
+        <tr><td style="text-align:left">Valuation</td><td>${esc(d.val_label||'')}</td><td style="text-align:left">Piotroski · qcov</td><td>${esc(d.piotroski||'—')} · ${d.qcoverage??'—'}%</td></tr>
+      </tbody></table>
+      ${pr?`<div class="card" style="margin-top:12px;background:var(--bg2)"><div class="sh">If it compounds at its 3-yr CAGR (${pr.cagr3_pct}%) — illustrative, not a forecast</div>
+        <div style="display:flex;gap:14px;font-family:var(--mono)"><div>₹1L → <b style="color:var(--green)">${inr(pr.lakh_in_3y)}</b> in 3y</div><div>₹1L → <b style="color:var(--green)">${inr(pr.lakh_in_5y)}</b> in 5y</div></div></div>`:''}
+    </div>`;
+  }catch(e){ $('detail').innerHTML='<div class="card"><span class="neg">backend offline?</span></div>'; }
+}
+
+async function loadScreen(){
+  try{
+    const d=await (await fetch('/api/buyhold_screen?n=40')).json();
+    if(d.error||!d.rows||!d.rows.length){ $('screen').innerHTML='<div class="empty">'+(d.error||'screen not built yet — runs as a batch scan')+'</div>'; return; }
+    $('screen').innerHTML=`<div class="note" style="margin-bottom:8px">${d.universe} names ranked by durability · as of ${d.asof||''} · click a row to score it fully</div>`+
+      `<table class="h"><thead><tr><th>#</th><th>stock</th><th>score</th><th>3y CAGR</th><th>1y</th><th>Sharpe</th><th>max DD</th><th>200DMA</th><th>price</th></tr></thead><tbody>`+
+      d.rows.map((r,i)=>`<tr style="cursor:pointer" onclick="loadStock('${r.s}')">
+        <td>${i+1}</td><td style="text-align:left"><span class="sym">${r.s}</span><div class="nm">${esc((r.n||'').slice(0,26))}</div></td>
+        <td><b style="color:${scol(r.score)}">${r.score}</b></td>
+        <td class="pos">${r.cagr3_pct}%</td><td class="${r.cagr1_pct>=0?'pos':'neg'}">${r.cagr1_pct}%</td>
+        <td>${r.sharpe??'—'}</td><td class="neg">${r.maxdd_pct}%</td>
+        <td>${r.above200?'✅':'—'}</td><td>₹${(r.price||0).toLocaleString('en-IN')}</td></tr>`).join('')+`</tbody></table>`;
+  }catch(e){ $('screen').innerHTML='<div class="empty">screen unavailable</div>'; }
+}
+
+$('q').addEventListener('keydown',e=>{if(e.key==='Enter')loadStock($('q').value);});
+window.podRefresh=()=>{loadScreen(); if($('q').value)loadStock($('q').value);};
+const _u=new URLSearchParams(location.search).get('q');
+loadStock(_u||'RELIANCE'); loadScreen();
+</script>
+</body>
+</html>

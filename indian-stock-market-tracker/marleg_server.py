@@ -37,6 +37,7 @@ import marleg_weekend            # weekend-carry edge (Friday-momentum -> Monday
 import marleg_var                # portfolio VaR + Monte-Carlo + CAPM beta (FIN-537 risk engine)
 import marleg_options_monitor as mom   # live options monitor: depth/OI/IV/Greeks + constructed chain
 import marleg_mf                        # mutual-fund universe: search + category/sector classification
+import marleg_buyhold                    # Buy & Hold pod: compounder score (quality+valuation+durability) + screen
 import marleg_regime            # dispersion/correlation regime dial (scenario-alpha gate)
 import marleg_thesis            # structural grey-swan scenario book (Thesis Ledger)
 import marleg_smartmoney         # institutional-flow / smart-money (shareholding deltas)
@@ -1207,6 +1208,15 @@ def api_intraday_rsi(ticker):
 def api_intraday_mood(ticker):
     import marleg_mood
     return jsonify(cached("mood:" + ticker.upper(), lambda: marleg_mood.mood(ticker), 120))
+
+@app.route("/api/buyhold/<tk>")
+def api_buyhold(tk):
+    return jsonify(cached("buyhold:" + tk.upper(), lambda: marleg_buyhold.compounder_score(tk), 3600))
+
+@app.route("/api/buyhold_screen")
+def api_buyhold_screen():
+    n = int(request.args.get("n") or 40)
+    return jsonify(cached("buyhold_screen:" + str(n), lambda: marleg_buyhold.screen(n), 1800))
 
 @app.route("/api/overextension/<ticker>")
 def api_overextension(ticker):
