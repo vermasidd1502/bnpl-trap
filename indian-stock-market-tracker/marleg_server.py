@@ -689,9 +689,16 @@ def api_fundamentals_cache():
     def do():
         try:
             with open(os.path.join(HERE, "marleg_fundamentals_cache.json"), encoding="utf-8") as f:
-                return json.load(f)
+                c = json.load(f)
         except Exception:
-            return {}
+            c = {}
+        try:                                   # manual = FALLBACK only (don't clobber real data once the feed has it)
+            import marleg_manual_fundamentals as mmf
+            for k, v in mmf.compacts().items():
+                c.setdefault(k, v)
+        except Exception:
+            pass
+        return c
     return jsonify(cached("fund_cache", do, 600))
 
 @app.route("/api/mf_search")
@@ -915,12 +922,29 @@ def api_fundamentals(ticker):
     # fallback, with sanity + formatting guards and honest coverage. See marleg_fundamentals.py.
     def do():
         f = marleg_fundamentals.fundamentals(tk, NAMES)
+        if "error" in f or f.get("qscore") is None:    # auto-feed empty (recent SME / throttle) -> manual override
+            try:
+                import marleg_manual_fundamentals as mmf
+                m = mmf.record(tk)
+                if m:
+                    return m
+            except Exception:
+                pass
         try:                                   # cache-on-view: warm the volume-pod cache, but only with REAL data
             h = f.get("health") or {}
             if "error" not in f and (f.get("qscore") is not None or h.get("P/E") is not None or h.get("ROE") is not None):
                 import marleg_fundamentals_scan as fsc
                 fsc.cache_one(tk, f)
                 _CACHE.pop("fund_cache", None)
+        except Exception:
+            pass
+        try:                                   # surface manual flags (e.g. cash-flow warnings the auto-feed can't see)
+            import marleg_manual_fundamentals as mmf
+            m = mmf.record(tk)
+            if m and "error" not in f:
+                f["narrative"] = (m.get("narrative") or []) + (f.get("narrative") or [])
+                if m.get("manual_flags"):
+                    f["manual_flags"] = m["manual_flags"]
         except Exception:
             pass
         return f
