@@ -474,6 +474,14 @@ def position(tk, interval=5):
     last_vol = float(vols.iloc[-1]); vol_surge = round(last_vol / avg_bar_vol, 2) if avg_bar_vol else None
     up_vol = float(vols[tdf["close"].diff() > 0].sum()); dn_vol = float(vols[tdf["close"].diff() < 0].sum())
     ud_intraday = round(up_vol / dn_vol, 2) if dn_vol else None
+    # rolling U/D over the last 40 bars AT THIS INTERVAL (multi-session) — steadier than thin early-session today
+    _udwin = 40; _dN = df["close"].diff()
+    _uvw = float(df["volume"].iloc[-_udwin:][_dN.iloc[-_udwin:] > 0].sum())
+    _dvw = float(df["volume"].iloc[-_udwin:][_dN.iloc[-_udwin:] < 0].sum())
+    ud_window = round(_uvw / _dvw, 2) if _dvw else None
+    _udref = ud_intraday if ud_intraday is not None else ud_window
+    ud_label = ("accumulation" if (_udref or 0) >= 1.3 else
+                "distribution" if (_udref is not None and _udref <= 0.77) else "balanced")
     vol_confirm = bool(vol_surge and vol_surge > 1.3 and (tdf["close"].diff().iloc[-1] > 0))
 
     # ATR + realized vol so far today
@@ -526,7 +534,8 @@ def position(tk, interval=5):
             "chg_open_pct": round(chg_open, 2), "chg_day_pct": round(chg_day, 2),
             "pos_in_range": round((ltp - lo) / rng * 100), "vwap": round(vwap, 2) if vwap else None, "vwap_dist": vwap_dist,
             "ema_state": ema_state, "rsi": rsi_now, "consecutive": cons, "atr": atr, "rvol_today_pct": rvol_today,
-            "vol_surge": vol_surge, "ud_intraday": ud_intraday, "cum_volume": int(vols.sum()),
+            "vol_surge": vol_surge, "ud_intraday": ud_intraday, "ud_window": ud_window, "ud_label": ud_label,
+            "up_vol": int(up_vol), "dn_vol": int(dn_vol), "cum_volume": int(vols.sum()),
             "momentum": mom, "levels": levels, "book": book, "bars": bars_out,
             "verdict": f"{mom['label']} · {('above' if (vwap_dist or 0) >= 0 else 'below')} VWAP ({vwap_dist}%) · "
                        f"RSI {rsi_now} · {round((ltp - lo) / rng * 100)}% up the day's range · EMA {ema_state}"}

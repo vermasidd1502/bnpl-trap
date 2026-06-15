@@ -196,7 +196,8 @@ async function loadPos(){
       <div class="mc"><div class="n">vs VWAP</div><div class="v" style="color:${dc(p.vwap_dist)}">${p.vwap_dist>0?'+':''}${p.vwap_dist}%</div><div class="s">VWAP ${p.vwap} · ${p.vwap_dist>=0?'above (bull)':'below (bear)'}</div></div>
       <div class="mc"><div class="n">Day range</div><div class="v">${p.pos_in_range}%</div><div class="s">L ${p.day_low} · H ${p.day_high}</div></div>
       <div class="mc"><div class="n">RSI ${IV}m · EMA</div><div class="v" style="color:${p.rsi>70?'var(--red)':p.rsi<30?'var(--green)':'var(--ink)'}">${p.rsi??'—'}</div><div class="s">${p.ema_state} · ${p.consecutive>0?'+'+p.consecutive+' up':p.consecutive<0?p.consecutive+' dn':'flat'} bars</div></div>
-      <div class="mc"><div class="n">Momentum</div><div class="v" style="color:${dc(m.score)};font-size:18px">${m.score>0?'+':''}${m.score}</div><div class="s">surge ${p.vol_surge}× · u/d ${p.ud_intraday}</div></div>
+      <div class="mc"><div class="n">Momentum</div><div class="v" style="color:${dc(m.score)};font-size:18px">${m.score>0?'+':''}${m.score}</div><div class="s">vol surge ${p.vol_surge}×</div></div>
+      <div class="mc"><div class="n">U/D vol · ${IV}m</div><div class="v" style="color:${p.ud_label==='accumulation'?'var(--green)':p.ud_label==='distribution'?'var(--red)':'var(--ink)'}">${p.ud_intraday??'—'}</div><div class="s">${esc(p.ud_label||'')} · 40-bar ${p.ud_window??'—'}</div></div>
     </div>
     ${rangeMeter(p)}
     ${levelStrip(p)}
