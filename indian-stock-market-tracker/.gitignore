@@ -77,3 +77,6 @@ marleg_closing_pressure_study.json
 
 # industry-momentum rotation backtest output (research artifact, regenerable)
 marleg_industry_momentum_bt.json
+
+# gate-entry model comparison backtest output (research artifact, regenerable)
+marleg_gate_models_bt.json

@@ -54,6 +54,8 @@ def day_records(sym, df):
 
         o = float(d["open"].iloc[0])
         close = float(d["close"].iloc[-1])
+        last_open = float(d["open"].iloc[-1])               # the final 5-min candle (15:25 bar)
+        last_hi, last_lo = float(d["high"].iloc[-1]), float(d["low"].iloc[-1])
         hi, lo = float(d["high"].max()), float(d["low"].min())
         p1400, p1500, p1510, p1515 = cl("14:00"), cl("15:00"), cl("15:10"), cl("15:15")
         if any(np.isnan(x) for x in (o, p1400, p1500, p1510, close)) or o <= 0:
@@ -66,6 +68,9 @@ def day_records(sym, df):
                      "l20_ret": close / p1510 - 1,                # 15:10 -> close (the square-off)
                      "l15_ret": (close / p1515 - 1) if not np.isnan(p1515) else np.nan,  # 15:15 -> close
                      "clv": (close - lo) / (hi - lo) if hi > lo else 0.5,
+                     # the LAST 5-min candle itself: its body direction + where it closed within its own range
+                     "last_candle": (close / last_open - 1) if last_open > 0 else 0.0,
+                     "last_clv": (close - last_lo) / (last_hi - last_lo) if last_hi > last_lo else 0.5,
                      "crowd": crowd})
     # link next-day open + next-day INTRADAY (open->close) within this symbol
     for i in range(len(recs) - 1):
@@ -120,6 +125,17 @@ def main():
     res["Q4_close_to_nextday_intraday"] = {
         "CLV_closed_top30%": agg(hicl, "nextday_intra"), "CLV_closed_bottom30%": agg(locl, "nextday_intra"),
         "after_soldoff_close": agg(sold, "nextday_intra"), "after_strong_close": agg(strong, "nextday_intra")}
+    # Q5: the LAST 5-min candle's OWN body direction (the "last candlestick of day" theory)
+    lc = [r for r in allrecs if r.get("nextday_intra") is not None]
+    green = [r for r in lc if r["last_candle"] > 0.0005]      # green final candle (closed up)
+    red = [r for r in lc if r["last_candle"] < -0.0005]       # red final candle (closed down)
+    strongclose_candle = [r for r in lc if r["last_clv"] > 0.7]   # closed in top of its own last-candle range
+    res["Q5_last_candle_direction"] = {
+        "green_final_candle__nextopen": agg(green, "nextopen_ret"),
+        "red_final_candle__nextopen": agg(red, "nextopen_ret"),
+        "green_final_candle__nextintraday": agg(green, "nextday_intra"),
+        "red_final_candle__nextintraday": agg(red, "nextday_intra"),
+        "final_candle_closed_strong__nextintraday": agg(strongclose_candle, "nextday_intra")}
 
     payload = {"universe": got, "stock_days": len(allrecs), "cost_pct": COST, "results": res}
     json.dump(payload, open(OUT, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
@@ -138,6 +154,7 @@ def main():
     show("Q3 · next-day OPEN after close (is the dip mechanical?)", res["Q3_nextopen_after_close"])
     show("CLV· close-location -> next-day open", res["CLV_to_nextopen"])
     show("Q4 · close -> NEXT-DAY INTRADAY (open->close) — does the close predict tomorrow's session?", res["Q4_close_to_nextday_intraday"])
+    show("Q5 · the LAST 5-min CANDLE itself (green/red body) -> next day", res["Q5_last_candle_direction"])
     print(f"\n(cost ~{COST}% round-trip MIS; close-window moves are small — read the SIGN + pos%, not just size)")
     print(f"wrote {OUT}")
 
