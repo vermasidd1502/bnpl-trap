@@ -103,6 +103,99 @@ def detect_last(df, within=3):
     return out
 
 
+# ---- gating: each pattern's verdict comes from the India reliability backtest, not convention ----
+import os as _os
+import json as _json
+_STUDY = None
+
+
+def _study():
+    global _STUDY
+    if _STUDY is None:
+        try:
+            p = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "marleg_pattern_study.json")
+            _STUDY = _json.load(open(p, encoding="utf-8")).get("patterns", {})
+        except Exception:
+            _STUDY = {}
+    return _STUDY
+
+
+def verdict(name):
+    """Grade a pattern by the backtest (10-day net), not its textbook reputation."""
+    st = _study().get(name)
+    if not st:
+        return {"grade": "untested", "net": None, "hit": None, "note": "not yet backtested in India"}
+    h = st.get("h", {}).get("10") or st.get("h", {}).get(10) or {}
+    net, hit, n, bias = h.get("net"), h.get("hit"), h.get("n"), st.get("bias")
+    if net is None:
+        return {"grade": "untested", "net": None, "hit": None, "note": "no data"}
+    if bias == "short":
+        grade, note = "anti", f"⚠ folklore — no short edge in India (net {net}%, {hit}% hit); the stock tends to BOUNCE, not fall"
+    elif net >= 0.3 and (hit or 0) >= 53:
+        grade, note = "edge", f"✅ works in India: +{net}% net · {hit}% hit (10d, n={n:,})"
+    elif net > -0.1:
+        grade, note = "weak", f"🟡 marginal: {net}% net · {hit}% hit — barely beats noise"
+    else:
+        grade, note = "anti", f"⚠ no edge: {net}% net"
+    return {"grade": grade, "bias": bias, "net": net, "hit": hit, "n": n, "note": note}
+
+
+def _daily_bars(tk):
+    """Daily OHLC via Groww (reliable, not Yahoo-rate-limited); falls back to yfinance."""
+    try:
+        import groww_client as gc
+        g = gc.GrowwClient(); g.token()
+        df = g.candles(tk.upper(), interval_min=1440, days=220)
+        if df is not None and not df.empty:
+            return df[["open", "high", "low", "close", "volume"]].dropna()
+    except Exception:
+        pass
+    try:
+        import yfinance as yf
+        df = yf.Ticker(tk.upper() + ".NS").history(period="9mo", interval="1d", auto_adjust=False)
+        return df.rename(columns=str.lower)[["open", "high", "low", "close", "volume"]].dropna()
+    except Exception:
+        return None
+
+
+def analyze(tk, chart_bars=90, marker_lookback=60):
+    """Per-stock: detected patterns (gated) + recent chart bars + markers for the live pod."""
+    tk = tk.upper()
+    df = _daily_bars(tk)
+    if df is None or len(df) < 60:
+        return {"tk": tk, "error": "no daily data"}
+    S = signals(df)
+    detected = []
+    for d in detect_last(df, within=3):
+        detected.append({**d, "verdict": verdict(d["name"])})
+    # markers over the recent window for the candlestick overlay
+    markers = []
+    recent = df.index[-marker_lookback:]
+    for name, d in S.items():
+        v = verdict(name)
+        for ts in df.index[d["sig"].values][-marker_lookback:]:
+            if ts in recent:
+                markers.append({"time": int(ts.timestamp()), "name": name, "bias": d["bias"], "grade": v["grade"]})
+    bars = [{"time": int(ts.timestamp()), "open": round(float(r.open), 2), "high": round(float(r.high), 2),
+             "low": round(float(r.low), 2), "close": round(float(r.close), 2)}
+            for ts, r in df.tail(chart_bars).iterrows()]
+    return {"tk": tk, "asof": str(df.index[-1].date()), "bars": bars,
+            "detected": detected, "markers": markers}
+
+
+def reliability():
+    """The full backtest table for the pod's reliability view."""
+    st = _study()
+    out = []
+    for name, r in st.items():
+        h = r.get("h", {}).get("10") or r.get("h", {}).get(10) or {}
+        out.append({"name": name, "bias": r.get("bias"), "desc": META.get(name, ("", ""))[1],
+                    "net": h.get("net"), "hit": h.get("hit"), "n": h.get("n"),
+                    "grade": verdict(name)["grade"]})
+    out.sort(key=lambda x: -(x["net"] if x["net"] is not None else -99))
+    return out
+
+
 if __name__ == "__main__":
     import sys, yfinance as yf
     try:

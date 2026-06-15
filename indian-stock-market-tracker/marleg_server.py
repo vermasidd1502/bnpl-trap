@@ -38,6 +38,7 @@ import marleg_var                # portfolio VaR + Monte-Carlo + CAPM beta (FIN-
 import marleg_options_monitor as mom   # live options monitor: depth/OI/IV/Greeks + constructed chain
 import marleg_mf                        # mutual-fund universe: search + category/sector classification
 import marleg_buyhold                    # Buy & Hold pod: compounder score (quality+valuation+durability) + screen
+import marleg_patterns                    # technical pattern detection (gated on India reliability backtest)
 import marleg_regime            # dispersion/correlation regime dial (scenario-alpha gate)
 import marleg_thesis            # structural grey-swan scenario book (Thesis Ledger)
 import marleg_smartmoney         # institutional-flow / smart-money (shareholding deltas)
@@ -1217,6 +1218,24 @@ def api_buyhold(tk):
 def api_buyhold_screen():
     n = int(request.args.get("n") or 40)
     return jsonify(cached("buyhold_screen:" + str(n), lambda: marleg_buyhold.screen(n), 1800))
+
+@app.route("/api/patterns/<tk>")
+def api_patterns(tk):
+    return jsonify(cached("patterns:" + tk.upper(), lambda: marleg_patterns.analyze(tk), 600))
+
+@app.route("/api/pattern_reliability")
+def api_pattern_reliability():
+    return jsonify(cached("pattern_reliability", marleg_patterns.reliability, 3600))
+
+@app.route("/api/patterns_scan")
+def api_patterns_scan():
+    def do():
+        try:
+            with open(os.path.join(HERE, "marleg_pattern_scan.json"), encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return {"error": "no pattern scan yet — run: python marleg_pattern_scan.py", "groups": []}
+    return jsonify(cached("patterns_scan", do, 600))
 
 @app.route("/api/overextension/<ticker>")
 def api_overextension(ticker):
