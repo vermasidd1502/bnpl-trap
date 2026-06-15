@@ -133,6 +133,23 @@ Two things, and both matter:
 
 ---
 
+## 6b. 🚩 Red-flag retrospection — the H1 Sharpe ~2 is survivorship, not skill
+A 2-year Sharpe of 2.0-2.2 (H1, ind_mom/gate_pullback) is implausibly high for long-only equity — a
+warning sign, investigated rather than celebrated:
+- **Cause: survivorship + an exceptional post-COVID bull**, not a bug. The panel holds names that survived
+  to today, so 2021-23 returns are conditioned on survival (the bias is worst in the early period). The
+  annualization checks out (diversified low per-block vol × a strong trend → high annualized Sharpe), so
+  the inflation is in the *data*, not the math.
+- **The survivorship-NEUTRAL read** (compare to the matched market = EW of the same 750 names):
+  - `ind_mom` always-on Sharpe **1.29 ≈ market 1.31** → after matching survivorship, raw stock-selection
+    adds **~zero Sharpe**.
+  - bull-gated **1.44 > 1.31**, maxDD **−10.9% vs −20.2%** → **the macro gate is the only
+    survivorship-neutral, robust value-add.**
+- **Refined bottom line:** don't trust the absolute returns *or* the raw selection edge. The defensible,
+  repeatable result is the **macro regime gate's risk reduction** (lower drawdown + a modest Sharpe lift
+  over the matched market). A true fix for survivorship needs a point-in-time universe *with delisted
+  names* — a known, deferred limitation (not chased further here, to avoid an analysis loop).
+
 ## 7. The complete strategy & the macro theory
 **Micro (selection) × Macro (timing):**
 - **Selection:** own leaders in leading industries (industry-RS gate / `ind_mom`), entered on a **5-day
