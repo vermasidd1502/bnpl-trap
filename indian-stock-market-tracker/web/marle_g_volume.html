@@ -113,6 +113,22 @@ function fundCell(sym){
   const qc=f.q>=70?'var(--green)':f.q>=45?'var(--amber)':'var(--red)';
   return `<span style="font-size:10px"><b style="color:${qc}">Q${f.q==null?'—':f.q}</b> · PE ${f.pe==null?'—':f.pe} · ROE ${f.roe==null?'—':f.roe+'%'}</span>`;
 }
+let HYDRATING=false;
+async function hydrateFundamentals(syms){
+  const need=syms.filter(s=>{const f=FUND[s]; return (!f || f.q==null) && !(f&&f.err);});
+  if(!need.length||HYDRATING) return;
+  HYDRATING=true;
+  const sub=$('sub'), prev=sub.textContent;
+  sub.textContent='⟳ hardcore-fetching fundamentals: '+need.slice(0,8).join(', ')+'…';
+  for(const s of need.slice(0,8)){
+    try{
+      const f=await (await fetch('/api/fundamentals/'+encodeURIComponent(s))).json();
+      if(f && !f.error && f.qscore!=null){ const h=f.health||{}; FUND[s]={q:f.qscore, pe:h['P/E'], roe:h['ROE'], growth:h['Rev growth'], cov:f.coverage}; }
+      else FUND[s]={err:1};   // no statement data (sparse/throttled) — mark tried so we don't loop; page reload retries
+    }catch(e){ FUND[s]={err:1}; }
+  }
+  HYDRATING=false; sub.textContent=prev; render();
+}
 
 async function load(){
   try{const r=await fetch('/api/volume_pod');DATA=await r.json();}catch(e){DATA={sectors:[]};}
@@ -159,6 +175,8 @@ function render(){
       <div class="body">${rows}</div>
     </div>`;
   }).join('');
+  // focused search -> go hardcore: fetch full fundamentals live for the few visible names
+  if(Q){ const vis=sectors.flatMap(s=>s._stocks.map(x=>x.s)); if(vis.length && vis.length<=8) hydrateFundamentals(vis); }
 }
 // ---- add / edit stocks (features: choose existing or create new sector/industry) ----
 function taxonomy(){ const t={}; (DATA.sectors||[]).forEach(sec=>{ t[sec.sector]=t[sec.sector]||new Set(); sec.stocks.forEach(s=>t[sec.sector].add(s.industry)); }); return t; }

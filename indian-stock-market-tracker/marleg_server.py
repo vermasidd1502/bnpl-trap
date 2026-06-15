@@ -913,7 +913,18 @@ def api_fundamentals(ticker):
     tk = ticker.upper()
     # Robust provider: ratios computed from the financial statements (TTM), .info only as
     # fallback, with sanity + formatting guards and honest coverage. See marleg_fundamentals.py.
-    return jsonify(cached("fund:" + tk, lambda: marleg_fundamentals.fundamentals(tk, NAMES), 1800))
+    def do():
+        f = marleg_fundamentals.fundamentals(tk, NAMES)
+        try:                                   # cache-on-view: warm the volume-pod cache, but only with REAL data
+            h = f.get("health") or {}
+            if "error" not in f and (f.get("qscore") is not None or h.get("P/E") is not None or h.get("ROE") is not None):
+                import marleg_fundamentals_scan as fsc
+                fsc.cache_one(tk, f)
+                _CACHE.pop("fund_cache", None)
+        except Exception:
+            pass
+        return f
+    return jsonify(cached("fund:" + tk, do, 1800))
 
 # ----------------------------------------------------------------- UNIVERSAL analysis (fuse all pillars)
 @app.route("/api/analyze/<ticker>")

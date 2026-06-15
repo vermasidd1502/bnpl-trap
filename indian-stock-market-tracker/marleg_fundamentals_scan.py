@@ -26,7 +26,23 @@ def _load():
 
 
 def _save(d):
-    json.dump(d, open(CACHE, "w", encoding="utf-8"), ensure_ascii=False)
+    tmp = CACHE + ".tmp"                       # atomic write (batch + cache-on-view share this file)
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(d, f, ensure_ascii=False)
+    os.replace(tmp, CACHE)
+
+
+def _compact(f):
+    h = f.get("health", {}) or {}
+    return {"q": f.get("qscore"), "pe": h.get("P/E"), "roe": h.get("ROE"),
+            "growth": h.get("Rev growth"), "cov": f.get("coverage")}
+
+
+def cache_one(tk, f):
+    """Upsert one stock's compact fundamentals into the cache (cache-on-view from the server)."""
+    cache = _load()
+    cache[tk.upper()] = _compact(f)
+    _save(cache)
 
 
 def main():
@@ -43,13 +59,16 @@ def main():
     for i, s in enumerate(todo[:cap]):
         try:
             f = mf.fundamentals(s)
-            if "error" in f:
-                cache[s] = {"err": 1}
+            h = f.get("health", {}) or {}
+            real = ("error" not in f) and (f.get("qscore") is not None or h.get("P/E") is not None or h.get("ROE") is not None)
+            if real:
+                cache[s] = _compact(f)          # cache ONLY real data; empty (throttle/sparse) stays to-do -> retried next run
+                fails = 0
             else:
-                h = f.get("health", {}) or {}
-                cache[s] = {"q": f.get("qscore"), "pe": h.get("P/E"), "roe": h.get("ROE"),
-                            "growth": h.get("Rev growth"), "cov": f.get("coverage")}
-            fails = 0
+                fails += 1                       # empty result usually = Yahoo throttle; back off, don't poison the cache
+                if fails >= 6:
+                    print("  bailing — repeated empty results (Yahoo likely throttling); rerun later"); break
+                time.sleep(10); continue
         except Exception as e:
             fails += 1
             if fails >= 6:                       # likely rate-limited hard — persist + bail
