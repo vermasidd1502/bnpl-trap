@@ -46,3 +46,6 @@ marleg_short_gate_study.json
 
 # hourly gated cache (runtime, regenerated each hour during market hours)
 marleg_gated_hourly.json
+
+# mood study output (research artifact, regenerable)
+marleg_mood_study.json

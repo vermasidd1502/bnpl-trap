@@ -97,6 +97,7 @@
     <div id="chart" style="height:300px;margin-bottom:12px"></div>
     <div id="posbody"><span style="color:var(--dim);font-family:var(--mono);font-size:12px">⟳ live read…</span></div>
   </div>
+  <div id="mood"></div>
   <div id="rsi"></div>
   <div id="ddcard"></div>
   <div id="ivadvisor"></div>
@@ -248,6 +249,31 @@ async function loadRsi(){
       <div class="legend" style="margin-top:6px">RSI &gt;70 = overbought (trim/exit zone) · &lt;30 = oversold (watch for entry). Green band = oversold, red band = overbought.</div></div>`;
   }catch(e){ $('rsi').innerHTML=''; }
 }
+function moodBlk(name,val){ val=val||0; const w=Math.min(100,Math.abs(val)); const bc=val>=0?'var(--green)':'var(--red)';
+  return `<div style="flex:1"><div style="font-family:var(--mono);font-size:8.5px;color:var(--dim);text-transform:uppercase">${name} <b style="color:${bc}">${val>0?'+':''}${val}</b></div>
+    <div style="height:5px;border-radius:3px;background:rgba(255,255,255,.06);margin-top:3px;position:relative">
+      <div style="position:absolute;left:50%;width:${w/2}%;height:100%;background:${bc};border-radius:3px;${val>=0?'':'transform:translateX(-100%)'}"></div></div></div>`; }
+async function loadMood(){
+  if(!LIVE_TK)return;
+  try{
+    const d=await (await fetch('/api/intraday/'+encodeURIComponent(LIVE_TK)+'/mood')).json();
+    if(d.error||d.score==null){ $('mood').innerHTML=''; return; }
+    const sc=d.score, pos=Math.max(0,Math.min(100,(sc+100)/2));
+    const col=sc>=20?'var(--green)':sc<=-50?'#3b82f6':sc<=-20?'var(--red)':'var(--amber)';
+    const vc=/🔵/.test(d.verdict)?'#3b82f6':/🟠/.test(d.verdict)?'var(--amber)':/⚪/.test(d.verdict)?'var(--muted)':'var(--green)';
+    const b=d.blocks||{}, c=d.components||{};
+    $('mood').innerHTML=`<div class="card">
+      <div class="sh">Mood needle · strong ⟷ weak <span style="float:right;color:${vc}">${esc(d.verdict)}</span></div>
+      <div style="position:relative;height:14px;border-radius:7px;background:linear-gradient(90deg,#ef4444,#fbbf24 50%,#22c55e);margin:12px 0 4px">
+        <div style="position:absolute;left:${pos}%;top:-5px;width:3px;height:24px;background:#fff;transform:translateX(-50%);box-shadow:0 0 7px rgba(255,255,255,.9)"></div></div>
+      <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--dim)"><span>−100 weak</span><span>0</span><span>+100 strong</span></div>
+      <div style="font-family:var(--mono);font-size:26px;font-weight:800;color:${col};margin-top:6px">${sc>0?'+':''}${sc}</div>
+      <div style="display:flex;gap:14px;margin-top:10px">${moodBlk('same-day',b.same_day)}${moodBlk('yesterday',b.yesterday)}${moodBlk('regime',b.regime)}</div>
+      <div class="legend" style="margin-top:10px">CLV ${c.close_location} · day ${c.day_change_pct}% · gap ${c.gap_pct}% · RVOL ${c.rvol} · vs 20DMA ${c.dist_ma20_pct}%</div>
+      <div class="legend" style="color:var(--amber)">⚠ U-shaped edge (backtested): <b style="color:var(--green)">🟢 strong = momentum long</b> (+0.4% net) · <b style="color:#3b82f6">🔵 deep-weak = mean-reversion bounce</b> (+1.8%/5d but survivorship-inflated, high-risk) · middle = no edge · <b>shorting lost in every bucket</b>. Never a short signal.</div>
+    </div>`;
+  }catch(e){ $('mood').innerHTML=''; }
+}
 async function loadIvAdvisor(){
   if(!LIVE_TK)return;
   $('ivadvisor').innerHTML='<div class="card"><span style="color:var(--dim);font-family:var(--mono);font-size:12px">⟳ scoring intervals (trendiness + cost-aware backtest)…</span></div>';
@@ -296,8 +322,8 @@ async function loadSparks(){
 
 async function track(tk){
   tk=(tk||'').trim().toUpperCase(); if(!tk)return; $('q').value=tk;
-  LIVE_TK=tk; renderIv(); loadPos(); loadDD(); loadIvAdvisor(); loadSparks(); loadRsi();
-  clearInterval(POS_TIMER); POS_TIMER=setInterval(()=>{loadPos();loadDD();loadRsi();},15000);
+  LIVE_TK=tk; renderIv(); loadPos(); loadDD(); loadIvAdvisor(); loadSparks(); loadRsi(); loadMood();
+  clearInterval(POS_TIMER); POS_TIMER=setInterval(()=>{loadPos();loadDD();loadRsi();loadMood();},15000);
   $('out').innerHTML='<div class="card"><span style="color:var(--dim);font-family:var(--mono);font-size:12px">⟳ computing realized variance + HAR for '+esc(tk)+'…</span></div>';
   try{
     const r=await (await fetch('/api/intraday/'+encodeURIComponent(tk))).json();

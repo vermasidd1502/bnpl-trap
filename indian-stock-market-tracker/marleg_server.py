@@ -1203,6 +1203,11 @@ def api_intraday_rsi(ticker):
     iv = request.args.get("interval", 5, type=int)
     return jsonify(cached(f"intraday:rsi:{ticker.upper()}:{iv}", lambda: marleg_intraday.rsi_engine(ticker, iv), 30))
 
+@app.route("/api/intraday/<ticker>/mood")
+def api_intraday_mood(ticker):
+    import marleg_mood
+    return jsonify(cached("mood:" + ticker.upper(), lambda: marleg_mood.mood(ticker), 120))
+
 @app.route("/api/overextension/<ticker>")
 def api_overextension(ticker):
     return jsonify(cached("overext:" + ticker.upper(), lambda: marleg_overextension.chase_check(ticker), 1800))
