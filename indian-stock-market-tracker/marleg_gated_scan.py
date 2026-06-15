@@ -42,7 +42,7 @@ def main():
     volume = pd.DataFrame(volume).reindex(close.index)
     print(f"universe with data: {close.shape[1]} stocks")
     if close.shape[1] < 200:        # yfinance throttled this run — do NOT clobber good caches with thin data
-        print(f"⚠ only {close.shape[1]} names (yfinance throttled). Keeping prior caches, exiting without overwrite.")
+        print(f"[throttled] only {close.shape[1]} names with data. Keeping prior caches, exiting without overwrite.")
         return
 
     # GATE 1 — granular INDUSTRY relative strength (replaces the old coarse sector gate).

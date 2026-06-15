@@ -260,21 +260,24 @@ async function loadGated(){
     const note = GATEDMODE==='daily'
       ? `<div style="font-family:var(--mono);font-size:9.5px;color:var(--dim);margin:-4px 0 8px">🔥 <b>on list</b> = consecutive days re-qualified (daily snapshot). A multi-day streak is stickier than a one-day flash.</div>`
       : `<div style="font-family:var(--mono);font-size:9.5px;color:var(--dim);margin:-4px 0 8px">⚡ intraday view — recomputed hourly on the latest bar. Day-streak tenure lives on the Daily list.</div>`;
-    const longs = (d.picks&&d.picks.length)?`<table><thead><tr><th>Symbol</th><th>On list</th><th>Sector</th><th>U/D vs MA</th><th>Fib</th><th>Price</th><th>Target</th></tr></thead><tbody>`+
+    const longs = (d.picks&&d.picks.length)?`<table><thead><tr><th>Symbol</th><th>On list</th><th>Industry · rank</th><th>U/D vs MA</th><th>Fib</th><th>Price</th><th>Target</th></tr></thead><tbody>`+
         d.picks.map(p=>`<tr class="stk" onclick="openStock('${p.s}')"><td><span class="sym">${p.s}</span><span class="cmp">${p.n||''}</span><span class="edit" title="chart" onclick="event.stopPropagation();location.href='marle_g_chart.html?q=${p.s}'">📈</span></td>
           <td style="text-align:left">${gatedTenure(p)}</td>
-          <td style="text-align:left;color:var(--muted)">${p.sector}</td>
+          <td style="text-align:left">${p.industry?`<span style="color:var(--saffron)">${p.industry}</span> <span style="color:var(--dim);font-size:9px">#${p.ind_rank}${p.sector_leading?' · sec✓':''}</span>`:`<span style="color:var(--muted)">${p.sector||''}</span>`}</td>
           <td><b style="color:var(--green)">${p.ud}</b> &gt; ${p.ud_ma}</td><td>${p.fib}</td>
           <td>₹${(p.price||0).toLocaleString('en-IN')}</td>
           <td><b style="color:var(--green)">₹${(p.target||0).toLocaleString('en-IN')}</b> (+${p.tgtpct}%)</td></tr>`).join('')+`</tbody></table>`
         :'<div style="color:var(--muted);padding:12px">No stocks pass all gates right now — the gates are strict by design.</div>';
     const weak = (d.shorts&&d.shorts.length)?
       `<div class="sh" style="color:var(--red);margin-top:18px">⚠️ WEAKEST CONFLUENCE · ${d.shorts.length} names · AVOID longs / hedge ref</div>`+
-      `<div style="font-family:var(--mono);font-size:9.5px;color:var(--dim);margin:-4px 0 8px">Inverse gate (lagging sector + U/D falling + broken below fib). Backtested: <b style="color:var(--red)">shorting these LOST ~0.8–1.1% net</b> — they mean-revert up. Names to <b>avoid going long / hedge against</b>, NOT a short signal.</div>`+
+      `<div style="font-family:var(--mono);font-size:9.5px;color:var(--dim);margin:-4px 0 8px">Inverse gate (lagging industry/group + U/D falling + broken below fib). Backtested: <b style="color:var(--red)">shorting these LOST ~0.8–1.1% net</b> — they mean-revert up. Names to <b>avoid going long / hedge against</b>, NOT a short signal.</div>`+
       `<table><thead><tr><th>Symbol</th><th>Sector</th><th>U/D vs MA</th><th>Fib</th><th>Price</th></tr></thead><tbody>`+
       d.shorts.slice(0,20).map(p=>`<tr class="stk" onclick="openStock('${p.s}')"><td><span class="sym">${p.s}</span><span class="cmp">${p.n||''}</span></td><td style="text-align:left;color:var(--muted)">${p.sector}</td><td><b style="color:var(--red)">${p.ud}</b> &lt; ${p.ud_ma}</td><td>${p.fib}</td><td>₹${(p.price||0).toLocaleString('en-IN')}</td></tr>`).join('')+`</tbody></table>`
       :'';
-    f.innerHTML=toggle+`<div class="sh" style="color:var(--green)">🎯 GATED LONGS · ${GATEDMODE} · ${d.n}/${d.universe} pass all 3 gates · as of ${d.asof||''}</div>`+note+longs+weak;
+    const indNote = (d.leading_industries&&d.leading_industries.length)
+      ? `<div style="font-family:var(--mono);font-size:9.5px;color:var(--dim);margin:-4px 0 8px">🔄 <b style="color:var(--saffron)">Gate 1 = leading industry</b> (backtested to beat the old coarse sector gate). Leading now: ${d.leading_industries.slice(0,8).map(g=>`${g.group} <span style="color:var(--green)">${g.ret20>0?'+':''}${g.ret20}%</span>`).join(' · ')}</div>`
+      : '';
+    f.innerHTML=toggle+`<div class="sh" style="color:var(--green)">🎯 GATED LONGS · ${GATEDMODE} · ${d.n}/${d.universe} · gate 1 = leading industry · as of ${d.asof||''}</div>`+note+indNote+longs+weak;
   }catch(e){ f.innerHTML=toggle+'<span style="color:var(--dim)">unavailable</span>'; }
 }
 window.MG_SELF_REFRESH = true;   // self-refreshes every 5 min (below) — nav.js skips its 60s full reload
