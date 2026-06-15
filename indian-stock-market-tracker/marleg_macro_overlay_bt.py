@@ -115,6 +115,14 @@ def main():
     # market buy-hold benchmark (the universe)
     mkt_blocks = [float(mkt.iloc[t + HOLD] / mkt.iloc[t] - 1) for t in range(232, n - HOLD - 1, HOLD)]
     res["_MARKET_buyhold"] = metrics(mkt_blocks, bpy)
+    # OOS robustness: does bull-gating help in BOTH halves of the sample (not period-luck)?
+    oos = {}
+    for s in strategies:
+        oos[s] = {}
+        for r in ["always_on", "bull_gated"]:
+            seq = series[s][r]; mid = len(seq) // 2
+            oos[s][r] = {"H1": metrics(seq[:mid], bpy), "H2": metrics(seq[mid:], bpy)}
+    res["_OOS_halfsplit"] = oos
     json.dump({"hold_days": HOLD, "cost_pct": COST, "from": str(close.index[0].date()),
                "to": str(close.index[-1].date()), "results": res}, open(OUT, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 
@@ -127,6 +135,12 @@ def main():
             m = res[s][r]
             if m.get("sharpe") is not None:
                 print(f"{(s+' / '+r):<28}{str(m['cagr_pct'])+'%':>7}{str(m['vol_pct'])+'%':>6}{str(m['sharpe']):>7}{str(m['maxdd_pct'])+'%':>7}{str(m['invested_pct'])+'%':>9}")
+    print(f"\n--- OOS robustness (first half H1 vs second half H2) ---")
+    for s in strategies:
+        for r in ["always_on", "bull_gated"]:
+            h1, h2 = res["_OOS_halfsplit"][s][r]["H1"], res["_OOS_halfsplit"][s][r]["H2"]
+            if h1.get("sharpe") is not None and h2.get("sharpe") is not None:
+                print(f"  {(s+' / '+r):<28} H1 Sharpe {h1['sharpe']:>5} maxDD {str(h1['maxdd_pct'])+'%':>7}  |  H2 Sharpe {h2['sharpe']:>5} maxDD {str(h2['maxdd_pct'])+'%':>7}")
     print(f"\nwrote {OUT}")
 
 

@@ -113,6 +113,24 @@ beats the market on Sharpe (1.29 vs 1.31) — **the macro gate is what creates t
 edge,** and it auto-sidesteps the `strict_hot` bear-crash. *calm-bull (also dodging high-vol) cuts drawdown
 furthest but sacrifices too much return — bull-gated is the sweet spot.*
 
+**OOS robustness (first half 2021-23 vs second half 2024-26) — the critical honesty check:**
+| Strategy | H1 Sharpe / maxDD | H2 Sharpe / maxDD |
+|---|---|---|
+| ind_mom always-on | 2.20 / −10.4% | **0.40** / −21.2% |
+| ind_mom **bull-gated** | 2.21 / −10.9% | 0.47 / **−10.7%** |
+| gate_pullback always-on | 1.83 / −17.3% | **0.14** / −20.3% |
+| gate_pullback **bull-gated** | 2.12 / **−7.8%** | 0.44 / −16.2% |
+
+Two things, and both matter:
+1. **The raw stock-selection edge DECAYED hard** — Sharpe ~2 in 2021-23 collapsed to ~0.1-0.5 in 2024-26.
+   The strong full-sample numbers are front-loaded; **do not expect 2021-23 performance going forward**
+   (likely crowding of the retail-momentum trade and/or a choppier recent regime). This is the
+   anti-overfit caveat.
+2. **The MACRO GATE is the durable, OOS-robust component** — bull-gating cut drawdown and raised Sharpe in
+   *both* halves, and in the hard 2024-26 half it **roughly HALVED the drawdown** (ind_mom −10.7% vs
+   −21.2%; gate_pullback −16.2% vs −20.3%). So even as the raw edge faded, the regime gate kept earning its
+   keep as risk management. **Trust the macro gate more than the raw selection edge.**
+
 ---
 
 ## 7. The complete strategy & the macro theory
