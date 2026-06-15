@@ -71,6 +71,7 @@
 
 <div class="nav">
   <div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span></span></div>
+  <div class="tabs"></div>
   <div class="navstatus" id="navstatus">
     <span class="dot" id="mktdot"></span><span id="mktlabel">market —</span>
     <span class="sep">·</span><span id="growwlabel">groww —</span>
@@ -265,6 +266,7 @@
 </div>
 
 <script>
+window.MG_SELF_REFRESH=true;                 // home self-polls its ticker — opt out of nav.js full-page reload
 const _pct=x=>(x>0?'+':'')+(+x).toFixed(2)+'%';
 const _cls=x=>x>0?'up':x<0?'down':'';
 async function _macro(){
@@ -294,5 +296,6 @@ async function _groww(){
 _macro(); _mkt(); _groww();
 setInterval(_macro,45000); setInterval(_mkt,30000); setInterval(_groww,120000);
 </script>
+<script src="marle_g_nav.js"></script>
 </body>
 </html>
