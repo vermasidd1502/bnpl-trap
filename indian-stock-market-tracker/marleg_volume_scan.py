@@ -141,7 +141,9 @@ def _write(rows, sect, names):
                         "n": len(stocks), "strong": sum(1 for u in uds if u >= 1.5),
                         "longs": longs, "shorts": shorts, "consensus": cons, "stocks": stocks})
     sectors.sort(key=lambda x: -x["ud"])
-    out = {"asof": time.strftime("%Y-%m-%d %H:%M IST"), "universe": len(rows), "sectors": sectors}
+    from datetime import datetime as _dtm, timezone as _tz, timedelta as _td
+    _ist = _dtm.now(_tz(_td(hours=5, minutes=30))).strftime("%Y-%m-%d %H:%M IST")  # true IST (machine is US-CT)
+    out = {"asof": _ist, "universe": len(rows), "sectors": sectors}
     with open(OUT, "w", encoding="utf-8") as f:
         json.dump(out, f, ensure_ascii=False)
     print(f"wrote {len(rows)} stocks across {len(sectors)} sectors -> {OUT}")
