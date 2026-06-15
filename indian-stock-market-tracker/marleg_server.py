@@ -1327,6 +1327,13 @@ def api_weekend_stock(ticker):
 def api_portfolio_var():
     return jsonify(cached("portfolio_var", lambda: marleg_var.portfolio_risk(), 300))
 
+@app.route("/api/transition")
+def api_transition():
+    """Held longs' composite bias + transition flags (long->short rolling-over = the big signal)."""
+    import marleg_transition
+    extra = [x for x in (request.args.get("watch", "").upper().split(",")) if x]
+    return jsonify(cached("transition:" + ",".join(sorted(extra)), lambda: marleg_transition.watch(extra), 300))
+
 @app.route("/api/has_options/<tk>")
 def api_has_options(tk):
     return jsonify({"sym": tk.upper(), "has_options": mom.has_options(tk)})

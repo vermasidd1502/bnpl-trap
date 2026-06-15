@@ -35,6 +35,9 @@ marleg_stop_check.json
 # gated-list daily history (runtime-accumulated snapshots)
 marleg_gated_history.json
 
+# transition-watch daily state snapshots (runtime)
+marleg_transition_history.json
+
 # daily EOD-scan refresh lockfile (runtime)
 marleg_eod_running.lock
 

@@ -82,6 +82,7 @@
     <input id="q" placeholder="filter the list by symbol or company…" spellcheck="false" data-no-suggest>
     <div class="seg"><button id="byud" class="on" onclick="setSort('ud')">sort: U/D</button><button id="byrvol" onclick="setSort('rvol')">RVOL</button></div>
     <button class="gatedb" onclick="toggleGated()">🎯 Gated longs</button>
+    <button class="gatedb" onclick="toggleTransition()" style="border-color:var(--amber);color:var(--amber)">🔀 Transition watch</button>
     <button class="addb" onclick="toggleAdd()">➕ Add / edit stock</button>
   </div>
   <div class="legend">Up/Down volume ratio over 20 sessions &nbsp;·&nbsp; <b class="g">≥1.5 accumulation</b> &nbsp; <b class="r">≤0.7 distribution</b> &nbsp;·&nbsp; sectors ranked by median U/D &nbsp;·&nbsp; click a stock for full analysis</div>
@@ -97,6 +98,7 @@
     <div id="af-msg" style="font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:9px"></div>
   </div>
   <div id="gatedpanel" style="display:none"></div>
+  <div id="transitionpanel" style="display:none"></div>
   <div id="out"></div>
 </main>
 
@@ -219,6 +221,29 @@ function gatedTenure(p){
   const tot=p.total_days&&p.total_days>p.days_on_list?` <span style="color:var(--dim)">(${p.total_days} total)</span>`:'';
   return `<span style="color:${col};font-weight:700;font-size:11px">🔥 day ${p.days_on_list}</span>`+
          `<span style="color:var(--dim);font-size:9.5px"> · since ${p.on_since||'—'}</span>${tot}`;
+}
+function toggleTransition(){ const f=$('transitionpanel'); const sh=f.style.display==='none'; f.style.display=sh?'block':'none'; if(sh) loadTransition(); }
+async function loadTransition(){
+  const f=$('transitionpanel');
+  const box=s=>'<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px">'+s+'</div>';
+  f.innerHTML=box('<span style="color:var(--dim);font-family:var(--mono);font-size:12px">⟳ scoring your longs (mood ✕ Ichimoku ✕ U/D ✕ RSI)… ~10s</span>');
+  try{
+    const d=await (await fetch('/api/transition')).json();
+    if(!d.rows||!d.rows.length){ f.innerHTML=box('<span style="color:var(--dim)">no held longs to watch (or no data right now)</span>'); return; }
+    const sc=st=>st==='LONG'?'var(--green)':st==='SHORT-LEAN'?'var(--red)':st==='WEAKENING'?'var(--amber)':'var(--dim)';
+    const rows=d.rows.map(r=>{const t=r.transition||{}; const ic=(r.components||{}).ichimoku||'—';
+      return `<tr class="stk" onclick="openStock('${r.tk}')" ${t.big?'style="background:rgba(251,191,36,.08)"':''}>
+        <td><span class="sym">${r.tk}</span></td>
+        <td><b style="color:${sc(r.state)}">${r.state}</b> <span style="color:var(--dim);font-size:9px">${r.score>0?'+':''}${r.score}</span></td>
+        <td style="color:${t.big?'var(--red)':'var(--dim)'};font-weight:${t.big?'800':'400'};font-size:10.5px">${t.label||''}</td>
+        <td>${r.mood==null?'—':r.mood}</td>
+        <td style="color:${r.above_cloud?'var(--green)':r.below_cloud?'var(--red)':'var(--amber)'}">${ic}</td>
+        <td>${r.ud==null?'—':r.ud}</td>
+        <td style="color:${(r.rsi>72||r.rsi<42)?'var(--red)':'var(--ink)'}">${r.rsi==null?'—':r.rsi}</td></tr>`;}).join('');
+    f.innerHTML=box(`<div class="sh" style="color:var(--amber)">🔀 TRANSITION WATCH · your longs · baseline ${d.baseline_from||'(first run sets the baseline)'}</div>
+      <div style="font-family:var(--mono);font-size:9.5px;color:var(--dim);margin:-4px 0 10px">composite = mood ✕ Ichimoku (cloud) ✕ U/D ✕ RSI. A holding that was LONG and is now WEAKENING/SHORT = ⚠ <b>the big signal</b> (thesis rolling over → tighten / exit).</div>
+      <table><thead><tr><th>Stock</th><th>State</th><th>Transition</th><th>mood</th><th>Ichimoku</th><th>U/D</th><th>RSI</th></tr></thead><tbody>${rows}</tbody></table>`);
+  }catch(e){ f.innerHTML=box('<span class="neg">backend offline?</span>'); }
 }
 function toggleGated(){ const f=$('gatedpanel'); const sh=f.style.display==='none'; f.style.display=sh?'block':'none'; if(sh) loadGated(); }
 let GATEDMODE='daily';
