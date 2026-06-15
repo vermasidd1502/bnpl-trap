@@ -80,3 +80,6 @@ marleg_industry_momentum_bt.json
 
 # gate-entry model comparison backtest output (research artifact, regenerable)
 marleg_gate_models_bt.json
+
+# canonical cached daily price panel (runtime, regenerable, large)
+marleg_panel_cache.pkl
