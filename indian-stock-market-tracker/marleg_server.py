@@ -490,6 +490,21 @@ def api_candles(ticker):
         return {"symbol": ticker.upper(), "period": period, "candles": candles}
     return jsonify(cached("candles:" + ticker.upper() + ":" + period, do, 300))
 
+@app.route("/api/ichimoku/<ticker>")
+def api_ichimoku(ticker):
+    """Ichimoku 5 lines (chart-ready, cloud projected forward) + the bull-stack state."""
+    import marleg_ichimoku
+    period = request.args.get("period", "2y")
+    if period not in ("1y", "2y", "5y", "10y", "max"):
+        period = "2y"
+    def do():
+        df = _hist(ticker, period)
+        if df is None or len(df) < 80:
+            return {"error": "no data / need >=80 bars for Ichimoku"}
+        df = df.dropna(subset=["Open", "High", "Low", "Close"])
+        return {"symbol": ticker.upper(), **marleg_ichimoku.compute(df), "state": marleg_ichimoku.state(df)}
+    return jsonify(cached("ichimoku:" + ticker.upper() + ":" + period, do, 300))
+
 # ----------------------------------------------------------------- VWAP analytics (rolling + anchored)
 @app.route("/api/vwap/<ticker>")
 def api_vwap(ticker):

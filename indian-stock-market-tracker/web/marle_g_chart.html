@@ -145,6 +145,29 @@ async function load(){
   pc.addLineSeries({color:'#ff9933',lineWidth:1.5,priceLineVisible:false,lastValueVisible:false}).setData(sma(closes,50));
   pc.addLineSeries({color:'#60a5fa',lineWidth:1.5,priceLineVisible:false,lastValueVisible:false}).setData(sma(closes,250));
 
+  // ---- Ichimoku Kinko Hyo overlay (Tenkan/Kijun/cloud/Chikou) + bull-stack state ----
+  try{
+    const ich = await (await fetch('/api/ichimoku/'+encodeURIComponent(SYM)+'?period='+PERIOD)).json();
+    if(ich && !ich.error){
+      const L=(d,color,w,style)=>{ const s=pc.addLineSeries({color,lineWidth:w||1,lineStyle:style||0,priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false}); s.setData(d||[]); };
+      L(ich.senkou_a,'rgba(34,197,94,.85)',1);    // cloud top (Senkou A, green)
+      L(ich.senkou_b,'rgba(239,68,68,.65)',1);    // cloud bottom (Senkou B, red)
+      L(ich.tenkan,'#3b82f6',1);                  // Tenkan (conversion, blue)
+      L(ich.kijun,'#ef4444',1.6);                 // Kijun (base = the RED LINE)
+      L(ich.chikou,'rgba(168,85,247,.85)',1,2);   // Chikou (lagging, purple dashed)
+      const s=ich.state||{};
+      if(!s.error){
+        const vc=s.above_cloud?'var(--green)':s.below_cloud?'var(--red)':'var(--amber)';
+        const el=document.createElement('div');
+        el.style.cssText='font-family:var(--mono);font-size:11px;margin:8px 0 0;padding:9px 12px;border-radius:8px;background:#0e1116;border:1px solid var(--border);line-height:1.8';
+        el.innerHTML='☁️ <b style="color:'+vc+'">'+s.verdict+'</b> · bull-stack <b>'+s.bull_stack+'/4</b>'
+          +'<br><span style="color:var(--dim)">Tenkan '+s.tenkan+' · Kijun (red line) '+s.kijun+' · cloud '+s.cloud_bottom+'–'+s.cloud_top+' ('+(s.cloud_green?'green':'red')+') · '
+          +'above-cloud '+(s.above_cloud?'✓':'✗')+' · above-Kijun '+(s.above_kijun?'✓':'✗')+' · Tenkan&gt;Kijun '+(s.tenkan_gt_kijun?'✓':'✗')+' · Chikou clear '+(s.chikou_above_price?'✓':'✗')+'</span>';
+        const priceEl=document.getElementById('price'); priceEl.parentNode.insertBefore(el, priceEl.nextSibling);
+      }
+    }
+  }catch(e){}
+
   // ---- two-fib overlay (auto): MACRO solid, micro dashed — completed anchors only ----
   try{
     const fm = await (await fetch('/api/fibmap/'+encodeURIComponent(SYM))).json();
