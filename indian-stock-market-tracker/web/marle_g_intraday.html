@@ -98,6 +98,7 @@
     <div id="posbody"><span style="color:var(--dim);font-family:var(--mono);font-size:12px">⟳ live read…</span></div>
   </div>
   <div id="mood"></div>
+  <div id="smartstop"></div>
   <div id="rsi"></div>
   <div id="ddcard"></div>
   <div id="ivadvisor"></div>
@@ -320,10 +321,30 @@ async function loadSparks(){
   }catch(e){ $('sparks').innerHTML=''; }
 }
 
+async function loadSmartStop(){
+  if(!LIVE_TK)return;
+  try{
+    const d=await (await fetch('/api/intraday/'+encodeURIComponent(LIVE_TK)+'/smartstop')).json();
+    if(d.error){ $('smartstop').innerHTML=''; return; }
+    const gc={hold:'var(--green)',watch:'var(--amber)',soft:'var(--amber)',exit:'var(--red)'}[d.grade]||'var(--muted)';
+    $('smartstop').innerHTML=`<div class="card">
+      <div class="sh">🛡️ Smart stop · ${esc(d.note||'')}</div>
+      <div style="display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:6px">
+        <div><div style="font-family:var(--mono);font-size:9px;color:var(--dim)">RECOMMENDED STOP</div>
+          <div style="font-family:var(--mono);font-size:24px;font-weight:800;color:${gc}">₹${d.recommended_stop}</div>
+          <div style="font-family:var(--mono);font-size:9.5px;color:var(--dim)">${d.dist_to_stop_pct}% below · ATR ${d.atr_pct}%/day</div></div>
+        <div style="font-family:var(--mono);font-size:10.5px;color:var(--muted);line-height:1.8">
+          chandelier ₹${d.chandelier_stop} · swing-low ₹${d.swing_low_stop}<br>20-EMA ₹${d.ema20} · RSI ${d.rsi} · thesis ${d.thesis_intact?'🟢 intact':'🔴 broken'}${d.r_multiple!=null?' · '+d.r_multiple+'R':''}</div>
+      </div>
+      <div class="badge" style="color:${gc};border-color:${gc};font-size:11px;white-space:normal;line-height:1.5;display:block">${esc(d.verdict)}</div>
+      ${d.breakeven_note?`<div class="legend" style="margin-top:6px;color:var(--green)">↑ ${esc(d.breakeven_note)}</div>`:''}
+    </div>`;
+  }catch(e){ $('smartstop').innerHTML=''; }
+}
 async function track(tk){
   tk=(tk||'').trim().toUpperCase(); if(!tk)return; $('q').value=tk;
-  LIVE_TK=tk; renderIv(); loadPos(); loadDD(); loadIvAdvisor(); loadSparks(); loadRsi(); loadMood();
-  clearInterval(POS_TIMER); POS_TIMER=setInterval(()=>{loadPos();loadDD();loadRsi();loadMood();},15000);
+  LIVE_TK=tk; renderIv(); loadPos(); loadDD(); loadIvAdvisor(); loadSparks(); loadRsi(); loadMood(); loadSmartStop();
+  clearInterval(POS_TIMER); POS_TIMER=setInterval(()=>{loadPos();loadDD();loadRsi();loadMood();loadSmartStop();},15000);
   $('out').innerHTML='<div class="card"><span style="color:var(--dim);font-family:var(--mono);font-size:12px">⟳ computing realized variance + HAR for '+esc(tk)+'…</span></div>';
   try{
     const r=await (await fetch('/api/intraday/'+encodeURIComponent(tk))).json();

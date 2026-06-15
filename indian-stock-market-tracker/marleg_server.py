@@ -1210,6 +1210,12 @@ def api_intraday_mood(ticker):
     import marleg_mood
     return jsonify(cached("mood:" + ticker.upper(), lambda: marleg_mood.mood(ticker), 120))
 
+@app.route("/api/intraday/<ticker>/smartstop")
+def api_smartstop(ticker):
+    import marleg_smartstop
+    entry = request.args.get("entry", type=float)
+    return jsonify(cached(f"smartstop:{ticker.upper()}:{entry}", lambda: marleg_smartstop.smart_stop(ticker, entry), 300))
+
 @app.route("/api/buyhold/<tk>")
 def api_buyhold(tk):
     return jsonify(cached("buyhold:" + tk.upper(), lambda: marleg_buyhold.compounder_score(tk), 3600))

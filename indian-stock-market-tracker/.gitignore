@@ -55,3 +55,8 @@ marleg_buyhold_cache.json
 
 # pattern reliability study output (research artifact, regenerable)
 marleg_pattern_study.json
+
+# pattern scan cache + smart-stop study output (runtime/research, regenerable)
+marleg_pattern_scan.json
+marleg_smartstop_study.json
+*.out
