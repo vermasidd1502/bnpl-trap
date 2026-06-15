@@ -71,3 +71,6 @@ marleg_smartstop_study.json
 # industry RS cache (runtime, written by the gated scan) + gate study (research artifact)
 marleg_industry_rs_cache.json
 marleg_industry_gate_study.json
+
+# closing-pressure / square-off study output (research artifact, regenerable)
+marleg_closing_pressure_study.json

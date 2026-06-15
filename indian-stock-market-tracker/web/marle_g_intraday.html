@@ -99,6 +99,8 @@
   </div>
   <div id="mood"></div>
   <div id="smartstop"></div>
+  <div id="depth"></div>
+  <div id="closing"></div>
   <div id="rsi"></div>
   <div id="ddcard"></div>
   <div id="ivadvisor"></div>
@@ -342,10 +344,70 @@ async function loadSmartStop(){
     </div>`;
   }catch(e){ $('smartstop').innerHTML=''; }
 }
+function _depthCSS(){
+  if(document.getElementById('depthcss'))return;
+  const s=document.createElement('style'); s.id='depthcss';
+  s.textContent=".pbar{display:flex;height:26px;border-radius:7px;overflow:hidden;font-family:var(--mono);font-size:10px;font-weight:800}"
+   +".pbar .pbuy{background:rgba(34,197,94,.85);color:#04140a;display:flex;align-items:center;padding-left:8px}"
+   +".pbar .psell{background:rgba(239,68,68,.85);color:#1a0606;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;margin-left:auto}"
+   +".dladhd,.dlad{display:grid;grid-template-columns:1fr 70px 70px 1fr;gap:6px;align-items:center}"
+   +".dladhd{font-family:var(--mono);font-size:8.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.05em;margin:9px 0 4px;text-align:center}"
+   +".dlad{margin-bottom:3px}"
+   +".dq{position:relative;height:20px;font-family:var(--mono);font-size:10px;display:flex;align-items:center;overflow:hidden;border-radius:4px}"
+   +".dq.bidq{justify-content:flex-end}.dq.bidq span{position:relative;z-index:1;padding:0 7px;color:var(--green);font-weight:700}"
+   +".dq.askq span{position:relative;z-index:1;padding:0 7px;color:var(--red);font-weight:700}"
+   +".dq .dbar{position:absolute;top:0;bottom:0;border-radius:4px}.dq.bidq .dbar{right:0;background:rgba(34,197,94,.18)}.dq.askq .dbar{left:0;background:rgba(239,68,68,.18)}"
+   +".dp{font-family:var(--mono);font-size:10.5px;text-align:center;color:var(--ink)}.dp.ask{color:var(--muted)}"
+   +".dnote{margin-top:10px;font-family:var(--mono);font-size:9.5px;color:var(--dim);line-height:1.65}.dnote div{margin-bottom:3px}";
+  document.head.appendChild(s);
+}
+async function loadDepth(){
+  if(!LIVE_TK)return; _depthCSS();
+  try{
+    const d=await (await fetch('/api/depth/'+encodeURIComponent(LIVE_TK))).json();
+    if(d.error){ $('depth').innerHTML=''; return; }
+    const lc=d.lean==='buy-heavy'?'var(--green)':d.lean==='sell-heavy'?'var(--red)':'var(--muted)';
+    const bp=d.buy_pct||0, sp=d.sell_pct||0;
+    let rows=''; const n=Math.max((d.buy||[]).length,(d.sell||[]).length);
+    for(let i=0;i<n;i++){ const b=(d.buy||[])[i]||{}, s=(d.sell||[])[i]||{};
+      const bw=b.quantity?Math.round(b.quantity/d.maxq*100):0, sw=s.quantity?Math.round(s.quantity/d.maxq*100):0;
+      rows+=`<div class="dlad"><div class="dq bidq"><div class="dbar" style="width:${bw}%"></div><span>${b.quantity?b.quantity.toLocaleString('en-IN'):''}</span></div>`
+        +`<div class="dp">${b.price?'₹'+b.price:'—'}</div><div class="dp ask">${s.price?'₹'+s.price:'—'}</div>`
+        +`<div class="dq askq"><div class="dbar" style="width:${sw}%"></div><span>${s.quantity?s.quantity.toLocaleString('en-IN'):''}</span></div></div>`;
+    }
+    $('depth').innerHTML=`<div class="card">
+      <div class="sh">📖 Order book · buy/sell pressure <span style="float:right;color:${lc}">${d.lean}</span></div>
+      <div style="font-family:var(--mono);font-size:9.5px;color:var(--dim);margin-bottom:7px">pending orders = resting liquidity (whole book), <b>not</b> executed trades</div>
+      <div class="pbar"><div class="pbuy" style="width:${bp}%">${bp>12?bp+'% buy':''}</div><div class="psell" style="width:${sp}%">${sp>12?sp+'% sell':''}</div></div>
+      <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--dim);margin:5px 1px 2px">
+        <span>buy ${(d.total_buy_qty||0).toLocaleString('en-IN')}</span><span>spread ₹${d.spread} (${d.spread_pct}%)</span><span>sell ${(d.total_sell_qty||0).toLocaleString('en-IN')}</span></div>
+      <div class="dladhd"><span>bid qty</span><span>bid</span><span>ask</span><span>ask qty</span></div>
+      ${rows}
+      <div class="dnote">${(d.notes||[]).map(x=>'<div>• '+x+'</div>').join('')}</div>
+    </div>`;
+  }catch(e){ $('depth').innerHTML=''; }
+}
+async function loadClosing(){
+  if(!LIVE_TK)return;
+  try{
+    const d=await (await fetch('/api/closing/'+encodeURIComponent(LIVE_TK))).json();
+    if(!d.phase){ $('closing').innerHTML=''; return; }
+    const pc={squareoff:'var(--red)',preclose:'var(--amber)',morning:'var(--green)',afternoon:'var(--green)',midday:'var(--dim)',open:'var(--amber)',closed:'var(--dim)',preopen:'var(--dim)'}[d.phase]||'var(--muted)';
+    const toSq=d.mins_to_squareoff>0?` · square-off in ${d.mins_to_squareoff}m`:'';
+    const ev=d.evidence||{}; const md=s=>esc(s).replace(/\*\*(.+?)\*\*/g,'<b style="color:var(--ink)">$1</b>');
+    $('closing').innerHTML=`<div class="card">
+      <div class="sh">🕒 Session phase · <span style="color:${pc}">${esc(d.label||'')}</span><span style="float:right;color:var(--dim);font-size:8.5px">${esc(d.asof||'')}</span></div>
+      <div style="font-family:var(--mono);font-size:10.5px;color:var(--muted);line-height:1.6;margin-bottom:8px">${esc(d.guide||'')}${toSq}</div>
+      ${d.verdict?`<div class="badge" style="color:${pc};border-color:${pc};font-size:11px;white-space:normal;line-height:1.5;display:block">${esc(d.verdict)}</div>`:''}
+      ${(d.messages||[]).length?`<div style="font-family:var(--mono);font-size:9.5px;color:var(--dim);margin-top:8px;line-height:1.6">${d.messages.map(m=>'<div>• '+md(m)+'</div>').join('')}</div>`:''}
+      ${ev.soldoff_close_to_nextopen?`<div style="font-family:var(--mono);font-size:8.5px;color:var(--dim);margin-top:8px;opacity:.8">backtest: close-window +${ev.close_window_15to_close.avg_pct}%/${ev.close_window_15to_close.pos_pct}% · sold-off→next-open +${ev.soldoff_close_to_nextopen.avg_pct}%/${ev.soldoff_close_to_nextopen.pos_pct}% · ${esc(ev.sample||'')}</div>`:''}
+    </div>`;
+  }catch(e){ $('closing').innerHTML=''; }
+}
 async function track(tk){
   tk=(tk||'').trim().toUpperCase(); if(!tk)return; $('q').value=tk;
-  LIVE_TK=tk; renderIv(); loadPos(); loadDD(); loadIvAdvisor(); loadSparks(); loadRsi(); loadMood(); loadSmartStop();
-  clearInterval(POS_TIMER); POS_TIMER=setInterval(()=>{loadPos();loadDD();loadRsi();loadMood();loadSmartStop();},15000);
+  LIVE_TK=tk; renderIv(); loadPos(); loadDD(); loadIvAdvisor(); loadSparks(); loadRsi(); loadMood(); loadSmartStop(); loadDepth(); loadClosing();
+  clearInterval(POS_TIMER); POS_TIMER=setInterval(()=>{loadPos();loadDD();loadRsi();loadMood();loadSmartStop();loadDepth();loadClosing();},15000);
   $('out').innerHTML='<div class="card"><span style="color:var(--dim);font-family:var(--mono);font-size:12px">⟳ computing realized variance + HAR for '+esc(tk)+'…</span></div>';
   try{
     const r=await (await fetch('/api/intraday/'+encodeURIComponent(tk))).json();

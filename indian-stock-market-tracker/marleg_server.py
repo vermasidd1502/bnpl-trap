@@ -417,6 +417,20 @@ def api_industry_members():
     return jsonify(cached("industry_members", load, 3600))
 
 
+@app.route("/api/depth/<tk>")
+def api_depth(tk):
+    """Live equity order book (5-level ladder + buy/sell order % + walls), Groww read-only."""
+    import marleg_depth
+    return jsonify(cached("depth:" + tk.upper(), lambda: marleg_depth.read(tk), 8))   # short TTL — live book
+
+
+@app.route("/api/closing/<tk>")
+def api_closing(tk):
+    """Session-phase clock + backtested closing-behaviour read for one stock."""
+    import marleg_closing
+    return jsonify(cached("closing:" + tk.upper(), lambda: marleg_closing.read(tk), 60))
+
+
 @app.route("/api/volume_pod/add", methods=["POST"])
 def api_volume_pod_add():
     """Add or re-classify a stock in the Volume Pod. Creates new sectors/industries freely."""
