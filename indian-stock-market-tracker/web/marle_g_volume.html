@@ -185,6 +185,14 @@ async function afSubmit(){
   }catch(e){ $('af-msg').textContent='failed'; }
 }
 // ---- gated longs (O'Neil/CAN-SLIM confluence: leading sector + U/D>MA & rising + price>0.618 fib) ----
+function gatedTenure(p){
+  if(!p.days_on_list){ return '<span style="color:var(--dim)">—</span>'; }
+  if(p.new_today){ return '<span style="color:var(--dim);font-size:10px">🆕 new today</span>'; }
+  const col=p.days_on_list>=3?'var(--saffron)':'var(--amber)';
+  const tot=p.total_days&&p.total_days>p.days_on_list?` <span style="color:var(--dim)">(${p.total_days} total)</span>`:'';
+  return `<span style="color:${col};font-weight:700;font-size:11px">🔥 day ${p.days_on_list}</span>`+
+         `<span style="color:var(--dim);font-size:9.5px"> · since ${p.on_since||'—'}</span>${tot}`;
+}
 function toggleGated(){ const f=$('gatedpanel'); const sh=f.style.display==='none'; f.style.display=sh?'block':'none'; if(sh) loadGated(); }
 async function loadGated(){
   const f=$('gatedpanel'); f.innerHTML='<span style="color:var(--dim);font-family:var(--mono);font-size:12px">⟳ loading gated longs…</span>';
@@ -192,8 +200,10 @@ async function loadGated(){
     const d=await (await fetch('/api/gated')).json();
     if(d.error){ f.innerHTML='<span style="color:var(--dim)">'+d.error+'</span>'; return; }
     f.innerHTML=`<div class="sh" style="color:var(--green)">🎯 GATED LONGS · ${d.n}/${d.universe} pass all 3 gates · leading sector + U/D&gt;MA&rising + price&gt;0.618 fib · as of ${d.asof||''}</div>`+
-      (d.picks&&d.picks.length?`<table><thead><tr><th>Symbol</th><th>Sector</th><th>U/D vs MA</th><th>Fib</th><th>Price</th><th>Target</th></tr></thead><tbody>`+
+      `<div style="font-family:var(--mono);font-size:9.5px;color:var(--dim);margin:-4px 0 8px">🔥 <b>on list</b> = consecutive days the name has re-qualified (snapshotted daily). A multi-day streak is a stronger, stickier signal than a one-day flash.</div>`+
+      (d.picks&&d.picks.length?`<table><thead><tr><th>Symbol</th><th>On list</th><th>Sector</th><th>U/D vs MA</th><th>Fib</th><th>Price</th><th>Target</th></tr></thead><tbody>`+
         d.picks.map(p=>`<tr class="stk" onclick="openStock('${p.s}')"><td><span class="sym">${p.s}</span><span class="cmp">${p.n||''}</span><span class="edit" title="chart" onclick="event.stopPropagation();location.href='marle_g_chart.html?q=${p.s}'">📈</span></td>
+          <td style="text-align:left">${gatedTenure(p)}</td>
           <td style="text-align:left;color:var(--muted)">${p.sector}</td>
           <td><b style="color:var(--green)">${p.ud}</b> &gt; ${p.ud_ma}</td><td>${p.fib}</td>
           <td>₹${(p.price||0).toLocaleString('en-IN')}</td>
@@ -203,7 +213,7 @@ async function loadGated(){
 }
 window.MG_SELF_REFRESH = true;   // self-refreshes every 5 min (below) — nav.js skips its 60s full reload
 load();
-setInterval(load, 300000);       // refresh the volume pod every 5 minutes (soft re-fetch + re-render)
+setInterval(()=>{ load(); if($('gatedpanel') && $('gatedpanel').style.display!=='none') loadGated(); }, 300000);  // refresh table + gated panel (if open) every 5 min
 </script>
   <script>
 (async function(){

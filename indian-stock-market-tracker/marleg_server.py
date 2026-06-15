@@ -352,6 +352,12 @@ def _gated_live():
             d["asof"] = (d.get("asof") or "") + "  ·  live px " + ist.strftime("%H:%M")
     except Exception:
         pass
+    # daily-persist the gated list + stamp each pick with its tenure (streak / on-since)
+    try:
+        import marleg_gated_history as gh
+        gh.annotate(d.get("picks", []), sym_key="s")
+    except Exception:
+        pass
     return d
 
 
@@ -1241,6 +1247,22 @@ def api_whatif():
     key = f"whatif:{tk}:{qty}:{side}"
     return jsonify(cached(key, lambda: marleg_var.whatif(tk, qty, side), 120))
 
+@app.route("/api/refresh", methods=["GET", "POST"])
+def api_refresh():
+    """Force-refresh: drop cached responses so every pod re-pulls live on next load.
+    ?key=<prefix> clears only matching keys (e.g. ?key=volume); no arg clears everything."""
+    prefix = request.args.get("key")
+    with _LOCK:
+        if prefix:
+            ks = [k for k in _CACHE if k.startswith(prefix)]
+            for k in ks:
+                _CACHE.pop(k, None)
+            n = len(ks)
+        else:
+            n = len(_CACHE)
+            _CACHE.clear()
+    return jsonify({"cleared": n, "scope": prefix or "all", "ts": time.strftime("%H:%M:%S")})
+
 @app.route("/api/diag")
 def api_diag():
     """System self-diagnosis — auth, feeds, processes, freshness, modules, routes, tasks."""
@@ -1488,9 +1510,54 @@ def static_file(p):
             return send_from_directory(base, p)
     return ("not found", 404)
 
+def _gated_cache_stale():
+    """True if the gated cache wasn't regenerated today (IST) — i.e. the daily scan didn't run."""
+    import datetime as _dt
+    p = os.path.join(HERE, "marleg_gated_cache.json")
+    if not os.path.exists(p):
+        return True
+    ist_today = (_dt.datetime.utcnow() + _dt.timedelta(hours=5, minutes=30)).date()
+    m_ist = (_dt.datetime.utcfromtimestamp(os.path.getmtime(p)) + _dt.timedelta(hours=5, minutes=30)).date()
+    return m_ist < ist_today
+
+
+def _daily_scan_refresh_loop():
+    """Keep the gated + volume lists fresh. If the gated cache is from a prior IST day, re-run the
+    EOD pipeline (full volume scan + gated scan) in the background, then bust their caches. Checked
+    on startup and every 3h — so the lists never silently freeze because a scheduled task didn't fire.
+    Weekdays only (NSE shut Sat/Sun; Monday picks up Friday's close). A lockfile prevents overlap."""
+    import datetime as _dt
+    import subprocess as _sp
+    lock = os.path.join(HERE, "marleg_eod_running.lock")
+    while True:
+        try:
+            ist = _dt.datetime.utcnow() + _dt.timedelta(hours=5, minutes=30)
+            recent_lock = os.path.exists(lock) and (time.time() - os.path.getmtime(lock) < 1800)
+            if _gated_cache_stale() and ist.weekday() < 5 and not recent_lock:
+                print("[daily-refresh] gated/volume cache is stale -> running EOD scans in background...")
+                with open(lock, "w") as f:
+                    f.write(str(time.time()))
+                try:
+                    _sp.run([sys.executable, os.path.join(HERE, "marleg_eod.py")], cwd=HERE, timeout=3600)
+                finally:
+                    try:
+                        os.remove(lock)
+                    except Exception:
+                        pass
+                with _LOCK:
+                    for k in [k for k in _CACHE if k.startswith("gated") or k.startswith("volume")]:
+                        _CACHE.pop(k, None)
+                print("[daily-refresh] EOD scans done; gated/volume caches refreshed.")
+        except Exception as e:
+            print("[daily-refresh] error:", e)
+        time.sleep(3 * 3600)
+
+
 if __name__ == "__main__":
     # MARLEG_HOST/MARLEG_PORT let the Pod Suite launcher (and anything else) relocate us
     _host = os.environ.get("MARLEG_HOST", "127.0.0.1")
     _port = int(os.environ.get("MARLEG_PORT", "8777"))
+    import sys
+    threading.Thread(target=_daily_scan_refresh_loop, daemon=True).start()   # auto-keep lists fresh daily
     print(f"Marle-G surveillance backend -> http://{_host}:{_port}/")
     app.run(host=_host, port=_port, threaded=True)

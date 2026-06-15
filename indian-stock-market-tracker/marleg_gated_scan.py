@@ -71,7 +71,9 @@ def main():
                       "price": round(price, 2), "target": round(price + 2 * atr, 1),
                       "tgtpct": round(2 * atr / price * 100, 1), "stop": round(price - atr, 1)})
     picks.sort(key=lambda x: -x["ud"])
-    json.dump({"asof": time.strftime("%Y-%m-%d %H:%M IST"), "n": len(picks),
+    from datetime import datetime, timezone, timedelta
+    ist = datetime.now(timezone(timedelta(hours=5, minutes=30))).strftime("%Y-%m-%d %H:%M IST")  # true IST (machine is US-CT)
+    json.dump({"asof": ist, "n": len(picks),
                "universe": close.shape[1], "picks": picks}, open(OUT, "w", encoding="utf-8"), ensure_ascii=False)
     print(f"gated longs: {len(picks)} / {close.shape[1]}  ->  {OUT}")
     for p in picks[:12]:
