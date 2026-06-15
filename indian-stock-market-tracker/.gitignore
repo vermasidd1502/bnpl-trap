@@ -83,3 +83,9 @@ marleg_gate_models_bt.json
 
 # canonical cached daily price panel (runtime, regenerable, large)
 marleg_panel_cache.pkl
+
+# strategy-lab results (research artifact, regenerable)
+marleg_strat_lab.json
+
+# macro-gate backtest output (research artifact, regenerable)
+marleg_macro_gate_bt.json
