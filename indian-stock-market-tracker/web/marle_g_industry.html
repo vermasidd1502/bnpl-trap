@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Industry Rotation · Marle-G</title>
+<style>
+  :root{ --bg:#080a0e;--bg2:#0e1116;--card:#14171e;--border:rgba(255,255,255,.08);
+    --ink:#eef1f6;--muted:#9aa3b4;--dim:#646c7a;--mono:'SF Mono',ui-monospace,Consolas,monospace;
+    --saffron:#ff9933;--india-green:#138808;--green:#22c55e;--red:#ef4444;--amber:#fbbf24;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(1100px 520px at 50% -10%,rgba(255,153,51,.05),transparent 60%),var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--border);background:rgba(8,10,14,.8);backdrop-filter:blur(10px);position:sticky;top:0;z-index:10}
+  .brand{font-family:var(--mono);font-weight:800;letter-spacing:.18em;font-size:13px;display:flex;align-items:center;gap:9px}
+  .brand .mark{width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,var(--saffron),var(--india-green))}
+  .brand .w{background:linear-gradient(90deg,var(--saffron),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tabs{display:flex;gap:16px;font-family:var(--mono);font-size:11px;flex-wrap:wrap}
+  .wrap{max-width:1240px;margin:0 auto;padding:22px 24px 70px}
+  .head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:6px;flex-wrap:wrap;gap:10px}
+  .head h1{font-size:21px;font-weight:800;letter-spacing:-.01em}
+  .head .sub{font-family:var(--mono);font-size:10.5px;color:var(--dim);margin-top:4px}
+  .clock{font-family:var(--mono);font-size:10.5px;color:var(--muted);text-align:right;line-height:1.6}
+  .clock b{color:var(--saffron)}
+  .why{font-family:var(--mono);font-size:10.5px;color:var(--muted);background:var(--card);border:1px solid var(--border);
+    border-left:3px solid var(--saffron);border-radius:10px;padding:10px 14px;margin:12px 0 16px;line-height:1.6}
+  .why b{color:var(--ink)} .why .g{color:var(--green)} .why .r{color:var(--red)}
+  .ctrl{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .seg{display:inline-flex;border:1px solid var(--border);border-radius:9px;overflow:hidden}
+  .seg button{font-family:var(--mono);font-size:10.5px;font-weight:700;color:var(--dim);background:var(--bg2);border:0;padding:7px 13px;cursor:pointer}
+  .seg button.on{color:var(--bg);background:var(--saffron)}
+  .seg button:not(.on):hover{color:var(--ink)}
+  .meta{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:var(--dim)}
+  .meta b{color:var(--muted)}
+  .leaders{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px}
+  .chip{font-family:var(--mono);font-size:10.5px;font-weight:700;padding:5px 11px;border-radius:20px;
+    background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.28)}
+  .chip .n{color:var(--dim);font-weight:600;margin-left:5px}
+  .secgroup{margin-bottom:18px}
+  .sechd{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-weight:700;margin:0 0 9px 2px;display:flex;gap:8px;align-items:center}
+  .sechd .bar{flex:1;height:1px;background:var(--border)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(216px,1fr));gap:11px}
+  .tile{position:relative;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 13px 11px;overflow:hidden;transition:.15s}
+  .tile::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent)}
+  .tile:hover{transform:translateY(-2px);border-color:var(--accent);box-shadow:0 10px 26px rgba(0,0,0,.4)}
+  .tile.lead{box-shadow:0 0 0 1px rgba(34,197,94,.15)}
+  .t-top{display:flex;align-items:center;gap:7px;margin-bottom:5px}
+  .rk{font-family:var(--mono);font-size:10px;font-weight:800;color:var(--accent)}
+  .kb{font-family:var(--mono);font-size:8px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;border-radius:5px;margin-left:auto}
+  .kb.industry{background:rgba(255,153,51,.14);color:var(--saffron)}
+  .kb.sector{background:rgba(255,255,255,.06);color:var(--dim)}
+  .t-name{font-size:13px;font-weight:700;line-height:1.25}
+  .t-macro{font-family:var(--mono);font-size:9px;color:var(--dim);margin-top:2px;text-transform:uppercase;letter-spacing:.04em}
+  .t-ret{font-family:var(--mono);font-size:20px;font-weight:800;margin-top:9px;letter-spacing:-.02em}
+  .t-ret .u{font-size:11px;font-weight:600;color:var(--dim);margin-left:3px}
+  .up{color:var(--green)} .down{color:var(--red)} .flat{color:var(--muted)}
+  .brd{margin-top:9px}
+  .brd .lab{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--dim);margin-bottom:3px}
+  .brd .track{height:5px;border-radius:3px;background:rgba(255,255,255,.06);overflow:hidden}
+  .brd .fill{height:100%;border-radius:3px;background:var(--accent)}
+  .t-foot{display:flex;gap:12px;margin-top:9px;font-family:var(--mono);font-size:9.5px;color:var(--dim)}
+  .t-foot b{color:var(--muted);font-weight:700}
+  table.rank{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11px}
+  table.rank th{text-align:left;color:var(--dim);font-weight:700;font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;padding:7px 9px;border-bottom:1px solid var(--border)}
+  table.rank td{padding:7px 9px;border-bottom:1px solid rgba(255,255,255,.04)}
+  table.rank tr:hover td{background:rgba(255,255,255,.02)}
+  table.rank .nm{color:var(--ink);font-weight:700;font-family:Inter,sans-serif}
+  .legend{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:9.5px;color:var(--dim);margin:4px 2px 0}
+  .legend .scale{height:9px;width:150px;border-radius:5px;background:linear-gradient(90deg,#ef4444,#fbbf24,#22c55e)}
+  .empty{text-align:center;padding:50px;color:var(--muted);font-family:var(--mono);font-size:12px}
+  .skel{height:118px;border-radius:12px;background:linear-gradient(90deg,#11141a,#171b22,#11141a);background-size:200% 100%;animation:sh 1.3s infinite}
+  @keyframes sh{to{background-position:-200% 0}}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span></span></div>
+  <div class="tabs"></div>
+</div>
+
+<main class="wrap">
+  <div class="head">
+    <div>
+      <h1>🔄 Industry Rotation</h1>
+      <div class="sub">leader-in-a-leading-group · granular relative strength + breadth across 1,193 names</div>
+    </div>
+    <div class="clock" id="clock"></div>
+  </div>
+
+  <div class="why">
+    <b>Why this exists.</b> O'Neil's "L" — buy a leader inside a <b>leading industry group</b>, not just a leading sector.
+    Backtested: gating the screener on the coarse 25-bucket sector was actually <span class="r">value-destroying</span> at
+    10–21d, while the granular industry gate <span class="g">adds value at every horizon</span>. The gated-longs screen now
+    requires the stock's <b>industry</b> (below) to be top-40%.
+  </div>
+
+  <div class="ctrl">
+    <div class="seg" id="viewSeg">
+      <button data-v="heatmap" class="on">heatmap</button>
+      <button data-v="ranked">ranked</button>
+    </div>
+    <div class="seg" id="filtSeg">
+      <button data-f="all" class="on">all groups</button>
+      <button data-f="industry">industries only</button>
+      <button data-f="leading">leading only</button>
+    </div>
+    <div class="seg" id="grpSeg">
+      <button data-g="rank" class="on">by leadership</button>
+      <button data-g="sector">by sector</button>
+    </div>
+    <div class="meta" id="meta"></div>
+  </div>
+
+  <div class="legend"><span>lagging</span><span class="scale"></span><span>leading</span>
+    <span style="margin-left:14px">★ = top-40% (passes gate&nbsp;1)</span></div>
+
+  <div class="leaders" id="leaders" style="margin-top:14px"></div>
+  <div id="body"><div class="grid">
+    <div class="skel"></div><div class="skel"></div><div class="skel"></div><div class="skel"></div>
+    <div class="skel"></div><div class="skel"></div><div class="skel"></div><div class="skel"></div>
+  </div></div>
+</main>
+
+<script>
+let DATA = null, VIEW = "heatmap", FILT = "all", GRP = "rank";
+
+function clock(){
+  const now = new Date();
+  const ist = new Date(now.getTime()+ (now.getTimezoneOffset()+330)*60000);
+  const ct  = new Date(now.getTime()+ (now.getTimezoneOffset()-360)*60000);
+  const f = d => d.toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit",hour12:false});
+  document.getElementById("clock").innerHTML = `<b>${f(ist)}</b> IST · ${f(ct)} CT`;
+}
+setInterval(clock, 30000); clock();
+
+function accent(rankPct){                       // 0=leading(green) .. 1=lagging(red)
+  const hue = Math.round((1-rankPct)*140);      // 140=green, 0=red
+  return `hsl(${hue} 68% 52%)`;
+}
+const sign = x => x>0?"up":x<0?"down":"flat";
+const pct = x => (x>0?"+":"")+(x==null?"–":x.toFixed(2))+"%";
+
+function fctr(groups){
+  let g = groups.slice();
+  if (FILT==="industry") g = g.filter(x=>x.kind==="industry");
+  if (FILT==="leading")  g = g.filter(x=>x.leading);
+  return g;
+}
+
+function tile(x){
+  const ac = accent(x.rank_pct);
+  return `<div class="tile ${x.leading?'lead':''}" style="--accent:${ac}">
+    <div class="t-top"><span class="rk">#${x.lead_rank}${x.leading?' ★':''}</span>
+      <span class="kb ${x.kind}">${x.kind}</span></div>
+    <div class="t-name">${x.group}</div>
+    <div class="t-macro">${x.macro||''}</div>
+    <div class="t-ret ${sign(x.ret20)}">${pct(x.ret20)}<span class="u">20d</span></div>
+    <div class="brd"><div class="lab"><span>breadth &gt;50DMA</span><span>${x.breadth}%</span></div>
+      <div class="track"><div class="fill" style="width:${x.breadth}%"></div></div></div>
+    <div class="t-foot"><span><b>${x.n}</b> names</span><span>RS <b>${pct(x.rs)}</b></span>
+      ${x.udtilt!=null?`<span>U/D <b>${x.udtilt}</b></span>`:''}</div>
+  </div>`;
+}
+
+function render(){
+  const body = document.getElementById("body");
+  if (!DATA || !DATA.groups || !DATA.groups.length){ body.innerHTML = `<div class="empty">No industry data yet — run <code>python marleg_gated_scan.py</code></div>`; return; }
+  let g = fctr(DATA.groups);
+  const lead = DATA.groups.filter(x=>x.leading);
+  document.getElementById("leaders").innerHTML = lead.slice(0,16).map(x=>
+    `<span class="chip">${x.group}<span class="n">${pct(x.ret20)}</span></span>`).join("");
+  document.getElementById("meta").innerHTML =
+    `<b>${DATA.universe||''}</b> names · <b>${DATA.groups.length}</b> groups · <b>${lead.length}</b> leading · ${DATA.asof||''}`;
+
+  if (VIEW==="ranked"){
+    body.innerHTML = `<table class="rank"><thead><tr><th>#</th><th>industry / group</th><th>sector</th><th>type</th>
+      <th>20d</th><th>50d</th><th>breadth</th><th>RS</th><th>U/D</th><th>n</th></tr></thead><tbody>` +
+      g.map(x=>`<tr><td style="color:${accent(x.rank_pct)};font-weight:800">${x.lead_rank}${x.leading?' ★':''}</td>
+        <td class="nm">${x.group}</td><td style="color:var(--dim)">${x.macro||''}</td>
+        <td>${x.kind}</td><td class="${sign(x.ret20)}">${pct(x.ret20)}</td>
+        <td class="${sign(x.ret50)}">${pct(x.ret50)}</td><td>${x.breadth}%</td>
+        <td class="${sign(x.rs)}">${pct(x.rs)}</td><td>${x.udtilt??'–'}</td><td>${x.n}</td></tr>`).join("") +
+      `</tbody></table>`;
+    return;
+  }
+  if (GRP==="sector"){
+    const bysec = {};
+    g.forEach(x=>{ (bysec[x.macro||"Other"] = bysec[x.macro||"Other"]||[]).push(x); });
+    // order sectors by their best (lowest rank_pct) member
+    const order = Object.keys(bysec).sort((a,b)=>Math.min(...bysec[a].map(z=>z.rank_pct))-Math.min(...bysec[b].map(z=>z.rank_pct)));
+    body.innerHTML = order.map(sec=>`<div class="secgroup">
+      <div class="sechd">${sec}<span class="bar"></span></div>
+      <div class="grid">${bysec[sec].sort((a,b)=>a.lead_rank-b.lead_rank).map(tile).join("")}</div></div>`).join("");
+    return;
+  }
+  body.innerHTML = `<div class="grid">${g.map(tile).join("")}</div>`;
+}
+
+function wireSeg(id, set){
+  document.getElementById(id).querySelectorAll("button").forEach(b=>{
+    b.addEventListener("click",()=>{
+      b.parentNode.querySelectorAll("button").forEach(x=>x.classList.remove("on"));
+      b.classList.add("on"); set(b); render();
+    });
+  });
+}
+wireSeg("viewSeg", b=>VIEW=b.dataset.v);
+wireSeg("filtSeg", b=>FILT=b.dataset.f);
+wireSeg("grpSeg",  b=>GRP=b.dataset.g);
+
+async function load(){
+  try{
+    DATA = await (await fetch("/api/industry_rs")).json();
+  }catch(e){ DATA = {groups:[]}; }
+  render();
+}
+window.podRefresh = load;
+load();
+</script>
+<script src="marle_g_nav.js"></script>
+</body>
+</html>

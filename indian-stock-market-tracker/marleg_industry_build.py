@@ -231,6 +231,68 @@ for _d in (RULES_FINAL, RULES_FINAL2):
         RULES.setdefault(_ind, [])
         RULES[_ind].extend(s for s in _syms if s not in RULES[_ind])
 
+# ---- yfinance label -> curated label (fold synonyms so widened names don't fragment) -------
+# Only CLEAR synonyms are mapped; ambiguous yfinance labels keep their own (and become their
+# own granular industry, with the RS engine's min-members floor handling the thin tail).
+NORMALIZE = {
+    # pharma / healthcare
+    "Drug Manufacturers - Specialty & Generic": "Pharma - Formulations",
+    "Drug Manufacturers - General": "Pharma - Formulations",
+    "Medical Care Facilities": "Hospitals",
+    # textiles / apparel / retail
+    "Textile Manufacturing": "Textiles",
+    "Apparel Manufacturing": "Textiles",
+    "Apparel Retail": "Retail",
+    "Department Stores": "Retail",
+    "Footwear & Accessories": "Footwear",
+    # construction / infra / realty / materials
+    "Engineering & Construction": "EPC & Infrastructure",
+    "Infrastructure Operations": "EPC & Infrastructure",
+    "Real Estate - Development": "Realty",
+    "Real Estate Services": "Realty",
+    "Building Products & Equipment": "Building Products",
+    "Building Materials": "Building Products",
+    # IT
+    "Information Technology Services": "IT Services",
+    "Software - Application": "IT - Products & Platforms",
+    "Software - Infrastructure": "IT - Products & Platforms",
+    # financials
+    "Capital Markets": "Capital Markets & AMC",
+    "Asset Management": "Capital Markets & AMC",
+    "Credit Services": "NBFC - Lending",
+    "Banks - Regional": "Banks - Private",
+    # industrials / machinery / electrical / metals
+    "Specialty Industrial Machinery": "Industrial Machinery & EPC",
+    "Electrical Equipment & Parts": "Electrical Equipment",
+    "Metal Fabrication": "Steel",
+    "Aluminum": "Aluminium",
+    "Other Industrial Metals & Mining": "Diversified Metals",
+    # auto / logistics / packaging
+    "Auto Parts": "Auto Ancillary - Parts",
+    "Integrated Freight & Logistics": "Logistics & Freight",
+    "Packaging & Containers": "Industrial Packaging",
+    # consumer / FMCG / hospitality / media
+    "Packaged Foods": "FMCG - Packaged Foods",
+    "Confectioners": "FMCG - Packaged Foods",
+    "Household & Personal Products": "FMCG - Personal & Home Care",
+    "Beverages - Wineries & Distilleries": "Beverages & Distilleries",
+    "Furnishings, Fixtures & Appliances": "Consumer Durables / Appliances",
+    "Lodging": "Hotels & Travel",
+    "Resorts & Casinos": "Hotels & Travel",
+    "Entertainment": "Media & Entertainment",
+    "Broadcasting": "Media & Entertainment",
+    # paper / services / energy / telecom / defense / solar
+    "Paper & Paper Products": "Paper & Forest Products",
+    "Lumber & Wood Production": "Paper & Forest Products",
+    "Staffing & Employment Services": "Staffing & BPO",
+    "Education & Training Services": "Education",
+    "Oil & Gas Refining & Marketing": "Refiner & OMC",
+    "Oil & Gas Equipment & Services": "Oilfield Services & Equipment",
+    "Communication Equipment": "Telecom Infra & Equipment",
+    "Aerospace & Defense": "Defense",
+    "Solar": "Solar & Renewable Equipment",
+}
+
 
 def load_rows(f):
     return list(csv.DictReader(open(os.path.join(HERE, f), encoding="utf-8-sig")))
@@ -254,17 +316,36 @@ def build():
         if s in macro:
             macro[s] = m
 
-    # existing yfinance granular (skip placeholders == macro name)
-    yf_sub = {}
+    # existing yfinance granular (skip placeholders == macro name); fold synonyms into curated vocab
+    yf_sub, yf_sec = {}, {}
     try:
-        old = json.load(open(os.path.join(HERE, "marleg_sectors.json")))
+        old = json.load(open(os.path.join(HERE, "marleg_sectors.json"), encoding="utf-8"))
         for s, info in old.items():
+            su = s.upper()
             ind = (info or {}).get("industry")
             sec = (info or {}).get("sector")
+            if sec and sec.lower() != "others":
+                yf_sec[su] = sec
             if ind and ind != sec and ind.lower() != "others":
-                yf_sub[s.upper()] = ind
+                yf_sub[su] = NORMALIZE.get(ind, ind)
     except Exception:
         pass
+
+    # WIDEN the universe beyond NTM+N500: pull in any liquid name yfinance classified by sector.
+    # Use the yf sector as that name's macro bucket; grab a display name from marleg_symbols.json.
+    sym_names = {}
+    try:
+        for r in json.load(open(os.path.join(HERE, "marleg_symbols.json"), encoding="utf-8")):
+            if isinstance(r, dict) and r.get("s"):
+                sym_names[r["s"].upper()] = r.get("n") or r.get("name") or r["s"].upper()
+    except Exception:
+        pass
+    widened = 0
+    for su, sec in yf_sec.items():
+        if su not in macro:
+            macro[su] = sec
+            names.setdefault(su, sym_names.get(su, su))
+            widened += 1
 
     sym_to_curated = {}
     for ind, syms in RULES.items():
@@ -296,6 +377,7 @@ def build():
         "macro_to_industries": {k: sorted(v) for k, v in sorted(macro_to_ind.items())},
         "coverage": {
             "universe": len(universe),
+            "widened_from_yf": widened,
             "curated": src_count["curated"],
             "yfinance": src_count["yfinance"],
             "macro_fallback": src_count["macro-fallback"],

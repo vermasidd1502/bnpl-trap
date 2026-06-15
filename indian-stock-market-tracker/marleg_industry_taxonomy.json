@@ -1,19 +1,74 @@
 {
  "by_symbol": {
+  "20MICRONS": {
+   "macro": "Metals & Mining",
+   "industry": "Diversified Metals",
+   "name": "20 Microns"
+  },
+  "21STCENMGM": {
+   "macro": "Financial Services",
+   "industry": "Capital Markets & AMC",
+   "name": "21st Cent Mgt"
+  },
   "360ONE": {
    "macro": "Financial Services",
    "industry": "Capital Markets & AMC",
    "name": "360 ONE WAM Ltd."
+  },
+  "3IINFOLTD": {
+   "macro": "Information Technology",
+   "industry": "IT Services",
+   "name": "3i Infotech"
   },
   "3MINDIA": {
    "macro": "Diversified",
    "industry": "Conglomerates",
    "name": "3M India Ltd."
   },
+  "5PAISA": {
+   "macro": "Financial Services",
+   "industry": "Capital Markets & AMC",
+   "name": "5Paisa Capital"
+  },
+  "63MOONS": {
+   "macro": "Information Technology",
+   "industry": "IT - Products & Platforms",
+   "name": "63 Moons Tech"
+  },
+  "A2ZINFRA": {
+   "macro": "Capital Goods",
+   "industry": "EPC & Infrastructure",
+   "name": "A2Z Infra Engg"
+  },
+  "AAATECH": {
+   "macro": "Information Technology",
+   "industry": "IT Services",
+   "name": "AAA Technologies"
+  },
   "AADHARHFC": {
    "macro": "Financial Services",
    "industry": "Mortgage Finance",
    "name": "Aadhar Housing Finance Ltd."
+  },
+  "AAKASH": {
+   "macro": "Oil Gas & Consumable Fuels",
+   "industry": "Oilfield Services & Equipment",
+   "name": "Aakash Exploration"
+  },
+  "AAREYDRUGS": {
+   "macro": "Healthcare",
+   "industry": "Pharma - Formulations",
+   "name": "Aarey Pharma"
+  },
+  "AARON": {
+   "macro": "Capital Goods",
+   "industry": "Industrial Machinery & EPC",
+   "name": "Aaron Industries"
+  },
+  "AARTECH": {
+   "macro": "Capital Goods",
+   "industry": "Electrical Equipment",
+   "name": "Aartech Solonics"
   },
   "AARTIDRUGS": {
    "macro": "Healthcare",
@@ -27,13 +82,28 @@
   },
   "AARTIPHARM": {
    "macro": "Healthcare",
-   "industry": "Drug Manufacturers - Specialty & Generic",
+   "industry": "Pharma - Formulations",
    "name": "Aarti Pharmalabs Ltd."
+  },
+  "AARTISURF": {
+   "macro": "Chemicals",
+   "industry": "Specialty Chemicals",
+   "name": "Aarti Surfactant"
+  },
+  "AARVI": {
+   "macro": "Capital Goods",
+   "industry": "Staffing & BPO",
+   "name": "Aarvi Encon"
   },
   "AAVAS": {
    "macro": "Financial Services",
    "industry": "Mortgage Finance",
    "name": "Aavas Financiers Ltd."
+  },
+  "ABAN": {
+   "macro": "Oil Gas & Consumable Fuels",
+   "industry": "Oil & Gas Drilling",
+   "name": "Aban Offshore"
   },
   "ABB": {
    "macro": "Capital Goods",
@@ -42,7 +112,7 @@
   },
   "ABBOTINDIA": {
    "macro": "Healthcare",
-   "industry": "Drug Manufacturers - Specialty & Generic",
+   "industry": "Pharma - Formulations",
    "name": "Abbott India Ltd."
   },
   "ABCAPITAL": {
@@ -50,9 +120,14 @@
    "industry": "NBFC - Lending",
    "name": "Aditya Birla Capital Ltd."
   },
+  "ABCOTS": {
+   "macro": "Textiles",
+   "industry": "Textiles",
+   "name": "AB Cotspin India"
+  },
   "ABDL": {
    "macro": "Fast Moving Consumer Goods",
-   "industry": "Beverages - Wineries & Distilleries",
+   "industry": "Beverages & Distilleries",
    "name": "Allied Blenders and Distillers Ltd."
   },
   "ABFRL": {
@@ -60,14 +135,24 @@
    "industry": "Retail",
    "name": "Aditya Birla Fashion and Retail Ltd."
   },
+  "ABINFRA": {
+   "macro": "Capital Goods",
+   "industry": "EPC & Infrastructure",
+   "name": "AB Infrabuild"
+  },
   "ABLBL": {
    "macro": "Consumer Services",
-   "industry": "Apparel Retail",
+   "industry": "Retail",
    "name": "Aditya Birla Lifestyle Brands Ltd."
+  },
+  "ABMINTLLTD": {
+   "macro": "Chemicals",
+   "industry": "Specialty Chemicals",
+   "name": "Abm International"
   },
   "ABREL": {
    "macro": "Realty",
-   "industry": "Real Estate Services",
+   "industry": "Realty",
    "name": "Aditya Birla Real Estate Ltd."
   },
   "ABSLAMC": {
@@ -80,15 +165,35 @@
    "industry": "Cement",
    "name": "ACC Ltd."
   },
+  "ACCELYA": {
+   "macro": "Information Technology",
+   "industry": "IT Services",
+   "name": "Accelya Solutions"
+  },
+  "ACCURACY": {
+   "macro": "Capital Goods",
+   "industry": "Logistics & Freight",
+   "name": "Accuracy Shipping"
+  },
   "ACE": {
    "macro": "Capital Goods",
    "industry": "Farm & Heavy Construction Machinery",
    "name": "Action Construction Equipment Ltd."
   },
+  "ACEINTEG": {
+   "macro": "Capital Goods",
+   "industry": "Staffing & BPO",
+   "name": "Ace Integrated Soln"
+  },
   "ACI": {
    "macro": "Chemicals",
    "industry": "Specialty Chemicals",
    "name": "Archean Chemical Industries Ltd."
+  },
+  "ACL": {
+   "macro": "Construction Materials",
+   "industry": "Building Products",
+   "name": "Andhra Cements"
   },
   "ACMESOLAR": {
    "macro": "Power",
@@ -125,6 +230,51 @@
    "industry": "Power Generation - Thermal",
    "name": "Adani Power Ltd."
   },
+  "ADFFOODS": {
+   "macro": "Fast Moving Consumer Goods",
+   "industry": "FMCG - Packaged Foods",
+   "name": "ADF Foods"
+  },
+  "ADL": {
+   "macro": "Consumer Durables",
+   "industry": "Consumer Durables / Appliances",
+   "name": "Archidply Decor"
+  },
+  "ADOR": {
+   "macro": "Capital Goods",
+   "industry": "Industrial Machinery & EPC",
+   "name": "Ador Welding"
+  },
+  "ADROITINFO": {
+   "macro": "Information Technology",
+   "industry": "IT Services",
+   "name": "Adroit Infotech"
+  },
+  "ADSL": {
+   "macro": "Information Technology",
+   "industry": "IT Services",
+   "name": "Allied Digital Serv."
+  },
+  "ADVAIT": {
+   "macro": "Capital Goods",
+   "industry": "Industrial Machinery & EPC",
+   "name": "Advait Energy"
+  },
+  "ADVANCE": {
+   "macro": "Chemicals",
+   "industry": "Agricultural Inputs",
+   "name": "Advance Agrolife"
+  },
+  "ADVANIHOTR": {
+   "macro": "Consumer Services",
+   "industry": "Hotels & Travel",
+   "name": "Advani Hotels"
+  },
+  "ADVENTHTL": {
+   "macro": "Consumer Services",
+   "industry": "Hotels & Travel",
+   "name": "Advent Hotels Inter."
+  },
   "ADVENZYMES": {
    "macro": "Healthcare",
    "industry": "Specialty Chemicals",
@@ -137,13 +287,33 @@
   },
   "AEGISVOPAK": {
    "macro": "Oil Gas & Consumable Fuels",
-   "industry": "Oil & Gas Equipment & Services",
+   "industry": "Oilfield Services & Equipment",
    "name": "Aegis Vopak Terminals Ltd."
+  },
+  "AEPL": {
+   "macro": "Capital Goods",
+   "industry": "Electrical Equipment",
+   "name": "Artemis Electricals"
   },
   "AEQUS": {
    "macro": "Capital Goods",
-   "industry": "Aerospace & Defense",
+   "industry": "Defense",
    "name": "Aequs Ltd."
+  },
+  "AEROENTER": {
+   "macro": "Metals & Mining",
+   "industry": "Steel",
+   "name": "AEROFLEX ENTERPRISES LIMITED"
+  },
+  "AEROFLEX": {
+   "macro": "Capital Goods",
+   "industry": "Steel",
+   "name": "Aeroflex Industries"
+  },
+  "AERONEU": {
+   "macro": "Consumer Services",
+   "industry": "Industrial Packaging",
+   "name": "Aeroflex Neu"
   },
   "AETHER": {
    "macro": "Chemicals",
@@ -152,7 +322,7 @@
   },
   "AFCONS": {
    "macro": "Construction",
-   "industry": "Engineering & Construction",
+   "industry": "EPC & Infrastructure",
    "name": "Afcons Infrastructure Ltd."
   },
   "AFFLE": {
@@ -160,15 +330,80 @@
    "industry": "Advertising Agencies",
    "name": "Affle 3i Ltd."
   },
+  "AFFORDABLE": {
+   "macro": "Capital Goods",
+   "industry": "Industrial Machinery & EPC",
+   "name": "ARAPL"
+  },
+  "AFIL": {
+   "macro": "Financial Services",
+   "industry": "NBFC - Lending",
+   "name": "Akme Fintrade"
+  },
+  "AFSL": {
+   "macro": "Financial Services",
+   "industry": "Capital Markets & AMC",
+   "name": "Abans Financial Services Limited"
+  },
+  "AGARIND": {
+   "macro": "Chemicals",
+   "industry": "Specialty Chemicals",
+   "name": "Agarwal Inds Corp"
+  },
   "AGARWALEYE": {
    "macro": "Healthcare",
    "industry": "Medical Instruments & Supplies",
    "name": "Dr. Agarwal's Health Care Ltd."
   },
+  "AGI": {
+   "macro": "Consumer Services",
+   "industry": "Industrial Packaging",
+   "name": "AGI Greenpac"
+  },
+  "AGIIL": {
+   "macro": "Realty",
+   "industry": "Realty",
+   "name": "AGI Infra"
+  },
+  "AGRITECH": {
+   "macro": "Fast Moving Consumer Goods",
+   "industry": "Farm Products",
+   "name": "Agri-Tech India"
+  },
+  "AGROPHOS": {
+   "macro": "Chemicals",
+   "industry": "Agricultural Inputs",
+   "name": "Agro Phos India"
+  },
+  "AGSTRA": {
+   "macro": "Information Technology",
+   "industry": "IT - Products & Platforms",
+   "name": "AGS Transact"
+  },
+  "AHCL": {
+   "macro": "Healthcare",
+   "industry": "Pharma - Formulations",
+   "name": "Anlon Healthcare"
+  },
+  "AHLADA": {
+   "macro": "Capital Goods",
+   "industry": "Building Products",
+   "name": "Ahlada Engineers"
+  },
+  "AHLEAST": {
+   "macro": "Consumer Services",
+   "industry": "Hotels & Travel",
+   "name": "Asian Hotels East"
+  },
   "AHLUCONT": {
    "macro": "Construction",
-   "industry": "Engineering & Construction",
+   "industry": "EPC & Infrastructure",
    "name": "Ahluwalia Contracts (India) Ltd."
+  },
+  "AHLWEST": {
+   "macro": "Consumer Services",
+   "industry": "Hotels & Travel",
+   "name": "Asian Hotels West"
   },
   "AIAENG": {
    "macro": "Capital Goods",
@@ -177,23 +412,108 @@
   },
   "AIIL": {
    "macro": "Financial Services",
-   "industry": "Capital Markets",
+   "industry": "Capital Markets & AMC",
    "name": "Authum Investment & Infrastructure Ltd."
+  },
+  "AIRAN": {
+   "macro": "Information Technology",
+   "industry": "IT Services",
+   "name": "Airan"
+  },
+  "AIROLAM": {
+   "macro": "Consumer Durables",
+   "industry": "Consumer Durables / Appliances",
+   "name": "AiroLam"
   },
   "AJANTPHARM": {
    "macro": "Healthcare",
    "industry": "Pharma - Formulations",
    "name": "Ajanta Pharmaceuticals Ltd."
   },
+  "AJAXENGG": {
+   "macro": "Capital Goods",
+   "industry": "Farm & Heavy Construction Machinery",
+   "name": "Ajax Engineering"
+  },
+  "AJMERA": {
+   "macro": "Realty",
+   "industry": "Realty",
+   "name": "Ajmera Realty"
+  },
+  "AJOONI": {
+   "macro": "Fast Moving Consumer Goods",
+   "industry": "FMCG - Packaged Foods",
+   "name": "Ajooni Biotech"
+  },
+  "AKASH": {
+   "macro": "Capital Goods",
+   "industry": "EPC & Infrastructure",
+   "name": "Akash Infra-Projects"
+  },
+  "AKG": {
+   "macro": "Capital Goods",
+   "industry": "Industrial Distribution",
+   "name": "AKG Exim"
+  },
+  "AKI": {
+   "macro": "Textiles",
+   "industry": "Footwear",
+   "name": "AKI India"
+  },
+  "AKSHAR": {
+   "macro": "Textiles",
+   "industry": "Textiles",
+   "name": "Akshar Spintex"
+  },
+  "AKSHARCHEM": {
+   "macro": "Chemicals",
+   "industry": "Specialty Chemicals",
+   "name": "Aksharchem (India)"
+  },
+  "AKSHOPTFBR": {
+   "macro": "Information Technology",
+   "industry": "Telecom Infra & Equipment",
+   "name": "Aksh Optifibre"
+  },
   "AKUMS": {
    "macro": "Healthcare",
-   "industry": "Drug Manufacturers - Specialty & Generic",
+   "industry": "Pharma - Formulations",
    "name": "Akums Drugs and Pharmaceuticals Ltd."
+  },
+  "ALANKIT": {
+   "macro": "Information Technology",
+   "industry": "IT Services",
+   "name": "Alankit"
+  },
+  "ALBERTDAVD": {
+   "macro": "Healthcare",
+   "industry": "Pharma - Formulations",
+   "name": "Albert David"
+  },
+  "ALEMBICLTD": {
+   "macro": "Realty",
+   "industry": "Realty",
+   "name": "Alembic"
+  },
+  "ALGOQUANT": {
+   "macro": "Financial Services",
+   "industry": "Capital Markets & AMC",
+   "name": "Algoquant Fintec"
+  },
+  "ALICON": {
+   "macro": "Capital Goods",
+   "industry": "Steel",
+   "name": "Alicon Castalloy"
   },
   "ALIVUS": {
    "macro": "Healthcare",
-   "industry": "Drug Manufacturers - Specialty & Generic",
+   "industry": "Pharma - Formulations",
    "name": "Alivus Life Sciences Ltd."
+  },
+  "ALKALI": {
+   "macro": "Chemicals",
+   "industry": "Specialty Chemicals",
+   "name": "Alkali Metals"
   },
   "ALKEM": {
    "macro": "Healthcare",
@@ -205,24 +525,104 @@
    "industry": "Specialty Chemicals",
    "name": "Alkyl Amines Chemicals Ltd."
   },
+  "ALLCARGO": {
+   "macro": "Capital Goods",
+   "industry": "Logistics & Freight",
+   "name": "Allcargo Logistics"
+  },
+  "ALLDIGI": {
+   "macro": "Capital Goods",
+   "industry": "Specialty Business Services",
+   "name": "Alldigi Tech"
+  },
+  "ALLTIME": {
+   "macro": "Fast Moving Consumer Goods",
+   "industry": "FMCG - Personal & Home Care",
+   "name": "All Time Plastics"
+  },
+  "ALMONDZ": {
+   "macro": "Financial Services",
+   "industry": "Capital Markets & AMC",
+   "name": "Almondz Global Sec"
+  },
   "ALOKINDS": {
    "macro": "Textiles",
-   "industry": "Textile Manufacturing",
+   "industry": "Textiles",
    "name": "Alok Industries Ltd."
+  },
+  "ALPA": {
+   "macro": "Healthcare",
+   "industry": "Pharma - Formulations",
+   "name": "Alpa Laboratories"
+  },
+  "ALPHAGEO": {
+   "macro": "Oil Gas & Consumable Fuels",
+   "industry": "Oilfield Services & Equipment",
+   "name": "Alphageo (India)"
+  },
+  "AMAGI": {
+   "macro": "Information Technology",
+   "industry": "IT - Products & Platforms",
+   "name": "Amagi Media Labs"
+  },
+  "AMANTA": {
+   "macro": "Healthcare",
+   "industry": "Pharma - Formulations",
+   "name": "Amanta Healthcare"
+  },
+  "AMBALALSA": {
+   "macro": "Healthcare",
+   "industry": "Pharma - Formulations",
+   "name": "Ambalal Sarabhai Ent"
   },
   "AMBER": {
    "macro": "Consumer Durables",
    "industry": "Electronics Manufacturing (EMS)",
    "name": "Amber Enterprises India Ltd."
   },
+  "AMBICAAGAR": {
+   "macro": "Fast Moving Consumer Goods",
+   "industry": "FMCG - Personal & Home Care",
+   "name": "Ambica Agarbathies"
+  },
+  "AMBIKCO": {
+   "macro": "Textiles",
+   "industry": "Textiles",
+   "name": "Ambika Cotton Mills"
+  },
   "AMBUJACEM": {
    "macro": "Construction Materials",
    "industry": "Cement",
    "name": "Ambuja Cements Ltd."
   },
+  "AMDIND": {
+   "macro": "Consumer Services",
+   "industry": "Industrial Packaging",
+   "name": "AMD Industries"
+  },
+  "AMIRCHAND": {
+   "macro": "Fast Moving Consumer Goods",
+   "industry": "Farm Products",
+   "name": "Amir Chand Jagdish"
+  },
+  "AMJLAND": {
+   "macro": "Realty",
+   "industry": "Realty",
+   "name": "AMJ Land Holdings"
+  },
+  "AMNPLST": {
+   "macro": "Chemicals",
+   "industry": "Chemicals",
+   "name": "Amines & Plasticizers"
+  },
+  "AMRUTANJAN": {
+   "macro": "Healthcare",
+   "industry": "Pharma - Formulations",
+   "name": "Amrutanjan Health"
+  },
   "ANANDRATHI": {
    "macro": "Financial Services",
-   "industry": "Asset Management",
+   "industry": "Capital Markets & AMC",
    "name": "Anand Rathi Wealth Ltd."
   },
   "ANANTRAJ": {
@@ -230,19 +630,59 @@
    "industry": "Realty",
    "name": "Anant Raj Ltd."
   },
+  "ANDHRAPAP": {
+   "macro": "Forest Materials",
+   "industry": "Paper & Forest Products",
+   "name": "Andhra Paper"
+  },
+  "ANDHRSUGAR": {
+   "macro": "Chemicals",
+   "industry": "Chemicals",
+   "name": "Andhra Sugars"
+  },
   "ANGELONE": {
    "macro": "Financial Services",
    "industry": "Capital Markets & AMC",
    "name": "Angel One Ltd."
+  },
+  "ANIKINDS": {
+   "macro": "Fast Moving Consumer Goods",
+   "industry": "Food Distribution",
+   "name": "Anik Industries"
+  },
+  "ANKITMETAL": {
+   "macro": "Metals & Mining",
+   "industry": "Steel",
+   "name": "Ankit Metal & Power"
+  },
+  "ANMOL": {
+   "macro": "Oil Gas & Consumable Fuels",
+   "industry": "Thermal Coal",
+   "name": "Anmol India"
+  },
+  "ANTELOPUS": {
+   "macro": "Oil Gas & Consumable Fuels",
+   "industry": "Oil & Gas E&P",
+   "name": "Antelopus Selan Ener"
+  },
+  "ANTGRAPHIC": {
+   "macro": "Consumer Services",
+   "industry": "Industrial Packaging",
+   "name": "Antarctica"
   },
   "ANTHEM": {
    "macro": "Healthcare",
    "industry": "Biotechnology",
    "name": "Anthem Biosciences Ltd."
   },
+  "ANUHPHR": {
+   "macro": "Healthcare",
+   "industry": "Pharma - Formulations",
+   "name": "Anuh Pharma"
+  },
   "ANUP": {
    "macro": "Capital Goods",
-   "industry": "Specialty Industrial Machinery",
+   "industry": "Industrial Machinery & EPC",
    "name": "The Anup Engineering Ltd."
   },
   "ANURAS": {
@@ -252,8 +692,23 @@
   },
   "APARINDS": {
    "macro": "Capital Goods",
-   "industry": "Electrical Equipment & Parts",
+   "industry": "Electrical Equipment",
    "name": "Apar Industries Ltd."
+  },
+  "APCL": {
+   "macro": "Construction Materials",
+   "industry": "Building Products",
+   "name": "Anjani Portland Cem."
+  },
+  "APCOTEXIND": {
+   "macro": "Chemicals",
+   "industry": "Specialty Chemicals",
+   "name": "Apcotex Industries"
+  },
+  "APEX": {
+   "macro": "Fast Moving Consumer Goods",
+   "industry": "Farm Products",
+   "name": "Apex Frozen Foods"
   },
   "APLAPOLLO": {
    "macro": "Capital Goods",
@@ -262,12 +717,12 @@
   },
   "APLLTD": {
    "macro": "Healthcare",
-   "industry": "Drug Manufacturers - Specialty & Generic",
+   "industry": "Pharma - Formulations",
    "name": "Alembic Pharmaceuticals Ltd."
   },
   "APOLLO": {
    "macro": "Capital Goods",
-   "industry": "Aerospace & Defense",
+   "industry": "Defense",
    "name": "Apollo Micro Systems Ltd."
   },
   "APOLLOHOSP": {
@@ -275,20 +730,125 @@
    "industry": "Hospitals",
    "name": "Apollo Hospitals Enterprise Ltd."
   },
+  "APOLLOPIPE": {
+   "macro": "Capital Goods",
+   "industry": "Building Products",
+   "name": "Apollo Pipes"
+  },
   "APOLLOTYRE": {
    "macro": "Automobile and Auto Components",
    "industry": "Tyres",
    "name": "Apollo Tyres Ltd."
+  },
+  "APOLSINHOT": {
+   "macro": "Capital Goods",
+   "industry": "Specialty Business Services",
+   "name": "Apollo Sindoori Hotels"
+  },
+  "APTECHT": {
+   "macro": "Fast Moving Consumer Goods",
+   "industry": "Education",
+   "name": "Aptech"
   },
   "APTUS": {
    "macro": "Financial Services",
    "industry": "Mortgage Finance",
    "name": "Aptus Value Housing Finance India Ltd."
   },
+  "AQYLON": {
+   "macro": "Telecommunication",
+   "industry": "Media & Entertainment",
+   "name": "Aqylon Nexus"
+  },
+  "ARCHIDPLY": {
+   "macro": "Forest Materials",
+   "industry": "Paper & Forest Products",
+   "name": "Archidply Industries"
+  },
+  "ARCHIES": {
+   "macro": "Consumer Services",
+   "industry": "Specialty Retail",
+   "name": "Archies"
+  },
   "ARE&M": {
    "macro": "Automobile and Auto Components",
    "industry": "Auto Ancillary - Batteries",
    "name": "Amara Raja Energy & Mobility Ltd."
+  },
+  "ARENTERP": {
+   "macro": "Metals & Mining",
+   "industry": "Diversified Metals",
+   "name": "Rajdarshan Inds"
+  },
+  "ARFIN": {
+   "macro": "Metals & Mining",
+   "industry": "Aluminium",
+   "name": "Arfin India"
+  },
+  "ARIES": {
+   "macro": "Chemicals",
+   "industry": "Agricultural Inputs",
+   "name": "Aries Agro"
+  },
+  "ARIHANT": {
+   "macro": "Realty",
+   "industry": "Realty",
+   "name": "Arihant Foundations"
+  },
+  "ARIHANTCAP": {
+   "macro": "Financial Services",
+   "industry": "Capital Markets & AMC",
+   "name": "Arihant Capital"
+  },
+  "ARIHANTSUP": {
+   "macro": "Realty",
+   "industry": "Realty",
+   "name": "Arihant Superstructures"
+  },
+  "ARIS": {
+   "macro": "Capital Goods",
+   "industry": "EPC & Infrastructure",
+   "name": "Arisinfra Solutions"
+  },
+  "ARKADE": {
+   "macro": "Realty",
+   "industry": "Realty",
+   "name": "Arkade Developers"
+  },
+  "ARMANFIN": {
+   "macro": "Financial Services",
+   "industry": "NBFC - Lending",
+   "name": "Arman Financial Serv"
+  },
+  "AROGRANITE": {
+   "macro": "Capital Goods",
+   "industry": "Building Products",
+   "name": "Aro Granite Inds"
+  },
+  "ARROWGREEN": {
+   "macro": "Consumer Services",
+   "industry": "Industrial Packaging",
+   "name": "Arrow Greentech"
+  },
+  "ARSHIYA": {
+   "macro": "Capital Goods",
+   "industry": "Logistics & Freight",
+   "name": "Arshiya"
+  },
+  "ARSSBL": {
+   "macro": "Financial Services",
+   "industry": "Financial Conglomerates",
+   "name": "Anand Rathi Share"
+  },
+  "ARTNIRMAN": {
+   "macro": "Realty",
+   "industry": "Realty",
+   "name": "Art Nirman"
+  },
+  "ARVEE": {
+   "macro": "Chemicals",
+   "industry": "Specialty Chemicals",
+   "name": "Arvee Labs (India)"
   },
   "ARVIND": {
    "macro": "Textiles",
@@ -297,38 +857,103 @@
   },
   "ARVINDFASN": {
    "macro": "Consumer Services",
-   "industry": "Apparel Manufacturing",
+   "industry": "Textiles",
    "name": "Arvind Fashions Ltd."
+  },
+  "ARVSMART": {
+   "macro": "Realty",
+   "industry": "Realty",
+   "name": "Arvind Smartspaces"
   },
   "ASAHIINDIA": {
    "macro": "Automobile and Auto Components",
-   "industry": "Auto Parts",
+   "industry": "Auto Ancillary - Parts",
    "name": "Asahi India Glass Ltd."
+  },
+  "ASAHISONG": {
+   "macro": "Chemicals",
+   "industry": "Specialty Chemicals",
+   "name": "Asahi Songwon"
+  },
+  "ASAL": {
+   "macro": "Automobile and Auto Components",
+   "industry": "Auto Ancillary - Parts",
+   "name": "Automotive Stamping"
+  },
+  "ASALCBR": {
+   "macro": "Fast Moving Consumer Goods",
+   "industry": "Beverages & Distilleries",
+   "name": "Assoc Alcohol & Brew"
   },
   "ASHAPURMIN": {
    "macro": "Metals & Mining",
-   "industry": "Other Industrial Metals & Mining",
+   "industry": "Diversified Metals",
    "name": "Ashapura Minechem Ltd."
+  },
+  "ASHIANA": {
+   "macro": "Realty",
+   "industry": "Realty",
+   "name": "Ashiana Housing"
+  },
+  "ASHIMASYN": {
+   "macro": "Realty",
+   "industry": "Realty",
+   "name": "Ashima"
   },
   "ASHOKA": {
    "macro": "Construction",
-   "industry": "Engineering & Construction",
+   "industry": "EPC & Infrastructure",
    "name": "Ashoka Buildcon Ltd."
+  },
+  "ASHOKAMET": {
+   "macro": "Metals & Mining",
+   "industry": "Steel",
+   "name": "Ashoka Metcast"
   },
   "ASHOKLEY": {
    "macro": "Capital Goods",
    "industry": "Auto OEM - Commercial Vehicle",
    "name": "Ashok Leyland Ltd."
   },
+  "ASIANENE": {
+   "macro": "Oil Gas & Consumable Fuels",
+   "industry": "Oilfield Services & Equipment",
+   "name": "Asian Energy Serv"
+  },
+  "ASIANHOTNR": {
+   "macro": "Consumer Services",
+   "industry": "Hotels & Travel",
+   "name": "Asian Hotels North"
+  },
   "ASIANPAINT": {
    "macro": "Consumer Durables",
    "industry": "Paints",
    "name": "Asian Paints Ltd."
   },
+  "ASIANTILES": {
+   "macro": "Capital Goods",
+   "industry": "Building Products",
+   "name": "Asian Granito India"
+  },
   "ASKAUTOLTD": {
    "macro": "Automobile and Auto Components",
-   "industry": "Auto Parts",
+   "industry": "Auto Ancillary - Parts",
    "name": "ASK Automotive Ltd."
+  },
+  "ASMS": {
+   "macro": "Information Technology",
+   "industry": "IT Services",
+   "name": "Avio Smart Market"
+  },
+  "ASPINWALL": {
+   "macro": "Fast Moving Consumer Goods",
+   "industry": "Farm Products",
+   "name": "Aspinwall & Co"
+  },
+  "ASTEC": {
+   "macro": "Chemicals",
+   "industry": "Agricultural Inputs",
+   "name": "Astec Lifesciences"
   },
   "ASTERDM": {
    "macro": "Healthcare",
@@ -342,8 +967,28 @@
   },
   "ASTRAMICRO": {
    "macro": "Capital Goods",
-   "industry": "Communication Equipment",
+   "industry": "Telecom Infra & Equipment",
    "name": "Astra Microwave Products Ltd."
+  },
+  "ASTRAZEN": {
+   "macro": "Healthcare",
+   "industry": "Pharma - Formulations",
+   "name": "Astrazeneca Pharma"
+  },
+  "ASTRON": {
+   "macro": "Forest Materials",
+   "industry": "Paper & Forest Products",
+   "name": "Astron Paper & Board"
+  },
+  "ATALREAL": {
+   "macro": "Capital Goods",
+   "industry": "EPC & Infrastructure",
+   "name": "Atal Realtech"
+  },
+  "ATAM": {
+   "macro": "Capital Goods",
+   "industry": "Industrial Machinery & EPC",
+   "name": "Atam Valves"
   },
   "ATGL": {
    "macro": "Oil Gas & Consumable Fuels",
@@ -355,24 +1000,49 @@
    "industry": "Auto Manufacturers",
    "name": "Ather Energy Ltd."
   },
+  "ATL": {
+   "macro": "Capital Goods",
+   "industry": "Logistics & Freight",
+   "name": "Allcargo Terminal"
+  },
+  "ATLANTAA": {
+   "macro": "Capital Goods",
+   "industry": "EPC & Infrastructure",
+   "name": "Atlantaa"
+  },
   "ATLANTAELE": {
    "macro": "Capital Goods",
-   "industry": "Electrical Equipment & Parts",
+   "industry": "Electrical Equipment",
    "name": "Atlanta Electricals Ltd."
+  },
+  "ATLASCYCLE": {
+   "macro": "Consumer Services",
+   "industry": "Leisure",
+   "name": "Atlas Cycles Haryana"
   },
   "ATUL": {
    "macro": "Chemicals",
    "industry": "Specialty Chemicals",
    "name": "Atul Ltd."
   },
+  "ATULAUTO": {
+   "macro": "Automobile and Auto Components",
+   "industry": "Auto OEM - Two/Three Wheeler",
+   "name": "Atul Auto"
+  },
   "AUBANK": {
    "macro": "Financial Services",
    "industry": "Small Finance Banks",
    "name": "AU Small Finance Bank Ltd."
   },
+  "AURIGROW": {
+   "macro": "Capital Goods",
+   "industry": "Electrical Equipment",
+   "name": "Auri Grow India"
+  },
   "AURIONPRO": {
    "macro": "Information Technology",
-   "industry": "Software - Application",
+   "industry": "IT - Products & Platforms",
    "name": "Aurionpro Solution Ltd."
   },
   "AUROPHARMA": {
@@ -380,29 +1050,84 @@
    "industry": "Pharma - Formulations",
    "name": "Aurobindo Pharma Ltd."
   },
+  "AURUM": {
+   "macro": "Realty",
+   "industry": "Realty",
+   "name": "Aurum Proptech"
+  },
+  "AUSOMENT": {
+   "macro": "Financial Services",
+   "industry": "Capital Markets & AMC",
+   "name": "Ausom Enterprise"
+  },
+  "AUTOAXLES": {
+   "macro": "Automobile and Auto Components",
+   "industry": "Auto Ancillary - Parts",
+   "name": "Auto.Axle"
+  },
+  "AUTOIND": {
+   "macro": "Automobile and Auto Components",
+   "industry": "Auto Ancillary - Parts",
+   "name": "Autoline Industries"
+  },
+  "AVADHSUGAR": {
+   "macro": "Fast Moving Consumer Goods",
+   "industry": "FMCG - Packaged Foods",
+   "name": "Avadh Sugar & Energy"
+  },
   "AVALON": {
    "macro": "Capital Goods",
    "industry": "Electronics Manufacturing (EMS)",
    "name": "Avalon Technologies Ltd."
   },
+  "AVANTEL": {
+   "macro": "Technology",
+   "industry": "Telecom Infra & Equipment",
+   "name": "Avantel"
+  },
   "AVANTIFEED": {
    "macro": "Fast Moving Consumer Goods",
-   "industry": "Packaged Foods",
+   "industry": "FMCG - Packaged Foods",
    "name": "Avanti Feeds Ltd."
+  },
+  "AVG": {
+   "macro": "Capital Goods",
+   "industry": "Logistics & Freight",
+   "name": "AVG Logistics"
   },
   "AVL": {
    "macro": "Consumer Services",
    "industry": "Specialty Retail",
    "name": "Aditya Vision Ltd."
   },
+  "AVONMORE": {
+   "macro": "Financial Services",
+   "industry": "Capital Markets & AMC",
+   "name": "Avonmore Capital"
+  },
+  "AVROIND": {
+   "macro": "Consumer Durables",
+   "industry": "Consumer Durables / Appliances",
+   "name": "Avro India"
+  },
+  "AVTNPL": {
+   "macro": "Chemicals",
+   "industry": "Specialty Chemicals",
+   "name": "AVT Natural Prod"
+  },
   "AWFIS": {
    "macro": "Services",
    "industry": "Rental & Leasing Services",
    "name": "Awfis Space Solutions Ltd."
   },
+  "AWHCL": {
+   "macro": "Capital Goods",
+   "industry": "Waste Management",
+   "name": "Antony Waste"
+  },
   "AWL": {
    "macro": "Fast Moving Consumer Goods",
-   "industry": "Packaged Foods",
+   "industry": "FMCG - Packaged Foods",
    "name": "AWL Agri Business Ltd."
   },
   "AXISBANK": {
@@ -412,18 +1137,53 @@
   },
   "AXISCADES": {
    "macro": "Capital Goods",
-   "industry": "Engineering & Construction",
+   "industry": "EPC & Infrastructure",
    "name": "AXISCADES Technologies Ltd."
+  },
+  "AXITA": {
+   "macro": "Textiles",
+   "industry": "Textiles",
+   "name": "Axita Cotton"
+  },
+  "AYE": {
+   "macro": "Financial Services",
+   "industry": "NBFC - Lending",
+   "name": "AYE Finance"
+  },
+  "AYMSYNTEX": {
+   "macro": "Textiles",
+   "industry": "Textiles",
+   "name": "Aym Syntex"
   },
   "AZAD": {
    "macro": "Capital Goods",
-   "industry": "Specialty Industrial Machinery",
+   "industry": "Industrial Machinery & EPC",
    "name": "Azad Engineering Ltd."
+  },
+  "BAFNAPH": {
+   "macro": "Healthcare",
+   "industry": "Pharma - Formulations",
+   "name": "Bafna Pharma"
+  },
+  "BAGFILMS": {
+   "macro": "Telecommunication",
+   "industry": "Media & Entertainment",
+   "name": "BAG Films & Media"
+  },
+  "BAIDFIN": {
+   "macro": "Financial Services",
+   "industry": "NBFC - Lending",
+   "name": "Baid Leasing & Fin"
   },
   "BAJAJ-AUTO": {
    "macro": "Automobile and Auto Components",
    "industry": "Auto OEM - Two/Three Wheeler",
    "name": "Bajaj Auto Ltd."
+  },
+  "BAJAJCON": {
+   "macro": "Fast Moving Consumer Goods",
+   "industry": "FMCG - Personal & Home Care",
+   "name": "Bajaj Corp"
   },
   "BAJAJELEC": {
    "macro": "Consumer Durables",
@@ -435,30 +1195,80 @@
    "industry": "Insurance",
    "name": "Bajaj Finserv Ltd."
   },
+  "BAJAJHCARE": {
+   "macro": "Healthcare",
+   "industry": "Pharma - Formulations",
+   "name": "Bajaj Healthcare"
+  },
   "BAJAJHFL": {
    "macro": "Financial Services",
    "industry": "Mortgage Finance",
    "name": "Bajaj Housing Finance Ltd."
   },
+  "BAJAJHIND": {
+   "macro": "Fast Moving Consumer Goods",
+   "industry": "Sugar",
+   "name": "Bajaj Hindusthan Sug"
+  },
   "BAJAJHLDNG": {
    "macro": "Financial Services",
-   "industry": "Asset Management",
+   "industry": "Capital Markets & AMC",
    "name": "Bajaj Holdings & Investment Ltd."
+  },
+  "BAJAJINDEF": {
+   "macro": "Capital Goods",
+   "industry": "Farm & Heavy Construction Machinery",
+   "name": "BAJAJINDEF"
+  },
+  "BAJEL": {
+   "macro": "Power",
+   "industry": "Utilities - Regulated Electric",
+   "name": "Bajel Projects"
   },
   "BAJFINANCE": {
    "macro": "Financial Services",
    "industry": "NBFC - Lending",
    "name": "Bajaj Finance Ltd."
   },
+  "BALAJEE": {
+   "macro": "Consumer Services",
+   "industry": "Industrial Packaging",
+   "name": "Shree Tirup.Bal.Agro"
+  },
+  "BALAJITELE": {
+   "macro": "Telecommunication",
+   "industry": "Media & Entertainment",
+   "name": "Balaji Telefilms"
+  },
   "BALAMINES": {
    "macro": "Chemicals",
    "industry": "Specialty Chemicals",
    "name": "Balaji Amines Ltd."
   },
+  "BALAXI": {
+   "macro": "Healthcare",
+   "industry": "Pharma - Formulations",
+   "name": "Balaxi Pharma"
+  },
+  "BALKRISHNA": {
+   "macro": "Consumer Services",
+   "industry": "Industrial Packaging",
+   "name": "Balkrishna Paper"
+  },
   "BALKRISIND": {
    "macro": "Automobile and Auto Components",
    "industry": "Tyres",
    "name": "Balkrishna Industries Ltd."
+  },
+  "BALMLAWRIE": {
+   "macro": "Capital Goods",
+   "industry": "Conglomerates",
+   "name": "Balmer Lawrie & Co"
+  },
+  "BALPHARMA": {
+   "macro": "Healthcare",
+   "industry": "Pharma - Formulations",
+   "name": "Bal Pharma"
   },
   "BALRAMCHIN": {
    "macro": "Fast Moving Consumer Goods",
@@ -467,18 +1277,38 @@
   },
   "BALUFORGE": {
    "macro": "Capital Goods",
-   "industry": "Metal Fabrication",
+   "industry": "Steel",
    "name": "Balu Forge Industries Ltd."
+  },
+  "BANARBEADS": {
+   "macro": "Textiles",
+   "industry": "Footwear",
+   "name": "Banaras Beads"
+  },
+  "BANARISUG": {
+   "macro": "Fast Moving Consumer Goods",
+   "industry": "FMCG - Packaged Foods",
+   "name": "Bannari Amman Sugars"
   },
   "BANCOINDIA": {
    "macro": "Automobile and Auto Components",
-   "industry": "Auto Parts",
+   "industry": "Auto Ancillary - Parts",
    "name": "Banco Products (India) Ltd."
   },
   "BANDHANBNK": {
    "macro": "Financial Services",
    "industry": "Banks - Private",
    "name": "Bandhan Bank Ltd."
+  },
+  "BANG": {
+   "macro": "Textiles",
+   "industry": "Textiles",
+   "name": "Bang Overseas"
+  },
+  "BANKA": {
+   "macro": "Capital Goods",
+   "industry": "Pollution & Treatment Controls",
+   "name": "Banka BioLoo"
   },
   "BANKBARODA": {
    "macro": "Financial Services",
@@ -490,44 +1320,114 @@
    "industry": "Banks - PSU",
    "name": "Bank of India"
   },
+  "BANSALWIRE": {
+   "macro": "Metals & Mining",
+   "industry": "Steel",
+   "name": "Bansal Wire Inds."
+  },
+  "BANSWRAS": {
+   "macro": "Textiles",
+   "industry": "Textiles",
+   "name": "Banswara Syntex"
+  },
+  "BASF": {
+   "macro": "Chemicals",
+   "industry": "Specialty Chemicals",
+   "name": "BASF India"
+  },
+  "BASML": {
+   "macro": "Textiles",
+   "industry": "Textiles",
+   "name": "Bannari Amman Mills"
+  },
   "BATAINDIA": {
    "macro": "Consumer Durables",
-   "industry": "Footwear & Accessories",
+   "industry": "Footwear",
    "name": "Bata India Ltd."
+  },
+  "BATLIBOI": {
+   "macro": "Capital Goods",
+   "industry": "Industrial Machinery & EPC",
+   "name": "Batliboi"
   },
   "BAYERCROP": {
    "macro": "Chemicals",
    "industry": "Agrochemicals / Pesticides",
    "name": "Bayer Cropscience Ltd."
   },
+  "BBL": {
+   "macro": "Capital Goods",
+   "industry": "Electrical Equipment",
+   "name": "Bharat Bijlee"
+  },
   "BBOX": {
    "macro": "Information Technology",
-   "industry": "Software - Application",
+   "industry": "IT - Products & Platforms",
    "name": "Black Box Ltd."
   },
   "BBTC": {
    "macro": "Fast Moving Consumer Goods",
-   "industry": "Packaged Foods",
+   "industry": "FMCG - Packaged Foods",
    "name": "Bombay Burmah Trading Corporation Ltd."
+  },
+  "BBTCL": {
+   "macro": "Consumer Services",
+   "industry": "Industrial Packaging",
+   "name": "B & B Triplewall"
+  },
+  "BCG": {
+   "macro": "Telecommunication",
+   "industry": "Advertising Agencies",
+   "name": "Brightcom Group"
+  },
+  "BCLIND": {
+   "macro": "Fast Moving Consumer Goods",
+   "industry": "Beverages & Distilleries",
+   "name": "BCL Industries"
+  },
+  "BCONCEPTS": {
+   "macro": "Textiles",
+   "industry": "Footwear",
+   "name": "Brand Concepts"
+  },
+  "BCPL": {
+   "macro": "Capital Goods",
+   "industry": "EPC & Infrastructure",
+   "name": "BCPL Railway Infra"
   },
   "BDL": {
    "macro": "Capital Goods",
    "industry": "Defense",
    "name": "Bharat Dynamics Ltd."
   },
+  "BEARDSELL": {
+   "macro": "Capital Goods",
+   "industry": "Building Products",
+   "name": "Beardsell"
+  },
   "BECTORFOOD": {
    "macro": "Fast Moving Consumer Goods",
-   "industry": "Packaged Foods",
+   "industry": "FMCG - Packaged Foods",
    "name": "Mrs. Bectors Food Specialities Ltd."
+  },
+  "BEDMUTHA": {
+   "macro": "Metals & Mining",
+   "industry": "Steel",
+   "name": "Bedmutha Industries"
   },
   "BEL": {
    "macro": "Capital Goods",
    "industry": "Defense",
    "name": "Bharat Electronics Ltd."
   },
+  "BELLACASA": {
+   "macro": "Textiles",
+   "industry": "Textiles",
+   "name": "Bella Casa Fashion"
+  },
   "BELRISE": {
    "macro": "Automobile and Auto Components",
-   "industry": "Auto Parts",
+   "industry": "Auto Ancillary - Parts",
    "name": "Belrise Industries Ltd."
   },
   "BEML": {
@@ -535,10 +1435,25 @@
    "industry": "Defense",
    "name": "BEML Ltd."
   },
+  "BEPL": {
+   "macro": "Chemicals",
+   "industry": "Chemicals",
+   "name": "Bhansali Engg. Poly."
+  },
   "BERGEPAINT": {
    "macro": "Consumer Durables",
    "industry": "Paints",
    "name": "Berger Paints India Ltd."
+  },
+  "BESTAGRO": {
+   "macro": "Chemicals",
+   "industry": "Agricultural Inputs",
+   "name": "Best Agrolife"
+  },
+  "BFINVEST": {
+   "macro": "Financial Services",
+   "industry": "Capital Markets & AMC",
+   "name": "BF Investment"
   },
   "BHARATFORG": {
    "macro": "Automobile and Auto Components",
@@ -720,6 +1635,11 @@
    "industry": "Cement",
    "name": "Cemindia Projects Ltd."
   },
+  "CENTENKA": {
+   "macro": "Textiles",
+   "industry": "Textiles",
+   "name": "Century Enka"
+  },
   "CENTRALBK": {
    "macro": "Financial Services",
    "industry": "Banks - PSU",
@@ -734,6 +1654,11 @@
    "macro": "Consumer Durables",
    "industry": "Building Products",
    "name": "Cera Sanitaryware Ltd"
+  },
+  "CEREBRAINT": {
+   "macro": "Capital Goods",
+   "industry": "Waste Management",
+   "name": "Cerebra Intg Tech"
   },
   "CESC": {
    "macro": "Power",
@@ -985,6 +1910,11 @@
    "industry": "Realty",
    "name": "DLF Ltd."
   },
+  "DLINKINDIA": {
+   "macro": "Telecom Networking Equip",
+   "industry": "Telecom Infra & Equipment",
+   "name": "D-Link (India)"
+  },
   "DMART": {
    "macro": "Consumer Services",
    "industry": "Retail",
@@ -1000,10 +1930,40 @@
    "industry": "Pharma - Formulations",
    "name": "Dr. Reddy's Laboratories Ltd."
   },
+  "DUMMYALCAR": {
+   "macro": "Services",
+   "industry": "Services",
+   "name": "DUMMYALCAR"
+  },
+  "DUMMYVEDL1": {
+   "macro": "Metals & Mining",
+   "industry": "Metals & Mining",
+   "name": "DUMMYVEDL1"
+  },
+  "DUMMYVEDL2": {
+   "macro": "Power",
+   "industry": "Power",
+   "name": "DUMMYVEDL2"
+  },
+  "DUMMYVEDL3": {
+   "macro": "Oil Gas & Consumable Fuels",
+   "industry": "Oil Gas & Consumable Fuels",
+   "name": "DUMMYVEDL3"
+  },
+  "DUMMYVEDL4": {
+   "macro": "Metals & Mining",
+   "industry": "Metals & Mining",
+   "name": "DUMMYVEDL4"
+  },
   "DYNAMATECH": {
    "macro": "Capital Goods",
    "industry": "Defense",
    "name": "Dynamatic Technologies Ltd."
+  },
+  "EBGNG": {
+   "macro": "Information Technology",
+   "industry": "Computer Hardware",
+   "name": "GNG Electronics"
   },
   "ECLERX": {
    "macro": "Services",
@@ -1030,10 +1990,25 @@
    "industry": "Water Treatment & Environment",
    "name": "Enviro Infra Engineers Ltd."
   },
+  "EIFFL": {
+   "macro": "Fast Moving Consumer Goods",
+   "industry": "FMCG - Packaged Foods",
+   "name": "Euro India Fresh Foods"
+  },
+  "EIHAHOTELS": {
+   "macro": "Consumer Services",
+   "industry": "Hotels & Travel",
+   "name": "EIH Associated Hotel"
+  },
   "EIHOTEL": {
    "macro": "Consumer Services",
    "industry": "Hotels & Travel",
    "name": "EIH Ltd."
+  },
+  "ELANTAS": {
+   "macro": "Chemicals",
+   "industry": "Specialty Chemicals",
+   "name": "ELANTAS Beck India"
   },
   "ELECON": {
    "macro": "Capital Goods",
@@ -1060,6 +2035,16 @@
    "industry": "FMCG - Personal & Home Care",
    "name": "Emami Ltd."
   },
+  "EMAMIPAP": {
+   "macro": "Forest Materials",
+   "industry": "Paper & Forest Products",
+   "name": "Emami Paper Mills"
+  },
+  "EMAMIREAL": {
+   "macro": "Realty",
+   "industry": "Realty",
+   "name": "Emami Realty"
+  },
   "EMBDL": {
    "macro": "Realty",
    "industry": "Realty",
@@ -1074,6 +2059,11 @@
    "macro": "Consumer Services",
    "industry": "Retail",
    "name": "Electronics Mart India Ltd."
+  },
+  "EMMBI": {
+   "macro": "Consumer Services",
+   "industry": "Industrial Packaging",
+   "name": "Emmbi Industries"
   },
   "EMMVEE": {
    "macro": "Capital Goods",
@@ -1100,6 +2090,11 @@
    "industry": "Healthcare Distribution",
    "name": "Entero Healthcare Solutions Ltd."
   },
+  "EPIGRAL": {
+   "macro": "Chemicals",
+   "industry": "Chemicals",
+   "name": "Epigral Ltd"
+  },
   "EPL": {
    "macro": "Capital Goods",
    "industry": "Industrial Packaging",
@@ -1114,6 +2109,11 @@
    "macro": "Healthcare",
    "industry": "Pharma - Formulations",
    "name": "Eris Lifesciences Ltd."
+  },
+  "ESAFSFB": {
+   "macro": "Financial Services",
+   "industry": "Banks - Private",
+   "name": "ESAF Small Finance"
   },
   "ESCORTS": {
    "macro": "Capital Goods",
@@ -1135,15 +2135,40 @@
    "industry": "Consumer Durables / Appliances",
    "name": "Eureka Forbes Ltd."
   },
+  "EXCELINDUS": {
+   "macro": "Chemicals",
+   "industry": "Specialty Chemicals",
+   "name": "Excel Industries"
+  },
+  "EXICOM": {
+   "macro": "Capital Goods",
+   "industry": "Electrical Equipment",
+   "name": "Exicom Tele-Systems"
+  },
   "EXIDEIND": {
    "macro": "Automobile and Auto Components",
    "industry": "Auto Ancillary - Batteries",
    "name": "Exide Industries Ltd."
   },
+  "FABTECH": {
+   "macro": "Healthcare",
+   "industry": "Health Information Services",
+   "name": "Fabtech Technologies"
+  },
   "FACT": {
    "macro": "Chemicals",
    "industry": "Fertilizers",
    "name": "Fertilisers and Chemicals Travancore Ltd."
+  },
+  "FCL": {
+   "macro": "Chemicals",
+   "industry": "Specialty Chemicals",
+   "name": "Fineotex Chemical"
+  },
+  "FCSSOFT": {
+   "macro": "Information Technology",
+   "industry": "IT Services",
+   "name": "FCS Software Soln"
   },
   "FEDERALBNK": {
    "macro": "Financial Services",
@@ -1155,15 +2180,30 @@
    "industry": "NBFC - Lending",
    "name": "Fedbank Financial Services Ltd."
   },
+  "FEL": {
+   "macro": "Consumer Services",
+   "industry": "Retail",
+   "name": "Future Enterprises"
+  },
   "FIEMIND": {
    "macro": "Automobile and Auto Components",
    "industry": "Auto Ancillary - Parts",
    "name": "Fiem Industries Ltd"
   },
+  "FILATEX": {
+   "macro": "Textiles",
+   "industry": "Textiles",
+   "name": "Filatex India"
+  },
   "FINCABLES": {
    "macro": "Capital Goods",
    "industry": "Cables & Wires",
    "name": "Finolex Cables Ltd."
+  },
+  "FINOPB": {
+   "macro": "Financial Services",
+   "industry": "Banks - Private",
+   "name": "Fino Payments Bk"
   },
   "FINPIPE": {
    "macro": "Capital Goods",
@@ -1185,6 +2225,16 @@
    "industry": "Specialty Chemicals",
    "name": "Gujarat Fluorochemicals Ltd."
   },
+  "FMNL": {
+   "macro": "Realty",
+   "industry": "Realty",
+   "name": "Future Market Netw"
+  },
+  "FOCUS": {
+   "macro": "Consumer Durables",
+   "industry": "Consumer Durables / Appliances",
+   "name": "Focus Lighting"
+  },
   "FORCEMOT": {
    "macro": "Automobile and Auto Components",
    "industry": "Auto OEM - Commercial Vehicle",
@@ -1199,6 +2249,11 @@
    "macro": "Services",
    "industry": "IT Services",
    "name": "Firstsource Solutions Ltd."
+  },
+  "FUSION": {
+   "macro": "Financial Services",
+   "industry": "NBFC - Lending",
+   "name": "Fusion Finance"
   },
   "GABRIEL": {
    "macro": "Automobile and Auto Components",
@@ -1215,15 +2270,45 @@
    "industry": "Gas Distribution (city gas)",
    "name": "GAIL (India) Ltd."
   },
+  "GALAXYSURF": {
+   "macro": "Chemicals",
+   "industry": "Specialty Chemicals",
+   "name": "Galaxy Surfactants"
+  },
   "GALLANTT": {
    "macro": "Capital Goods",
    "industry": "Steel",
    "name": "Gallantt Ispat Ltd."
   },
+  "GATECHDVR": {
+   "macro": "Financial Services",
+   "industry": "Capital Markets & AMC",
+   "name": "SCAPDVR"
+  },
+  "GEECEE": {
+   "macro": "Realty",
+   "industry": "Realty",
+   "name": "GeeCee Vntrs"
+  },
+  "GENSOL": {
+   "macro": "Information Technology",
+   "industry": "Solar & Renewable Equipment",
+   "name": "Gensol Engg"
+  },
+  "GENUSPAPER": {
+   "macro": "Forest Materials",
+   "industry": "Paper & Forest Products",
+   "name": "Genus Paper & Boards"
+  },
   "GESHIP": {
    "macro": "Services",
    "industry": "Shipping",
    "name": "Great Eastern Shipping Co. Ltd."
+  },
+  "GFLLIMITED": {
+   "macro": "Financial Services",
+   "industry": "Capital Markets & AMC",
+   "name": "GFL"
   },
   "GHCL": {
    "macro": "Chemicals",
@@ -1235,10 +2320,25 @@
    "industry": "Insurance",
    "name": "General Insurance Corporation of India"
   },
+  "GILLANDERS": {
+   "macro": "Fast Moving Consumer Goods",
+   "industry": "Farm Products",
+   "name": "Gillanders Arbuthnot"
+  },
   "GILLETTE": {
    "macro": "Fast Moving Consumer Goods",
    "industry": "FMCG - Personal & Home Care",
    "name": "Gillette India Ltd."
+  },
+  "GIPCL": {
+   "macro": "Power",
+   "industry": "Utilities - Regulated Electric",
+   "name": "Guj Inds Power Co"
+  },
+  "GKENERGY": {
+   "macro": "Power",
+   "industry": "Utilities - Renewable",
+   "name": "GK Energy"
   },
   "GLAND": {
    "macro": "Healthcare",
@@ -1254,6 +2354,56 @@
    "macro": "Healthcare",
    "industry": "Pharma - Formulations",
    "name": "Glenmark Pharmaceuticals Ltd."
+  },
+  "GLFL": {
+   "macro": "Financial Services",
+   "industry": "Shell Companies",
+   "name": "Gujarat Lease Fin"
+  },
+  "GLOBAL": {
+   "macro": "Fast Moving Consumer Goods",
+   "industry": "Education",
+   "name": "Global Education"
+  },
+  "GLOBALE": {
+   "macro": "Textiles",
+   "industry": "Textiles",
+   "name": "Globale Tessile"
+  },
+  "GLOBALVECT": {
+   "macro": "Capital Goods",
+   "industry": "Airports & Air Services",
+   "name": "Global Vectra"
+  },
+  "GLOBE": {
+   "macro": "Textiles",
+   "industry": "Textiles",
+   "name": "Globe Enterprises(I)"
+  },
+  "GLOBECIVIL": {
+   "macro": "Capital Goods",
+   "industry": "EPC & Infrastructure",
+   "name": "Globe Civil Projects"
+  },
+  "GLOBUSSPR": {
+   "macro": "Fast Moving Consumer Goods",
+   "industry": "Beverages & Distilleries",
+   "name": "Globus Spirits"
+  },
+  "GLOSTERLTD": {
+   "macro": "Textiles",
+   "industry": "Textiles",
+   "name": "Gloster"
+  },
+  "GLOTTIS": {
+   "macro": "Capital Goods",
+   "industry": "Logistics & Freight",
+   "name": "Glottis"
+  },
+  "GMBREW": {
+   "macro": "Fast Moving Consumer Goods",
+   "industry": "Beverages & Distilleries",
+   "name": "GM Breweries"
   },
   "GMDCLTD": {
    "macro": "Metals & Mining",
@@ -1275,10 +2425,35 @@
    "industry": "Thermal Coal",
    "name": "GMR Power and Urban Infra Ltd."
   },
+  "GNA": {
+   "macro": "Automobile and Auto Components",
+   "industry": "Auto Ancillary - Parts",
+   "name": "GNA Axles"
+  },
   "GNFC": {
    "macro": "Chemicals",
    "industry": "Fertilizers",
    "name": "Gujarat Narmada Valley Fertilizers and Chemicals Ltd."
+  },
+  "GOACARBON": {
+   "macro": "Chemicals",
+   "industry": "Specialty Chemicals",
+   "name": "Goa Carbon"
+  },
+  "GOCLCORP": {
+   "macro": "Chemicals",
+   "industry": "Specialty Chemicals",
+   "name": "GOCL Corp"
+  },
+  "GOCOLORS": {
+   "macro": "Textiles",
+   "industry": "Retail",
+   "name": "Go Fashion (India)"
+  },
+  "GODAVARIB": {
+   "macro": "Chemicals",
+   "industry": "Chemicals",
+   "name": "Godavari Biorefin"
   },
   "GODFRYPHLP": {
    "macro": "Fast Moving Consumer Goods",
@@ -1292,7 +2467,7 @@
   },
   "GODREJAGRO": {
    "macro": "Fast Moving Consumer Goods",
-   "industry": "Packaged Foods",
+   "industry": "FMCG - Packaged Foods",
    "name": "Godrej Agrovet Ltd."
   },
   "GODREJCP": {
@@ -1315,10 +2490,50 @@
    "industry": "Textiles",
    "name": "Gokaldas Exports Ltd."
   },
+  "GOKUL": {
+   "macro": "Fast Moving Consumer Goods",
+   "industry": "FMCG - Packaged Foods",
+   "name": "Gokul Refoils"
+  },
   "GOKULAGRO": {
    "macro": "Fast Moving Consumer Goods",
    "industry": "FMCG - Packaged Foods",
    "name": "Gokul Agro Resources Ltd."
+  },
+  "GOLDENTOBC": {
+   "macro": "Fast Moving Consumer Goods",
+   "industry": "Tobacco",
+   "name": "Golden Tobacco"
+  },
+  "GOLDIAM": {
+   "macro": "Consumer Durables",
+   "industry": "Luxury Goods",
+   "name": "Goldiam Intl"
+  },
+  "GOLDTECH": {
+   "macro": "Information Technology",
+   "industry": "IT Services",
+   "name": "AION-Tech Solutions"
+  },
+  "GOODLUCK": {
+   "macro": "Metals & Mining",
+   "industry": "Steel",
+   "name": "Goodluck India"
+  },
+  "GOODYEAR": {
+   "macro": "Automobile and Auto Components",
+   "industry": "Tyres",
+   "name": "Goodyear India"
+  },
+  "GOPAL": {
+   "macro": "Fast Moving Consumer Goods",
+   "industry": "FMCG - Packaged Foods",
+   "name": "Gopal Snacks"
+  },
+  "GOYALALUM": {
+   "macro": "Metals & Mining",
+   "industry": "Aluminium",
+   "name": "Goyal Aluminiums"
   },
   "GPIL": {
    "macro": "Capital Goods",
@@ -1329,6 +2544,21 @@
    "macro": "Services",
    "industry": "Logistics & Freight",
    "name": "Gujarat Pipavav Port Ltd."
+  },
+  "GPTHEALTH": {
+   "macro": "Healthcare",
+   "industry": "Hospitals",
+   "name": "GPT Healthcare"
+  },
+  "GPTINFRA": {
+   "macro": "Capital Goods",
+   "industry": "EPC & Infrastructure",
+   "name": "GPT Infraprojects"
+  },
+  "GRADIENTE": {
+   "macro": "Telecommunication",
+   "industry": "Media & Entertainment",
+   "name": "Gradiente Infotain."
   },
   "GRANULES": {
    "macro": "Healthcare",
@@ -1342,8 +2572,13 @@
   },
   "GRASIM": {
    "macro": "Construction Materials",
-   "industry": "Building Materials",
+   "industry": "Building Products",
    "name": "Grasim Industries Ltd."
+  },
+  "GRAUWEIL": {
+   "macro": "Chemicals",
+   "industry": "Specialty Chemicals",
+   "name": "Grauer & Weil"
   },
   "GRAVITA": {
    "macro": "Metals & Mining",
@@ -1352,8 +2587,48 @@
   },
   "GREAVESCOT": {
    "macro": "Capital Goods",
-   "industry": "Specialty Industrial Machinery",
+   "industry": "Industrial Machinery & EPC",
    "name": "Greaves Cotton Ltd."
+  },
+  "GREENLAM": {
+   "macro": "Consumer Durables",
+   "industry": "Consumer Durables / Appliances",
+   "name": "Greenlam Industries"
+  },
+  "GREENPANEL": {
+   "macro": "Forest Materials",
+   "industry": "Paper & Forest Products",
+   "name": "Greenpanel Inds."
+  },
+  "GREENPLY": {
+   "macro": "Forest Materials",
+   "industry": "Building Products",
+   "name": "Greenply Industries"
+  },
+  "GREENPOWER": {
+   "macro": "Power",
+   "industry": "Utilities - Independent Power Producers",
+   "name": "Orient Green Power"
+  },
+  "GRINDWELL": {
+   "macro": "Capital Goods",
+   "industry": "Industrial Machinery & EPC",
+   "name": "Grindwell Norton"
+  },
+  "GRINFRA": {
+   "macro": "Capital Goods",
+   "industry": "EPC & Infrastructure",
+   "name": "GR Infraprojects"
+  },
+  "GRMOVER": {
+   "macro": "Fast Moving Consumer Goods",
+   "industry": "FMCG - Packaged Foods",
+   "name": "GRM Overseas"
+  },
+  "GROBTEA": {
+   "macro": "Fast Moving Consumer Goods",
+   "industry": "Farm Products",
+   "name": "Grob Tea Co"
   },
   "GROWW": {
    "macro": "Financial Services",
@@ -1375,9 +2650,34 @@
    "industry": "Fertilizers",
    "name": "Gujarat State Fertilizers & Chemicals Ltd."
   },
+  "GSPCROP": {
+   "macro": "Chemicals",
+   "industry": "Agricultural Inputs",
+   "name": "GSP Crop Science"
+  },
+  "GSS": {
+   "macro": "Information Technology",
+   "industry": "IT Services",
+   "name": "GSS Infotech"
+  },
+  "GUJTHEM": {
+   "macro": "Healthcare",
+   "industry": "Pharma - Formulations",
+   "name": "Guj Themis Biosyn"
+  },
+  "GULFOILLUB": {
+   "macro": "Chemicals",
+   "industry": "Lubricants",
+   "name": "Gulf Oil Lubricants"
+  },
+  "GULPOLY": {
+   "macro": "Chemicals",
+   "industry": "Chemicals",
+   "name": "Gulshan Polyols"
+  },
   "GVT&D": {
    "macro": "Capital Goods",
-   "industry": "Specialty Industrial Machinery",
+   "industry": "Industrial Machinery & EPC",
    "name": "GE Vernova T&D India Ltd."
   },
   "HAL": {
@@ -1394,6 +2694,11 @@
    "macro": "Consumer Durables",
    "industry": "Consumer Durables / Appliances",
    "name": "Havells India Ltd."
+  },
+  "HAVISHA": {
+   "macro": "Consumer Services",
+   "industry": "Hotels & Travel",
+   "name": "Sri Havisha Hosp"
   },
   "HBLENGINE": {
    "macro": "Capital Goods",
@@ -1435,6 +2740,11 @@
    "industry": "Insurance",
    "name": "HDFC Life Insurance Company Ltd."
   },
+  "HECPROJECT": {
+   "macro": "Capital Goods",
+   "industry": "EPC & Infrastructure",
+   "name": "HEC Infra Projects"
+  },
   "HEG": {
    "macro": "Capital Goods",
    "industry": "Graphite Electrodes",
@@ -1455,6 +2765,16 @@
    "industry": "Auto OEM - Two/Three Wheeler",
    "name": "Hero MotoCorp Ltd."
   },
+  "HESTERBIO": {
+   "macro": "Healthcare",
+   "industry": "Pharma - Formulations",
+   "name": "Hester Biosciences"
+  },
+  "HEXATRADEX": {
+   "macro": "Financial Services",
+   "industry": "NBFC - Lending",
+   "name": "Hexa Tradex"
+  },
   "HEXT": {
    "macro": "Information Technology",
    "industry": "IT Services",
@@ -1470,10 +2790,25 @@
    "industry": "EPC & Infrastructure",
    "name": "H.G. Infra Engineering Ltd."
   },
+  "HIKAL": {
+   "macro": "Healthcare",
+   "industry": "Pharma - Formulations",
+   "name": "Hikal"
+  },
+  "HILINFRA": {
+   "macro": "Capital Goods",
+   "industry": "EPC & Infrastructure",
+   "name": "Highway Infrast."
+  },
   "HINDALCO": {
    "macro": "Metals & Mining",
    "industry": "Aluminium",
    "name": "Hindalco Industries Ltd."
+  },
+  "HINDCON": {
+   "macro": "Chemicals",
+   "industry": "Specialty Chemicals",
+   "name": "Hindcon Chemicals"
   },
   "HINDCOPPER": {
    "macro": "Metals & Mining",
@@ -1482,7 +2817,7 @@
   },
   "HINDPETRO": {
    "macro": "Oil Gas & Consumable Fuels",
-   "industry": "Oil & Gas Refining & Marketing",
+   "industry": "Refiner & OMC",
    "name": "Hindustan Petroleum Corporation Ltd."
   },
   "HINDUNILVR": {
@@ -1494,6 +2829,11 @@
    "macro": "Metals & Mining",
    "industry": "Diversified Metals",
    "name": "Hindustan Zinc Ltd."
+  },
+  "HITECH": {
+   "macro": "Metals & Mining",
+   "industry": "Steel",
+   "name": "Hi-Tech Pipes"
   },
   "HOMEFIRST": {
    "macro": "Financial Services",
@@ -1560,6 +2900,11 @@
    "industry": "Telecom Services",
    "name": "Vodafone Idea Ltd."
   },
+  "IDEAFORGE": {
+   "macro": "Defence",
+   "industry": "Defense",
+   "name": "Ideaforge Technology"
+  },
   "IDFCFIRSTB": {
    "macro": "Financial Services",
    "industry": "Banks - Private",
@@ -1569,6 +2914,11 @@
    "macro": "Financial Services",
    "industry": "Capital Markets & AMC",
    "name": "Indian Energy Exchange Ltd."
+  },
+  "IFBAGRO": {
+   "macro": "Fast Moving Consumer Goods",
+   "industry": "Beverages & Distilleries",
+   "name": "IFB Agro Industries"
   },
   "IFBIND": {
    "macro": "Consumer Durables",
@@ -1617,7 +2967,7 @@
   },
   "INDHOTEL": {
    "macro": "Consumer Services",
-   "industry": "Lodging",
+   "industry": "Hotels & Travel",
    "name": "Indian Hotels Co. Ltd."
   },
   "INDIACEM": {
@@ -1712,7 +3062,7 @@
   },
   "IRB": {
    "macro": "Construction",
-   "industry": "Infrastructure Operations",
+   "industry": "EPC & Infrastructure",
    "name": "IRB Infrastructure Developers Ltd."
   },
   "IRCON": {
@@ -1732,8 +3082,23 @@
   },
   "IRFC": {
    "macro": "Financial Services",
-   "industry": "Credit Services",
+   "industry": "NBFC - Lending",
    "name": "Indian Railway Finance Corporation Ltd."
+  },
+  "IRISDOREME": {
+   "macro": "Textiles",
+   "industry": "Textiles",
+   "name": "Iris Clothings"
+  },
+  "ISFT": {
+   "macro": "Consumer Services",
+   "industry": "Internet Retail",
+   "name": "Intrasoft Tech"
+  },
+  "ISGEC": {
+   "macro": "Capital Goods",
+   "industry": "Industrial Machinery & EPC",
+   "name": "ISGEC Heavy Engg"
   },
   "ITC": {
    "macro": "Fast Moving Consumer Goods",
@@ -1750,6 +3115,11 @@
    "industry": "Telecom Infra & Equipment",
    "name": "ITI Ltd."
   },
+  "IVC": {
+   "macro": "Financial Services",
+   "industry": "Financial Conglomerates",
+   "name": "IL&FS Investment"
+  },
   "IXIGO": {
    "macro": "Consumer Services",
    "industry": "Hotels & Travel",
@@ -1759,6 +3129,11 @@
    "macro": "Financial Services",
    "industry": "Banks - PSU",
    "name": "Jammu & Kashmir Bank Ltd."
+  },
+  "JAGRAN": {
+   "macro": "Telecommunication",
+   "industry": "Publishing",
+   "name": "Jagran Prakashan"
   },
   "JAIBALAJI": {
    "macro": "Metals & Mining",
@@ -1775,10 +3150,20 @@
    "industry": "Auto Ancillary - Parts",
    "name": "Jamna Auto Industries Ltd."
   },
+  "JAYAGROGN": {
+   "macro": "Chemicals",
+   "industry": "Specialty Chemicals",
+   "name": "Jayant Agro-Organics"
+  },
   "JAYNECOIND": {
    "macro": "Capital Goods",
    "industry": "Steel",
    "name": "Jayaswal Neco Industries Ltd."
+  },
+  "JAYSREETEA": {
+   "macro": "Fast Moving Consumer Goods",
+   "industry": "Farm Products",
+   "name": "Jay Shree Tea"
   },
   "JBCHEPHARM": {
    "macro": "Healthcare",
@@ -1789,6 +3174,11 @@
    "macro": "Automobile and Auto Components",
    "industry": "Auto Ancillary - Parts",
    "name": "JBM Auto Ltd."
+  },
+  "JINDALPHOT": {
+   "macro": "Financial Services",
+   "industry": "Capital Markets & AMC",
+   "name": "Jindal Photo"
   },
   "JINDALSAW": {
    "macro": "Capital Goods",
@@ -1802,8 +3192,13 @@
   },
   "JIOFIN": {
    "macro": "Financial Services",
-   "industry": "Asset Management",
+   "industry": "Capital Markets & AMC",
    "name": "Jio Financial Services Ltd."
+  },
+  "JISLDVREQS": {
+   "macro": "Capital Goods",
+   "industry": "Conglomerates",
+   "name": "Jain Irrigation - DVR"
   },
   "JKCEMENT": {
    "macro": "Construction Materials",
@@ -1830,10 +3225,20 @@
    "industry": "Hospitals",
    "name": "Jupiter Life Line Hospitals Ltd."
   },
+  "JMA": {
+   "macro": "Automobile and Auto Components",
+   "industry": "Auto Ancillary - Parts",
+   "name": "Jullundur Motor"
+  },
   "JMFINANCIL": {
    "macro": "Financial Services",
    "industry": "NBFC - Lending",
    "name": "JM Financial Ltd."
+  },
+  "JNKINDIA": {
+   "macro": "Capital Goods",
+   "industry": "Industrial Machinery & EPC",
+   "name": "JNK India"
   },
   "JPPOWER": {
    "macro": "Power",
@@ -1842,7 +3247,7 @@
   },
   "JSFB": {
    "macro": "Financial Services",
-   "industry": "Banks - Regional",
+   "industry": "Banks - Private",
    "name": "Jana Small Finance Bank Ltd."
   },
   "JSL": {
@@ -1935,10 +3340,20 @@
    "industry": "Banks - Private",
    "name": "Karur Vysya Bank Ltd."
   },
+  "KAUSHALYA": {
+   "macro": "Capital Goods",
+   "industry": "EPC & Infrastructure",
+   "name": "Kaushalya Infra"
+  },
   "KAYNES": {
    "macro": "Capital Goods",
    "industry": "Electronics Manufacturing (EMS)",
    "name": "Kaynes Technology India Ltd."
+  },
+  "KDDL": {
+   "macro": "Consumer Durables",
+   "industry": "Luxury Goods",
+   "name": "KDDL"
   },
   "KEC": {
    "macro": "Construction",
@@ -1950,15 +3365,65 @@
    "industry": "Electrical Equipment",
    "name": "KEI Industries Ltd."
   },
+  "KELLTONTEC": {
+   "macro": "Information Technology",
+   "industry": "IT - Products & Platforms",
+   "name": "Kellton Tech Soln"
+  },
+  "KERNEX": {
+   "macro": "Information Technology",
+   "industry": "IT - Products & Platforms",
+   "name": "Kernex Microsystem"
+  },
+  "KESORAMIND": {
+   "macro": "Construction Materials",
+   "industry": "Building Products",
+   "name": "Kesoram Industries"
+  },
   "KFINTECH": {
    "macro": "Financial Services",
    "industry": "Capital Markets & AMC",
    "name": "Kfin Technologies Ltd."
   },
+  "KHADIM": {
+   "macro": "Textiles",
+   "industry": "Footwear",
+   "name": "Khadim"
+  },
+  "KHAICHEM": {
+   "macro": "Chemicals",
+   "industry": "Agricultural Inputs",
+   "name": "Khaitan Chem & Fert"
+  },
+  "KHAITANLTD": {
+   "macro": "Capital Goods",
+   "industry": "Industrial Distribution",
+   "name": "Khaitan"
+  },
+  "KHANDSE": {
+   "macro": "Financial Services",
+   "industry": "Capital Markets & AMC",
+   "name": "Khandwala Securities"
+  },
+  "KICL": {
+   "macro": "Financial Services",
+   "industry": "Capital Markets & AMC",
+   "name": "KICL"
+  },
   "KIMS": {
    "macro": "Healthcare",
    "industry": "Hospitals",
    "name": "Krishna Institute of Medical Sciences Ltd."
+  },
+  "KINGFA": {
+   "macro": "Chemicals",
+   "industry": "Specialty Chemicals",
+   "name": "Kingfa Science"
+  },
+  "KIRIINDUS": {
+   "macro": "Chemicals",
+   "industry": "Specialty Chemicals",
+   "name": "Kiri Industries"
   },
   "KIRLOSBROS": {
    "macro": "Capital Goods",
@@ -1970,25 +3435,65 @@
    "industry": "Industrial Machinery & EPC",
    "name": "Kirloskar Oil Eng Ltd."
   },
+  "KIRLOSIND": {
+   "macro": "Capital Goods",
+   "industry": "Steel",
+   "name": "Kirloskar Industries"
+  },
   "KIRLPNU": {
    "macro": "Capital Goods",
-   "industry": "Specialty Industrial Machinery",
+   "industry": "Industrial Machinery & EPC",
    "name": "Kirloskar Pneumatic Company Ltd."
   },
   "KITEX": {
    "macro": "Textiles",
-   "industry": "Apparel Manufacturing",
+   "industry": "Textiles",
    "name": "Kitex Garments Ltd."
+  },
+  "KNAGRI": {
+   "macro": "Fast Moving Consumer Goods",
+   "industry": "Farm Products",
+   "name": "KN Agri Resources"
   },
   "KNRCON": {
    "macro": "Construction",
    "industry": "EPC & Infrastructure",
    "name": "KNR Constructions Ltd."
   },
+  "KOHINOOR": {
+   "macro": "Fast Moving Consumer Goods",
+   "industry": "FMCG - Packaged Foods",
+   "name": "Kohinoor Foods"
+  },
+  "KOPRAN": {
+   "macro": "Healthcare",
+   "industry": "Pharma - Formulations",
+   "name": "Kopran"
+  },
   "KOTAKBANK": {
    "macro": "Financial Services",
    "industry": "Banks - Private",
    "name": "Kotak Mahindra Bank Ltd."
+  },
+  "KOTARISUG": {
+   "macro": "Fast Moving Consumer Goods",
+   "industry": "FMCG - Packaged Foods",
+   "name": "Kothari Sugars"
+  },
+  "KOTHARIPET": {
+   "macro": "Chemicals",
+   "industry": "Specialty Chemicals",
+   "name": "Kothari Petrochem"
+  },
+  "KOTHARIPRO": {
+   "macro": "Capital Goods",
+   "industry": "Conglomerates",
+   "name": "Kothari Products"
+  },
+  "KOVAI": {
+   "macro": "Healthcare",
+   "industry": "Hospitals",
+   "name": "Kovai Medical Center"
   },
   "KPIGREEN": {
    "macro": "Power",
@@ -2015,10 +3520,30 @@
    "industry": "FMCG - Packaged Foods",
    "name": "KRBL Ltd."
   },
+  "KREBSBIO": {
+   "macro": "Healthcare",
+   "industry": "Pharma - Formulations",
+   "name": "Krebs Biochem"
+  },
+  "KRITI": {
+   "macro": "Capital Goods",
+   "industry": "Building Products",
+   "name": "Kriti Industries"
+  },
   "KRN": {
    "macro": "Capital Goods",
    "industry": "Industrial Machinery & EPC",
    "name": "KRN Heat Exchanger and Refrigeration Ltd."
+  },
+  "KRSNAA": {
+   "macro": "Healthcare",
+   "industry": "Diagnostics & Research",
+   "name": "Krsnaa"
+  },
+  "KRYSTAL": {
+   "macro": "Capital Goods",
+   "industry": "Specialty Business Services",
+   "name": "Krystal Integrated Services Ltd"
   },
   "KSB": {
    "macro": "Capital Goods",
@@ -2035,6 +3560,11 @@
    "industry": "Banks - Private",
    "name": "Karnataka Bank Ltd."
   },
+  "KWIL": {
+   "macro": "Fast Moving Consumer Goods",
+   "industry": "FMCG - Packaged Foods",
+   "name": "Kwality Wall's India"
+  },
   "LALPATHLAB": {
    "macro": "Healthcare",
    "industry": "Diagnostics",
@@ -2049,6 +3579,11 @@
    "macro": "Healthcare",
    "industry": "Pharma - CDMO/API",
    "name": "Laurus Labs Ltd."
+  },
+  "LAXMICOT": {
+   "macro": "Textiles",
+   "industry": "Textiles",
+   "name": "Laxmi Cotspin"
   },
   "LEMONTREE": {
    "macro": "Consumer Services",
@@ -2100,10 +3635,20 @@
    "industry": "Realty",
    "name": "Lodha Developers Ltd."
   },
+  "LOKESHMACH": {
+   "macro": "Capital Goods",
+   "industry": "Industrial Machinery & EPC",
+   "name": "Lokesh Machines"
+  },
   "LOTUSDEV": {
    "macro": "Realty",
    "industry": "Realty",
    "name": "Sri Lotus Developers and Realty Ltd."
+  },
+  "LPDC": {
+   "macro": "Realty",
+   "industry": "Realty",
+   "name": "LPDCL"
   },
   "LT": {
    "macro": "Construction",
@@ -2145,6 +3690,11 @@
    "industry": "Specialty Chemicals",
    "name": "Laxmi Organic Industries Ltd."
   },
+  "LYPSAGEMS": {
+   "macro": "Consumer Durables",
+   "industry": "Luxury Goods",
+   "name": "Lypsa Gems"
+  },
   "M&M": {
    "macro": "Automobile and Auto Components",
    "industry": "Auto OEM - Passenger (4W)",
@@ -2155,14 +3705,34 @@
    "industry": "NBFC - Lending",
    "name": "Mahindra & Mahindra Financial Services Ltd."
   },
+  "MACPOWER": {
+   "macro": "Capital Goods",
+   "industry": "Industrial Machinery & EPC",
+   "name": "Macpower CNC"
+  },
+  "MADHAV": {
+   "macro": "Capital Goods",
+   "industry": "Building Products",
+   "name": "Madhav Marbles"
+  },
+  "MADHUCON": {
+   "macro": "Capital Goods",
+   "industry": "EPC & Infrastructure",
+   "name": "Madhucon Projects"
+  },
   "MAHABANK": {
    "macro": "Financial Services",
    "industry": "Banks - PSU",
    "name": "Bank of Maharashtra"
   },
+  "MAHAPEXLTD": {
+   "macro": "Financial Services",
+   "industry": "NBFC - Lending",
+   "name": "Maha Rashtra Apex"
+  },
   "MAHSCOOTER": {
    "macro": "Financial Services",
-   "industry": "Asset Management",
+   "industry": "Capital Markets & AMC",
    "name": "Maharashtra Scooters Ltd."
   },
   "MAHSEAMLES": {
@@ -2170,20 +3740,45 @@
    "industry": "Steel",
    "name": "Maharashtra Seamless Ltd."
   },
+  "MANAKALUCO": {
+   "macro": "Metals & Mining",
+   "industry": "Aluminium",
+   "name": "Manaksia Aluminium"
+  },
+  "MANAKSTEEL": {
+   "macro": "Metals & Mining",
+   "industry": "Steel",
+   "name": "Manaksia Steels"
+  },
   "MANAPPURAM": {
    "macro": "Financial Services",
    "industry": "NBFC - Lending",
    "name": "Manappuram Finance Ltd."
+  },
+  "MANCREDIT": {
+   "macro": "Financial Services",
+   "industry": "NBFC - Lending",
+   "name": "MCFL"
   },
   "MANKIND": {
    "macro": "Healthcare",
    "industry": "Pharma - Formulations",
    "name": "Mankind Pharma Ltd."
   },
+  "MANOMAY": {
+   "macro": "Textiles",
+   "industry": "Textiles",
+   "name": "Manomay Tex India"
+  },
   "MANORAMA": {
    "macro": "Fast Moving Consumer Goods",
    "industry": "FMCG - Packaged Foods",
    "name": "Manorama Industries Ltd."
+  },
+  "MANUGRAPH": {
+   "macro": "Capital Goods",
+   "industry": "Industrial Machinery & EPC",
+   "name": "Manugraph India"
   },
   "MANYAVAR": {
    "macro": "Consumer Services",
@@ -2204,6 +3799,11 @@
    "macro": "Healthcare",
    "industry": "Pharma - Formulations",
    "name": "Marksans Pharma Ltd."
+  },
+  "MARSONS": {
+   "macro": "Capital Goods",
+   "industry": "Electrical Equipment",
+   "name": "Marsons"
   },
   "MARUTI": {
    "macro": "Automobile and Auto Components",
@@ -2245,10 +3845,20 @@
    "industry": "Online Services / Platforms",
    "name": "Meesho Ltd."
   },
+  "METROGLOBL": {
+   "macro": "Capital Goods",
+   "industry": "Conglomerates",
+   "name": "Metroglobal"
+  },
   "METROPOLIS": {
    "macro": "Healthcare",
    "industry": "Diagnostics",
    "name": "Metropolis Healthcare Ltd."
+  },
+  "MFML": {
+   "macro": "Textiles",
+   "industry": "Textiles",
+   "name": "Mahalaxmi Fabric"
   },
   "MFSL": {
    "macro": "Financial Services",
@@ -2270,6 +3880,16 @@
    "industry": "Auto Ancillary - Parts",
    "name": "Minda Corporation Ltd."
   },
+  "MIRCELECTR": {
+   "macro": "Consumer Durables",
+   "industry": "Consumer Durables / Appliances",
+   "name": "Onida Electronics"
+  },
+  "MITCON": {
+   "macro": "Capital Goods",
+   "industry": "EPC & Infrastructure",
+   "name": "MITCON Consultancy"
+  },
   "MMTC": {
    "macro": "Services",
    "industry": "Logistics & Freight",
@@ -2279,6 +3899,11 @@
    "macro": "Metals & Mining",
    "industry": "Iron Ore & Other Mining",
    "name": "MOIL Ltd."
+  },
+  "MOSCHIP": {
+   "macro": "Information Technology",
+   "industry": "Semiconductor Equipment & Materials",
+   "name": "Moschip Tech"
   },
   "MOTHERSON": {
    "macro": "Automobile and Auto Components",
@@ -2325,6 +3950,16 @@
    "industry": "NBFC - Lending",
    "name": "Muthoot Finance Ltd."
   },
+  "NAGREEKEXP": {
+   "macro": "Textiles",
+   "industry": "Textiles",
+   "name": "Nagreeka Exports"
+  },
+  "NAHARINDUS": {
+   "macro": "Textiles",
+   "industry": "Textiles",
+   "name": "Nahar Inds Enter"
+  },
   "NAM-INDIA": {
    "macro": "Financial Services",
    "industry": "Capital Markets & AMC",
@@ -2370,6 +4005,16 @@
    "industry": "EPC & Infrastructure",
    "name": "NCC Ltd."
   },
+  "NCLIND": {
+   "macro": "Construction Materials",
+   "industry": "Building Products",
+   "name": "NCL Industries"
+  },
+  "NECLIFE": {
+   "macro": "Healthcare",
+   "industry": "Pharma - Formulations",
+   "name": "Nectar Life Sciences"
+  },
   "NEOGEN": {
    "macro": "Chemicals",
    "industry": "Specialty Chemicals",
@@ -2392,7 +4037,7 @@
   },
   "NETWORK18": {
    "macro": "Media Entertainment & Publication",
-   "industry": "Entertainment",
+   "industry": "Media & Entertainment",
    "name": "Network18 Media & Investments Ltd."
   },
   "NEULANDLAB": {
@@ -2405,10 +4050,20 @@
    "industry": "IT - Products & Platforms",
    "name": "Newgen Software Technologies Ltd."
   },
+  "NEXTMEDIA": {
+   "macro": "Telecommunication",
+   "industry": "Media & Entertainment",
+   "name": "Next Mediaworks"
+  },
   "NFL": {
    "macro": "Chemicals",
    "industry": "Fertilizers",
    "name": "National Fertilizers Ltd."
+  },
+  "NGLFINE": {
+   "macro": "Healthcare",
+   "industry": "Pharma - Formulations",
+   "name": "NGL Fine Chem"
   },
   "NH": {
    "macro": "Healthcare",
@@ -2425,10 +4080,80 @@
    "industry": "Insurance",
    "name": "The New India Assurance Company Ltd."
   },
+  "NIBE": {
+   "macro": "Capital Goods",
+   "industry": "Conglomerates",
+   "name": "NIBE"
+  },
+  "NIITLTD": {
+   "macro": "Fast Moving Consumer Goods",
+   "industry": "Education",
+   "name": "NIIT"
+  },
+  "NIITMTS": {
+   "macro": "Fast Moving Consumer Goods",
+   "industry": "Education",
+   "name": "NIIT Learning Sys"
+  },
+  "NILAINFRA": {
+   "macro": "Realty",
+   "industry": "Realty",
+   "name": "Nila Infrastructures"
+  },
+  "NILASPACES": {
+   "macro": "Realty",
+   "industry": "Realty",
+   "name": "Nila Spaces"
+  },
+  "NILKAMAL": {
+   "macro": "Consumer Durables",
+   "industry": "Consumer Durables / Appliances",
+   "name": "Nilkamal"
+  },
+  "NINSYS": {
+   "macro": "Information Technology",
+   "industry": "IT Services",
+   "name": "NINtec Systems"
+  },
+  "NIPPOBATRY": {
+   "macro": "Capital Goods",
+   "industry": "Electrical Equipment",
+   "name": "Indo National"
+  },
+  "NIRAJISPAT": {
+   "macro": "Textiles",
+   "industry": "Textiles",
+   "name": "Niraj Ispat Inds"
+  },
+  "NIRLON": {
+   "macro": "Realty",
+   "industry": "Realty",
+   "name": "Nirlon"
+  },
+  "NITCO": {
+   "macro": "Capital Goods",
+   "industry": "Building Products",
+   "name": "Nitco"
+  },
+  "NITINSPIN": {
+   "macro": "Textiles",
+   "industry": "Textiles",
+   "name": "Nitin Spinners"
+  },
+  "NITIRAJ": {
+   "macro": "Information Technology",
+   "industry": "Scientific & Technical Instruments",
+   "name": "Nitiraj Engg"
+  },
   "NIVABUPA": {
    "macro": "Financial Services",
    "industry": "Insurance",
    "name": "Niva Bupa Health Insurance Company Ltd."
+  },
+  "NKIND": {
+   "macro": "Fast Moving Consumer Goods",
+   "industry": "FMCG - Personal & Home Care",
+   "name": "NK Industries"
   },
   "NLCINDIA": {
    "macro": "Power",
@@ -2439,6 +4164,46 @@
    "macro": "Metals & Mining",
    "industry": "Iron Ore & Other Mining",
    "name": "NMDC Ltd."
+  },
+  "NORBTEAEXP": {
+   "macro": "Fast Moving Consumer Goods",
+   "industry": "Farm Products",
+   "name": "Norben Tea & Exports"
+  },
+  "NORTHARC": {
+   "macro": "Financial Services",
+   "industry": "NBFC - Lending",
+   "name": "Northern Arc Capital"
+  },
+  "NOVAAGRI": {
+   "macro": "Chemicals",
+   "industry": "Agricultural Inputs",
+   "name": "Nova Agritech"
+  },
+  "NOVARTIND": {
+   "macro": "Healthcare",
+   "industry": "Pharma - Formulations",
+   "name": "Novartis"
+  },
+  "NPST": {
+   "macro": "Information Technology",
+   "industry": "IT - Products & Platforms",
+   "name": "Network People S"
+  },
+  "NRBBEARING": {
+   "macro": "Automobile and Auto Components",
+   "industry": "Auto Ancillary - Parts",
+   "name": "NRB Bearings"
+  },
+  "NRL": {
+   "macro": "Capital Goods",
+   "industry": "Waste Management",
+   "name": "Nupur Recyclers"
+  },
+  "NSIL": {
+   "macro": "Financial Services",
+   "industry": "Capital Markets & AMC",
+   "name": "Nalwa Sons Invst"
   },
   "NSLNISP": {
    "macro": "Metals & Mining",
@@ -2470,6 +4235,11 @@
    "industry": "Internet / New-age",
    "name": "FSN E-Commerce Ventures Ltd."
   },
+  "OAL": {
+   "macro": "Chemicals",
+   "industry": "Specialty Chemicals",
+   "name": "Oriental Aromatics"
+  },
   "OBEROIRLTY": {
    "macro": "Realty",
    "industry": "Realty",
@@ -2485,6 +4255,11 @@
    "industry": "Upstream E&P (crude/gas producers)",
    "name": "Oil India Ltd."
   },
+  "OILCOUNTUB": {
+   "macro": "Oil Gas & Consumable Fuels",
+   "industry": "Oilfield Services & Equipment",
+   "name": "Oil Country Tubular"
+  },
   "OLAELEC": {
    "macro": "Automobile and Auto Components",
    "industry": "Auto OEM - Electric",
@@ -2494,6 +4269,16 @@
    "macro": "Automobile and Auto Components",
    "industry": "Auto OEM - Electric",
    "name": "Olectra Greentech Ltd."
+  },
+  "OMFREIGHT": {
+   "macro": "Capital Goods",
+   "industry": "Logistics & Freight",
+   "name": "Om Freight Forwarder"
+  },
+  "OMINFRAL": {
+   "macro": "Capital Goods",
+   "industry": "EPC & Infrastructure",
+   "name": "Om Infra"
   },
   "ONESOURCE": {
    "macro": "Healthcare",
@@ -2510,15 +4295,40 @@
    "industry": "Electronics Manufacturing (EMS)",
    "name": "Optiemus Infracom Ltd."
   },
+  "ORICONENT": {
+   "macro": "Consumer Services",
+   "industry": "Industrial Packaging",
+   "name": "Oricon Enterprises"
+  },
+  "ORIENTBELL": {
+   "macro": "Capital Goods",
+   "industry": "Building Products",
+   "name": "Orient Bell"
+  },
   "ORIENTCEM": {
    "macro": "Construction Materials",
    "industry": "Cement",
    "name": "Orient Cement Ltd."
   },
+  "ORIENTELEC": {
+   "macro": "Consumer Durables",
+   "industry": "Consumer Durables / Appliances",
+   "name": "Orient Electric"
+  },
+  "ORIENTPPR": {
+   "macro": "Forest Materials",
+   "industry": "Paper & Forest Products",
+   "name": "Orient Paper"
+  },
   "ORKLAINDIA": {
    "macro": "Fast Moving Consumer Goods",
-   "industry": "Packaged Foods",
+   "industry": "FMCG - Packaged Foods",
    "name": "Orkla India Ltd."
+  },
+  "OSWALGREEN": {
+   "macro": "Financial Services",
+   "industry": "Capital Markets & AMC",
+   "name": "Oswal Greentech"
   },
   "OSWALPUMPS": {
    "macro": "Capital Goods",
@@ -2530,6 +4340,31 @@
    "industry": "Textiles",
    "name": "Page Industries Ltd."
   },
+  "PALREDTEC": {
+   "macro": "Information Technology",
+   "industry": "Consumer Electronics",
+   "name": "Palred Technologies"
+  },
+  "PANACEABIO": {
+   "macro": "Healthcare",
+   "industry": "Biotechnology",
+   "name": "Panacea Biotec"
+  },
+  "PANAMAPET": {
+   "macro": "Oil Gas & Consumable Fuels",
+   "industry": "Refiner & OMC",
+   "name": "Panama Petrochem"
+  },
+  "PANSARI": {
+   "macro": "Realty",
+   "industry": "Realty",
+   "name": "Pansari Developers"
+  },
+  "PARACABLES": {
+   "macro": "Information Technology",
+   "industry": "Telecom Infra & Equipment",
+   "name": "Paramount Comm"
+  },
   "PARADEEP": {
    "macro": "Chemicals",
    "industry": "Fertilizers",
@@ -2539,6 +4374,11 @@
    "macro": "Capital Goods",
    "industry": "Defense",
    "name": "Paras Defence and Space Technologies Ltd."
+  },
+  "PARASPETRO": {
+   "macro": "Textiles",
+   "industry": "Textiles",
+   "name": "Paras Petrofils"
   },
   "PARKHOSPS": {
    "macro": "Healthcare",
@@ -2634,6 +4474,11 @@
    "macro": "Financial Services",
    "industry": "Banks - PSU",
    "name": "Punjab National Bank"
+  },
+  "PNBGILTS": {
+   "macro": "Financial Services",
+   "industry": "Capital Markets & AMC",
+   "name": "PNB Gilts"
   },
   "PNBHOUSING": {
    "macro": "Financial Services",
@@ -2742,7 +4587,7 @@
   },
   "PVRINOX": {
    "macro": "Media Entertainment & Publication",
-   "industry": "Entertainment",
+   "industry": "Media & Entertainment",
    "name": "PVR INOX Ltd."
   },
   "PWL": {
@@ -2759,6 +4604,11 @@
    "macro": "Services",
    "industry": "Staffing & BPO",
    "name": "Quess Corp Ltd."
+  },
+  "RADAAN": {
+   "macro": "Telecommunication",
+   "industry": "Media & Entertainment",
+   "name": "Radaan Media Works"
   },
   "RADICO": {
    "macro": "Fast Moving Consumer Goods",
@@ -2779,6 +4629,11 @@
    "macro": "Healthcare",
    "industry": "Hospitals",
    "name": "Rainbow Childrens Medicare Ltd."
+  },
+  "RAJESHEXPO": {
+   "macro": "Consumer Durables",
+   "industry": "Jewellery",
+   "name": "Rajesh Exports"
   },
   "RALLIS": {
    "macro": "Chemicals",
@@ -2815,6 +4670,11 @@
    "industry": "Banks - Private",
    "name": "RBL Bank Ltd."
   },
+  "RBZJEWEL": {
+   "macro": "Consumer Durables",
+   "industry": "Luxury Goods",
+   "name": "RBZ Jewellers"
+  },
   "RCF": {
    "macro": "Chemicals",
    "industry": "Fertilizers",
@@ -2845,6 +4705,11 @@
    "industry": "Footwear",
    "name": "Relaxo Footwears Ltd."
   },
+  "RELIABLE": {
+   "macro": "Information Technology",
+   "industry": "IT Services",
+   "name": "Reliable Data Serv"
+  },
   "RELIANCE": {
    "macro": "Oil Gas & Consumable Fuels",
    "industry": "Oil & Gas - Integrated",
@@ -2860,35 +4725,90 @@
    "industry": "Sugar",
    "name": "Shree Renuka Sugars Ltd."
   },
+  "REPRO": {
+   "macro": "Capital Goods",
+   "industry": "Specialty Business Services",
+   "name": "Repro India"
+  },
+  "RESPONIND": {
+   "macro": "Chemicals",
+   "industry": "Specialty Chemicals",
+   "name": "Responsive Industries"
+  },
   "RHIM": {
    "macro": "Capital Goods",
    "industry": "Abrasives & Refractories",
    "name": "RHI MAGNESITA INDIA LTD."
   },
+  "RICOAUTO": {
+   "macro": "Automobile and Auto Components",
+   "industry": "Auto Ancillary - Parts",
+   "name": "Rico Auto Inds"
+  },
+  "RITCO": {
+   "macro": "Capital Goods",
+   "industry": "Logistics & Freight",
+   "name": "Ritco"
+  },
   "RITES": {
    "macro": "Construction",
-   "industry": "Engineering & Construction",
+   "industry": "EPC & Infrastructure",
    "name": "RITES Ltd."
+  },
+  "RKEC": {
+   "macro": "Capital Goods",
+   "industry": "EPC & Infrastructure",
+   "name": "RKEC Projects"
   },
   "RKFORGE": {
    "macro": "Automobile and Auto Components",
    "industry": "Auto Ancillary - Parts",
    "name": "Ramkrishna Forgings Ltd."
   },
+  "RMC": {
+   "macro": "Capital Goods",
+   "industry": "Electrical Equipment",
+   "name": "RMC Switchgears"
+  },
   "ROUTE": {
    "macro": "Telecommunication",
    "industry": "Telecom Infra & Equipment",
    "name": "Route Mobile Ltd."
+  },
+  "RPGLIFE": {
+   "macro": "Healthcare",
+   "industry": "Pharma - Formulations",
+   "name": "RPG Life Sciences"
   },
   "RPOWER": {
    "macro": "Power",
    "industry": "Power Generation - Thermal",
    "name": "Reliance Power Ltd."
   },
+  "RPPINFRA": {
+   "macro": "Capital Goods",
+   "industry": "EPC & Infrastructure",
+   "name": "RPP Infra Projects"
+  },
+  "RPPL": {
+   "macro": "Consumer Services",
+   "industry": "Industrial Packaging",
+   "name": "Rajshree Polypack"
+  },
   "RRKABEL": {
    "macro": "Capital Goods",
-   "industry": "Electrical Equipment & Parts",
+   "industry": "Electrical Equipment",
    "name": "R R Kabel Ltd."
+  },
+  "RSL": {
+   "macro": "Metals & Mining",
+   "industry": "Steel",
+   "name": "Rajputana Stainless"
+  },
+  "RSSOFTWARE": {
+   "macro": "Information Technology",
+   "industry": "IT Services",
+   "name": "RS Software (India)"
   },
   "RTNINDIA": {
    "macro": "Consumer Services",
@@ -2905,10 +4825,30 @@
    "industry": "Pharma - CDMO/API",
    "name": "Rubicon Research Ltd."
   },
+  "RUBYMILLS": {
+   "macro": "Textiles",
+   "industry": "Textiles",
+   "name": "Ruby Mills"
+  },
+  "RUCHINFRA": {
+   "macro": "Capital Goods",
+   "industry": "Specialty Business Services",
+   "name": "Ruchi Infra"
+  },
   "RVNL": {
    "macro": "Construction",
    "industry": "EPC & Infrastructure",
    "name": "Rail Vikas Nigam Ltd."
+  },
+  "RVTH": {
+   "macro": "Capital Goods",
+   "industry": "Farm & Heavy Construction Machinery",
+   "name": "Revathi Equip. Ind."
+  },
+  "S&SPOWER": {
+   "macro": "Capital Goods",
+   "industry": "Electrical Equipment",
+   "name": "S & S Power Switch"
   },
   "SAATVIKGL": {
    "macro": "Capital Goods",
@@ -2950,6 +4890,11 @@
    "industry": "Iron Ore & Other Mining",
    "name": "Sandur Manganese & Iron Ores Ltd."
   },
+  "SANGINITA": {
+   "macro": "Chemicals",
+   "industry": "Chemicals",
+   "name": "Sanginita Chemicals"
+  },
   "SANOFICONR": {
    "macro": "Healthcare",
    "industry": "Pharma - Formulations",
@@ -2957,7 +4902,7 @@
   },
   "SANSERA": {
    "macro": "Automobile and Auto Components",
-   "industry": "Auto Parts",
+   "industry": "Auto Ancillary - Parts",
    "name": "Sansera Engineering Ltd."
   },
   "SAPPHIRE": {
@@ -2979,6 +4924,11 @@
    "macro": "Financial Services",
    "industry": "NBFC - Lending",
    "name": "SBFC Finance Ltd."
+  },
+  "SBGLP": {
+   "macro": "Realty",
+   "industry": "Realty",
+   "name": "Suratwwala Group"
   },
   "SBICARD": {
    "macro": "Financial Services",
@@ -3045,6 +4995,11 @@
    "industry": "Pharma - Formulations",
    "name": "Shilpa Medicare Ltd."
   },
+  "SHOPERSTOP": {
+   "macro": "Consumer Services",
+   "industry": "Retail",
+   "name": "Shoppers Stop"
+  },
   "SHREECEM": {
    "macro": "Construction Materials",
    "industry": "Cement",
@@ -3065,15 +5020,55 @@
    "industry": "Steel",
    "name": "Shyam Metalics and Energy Ltd."
   },
+  "SICALLOG": {
+   "macro": "Capital Goods",
+   "industry": "Logistics & Freight",
+   "name": "Sical Logistics"
+  },
   "SIEMENS": {
    "macro": "Capital Goods",
    "industry": "Electrical Equipment",
    "name": "Siemens Ltd."
   },
+  "SIGMA": {
+   "macro": "Information Technology",
+   "industry": "IT Services",
+   "name": "Sigma Solve"
+  },
+  "SIGMAADV": {
+   "macro": "Capital Goods",
+   "industry": "Defense",
+   "name": "Sigma Advanced Syste"
+  },
   "SIGNATURE": {
    "macro": "Realty",
    "industry": "Realty",
    "name": "Signatureglobal (India) Ltd."
+  },
+  "SIKKO": {
+   "macro": "Chemicals",
+   "industry": "Agricultural Inputs",
+   "name": "Sikko Industries"
+  },
+  "SILGO": {
+   "macro": "Consumer Durables",
+   "industry": "Luxury Goods",
+   "name": "Silgo Retail"
+  },
+  "SILINV": {
+   "macro": "Financial Services",
+   "industry": "Capital Markets & AMC",
+   "name": "SIL Investments"
+  },
+  "SIMPLEXINF": {
+   "macro": "Capital Goods",
+   "industry": "EPC & Infrastructure",
+   "name": "Simplex Infra"
+  },
+  "SITINET": {
+   "macro": "Telecommunication",
+   "industry": "Media & Entertainment",
+   "name": "Siti Networks"
   },
   "SJVN": {
    "macro": "Power",
@@ -3090,9 +5085,14 @@
    "industry": "Industrial Machinery & EPC",
    "name": "SKF India (Industrial) Ltd."
   },
+  "SKIL": {
+   "macro": "Capital Goods",
+   "industry": "EPC & Infrastructure",
+   "name": "SKIL Infra"
+  },
   "SKIPPER": {
    "macro": "Capital Goods",
-   "industry": "Engineering & Construction",
+   "industry": "EPC & Infrastructure",
    "name": "Skipper Ltd."
   },
   "SKYGOLD": {
@@ -3105,10 +5105,25 @@
    "industry": "Realty",
    "name": "Smartworks Coworking Spaces Ltd."
   },
+  "SMCGLOBAL": {
+   "macro": "Financial Services",
+   "industry": "Capital Markets & AMC",
+   "name": "SMC Global Sec."
+  },
   "SMLMAH": {
    "macro": "Capital Goods",
    "industry": "Auto OEM - Commercial Vehicle",
    "name": "SML Mahindra Ltd."
+  },
+  "SMLT": {
+   "macro": "Capital Goods",
+   "industry": "Steel",
+   "name": "Sarthak Metals"
+  },
+  "SNOWMAN": {
+   "macro": "Capital Goods",
+   "industry": "Logistics & Freight",
+   "name": "Snowman Logistics"
   },
   "SOBHA": {
    "macro": "Realty",
@@ -3120,10 +5135,25 @@
    "industry": "Defense",
    "name": "Solar Industries India Ltd."
   },
+  "SOLEX": {
+   "macro": "Information Technology",
+   "industry": "Solar & Renewable Equipment",
+   "name": "Solex Energy"
+  },
+  "SOMICONVEY": {
+   "macro": "Capital Goods",
+   "industry": "Industrial Machinery & EPC",
+   "name": "Somi Conveyor"
+  },
   "SONACOMS": {
    "macro": "Automobile and Auto Components",
    "industry": "Auto Ancillary - Parts",
    "name": "Sona BLW Precision Forgings Ltd."
+  },
+  "SONAMLTD": {
+   "macro": "Consumer Durables",
+   "industry": "Consumer Durables / Appliances",
+   "name": "Sonam"
   },
   "SONATSOFTW": {
    "macro": "Information Technology",
@@ -3135,6 +5165,11 @@
    "industry": "Banks - Private",
    "name": "South Indian Bank Ltd."
   },
+  "SPAL": {
+   "macro": "Textiles",
+   "industry": "Textiles",
+   "name": "SP Apparels"
+  },
   "SPARC": {
    "macro": "Healthcare",
    "industry": "Pharma - Formulations",
@@ -3145,10 +5180,30 @@
    "industry": "Textiles",
    "name": "Supreme Petrochem Ltd."
   },
+  "SREEL": {
+   "macro": "Textiles",
+   "industry": "Footwear",
+   "name": "Sreeleathers"
+  },
   "SRF": {
    "macro": "Chemicals",
    "industry": "Specialty Chemicals",
    "name": "SRF Ltd."
+  },
+  "SRM": {
+   "macro": "Capital Goods",
+   "industry": "EPC & Infrastructure",
+   "name": "SRM Contractors Ltd"
+  },
+  "SSDL": {
+   "macro": "Textiles",
+   "industry": "Retail",
+   "name": "Saraswati Saree Dep."
+  },
+  "STANLEY": {
+   "macro": "Consumer Durables",
+   "industry": "Consumer Durables / Appliances",
+   "name": "Stanley Lifestyles"
   },
   "STAR": {
    "macro": "Healthcare",
@@ -3170,10 +5225,20 @@
    "industry": "Telecom Infra & Equipment",
    "name": "Sterlite Technologies Ltd."
   },
+  "STOVEKRAFT": {
+   "macro": "Consumer Durables",
+   "industry": "Consumer Durables / Appliances",
+   "name": "Stove Kraft"
+  },
   "STYL": {
    "macro": "Financial Services",
    "industry": "Financial Services",
    "name": "Seshaasai Technologies Ltd."
+  },
+  "STYLAMIND": {
+   "macro": "Consumer Durables",
+   "industry": "Consumer Durables / Appliances",
+   "name": "Stylam Industries"
   },
   "STYRENIX": {
    "macro": "Chemicals",
@@ -3192,8 +5257,18 @@
   },
   "SUDEEPPHRM": {
    "macro": "Chemicals",
-   "industry": "Drug Manufacturers - Specialty & Generic",
+   "industry": "Pharma - Formulations",
    "name": "Sudeep Pharma Ltd."
+  },
+  "SUKHJITS": {
+   "macro": "Chemicals",
+   "industry": "Specialty Chemicals",
+   "name": "Sukhjit Starch"
+  },
+  "SUMEETINDS": {
+   "macro": "Textiles",
+   "industry": "Textiles",
+   "name": "Sumeet Industries"
   },
   "SUMICHEM": {
    "macro": "Chemicals",
@@ -3217,23 +5292,58 @@
   },
   "SUNTV": {
    "macro": "Media Entertainment & Publication",
-   "industry": "Broadcasting",
+   "industry": "Media & Entertainment",
    "name": "Sun TV Network Ltd."
+  },
+  "SUPERSPIN": {
+   "macro": "Textiles",
+   "industry": "Textiles",
+   "name": "Super Spinning Mills"
+  },
+  "SUPRAJIT": {
+   "macro": "Automobile and Auto Components",
+   "industry": "Auto Ancillary - Parts",
+   "name": "Suprajit Engineering"
+  },
+  "SUPREME": {
+   "macro": "Realty",
+   "industry": "Realty",
+   "name": "Supreme Holdings"
+  },
+  "SUPREMEENG": {
+   "macro": "Metals & Mining",
+   "industry": "Steel",
+   "name": "Supreme Engineering"
   },
   "SUPREMEIND": {
    "macro": "Capital Goods",
    "industry": "Building Products",
    "name": "Supreme Industries Ltd."
   },
+  "SUPREMEINF": {
+   "macro": "Capital Goods",
+   "industry": "EPC & Infrastructure",
+   "name": "Supreme Infra"
+  },
   "SUPRIYA": {
    "macro": "Healthcare",
    "industry": "Biotechnology",
    "name": "Supriya Lifescience Ltd."
   },
+  "SURAJLTD": {
+   "macro": "Metals & Mining",
+   "industry": "Steel",
+   "name": "Suraj"
+  },
   "SURYAROSNI": {
    "macro": "Capital Goods",
    "industry": "Building Products",
    "name": "Surya Roshni Ltd."
+  },
+  "SUYOG": {
+   "macro": "Telecommunication",
+   "industry": "Telecom Services",
+   "name": "Suyog Telematics"
   },
   "SUZLON": {
    "macro": "Capital Goods",
@@ -3264,6 +5374,11 @@
    "macro": "Capital Goods",
    "industry": "Electronics Manufacturing (EMS)",
    "name": "Syrma SGS Technology Ltd."
+  },
+  "SYSTMTXC": {
+   "macro": "Financial Services",
+   "industry": "Capital Markets & AMC",
+   "name": "Systematix Corp"
   },
   "TANLA": {
    "macro": "Information Technology",
@@ -3445,6 +5560,11 @@
    "industry": "Auto OEM - Passenger (4W)",
    "name": "Tata Motors Passenger Vehicles Ltd."
   },
+  "TNTELE": {
+   "macro": "Information Technology",
+   "industry": "Telecom Infra & Equipment",
+   "name": "TN Telecommunication"
+  },
   "TORNTPHARM": {
    "macro": "Healthcare",
    "industry": "Pharma - Formulations",
@@ -3485,15 +5605,35 @@
    "industry": "Sugar",
    "name": "Triveni Engineering & Industries Ltd."
   },
+  "TRUALT": {
+   "macro": "Oil Gas & Consumable Fuels",
+   "industry": "Refiner & OMC",
+   "name": "TruAlt Bioenergy"
+  },
   "TSFINV": {
    "macro": "Financial Services",
    "industry": "Capital Markets & AMC",
    "name": "TSF Investments Ltd."
   },
+  "TTKPRESTIG": {
+   "macro": "Consumer Durables",
+   "industry": "Consumer Durables / Appliances",
+   "name": "TTK Prestige"
+  },
+  "TTL": {
+   "macro": "Textiles",
+   "industry": "Textiles",
+   "name": "TT"
+  },
   "TTML": {
    "macro": "Telecommunication",
    "industry": "Telecom Services",
    "name": "Tata Teleservices (Maharashtra) Ltd."
+  },
+  "TVSELECT": {
+   "macro": "Information Technology",
+   "industry": "Computer Hardware",
+   "name": "TVS Electronics"
   },
   "TVSMOTOR": {
    "macro": "Automobile and Auto Components",
@@ -3505,6 +5645,11 @@
    "industry": "Logistics & Freight",
    "name": "TVS Supply Chain Solutions Ltd."
   },
+  "TVVISION": {
+   "macro": "Telecommunication",
+   "industry": "Media & Entertainment",
+   "name": "TV Vision"
+  },
   "UBL": {
    "macro": "Fast Moving Consumer Goods",
    "industry": "Beverages & Distilleries",
@@ -3514,6 +5659,11 @@
    "macro": "Financial Services",
    "industry": "Banks - PSU",
    "name": "UCO Bank"
+  },
+  "UGROCAP": {
+   "macro": "Financial Services",
+   "industry": "NBFC - Lending",
+   "name": "Ugro Capital"
   },
   "UJJIVANSFB": {
    "macro": "Financial Services",
@@ -3525,10 +5675,25 @@
    "industry": "Cement",
    "name": "UltraTech Cement Ltd."
   },
+  "UNIINFO": {
+   "macro": "Telecommunication",
+   "industry": "Telecom Services",
+   "name": "Uniinfo Telecom"
+  },
+  "UNIMECH": {
+   "macro": "Capital Goods",
+   "industry": "Defense",
+   "name": "Unimech Aerospace"
+  },
   "UNIONBANK": {
    "macro": "Financial Services",
    "industry": "Banks - PSU",
    "name": "Union Bank of India"
+  },
+  "UNIPARTS": {
+   "macro": "Capital Goods",
+   "industry": "Farm & Heavy Construction Machinery",
+   "name": "Uniparts India"
   },
   "UNITDSPR": {
    "macro": "Fast Moving Consumer Goods",
@@ -3545,10 +5710,20 @@
    "industry": "Agrochemicals / Pesticides",
    "name": "UPL Ltd."
   },
+  "URAVIDEF": {
+   "macro": "Automobile and Auto Components",
+   "industry": "Auto Ancillary - Parts",
+   "name": "Uravi Defence&Tech."
+  },
   "URBANCO": {
    "macro": "Consumer Services",
    "industry": "Online Services / Platforms",
    "name": "Urban Company Ltd."
+  },
+  "URJA": {
+   "macro": "Information Technology",
+   "industry": "Solar & Renewable Equipment",
+   "name": "Urja Global"
   },
   "USHAMART": {
    "macro": "Capital Goods",
@@ -3575,6 +5750,11 @@
    "industry": "Jewellery",
    "name": "Vaibhav Global Ltd."
   },
+  "VALIANTORG": {
+   "macro": "Chemicals",
+   "industry": "Chemicals",
+   "name": "Valiant Organics"
+  },
   "VARROC": {
    "macro": "Automobile and Auto Components",
    "industry": "Auto Ancillary - Parts",
@@ -3585,15 +5765,40 @@
    "industry": "Beverages & Distilleries",
    "name": "Varun Beverages Ltd."
   },
+  "VCL": {
+   "macro": "Textiles",
+   "industry": "Textiles",
+   "name": "Vaxtex Cotfab"
+  },
   "VEDL": {
    "macro": "Metals & Mining",
    "industry": "Diversified Metals",
    "name": "Vedanta Ltd."
   },
+  "VENKEYS": {
+   "macro": "Fast Moving Consumer Goods",
+   "industry": "Farm Products",
+   "name": "Venky's India"
+  },
+  "VENUSPIPES": {
+   "macro": "Metals & Mining",
+   "industry": "Steel",
+   "name": "Venus Pipes & Tubes"
+  },
+  "VGL": {
+   "macro": "Textiles",
+   "industry": "Textiles",
+   "name": "Varvee Global"
+  },
   "VGUARD": {
    "macro": "Consumer Durables",
    "industry": "Consumer Durables / Appliances",
    "name": "V-Guard Industries Ltd."
+  },
+  "VIDYAWIRES": {
+   "macro": "Capital Goods",
+   "industry": "Electrical Equipment",
+   "name": "Vidya Wires"
   },
   "VIJAYA": {
    "macro": "Healthcare",
@@ -3695,6 +5900,11 @@
    "industry": "Consumer Durables / Appliances",
    "name": "Whirlpool of India Ltd."
   },
+  "WIMPLAST": {
+   "macro": "Consumer Durables",
+   "industry": "Consumer Durables / Appliances",
+   "name": "Wim Plast"
+  },
   "WIPRO": {
    "macro": "Information Technology",
    "industry": "IT Services",
@@ -3710,6 +5920,11 @@
    "industry": "Hospitals",
    "name": "Yatharth Hospital & Trauma Care Services Ltd."
   },
+  "YATRA": {
+   "macro": "Consumer Services",
+   "industry": "Travel Services",
+   "name": "Yatra Online"
+  },
   "YESBANK": {
    "macro": "Financial Services",
    "industry": "Banks - Private",
@@ -3722,7 +5937,7 @@
   },
   "ZEEL": {
    "macro": "Media Entertainment & Publication",
-   "industry": "Broadcasting",
+   "industry": "Media & Entertainment",
    "name": "Zee Entertainment Enterprises Ltd."
   },
   "ZENSARTECH": {
@@ -3757,11 +5972,19 @@
    "RHIM"
   ],
   "Advertising Agencies": [
-   "AFFLE"
+   "AFFLE",
+   "BCG"
   ],
-  "Aerospace & Defense": [
-   "AEQUS",
-   "APOLLO"
+  "Agricultural Inputs": [
+   "ADVANCE",
+   "AGROPHOS",
+   "ARIES",
+   "ASTEC",
+   "BESTAGRO",
+   "GSPCROP",
+   "KHAICHEM",
+   "NOVAAGRI",
+   "SIKKO"
   ],
   "Agrochemicals / Pesticides": [
    "BAYERCROP",
@@ -3775,33 +5998,31 @@
    "INDIGO"
   ],
   "Airports & Air Services": [
+   "GLOBALVECT",
    "GMRAIRPORT"
   ],
   "Aluminium": [
+   "ARFIN",
+   "GOYALALUM",
    "HINDALCO",
+   "MANAKALUCO",
    "NATIONALUM"
   ],
   "Apparel & Fashion": [
    "MANYAVAR"
-  ],
-  "Apparel Manufacturing": [
-   "ARVINDFASN",
-   "KITEX"
-  ],
-  "Apparel Retail": [
-   "ABLBL"
-  ],
-  "Asset Management": [
-   "ANANDRATHI",
-   "BAJAJHLDNG",
-   "JIOFIN",
-   "MAHSCOOTER"
   ],
   "Auto Ancillary - Batteries": [
    "ARE&M",
    "EXIDEIND"
   ],
   "Auto Ancillary - Parts": [
+   "ASAHIINDIA",
+   "ASAL",
+   "ASKAUTOLTD",
+   "AUTOAXLES",
+   "AUTOIND",
+   "BANCOINDIA",
+   "BELRISE",
    "BHARATFORG",
    "BOSCHLTD",
    "CIEINDIA",
@@ -3809,20 +6030,27 @@
    "ENDURANCE",
    "FIEMIND",
    "GABRIEL",
+   "GNA",
    "JAMNAAUTO",
    "JBMA",
+   "JMA",
    "LUMAXTECH",
    "MINDACORP",
    "MOTHERSON",
    "MSUMI",
+   "NRBBEARING",
    "PRICOLLTD",
+   "RICOAUTO",
    "RKFORGE",
+   "SANSERA",
    "SCHAEFFLER",
    "SHRIPISTON",
    "SONACOMS",
    "SUBROS",
+   "SUPRAJIT",
    "TENNIND",
    "UNOMINDA",
+   "URAVIDEF",
    "VARROC",
    "ZFCVINDIA"
   ],
@@ -3846,17 +6074,11 @@
    "TMPV"
   ],
   "Auto OEM - Two/Three Wheeler": [
+   "ATULAUTO",
    "BAJAJ-AUTO",
    "EICHERMOT",
    "HEROMOTOCO",
    "TVSMOTOR"
-  ],
-  "Auto Parts": [
-   "ASAHIINDIA",
-   "ASKAUTOLTD",
-   "BANCOINDIA",
-   "BELRISE",
-   "SANSERA"
   ],
   "Banks - PSU": [
    "BANKBARODA",
@@ -3879,11 +6101,14 @@
    "CSBBANK",
    "CUB",
    "DCBBANK",
+   "ESAFSFB",
    "FEDERALBNK",
+   "FINOPB",
    "HDFCBANK",
    "ICICIBANK",
    "IDFCFIRSTB",
    "INDUSINDBK",
+   "JSFB",
    "KARURVYSYA",
    "KOTAKBANK",
    "KTKBANK",
@@ -3892,10 +6117,13 @@
    "TMB",
    "YESBANK"
   ],
-  "Banks - Regional": [
-   "JSFB"
-  ],
   "Beverages & Distilleries": [
+   "ABDL",
+   "ASALCBR",
+   "BCLIND",
+   "GLOBUSSPR",
+   "GMBREW",
+   "IFBAGRO",
    "PICCADIL",
    "RADICO",
    "TI",
@@ -3903,27 +6131,33 @@
    "UNITDSPR",
    "VBL"
   ],
-  "Beverages - Wineries & Distilleries": [
-   "ABDL"
-  ],
   "Biotechnology": [
    "ANTHEM",
    "BIOCON",
+   "PANACEABIO",
    "SUPRIYA"
   ],
-  "Broadcasting": [
-   "SUNTV",
-   "ZEEL"
-  ],
-  "Building Materials": [
-   "GRASIM"
-  ],
   "Building Products": [
+   "ACL",
+   "AHLADA",
+   "APCL",
+   "APOLLOPIPE",
+   "AROGRANITE",
+   "ASIANTILES",
    "ASTRAL",
+   "BEARDSELL",
    "CENTURYPLY",
    "CERA",
    "FINPIPE",
+   "GRASIM",
+   "GREENPLY",
    "KAJARIACER",
+   "KESORAMIND",
+   "KRITI",
+   "MADHAV",
+   "NCLIND",
+   "NITCO",
+   "ORIENTBELL",
    "SUPREMEIND",
    "SURYAROSNI"
   ],
@@ -3931,30 +6165,52 @@
    "DIACABS",
    "FINCABLES"
   ],
-  "Capital Markets": [
-   "AIIL"
-  ],
   "Capital Markets & AMC": [
+   "21STCENMGM",
    "360ONE",
+   "5PAISA",
    "ABSLAMC",
+   "AFSL",
+   "AIIL",
+   "ALGOQUANT",
+   "ALMONDZ",
+   "ANANDRATHI",
    "ANGELONE",
+   "ARIHANTCAP",
+   "AUSOMENT",
+   "AVONMORE",
+   "BAJAJHLDNG",
+   "BFINVEST",
    "BSE",
    "CAMS",
    "CDSL",
    "CHOLAHLDNG",
    "CRAMC",
    "CRISIL",
+   "GATECHDVR",
+   "GFLLIMITED",
    "HDFCAMC",
    "ICICIAMC",
    "IEX",
    "IIFLCAPS",
+   "JINDALPHOT",
+   "JIOFIN",
    "KFINTECH",
+   "KHANDSE",
+   "KICL",
+   "MAHSCOOTER",
    "MCX",
    "MOTILALOFS",
    "NAM-INDIA",
+   "NSIL",
    "NUVAMA",
+   "OSWALGREEN",
+   "PNBGILTS",
    "PRUDENT",
    "SHAREINDIA",
+   "SILINV",
+   "SMCGLOBAL",
+   "SYSTMTXC",
    "TATAINVEST",
    "TSFINV",
    "UTIAMC"
@@ -3978,42 +6234,72 @@
    "ULTRACEMCO"
   ],
   "Chemicals": [
-   "SWANCORP"
+   "AMNPLST",
+   "ANDHRSUGAR",
+   "BEPL",
+   "EPIGRAL",
+   "GODAVARIB",
+   "GULPOLY",
+   "SANGINITA",
+   "SWANCORP",
+   "VALIANTORG"
   ],
   "Coal Mining": [
    "COALINDIA"
   ],
-  "Communication Equipment": [
-   "ASTRAMICRO"
+  "Computer Hardware": [
+   "EBGNG",
+   "TVSELECT"
   ],
   "Conglomerates": [
    "3MINDIA",
+   "BALMLAWRIE",
    "GODREJIND",
+   "JISLDVREQS",
+   "KOTHARIPRO",
+   "METROGLOBL",
    "MSTCLTD",
+   "NIBE",
    "TIINDIA"
   ],
   "Consumer Durables": [
    "SHAILY"
   ],
   "Consumer Durables / Appliances": [
+   "ADL",
+   "AIROLAM",
+   "AVROIND",
    "BAJAJELEC",
    "BLUESTARCO",
    "CROMPTON",
    "EUREKAFORB",
+   "FOCUS",
+   "GREENLAM",
    "HAVELLS",
    "IFBIND",
    "LGEINDIA",
+   "MIRCELECTR",
+   "NILKAMAL",
+   "ORIENTELEC",
+   "SONAMLTD",
+   "STANLEY",
+   "STOVEKRAFT",
+   "STYLAMIND",
+   "TTKPRESTIG",
    "VGUARD",
    "VOLTAS",
-   "WHIRLPOOL"
+   "WHIRLPOOL",
+   "WIMPLAST"
+  ],
+  "Consumer Electronics": [
+   "PALREDTEC"
   ],
   "Consumer Services": [
    "RTNINDIA"
   ],
-  "Credit Services": [
-   "IRFC"
-  ],
   "Defense": [
+   "AEQUS",
+   "APOLLO",
    "BDL",
    "BEL",
    "BEML",
@@ -4022,12 +6308,15 @@
    "DYNAMATECH",
    "GRSE",
    "HAL",
+   "IDEAFORGE",
    "MAZDOCK",
    "MIDHANI",
    "MTARTECH",
    "PARAS",
    "PTCIL",
+   "SIGMAADV",
    "SOLARINDS",
+   "UNIMECH",
    "ZENTEC"
   ],
   "Diagnostics": [
@@ -4036,64 +6325,103 @@
    "THYROCARE",
    "VIJAYA"
   ],
+  "Diagnostics & Research": [
+   "KRSNAA"
+  ],
   "Diversified Metals": [
+   "20MICRONS",
+   "ARENTERP",
+   "ASHAPURMIN",
    "GRAVITA",
    "HINDCOPPER",
    "HINDZINC",
    "JAINREC",
    "VEDL"
   ],
-  "Drug Manufacturers - Specialty & Generic": [
-   "AARTIPHARM",
-   "ABBOTINDIA",
-   "AKUMS",
-   "ALIVUS",
-   "APLLTD",
-   "SUDEEPPHRM"
-  ],
   "EPC & Infrastructure": [
+   "A2ZINFRA",
+   "ABINFRA",
+   "AFCONS",
+   "AHLUCONT",
+   "AKASH",
+   "ARIS",
+   "ASHOKA",
+   "ATALREAL",
+   "ATLANTAA",
+   "AXISCADES",
+   "BCPL",
    "DBL",
    "ENGINERSIN",
+   "GLOBECIVIL",
+   "GPTINFRA",
+   "GRINFRA",
    "HCC",
+   "HECPROJECT",
    "HGINFRA",
+   "HILINFRA",
+   "IRB",
    "IRCON",
+   "KAUSHALYA",
    "KNRCON",
    "KPIL",
+   "MADHUCON",
+   "MITCON",
    "NBCC",
    "NCC",
+   "OMINFRAL",
    "PNCINFRA",
    "POWERMECH",
+   "RITES",
+   "RKEC",
+   "RPPINFRA",
    "RVNL",
+   "SIMPLEXINF",
+   "SKIL",
+   "SKIPPER",
+   "SRM",
+   "SUPREMEINF",
    "TECHNOE",
    "WELENT"
   ],
   "Education": [
+   "APTECHT",
    "CRIZAC",
+   "GLOBAL",
+   "NIITLTD",
+   "NIITMTS",
    "PWL"
   ],
   "Electrical Equipment": [
+   "AARTECH",
    "ABB",
+   "AEPL",
+   "APARINDS",
+   "ATLANTAELE",
+   "AURIGROW",
+   "BBL",
    "BHEL",
    "CGPOWER",
    "ELECON",
    "ENRIN",
+   "EXICOM",
    "HBLENGINE",
    "INOXINDIA",
    "KEI",
+   "MARSONS",
+   "NIPPOBATRY",
    "POLYCAB",
    "POWERINDIA",
    "QPOWER",
+   "RMC",
+   "RRKABEL",
+   "S&SPOWER",
    "SCHNEIDER",
    "SIEMENS",
    "TARIL",
    "TDPOWERSYS",
    "THERMAX",
-   "TRANSRAILL"
-  ],
-  "Electrical Equipment & Parts": [
-   "APARINDS",
-   "ATLANTAELE",
-   "RRKABEL"
+   "TRANSRAILL",
+   "VIDYAWIRES"
   ],
   "Electronic Gaming & Multimedia": [
    "NAZARA"
@@ -4108,35 +6436,43 @@
    "PGEL",
    "SYRMA"
   ],
-  "Engineering & Construction": [
-   "AFCONS",
-   "AHLUCONT",
-   "ASHOKA",
-   "AXISCADES",
-   "RITES",
-   "SKIPPER"
-  ],
-  "Entertainment": [
-   "NETWORK18",
-   "PVRINOX"
-  ],
   "FMCG - Packaged Foods": [
+   "ADFFOODS",
+   "AJOONI",
+   "AVADHSUGAR",
+   "AVANTIFEED",
+   "AWL",
+   "BANARISUG",
+   "BBTC",
+   "BECTORFOOD",
    "BIKAJI",
    "BRITANNIA",
    "CCL",
    "DOMS",
+   "EIFFL",
    "GAEL",
+   "GODREJAGRO",
+   "GOKUL",
    "GOKULAGRO",
+   "GOPAL",
+   "GRMOVER",
    "HERITGFOOD",
+   "KOHINOOR",
+   "KOTARISUG",
    "KRBL",
+   "KWIL",
    "LTFOODS",
    "MANORAMA",
    "MARICO",
    "NESTLEIND",
+   "ORKLAINDIA",
    "PATANJALI",
    "TATACONSUM"
   ],
   "FMCG - Personal & Home Care": [
+   "ALLTIME",
+   "AMBICAAGAR",
+   "BAJAJCON",
    "COLPAL",
    "CUPID",
    "DABUR",
@@ -4145,16 +6481,33 @@
    "GODREJCP",
    "HINDUNILVR",
    "HONASA",
-   "JYOTHYLAB"
+   "JYOTHYLAB",
+   "NKIND"
   ],
   "FMCG - Wellness": [
    "ZYDUSWELL"
   ],
   "Farm & Heavy Construction Machinery": [
-   "ACE"
+   "ACE",
+   "AJAXENGG",
+   "BAJAJINDEF",
+   "RVTH",
+   "UNIPARTS"
   ],
   "Farm Equipment / Tractors": [
    "ESCORTS"
+  ],
+  "Farm Products": [
+   "AGRITECH",
+   "AMIRCHAND",
+   "APEX",
+   "ASPINWALL",
+   "GILLANDERS",
+   "GROBTEA",
+   "JAYSREETEA",
+   "KNAGRI",
+   "NORBTEAEXP",
+   "VENKEYS"
   ],
   "Fertilizers": [
    "CHAMBLFERT",
@@ -4167,6 +6520,10 @@
    "PARADEEP",
    "RCF"
   ],
+  "Financial Conglomerates": [
+   "ARSSBL",
+   "IVC"
+  ],
   "Financial Services": [
    "STYL"
   ],
@@ -4177,13 +6534,19 @@
    "PINELABS",
    "POLICYBZR"
   ],
-  "Footwear": [
-   "CAMPUS",
-   "REDTAPE",
-   "RELAXO"
+  "Food Distribution": [
+   "ANIKINDS"
   ],
-  "Footwear & Accessories": [
-   "BATAINDIA"
+  "Footwear": [
+   "AKI",
+   "BANARBEADS",
+   "BATAINDIA",
+   "BCONCEPTS",
+   "CAMPUS",
+   "KHADIM",
+   "REDTAPE",
+   "RELAXO",
+   "SREEL"
   ],
   "Furniture & Home Products": [
    "CELLO",
@@ -4201,6 +6564,9 @@
    "GRAPHITE",
    "HEG"
   ],
+  "Health Information Services": [
+   "FABTECH"
+  ],
   "Healthcare Distribution": [
    "ENTERO"
   ],
@@ -4208,10 +6574,12 @@
    "APOLLOHOSP",
    "ASTERDM",
    "FORTIS",
+   "GPTHEALTH",
    "HCG",
    "JLHL",
    "JSLL",
    "KIMS",
+   "KOVAI",
    "MAXHEALTH",
    "MEDANTA",
    "NH",
@@ -4220,8 +6588,16 @@
    "YATHARTH"
   ],
   "Hotels & Travel": [
+   "ADVANIHOTR",
+   "ADVENTHTL",
+   "AHLEAST",
+   "AHLWEST",
+   "ASIANHOTNR",
    "CHALET",
+   "EIHAHOTELS",
    "EIHOTEL",
+   "HAVISHA",
+   "INDHOTEL",
    "ITCHOTELS",
    "IXIGO",
    "LEMONTREE",
@@ -4232,15 +6608,23 @@
    "TRAVELFOOD"
   ],
   "IT - Products & Platforms": [
+   "63MOONS",
+   "AGSTRA",
+   "AMAGI",
+   "AURIONPRO",
+   "BBOX",
    "CAPILLARY",
    "HAPPSTMNDS",
    "IKS",
    "INDGN",
    "INTELLECT",
+   "KELLTONTEC",
+   "KERNEX",
    "LATENTVIEW",
    "MAPMYINDIA",
    "NETWEB",
    "NEWGEN",
+   "NPST",
    "RATEGAIN",
    "SAGILITY",
    "TANLA",
@@ -4248,12 +6632,23 @@
    "ZAGGLE"
   ],
   "IT Services": [
+   "3IINFOLTD",
+   "AAATECH",
+   "ACCELYA",
+   "ADROITINFO",
+   "ADSL",
+   "AIRAN",
+   "ALANKIT",
+   "ASMS",
    "BSOFT",
    "COFORGE",
    "CYIENT",
    "DATAMATICS",
    "ECLERX",
+   "FCSSOFT",
    "FSL",
+   "GOLDTECH",
+   "GSS",
    "HCLTECH",
    "HEXT",
    "INFY",
@@ -4261,8 +6656,12 @@
    "LTTS",
    "MASTEK",
    "MPHASIS",
+   "NINSYS",
    "OFSS",
    "PERSISTENT",
+   "RELIABLE",
+   "RSSOFTWARE",
+   "SIGMA",
    "SONATSOFTW",
    "TATAELXSI",
    "TCS",
@@ -4270,38 +6669,68 @@
    "WIPRO",
    "ZENSARTECH"
   ],
+  "Industrial Distribution": [
+   "AKG",
+   "KHAITANLTD"
+  ],
   "Industrial Gases": [
    "ELLEN",
    "LINDEINDIA"
   ],
   "Industrial Machinery & EPC": [
+   "AARON",
+   "ADOR",
+   "ADVAIT",
+   "AFFORDABLE",
    "AIAENG",
+   "ANUP",
+   "ATAM",
+   "AZAD",
+   "BATLIBOI",
    "CUMMINSIND",
    "ELGIEQUIP",
    "GMMPFAUDLR",
+   "GREAVESCOT",
+   "GRINDWELL",
+   "GVT&D",
    "HONAUT",
+   "ISGEC",
+   "JNKINDIA",
    "JYOTICNC",
    "KEC",
    "KIRLOSENG",
+   "KIRLPNU",
    "KRN",
+   "LOKESHMACH",
    "LT",
+   "MACPOWER",
+   "MANUGRAPH",
    "PRAJIND",
    "SKFINDIA",
    "SKFINDUS",
+   "SOMICONVEY",
    "TEGA",
    "TIMKEN",
    "TRITURBINE",
    "VOLTAMP"
   ],
   "Industrial Packaging": [
+   "AERONEU",
+   "AGI",
+   "AMDIND",
+   "ANTGRAPHIC",
+   "ARROWGREEN",
+   "BALAJEE",
+   "BALKRISHNA",
+   "BBTCL",
+   "EMMBI",
    "EPL",
+   "ORICONENT",
+   "RPPL",
    "TIMETECHNO"
   ],
   "Information Technology": [
    "LTM"
-  ],
-  "Infrastructure Operations": [
-   "IRB"
   ],
   "Insurance": [
    "BAJAJFINSV",
@@ -4328,6 +6757,9 @@
    "NYKAA",
    "PAYTM"
   ],
+  "Internet Retail": [
+   "ISFT"
+  ],
   "Iron Ore & Other Mining": [
    "GMDCLTD",
    "MOIL",
@@ -4340,39 +6772,70 @@
    "KALYANKJIL",
    "PCJEWELLER",
    "PNGJL",
+   "RAJESHEXPO",
    "SENCO",
    "SKYGOLD",
    "THANGAMAYL",
    "TITAN",
    "VAIBHAVGBL"
   ],
-  "Lodging": [
-   "INDHOTEL"
+  "Leisure": [
+   "ATLASCYCLE"
   ],
   "Logistics & Freight": [
+   "ACCURACY",
+   "ALLCARGO",
+   "ARSHIYA",
+   "ATL",
+   "AVG",
    "BLACKBUCK",
    "BLUEDART",
    "CMSINFO",
    "CONCOR",
+   "GLOTTIS",
    "GPPL",
    "MMTC",
+   "OMFREIGHT",
    "REDINGTON",
+   "RITCO",
+   "SICALLOG",
+   "SNOWMAN",
    "TVSSCS"
   ],
   "Lubricants": [
-   "CASTROLIND"
+   "CASTROLIND",
+   "GULFOILLUB"
   ],
   "Luggage": [
    "SAFARI",
    "VIPIND"
   ],
+  "Luxury Goods": [
+   "GOLDIAM",
+   "KDDL",
+   "LYPSAGEMS",
+   "RBZJEWEL",
+   "SILGO"
+  ],
   "Marine Shipping": [
    "ADANIPORTS"
   ],
   "Media & Entertainment": [
+   "AQYLON",
+   "BAGFILMS",
+   "BALAJITELE",
+   "GRADIENTE",
+   "NETWORK18",
+   "NEXTMEDIA",
    "PFOCUS",
+   "PVRINOX",
+   "RADAAN",
    "SAREGAMA",
-   "TIPSMUSIC"
+   "SITINET",
+   "SUNTV",
+   "TIPSMUSIC",
+   "TVVISION",
+   "ZEEL"
   ],
   "Medical Devices": [
    "POLYMED"
@@ -4380,8 +6843,9 @@
   "Medical Instruments & Supplies": [
    "AGARWALEYE"
   ],
-  "Metal Fabrication": [
-   "BALUFORGE"
+  "Metals & Mining": [
+   "DUMMYVEDL1",
+   "DUMMYVEDL4"
   ],
   "Mortgage Finance": [
    "AADHARHFC",
@@ -4392,6 +6856,10 @@
   ],
   "NBFC - Lending": [
    "ABCAPITAL",
+   "AFIL",
+   "ARMANFIN",
+   "AYE",
+   "BAIDFIN",
    "BAJFINANCE",
    "CANFINHOME",
    "CGCL",
@@ -4400,18 +6868,24 @@
    "EDELWEISS",
    "FEDFINA",
    "FIVESTAR",
+   "FUSION",
    "HDBFS",
+   "HEXATRADEX",
    "HOMEFIRST",
    "HUDCO",
    "IFCI",
    "IIFL",
    "INDIASHLTR",
+   "IRFC",
    "JMFINANCIL",
    "LICHSGFIN",
    "LTF",
    "M&MFIN",
+   "MAHAPEXLTD",
    "MANAPPURAM",
+   "MANCREDIT",
    "MUTHOOTFIN",
+   "NORTHARC",
    "PIRAMALFIN",
    "PNBHOUSING",
    "POONAWALLA",
@@ -4420,19 +6894,28 @@
    "SBICARD",
    "SHRIRAMFIN",
    "SUNDARMFIN",
-   "TATACAP"
+   "TATACAP",
+   "UGROCAP"
   ],
   "Oil & Gas - Integrated": [
    "RELIANCE"
   ],
-  "Oil & Gas Equipment & Services": [
-   "AEGISVOPAK"
+  "Oil & Gas Drilling": [
+   "ABAN"
   ],
-  "Oil & Gas Refining & Marketing": [
-   "HINDPETRO"
+  "Oil & Gas E&P": [
+   "ANTELOPUS"
+  ],
+  "Oil Gas & Consumable Fuels": [
+   "DUMMYVEDL3"
   ],
   "Oilfield Services & Equipment": [
-   "AEGISLOG"
+   "AAKASH",
+   "AEGISLOG",
+   "AEGISVOPAK",
+   "ALPHAGEO",
+   "ASIANENE",
+   "OILCOUNTUB"
   ],
   "Online Services / Platforms": [
    "BLS",
@@ -4444,17 +6927,6 @@
    "SWIGGY",
    "URBANCO"
   ],
-  "Other Industrial Metals & Mining": [
-   "ASHAPURMIN"
-  ],
-  "Packaged Foods": [
-   "AVANTIFEED",
-   "AWL",
-   "BBTC",
-   "BECTORFOOD",
-   "GODREJAGRO",
-   "ORKLAINDIA"
-  ],
   "Paints": [
    "ASIANPAINT",
    "BERGEPAINT",
@@ -4463,7 +6935,14 @@
    "KANSAINER"
   ],
   "Paper & Forest Products": [
-   "JKPAPER"
+   "ANDHRAPAP",
+   "ARCHIDPLY",
+   "ASTRON",
+   "EMAMIPAP",
+   "GENUSPAPER",
+   "GREENPANEL",
+   "JKPAPER",
+   "ORIENTPPR"
   ],
   "Pharma - CDMO/API": [
    "AARTIDRUGS",
@@ -4480,9 +6959,27 @@
    "SYNGENE"
   ],
   "Pharma - Formulations": [
+   "AAREYDRUGS",
+   "AARTIPHARM",
+   "ABBOTINDIA",
+   "AHCL",
    "AJANTPHARM",
+   "AKUMS",
+   "ALBERTDAVD",
+   "ALIVUS",
    "ALKEM",
+   "ALPA",
+   "AMANTA",
+   "AMBALALSA",
+   "AMRUTANJAN",
+   "ANUHPHR",
+   "APLLTD",
+   "ASTRAZEN",
    "AUROPHARMA",
+   "BAFNAPH",
+   "BAJAJHCARE",
+   "BALAXI",
+   "BALPHARMA",
    "CAPLIPOINT",
    "CIPLA",
    "CONCORDBIO",
@@ -4492,19 +6989,29 @@
    "ERIS",
    "GLAXO",
    "GLENMARK",
+   "GUJTHEM",
+   "HESTERBIO",
+   "HIKAL",
    "IPCALAB",
    "JBCHEPHARM",
    "JUBLPHARMA",
+   "KOPRAN",
+   "KREBSBIO",
    "LUPIN",
    "MANKIND",
    "MARKSANS",
    "NATCOPHARM",
+   "NECLIFE",
+   "NGLFINE",
+   "NOVARTIND",
    "PFIZER",
    "PPLPHARMA",
+   "RPGLIFE",
    "SANOFICONR",
    "SHILPAMED",
    "SPARC",
    "STAR",
+   "SUDEEPPHRM",
    "SUNPHARMA",
    "TORNTPHARM",
    "VIYASH",
@@ -4513,6 +7020,12 @@
   ],
   "Pharmaceutical Retailers": [
    "MEDPLUS"
+  ],
+  "Pollution & Treatment Controls": [
+   "BANKA"
+  ],
+  "Power": [
+   "DUMMYVEDL2"
   ],
   "Power - Renewables": [
    "ADANIGREEN",
@@ -4552,6 +7065,9 @@
    "JSWINFRA",
    "POWERGRID"
   ],
+  "Publishing": [
+   "JAGRAN"
+  ],
   "Pumps & Compressors": [
    "KIRLOSBROS",
    "KSB",
@@ -4572,55 +7088,93 @@
    "TEXRAIL",
    "TITAGARH"
   ],
-  "Real Estate Services": [
-   "ABREL"
-  ],
   "Realty": [
+   "ABREL",
+   "AGIIL",
+   "AJMERA",
+   "ALEMBICLTD",
+   "AMJLAND",
    "ANANTRAJ",
+   "ARIHANT",
+   "ARIHANTSUP",
+   "ARKADE",
+   "ARTNIRMAN",
+   "ARVSMART",
+   "ASHIANA",
+   "ASHIMASYN",
+   "AURUM",
    "BRIGADE",
    "DBREALTY",
    "DLF",
+   "EMAMIREAL",
    "EMBDL",
+   "FMNL",
+   "GEECEE",
    "GODREJPROP",
    "HEMIPROP",
    "LODHA",
    "LOTUSDEV",
+   "LPDC",
    "NESCO",
+   "NILAINFRA",
+   "NILASPACES",
+   "NIRLON",
    "OBEROIRLTY",
+   "PANSARI",
    "PHOENIXLTD",
    "PRESTIGE",
    "PURVA",
+   "SBGLP",
    "SIGNATURE",
    "SMARTWORKS",
    "SOBHA",
    "SUNTECK",
+   "SUPREME",
    "TARC",
    "WEWORK"
   ],
   "Refiner & OMC": [
    "BPCL",
    "CHENNPETRO",
+   "HINDPETRO",
    "IOC",
-   "MRPL"
+   "MRPL",
+   "PANAMAPET",
+   "TRUALT"
   ],
   "Rental & Leasing Services": [
    "AWFIS"
   ],
   "Retail": [
    "ABFRL",
+   "ABLBL",
    "ADANIENT",
    "DMART",
    "EMIL",
+   "FEL",
+   "GOCOLORS",
+   "SHOPERSTOP",
+   "SSDL",
    "TRENT",
    "V2RETAIL",
    "VMART",
    "VMM"
   ],
+  "Scientific & Technical Instruments": [
+   "NITIRAJ"
+  ],
   "Seeds & Agri-Inputs": [
    "KSCL"
   ],
+  "Semiconductor Equipment & Materials": [
+   "MOSCHIP"
+  ],
   "Services": [
+   "DUMMYALCAR",
    "IGIL"
+  ],
+  "Shell Companies": [
+   "GLFL"
   ],
   "Shipping": [
    "GESHIP",
@@ -4631,70 +7185,107 @@
    "EQUITASBNK",
    "UJJIVANSFB"
   ],
-  "Software - Application": [
-   "AURIONPRO",
-   "BBOX"
-  ],
   "Solar & Renewable Equipment": [
    "BORORENEW",
    "EMMVEE",
+   "GENSOL",
    "INOXGREEN",
    "PREMIERENE",
    "SAATVIKGL",
+   "SOLEX",
    "SWSOLAR",
+   "URJA",
    "UTLSOLAR",
    "VIKRAMSOLR",
    "WAAREERTL",
    "WEBELSOLAR"
   ],
+  "Specialty Business Services": [
+   "ALLDIGI",
+   "APOLSINHOT",
+   "KRYSTAL",
+   "REPRO",
+   "RUCHINFRA"
+  ],
   "Specialty Chemicals": [
    "AARTIIND",
+   "AARTISURF",
+   "ABMINTLLTD",
    "ACI",
    "ACUTAAS",
    "ADVENZYMES",
    "AETHER",
+   "AGARIND",
+   "AKSHARCHEM",
+   "ALKALI",
    "ALKYLAMINE",
    "ANURAS",
+   "APCOTEXIND",
+   "ARVEE",
+   "ASAHISONG",
    "ATUL",
+   "AVTNPL",
    "BALAMINES",
+   "BASF",
    "CLEAN",
    "DEEPAKNTR",
+   "ELANTAS",
+   "EXCELINDUS",
+   "FCL",
    "FLUOROCHEM",
+   "GALAXYSURF",
    "GHCL",
+   "GOACARBON",
+   "GOCLCORP",
+   "GRAUWEIL",
    "GRWRHITECH",
+   "HINDCON",
    "HSCL",
    "INDIAGLYCO",
+   "JAYAGROGN",
    "JUBLINGREA",
+   "KINGFA",
+   "KIRIINDUS",
+   "KOTHARIPET",
    "LXCHEM",
    "NAVINFLUOR",
    "NEOGEN",
+   "OAL",
    "PCBL",
    "PIDILITIND",
    "PRIVISCL",
    "RAIN",
+   "RESPONIND",
    "SRF",
    "STYRENIX",
    "SUDARSCHEM",
+   "SUKHJITS",
    "TATACHEM"
   ],
-  "Specialty Industrial Machinery": [
-   "ANUP",
-   "AZAD",
-   "GREAVESCOT",
-   "GVT&D",
-   "KIRLPNU"
-  ],
   "Specialty Retail": [
+   "ARCHIES",
    "AVL"
   ],
   "Staffing & BPO": [
+   "AARVI",
+   "ACEINTEG",
    "QUESS"
   ],
   "Steel": [
+   "AEROENTER",
+   "AEROFLEX",
+   "ALICON",
+   "ANKITMETAL",
    "APLAPOLLO",
+   "ASHOKAMET",
+   "BALUFORGE",
+   "BANSALWIRE",
+   "BEDMUTHA",
    "ELECTCAST",
    "GALLANTT",
+   "GOODLUCK",
    "GPIL",
+   "HITECH",
    "IMFA",
    "JAIBALAJI",
    "JAYNECOIND",
@@ -4702,20 +7293,28 @@
    "JINDALSTEL",
    "JSL",
    "JSWSTEEL",
+   "KIRLOSIND",
    "LLOYDSENGG",
    "LLOYDSENT",
    "LLOYDSME",
    "MAHSEAMLES",
+   "MANAKSTEEL",
    "NSLNISP",
    "RATNAMANI",
+   "RSL",
    "SAIL",
    "SARDAEN",
    "SHYAMMETL",
+   "SMLT",
+   "SUPREMEENG",
+   "SURAJLTD",
    "TATASTEEL",
    "USHAMART",
+   "VENUSPIPES",
    "WELCORP"
   ],
   "Sugar": [
+   "BAJAJHIND",
    "BALRAMCHIN",
    "DCMSHRIRAM",
    "EIDPARRY",
@@ -4723,51 +7322,93 @@
    "TRIVENI"
   ],
   "Telecom Infra & Equipment": [
+   "AKSHOPTFBR",
+   "ASTRAMICRO",
+   "AVANTEL",
+   "DLINKINDIA",
    "HFCL",
    "INDUSTOWER",
    "ITI",
+   "PARACABLES",
    "ROUTE",
    "STLTECH",
-   "TEJASNET"
+   "TEJASNET",
+   "TNTELE"
   ],
   "Telecom Services": [
    "BHARTIARTL",
    "BHARTIHEXA",
    "IDEA",
    "RAILTEL",
+   "SUYOG",
    "TATACOMM",
-   "TTML"
-  ],
-  "Textile Manufacturing": [
-   "ALOKINDS"
+   "TTML",
+   "UNIINFO"
   ],
   "Textiles": [
+   "ABCOTS",
+   "AKSHAR",
+   "ALOKINDS",
+   "AMBIKCO",
    "ARVIND",
+   "ARVINDFASN",
+   "AXITA",
+   "AYMSYNTEX",
+   "BANG",
+   "BANSWRAS",
+   "BASML",
+   "BELLACASA",
+   "CENTENKA",
+   "FILATEX",
+   "GLOBALE",
+   "GLOBE",
+   "GLOSTERLTD",
    "GOKEX",
    "ICIL",
+   "IRISDOREME",
+   "KITEX",
    "KPRMILL",
+   "LAXMICOT",
+   "MANOMAY",
+   "MFML",
+   "NAGREEKEXP",
+   "NAHARINDUS",
+   "NIRAJISPAT",
+   "NITINSPIN",
    "PAGEIND",
+   "PARASPETRO",
    "PGIL",
    "RAYMONDLSL",
+   "RUBYMILLS",
+   "SPAL",
    "SPLPETRO",
+   "SUMEETINDS",
+   "SUPERSPIN",
    "TRIDENT",
+   "TTL",
+   "VCL",
+   "VGL",
    "VTL",
    "WELSPUNLIV"
   ],
   "Thermal Coal": [
+   "ANMOL",
    "GMRP&UI"
   ],
   "Tobacco": [
    "GODFRYPHLP",
+   "GOLDENTOBC",
    "ITC"
   ],
   "Travel Services": [
-   "IRCTC"
+   "IRCTC",
+   "YATRA"
   ],
   "Tyres": [
    "APOLLOTYRE",
    "BALKRISIND",
    "CEATLTD",
+   "GOODYEAR",
    "JKTYRE",
    "MRF"
   ],
@@ -4775,8 +7416,21 @@
    "OIL",
    "ONGC"
   ],
+  "Utilities - Independent Power Producers": [
+   "GREENPOWER"
+  ],
+  "Utilities - Regulated Electric": [
+   "BAJEL",
+   "GIPCL"
+  ],
   "Utilities - Renewable": [
-   "ACMESOLAR"
+   "ACMESOLAR",
+   "GKENERGY"
+  ],
+  "Waste Management": [
+   "AWHCL",
+   "CEREBRAINT",
+   "NRL"
   ],
   "Water Treatment & Environment": [
    "EIEL",
@@ -4788,15 +7442,12 @@
  "industries": [
   "Abrasives & Refractories",
   "Advertising Agencies",
-  "Aerospace & Defense",
+  "Agricultural Inputs",
   "Agrochemicals / Pesticides",
   "Airlines",
   "Airports & Air Services",
   "Aluminium",
   "Apparel & Fashion",
-  "Apparel Manufacturing",
-  "Apparel Retail",
-  "Asset Management",
   "Auto Ancillary - Batteries",
   "Auto Ancillary - Parts",
   "Auto Manufacturers",
@@ -4804,128 +7455,129 @@
   "Auto OEM - Electric",
   "Auto OEM - Passenger (4W)",
   "Auto OEM - Two/Three Wheeler",
-  "Auto Parts",
   "Banks - PSU",
   "Banks - Private",
-  "Banks - Regional",
   "Beverages & Distilleries",
-  "Beverages - Wineries & Distilleries",
   "Biotechnology",
-  "Broadcasting",
-  "Building Materials",
   "Building Products",
   "Cables & Wires",
-  "Capital Markets",
   "Capital Markets & AMC",
   "Cement",
   "Chemicals",
   "Coal Mining",
-  "Communication Equipment",
+  "Computer Hardware",
   "Conglomerates",
   "Consumer Durables",
   "Consumer Durables / Appliances",
+  "Consumer Electronics",
   "Consumer Services",
-  "Credit Services",
   "Defense",
   "Diagnostics",
+  "Diagnostics & Research",
   "Diversified Metals",
-  "Drug Manufacturers - Specialty & Generic",
   "EPC & Infrastructure",
   "Education",
   "Electrical Equipment",
-  "Electrical Equipment & Parts",
   "Electronic Gaming & Multimedia",
   "Electronics Manufacturing (EMS)",
-  "Engineering & Construction",
-  "Entertainment",
   "FMCG - Packaged Foods",
   "FMCG - Personal & Home Care",
   "FMCG - Wellness",
   "Farm & Heavy Construction Machinery",
   "Farm Equipment / Tractors",
+  "Farm Products",
   "Fertilizers",
+  "Financial Conglomerates",
   "Financial Services",
   "Fintech",
+  "Food Distribution",
   "Footwear",
-  "Footwear & Accessories",
   "Furniture & Home Products",
   "Gas Distribution (city gas)",
   "Graphite Electrodes",
+  "Health Information Services",
   "Healthcare Distribution",
   "Hospitals",
   "Hotels & Travel",
   "IT - Products & Platforms",
   "IT Services",
+  "Industrial Distribution",
   "Industrial Gases",
   "Industrial Machinery & EPC",
   "Industrial Packaging",
   "Information Technology",
-  "Infrastructure Operations",
   "Insurance",
   "Insurance - Property & Casualty",
   "Internet / New-age",
+  "Internet Retail",
   "Iron Ore & Other Mining",
   "Jewellery",
-  "Lodging",
+  "Leisure",
   "Logistics & Freight",
   "Lubricants",
   "Luggage",
+  "Luxury Goods",
   "Marine Shipping",
   "Media & Entertainment",
   "Medical Devices",
   "Medical Instruments & Supplies",
-  "Metal Fabrication",
+  "Metals & Mining",
   "Mortgage Finance",
   "NBFC - Lending",
   "Oil & Gas - Integrated",
-  "Oil & Gas Equipment & Services",
-  "Oil & Gas Refining & Marketing",
+  "Oil & Gas Drilling",
+  "Oil & Gas E&P",
+  "Oil Gas & Consumable Fuels",
   "Oilfield Services & Equipment",
   "Online Services / Platforms",
-  "Other Industrial Metals & Mining",
-  "Packaged Foods",
   "Paints",
   "Paper & Forest Products",
   "Pharma - CDMO/API",
   "Pharma - Formulations",
   "Pharmaceutical Retailers",
+  "Pollution & Treatment Controls",
+  "Power",
   "Power - Renewables",
   "Power Financing",
   "Power Generation - Hydro/Nuclear",
   "Power Generation - Thermal",
   "Power Trading",
   "Power Transmission & Distribution",
+  "Publishing",
   "Pumps & Compressors",
   "QSR / Restaurants",
   "Railroads",
   "Railways & Wagons",
-  "Real Estate Services",
   "Realty",
   "Refiner & OMC",
   "Rental & Leasing Services",
   "Retail",
+  "Scientific & Technical Instruments",
   "Seeds & Agri-Inputs",
+  "Semiconductor Equipment & Materials",
   "Services",
+  "Shell Companies",
   "Shipping",
   "Small Finance Banks",
-  "Software - Application",
   "Solar & Renewable Equipment",
+  "Specialty Business Services",
   "Specialty Chemicals",
-  "Specialty Industrial Machinery",
   "Specialty Retail",
   "Staffing & BPO",
   "Steel",
   "Sugar",
   "Telecom Infra & Equipment",
   "Telecom Services",
-  "Textile Manufacturing",
   "Textiles",
   "Thermal Coal",
   "Tobacco",
   "Travel Services",
   "Tyres",
   "Upstream E&P (crude/gas producers)",
+  "Utilities - Independent Power Producers",
+  "Utilities - Regulated Electric",
   "Utilities - Renewable",
+  "Waste Management",
   "Water Treatment & Environment"
  ],
  "macro_to_industries": {
@@ -4937,59 +7589,62 @@
    "Auto OEM - Electric",
    "Auto OEM - Passenger (4W)",
    "Auto OEM - Two/Three Wheeler",
-   "Auto Parts",
    "Conglomerates",
    "Industrial Machinery & EPC",
    "Tyres"
   ],
   "Capital Goods": [
    "Abrasives & Refractories",
-   "Aerospace & Defense",
+   "Airports & Air Services",
    "Auto Ancillary - Parts",
    "Auto OEM - Commercial Vehicle",
    "Building Products",
    "Cables & Wires",
-   "Communication Equipment",
+   "Conglomerates",
    "Defense",
+   "EPC & Infrastructure",
    "Electrical Equipment",
-   "Electrical Equipment & Parts",
    "Electronics Manufacturing (EMS)",
-   "Engineering & Construction",
    "Farm & Heavy Construction Machinery",
    "Farm Equipment / Tractors",
    "Graphite Electrodes",
+   "Industrial Distribution",
    "Industrial Machinery & EPC",
    "Industrial Packaging",
-   "Metal Fabrication",
+   "Logistics & Freight",
+   "Pollution & Treatment Controls",
    "Power - Renewables",
    "Pumps & Compressors",
    "Railroads",
    "Railways & Wagons",
    "Solar & Renewable Equipment",
+   "Specialty Business Services",
    "Specialty Chemicals",
-   "Specialty Industrial Machinery",
-   "Steel"
+   "Staffing & BPO",
+   "Steel",
+   "Telecom Infra & Equipment",
+   "Waste Management"
   ],
   "Chemicals": [
+   "Agricultural Inputs",
    "Agrochemicals / Pesticides",
    "Chemicals",
    "Defense",
-   "Drug Manufacturers - Specialty & Generic",
    "Fertilizers",
    "Industrial Gases",
+   "Lubricants",
+   "Pharma - Formulations",
    "Specialty Chemicals",
    "Textiles"
   ],
   "Construction": [
    "Cement",
    "EPC & Infrastructure",
-   "Engineering & Construction",
    "Industrial Machinery & EPC",
-   "Infrastructure Operations",
    "Solar & Renewable Equipment"
   ],
   "Construction Materials": [
-   "Building Materials",
+   "Building Products",
    "Cement"
   ],
   "Consumer Durables": [
@@ -4998,29 +7653,33 @@
    "Consumer Durables / Appliances",
    "Electronics Manufacturing (EMS)",
    "Footwear",
-   "Footwear & Accessories",
    "Furniture & Home Products",
    "Jewellery",
    "Luggage",
+   "Luxury Goods",
    "Paints"
   ],
   "Consumer Services": [
    "Apparel & Fashion",
-   "Apparel Manufacturing",
-   "Apparel Retail",
    "Consumer Services",
    "Education",
    "Healthcare Distribution",
    "Hospitals",
    "Hotels & Travel",
+   "Industrial Packaging",
    "Internet / New-age",
-   "Lodging",
+   "Internet Retail",
+   "Leisure",
    "Online Services / Platforms",
    "Pharmaceutical Retailers",
    "QSR / Restaurants",
    "Retail",
    "Specialty Retail",
+   "Textiles",
    "Travel Services"
+  ],
+  "Defence": [
+   "Defense"
   ],
   "Diversified": [
    "Conglomerates",
@@ -5028,24 +7687,22 @@
   ],
   "Fast Moving Consumer Goods": [
    "Beverages & Distilleries",
-   "Beverages - Wineries & Distilleries",
+   "Education",
    "FMCG - Packaged Foods",
    "FMCG - Personal & Home Care",
    "FMCG - Wellness",
-   "Packaged Foods",
+   "Farm Products",
+   "Food Distribution",
    "Seeds & Agri-Inputs",
    "Specialty Chemicals",
    "Sugar",
    "Tobacco"
   ],
   "Financial Services": [
-   "Asset Management",
    "Banks - PSU",
    "Banks - Private",
-   "Banks - Regional",
-   "Capital Markets",
    "Capital Markets & AMC",
-   "Credit Services",
+   "Financial Conglomerates",
    "Financial Services",
    "Fintech",
    "Insurance",
@@ -5054,15 +7711,18 @@
    "Mortgage Finance",
    "NBFC - Lending",
    "Power Financing",
+   "Shell Companies",
    "Small Finance Banks"
   ],
   "Forest Materials": [
+   "Building Products",
    "Paper & Forest Products"
   ],
   "Healthcare": [
    "Biotechnology",
    "Diagnostics",
-   "Drug Manufacturers - Specialty & Generic",
+   "Diagnostics & Research",
+   "Health Information Services",
    "Hospitals",
    "IT - Products & Platforms",
    "Medical Devices",
@@ -5073,22 +7733,25 @@
   ],
   "Information Technology": [
    "Advertising Agencies",
+   "Computer Hardware",
+   "Consumer Electronics",
    "IT - Products & Platforms",
    "IT Services",
    "Information Technology",
-   "Software - Application"
+   "Scientific & Technical Instruments",
+   "Semiconductor Equipment & Materials",
+   "Solar & Renewable Equipment",
+   "Telecom Infra & Equipment"
   ],
   "Media Entertainment & Publication": [
-   "Broadcasting",
    "Electronic Gaming & Multimedia",
-   "Entertainment",
    "Media & Entertainment"
   ],
   "Metals & Mining": [
    "Aluminium",
    "Diversified Metals",
    "Iron Ore & Other Mining",
-   "Other Industrial Metals & Mining",
+   "Metals & Mining",
    "Retail",
    "Steel"
   ],
@@ -5097,23 +7760,27 @@
    "Gas Distribution (city gas)",
    "Lubricants",
    "Oil & Gas - Integrated",
-   "Oil & Gas Equipment & Services",
-   "Oil & Gas Refining & Marketing",
+   "Oil & Gas Drilling",
+   "Oil & Gas E&P",
+   "Oil Gas & Consumable Fuels",
    "Oilfield Services & Equipment",
    "Refiner & OMC",
+   "Thermal Coal",
    "Upstream E&P (crude/gas producers)"
   ],
   "Power": [
+   "Power",
    "Power - Renewables",
    "Power Generation - Hydro/Nuclear",
    "Power Generation - Thermal",
    "Power Trading",
    "Power Transmission & Distribution",
    "Thermal Coal",
+   "Utilities - Independent Power Producers",
+   "Utilities - Regulated Electric",
    "Utilities - Renewable"
   ],
   "Realty": [
-   "Real Estate Services",
    "Realty"
   ],
   "Services": [
@@ -5132,14 +7799,23 @@
    "Solar & Renewable Equipment",
    "Staffing & BPO"
   ],
+  "Technology": [
+   "Telecom Infra & Equipment"
+  ],
+  "Telecom Networking Equip": [
+   "Telecom Infra & Equipment"
+  ],
   "Telecommunication": [
+   "Advertising Agencies",
    "Electronics Manufacturing (EMS)",
+   "Media & Entertainment",
+   "Publishing",
    "Telecom Infra & Equipment",
    "Telecom Services"
   ],
   "Textiles": [
-   "Apparel Manufacturing",
-   "Textile Manufacturing",
+   "Footwear",
+   "Retail",
    "Textiles"
   ],
   "Utilities": [
@@ -5147,11 +7823,12 @@
   ]
  },
  "coverage": {
-  "universe": 750,
-  "curated": 643,
-  "yfinance": 96,
-  "macro_fallback": 11,
-  "distinct_industries": 141,
+  "universe": 1193,
+  "widened_from_yf": 443,
+  "curated": 658,
+  "yfinance": 511,
+  "macro_fallback": 24,
+  "distinct_industries": 139,
   "curated_industries": 90
  }
 }

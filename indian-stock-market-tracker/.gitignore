@@ -67,3 +67,7 @@ marleg_breakout_timing_study.json
 marleg_pattern_scan.json
 marleg_smartstop_study.json
 *.out
+
+# industry RS cache (runtime, written by the gated scan) + gate study (research artifact)
+marleg_industry_rs_cache.json
+marleg_industry_gate_study.json

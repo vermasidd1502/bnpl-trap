@@ -380,6 +380,22 @@ def api_gated():
     except Exception:
         return jsonify({"error": f"no {mode} gated screen yet — run: python marleg_gated_scan.py", "picks": []})
 
+@app.route("/api/industry_rs")
+def api_industry_rs():
+    """Granular industry relative-strength / breadth — leading->lagging rotation (heatmap).
+    Served from the cache the gated scan writes; cold-fallback pulls only the taxonomy universe."""
+    import marleg_industry_rs as mir
+    def load():
+        d = mir.load_cache()
+        if d and d.get("groups"):
+            return d
+        return mir.run("6mo")
+    try:
+        return jsonify(cached("industry_rs", load, 900))
+    except Exception as e:
+        return jsonify({"error": str(e), "groups": []})
+
+
 @app.route("/api/volume_pod/add", methods=["POST"])
 def api_volume_pod_add():
     """Add or re-classify a stock in the Volume Pod. Creates new sectors/industries freely."""
