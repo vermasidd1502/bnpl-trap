@@ -474,6 +474,12 @@ def api_cuphandle():
     return jsonify(cached("cuphandle", lambda: marleg_cuphandle.build(), 180))
 
 
+@app.route("/api/industry_persistence")
+def api_industry_persistence():
+    """Per-industry BETA + vol + this-week RS + how LONG leadership typically lasts (the rotation hold horizon)."""
+    return jsonify(cached("ind_persist", lambda: _read_json("marleg_industry_persistence.json", "industry persistence not built — run marleg_industry_persistence.py"), 600))
+
+
 @app.route("/api/regime_gate")
 def api_regime_gate():
     """Tiny market bull/bear read (the durable macro gate) for the nav badge on every pod.

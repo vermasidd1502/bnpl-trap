@@ -99,8 +99,8 @@ let D={}, OPEN=null, TAB='a', MFILT='HIGH';
 
 async function jget(u){ try{ return await (await fetch(u)).json(); }catch(e){ return null; } }
 async function loadAll(){
-  const [mov,vix,tiers,lc,shock,ind,cup]=await Promise.all([jget('/api/movers'),jget('/api/vix'),jget('/api/tiers'),jget('/api/lastcandle'),jget('/api/shock'),jget('/api/industry_rs'),jget('/api/cuphandle')]);
-  D={mov,vix,tiers,lc,shock,ind,cup};
+  const [mov,vix,tiers,lc,shock,ind,cup,persist]=await Promise.all([jget('/api/movers'),jget('/api/vix'),jget('/api/tiers'),jget('/api/lastcandle'),jget('/api/shock'),jget('/api/industry_rs'),jget('/api/cuphandle'),jget('/api/industry_persistence')]);
+  D={mov,vix,tiers,lc,shock,ind,cup,persist};
   $('sub').textContent=(mov&&mov.asof)?('radar as of '+mov.asof+' · click any engine for analysis + theory'):'click any engine for analysis + theory';
   renderStrip(); renderCards(); if(OPEN) renderDetail();
 }
@@ -131,8 +131,8 @@ const ENGINES=[
    sum:d=>'Industries ranked by volatility. Tier-1 (CapGoods/Defense/Renewables) = where 3–8% amplitude lives.'},
   {id:'lastcandle',icon:'🕯',title:'Last-Candle Confluence',badge:d=>{const r=d.lc&&d.lc.results&&d.lc.results.full;return r?[r.win+'% win','var(--amber)']:['indicative','var(--dim)'];},
    sum:d=>'Does a final-10-min volume spike + fib + Ichimoku + U/D predict the next day? (backtested, honest)'},
-  {id:'macro',icon:'🏭',title:'Industry Macro',badge:d=>{const g=(d.ind&&d.ind.groups)||[];const n=g.filter(x=>x.leading).length;return n?[n+' leading','var(--green)']:null;},
-   sum:d=>'Which industries are leading vs lagging (momentum + breadth) — fish for longs only in green sectors.'},
+  {id:'macro',icon:'🏭',title:'Industry Rotation',badge:d=>{const g=(d.ind&&d.ind.groups)||[];const n=g.filter(x=>x.leading).length;return n?[n+' leading','var(--green)']:null;},
+   sum:d=>'Bullish industries THIS WEEK + how risky each is (β) + how long leadership lasts. Rotate into the top, bull-gated.'},
   {id:'cup',icon:'🏆',title:'Cup-with-Handle',badge:d=>{const n=(d.cup&&d.cup.n_confirmed)||0,t=(d.cup&&d.cup.n)||0;return n?[n+' confirmed','var(--green)']:(t?[t+' setups','var(--amber)']:null);},
    sum:d=>'O’Neil’s base, VALIDATED in India. Buy the CONFIRMED breakout (62–67% win) — never the raw bar (51% coin-flip).'},
 ];
@@ -196,13 +196,17 @@ const ANALYSIS={
     let h='<table><thead><tr><th>signal</th><th>n</th><th>next-day win%</th><th>net%</th></tr></thead><tbody>';
     Object.keys(lab).forEach(k=>{const x=r[k];h+='<tr><td style="text-align:left">'+lab[k]+'</td>'+(x?'<td>'+x.n+'</td><td class="'+(x.win>=50?"pos":"neg")+'">'+x.win+'%</td><td class="'+(x.net>=0?"pos":"neg")+'">'+x.net+'</td>':'<td colspan=3 style="color:var(--dim)">n&lt;30</td>')+'</tr>';});
     return h+'</tbody></table><div class="note">'+(D.lc.caveat||'')+'</div>';},
-  macro:()=>{const g=((D.ind&&D.ind.groups)||[]).slice(); if(!g.length)return '<div class="empty">industry RS not built.</div>';
-    g.sort((a,b)=>b.ret20-a.ret20); const top=g.slice(0,10), bot=g.slice(-6);
-    const row=x=>'<tr><td>'+(x.leading?'🟢 ':'🔴 ')+x.group.slice(0,26)+'</td><td style="color:var(--dim);text-align:left">'+(x.macro||'')+'</td><td class="'+(x.ret20>=0?"pos":"neg")+'">'+pct(x.ret20)+'</td><td>'+x.breadth+'%</td><td>'+(x.rs!=null?x.rs:'—')+'</td></tr>';
-    return '<table><thead><tr><th>industry</th><th style="text-align:left">sector</th><th>ret20</th><th>breadth</th><th>RS</th></tr></thead><tbody>'+
-      '<tr><td colspan=5 style="color:var(--saffron);text-align:left;font-size:9px;letter-spacing:.05em">▲ LEADING — fish here</td></tr>'+top.map(row).join('')+
-      '<tr><td colspan=5 style="color:var(--red);text-align:left;font-size:9px;letter-spacing:.05em">▼ LAGGING — avoid longs</td></tr>'+bot.map(row).join('')+'</tbody></table>'+
-      '<div class="note">ret20 in red = the industry is falling — don\'t hunt longs there. 🟢 leaders = top 40% by momentum+breadth. Same rotation read as the rotation pod, here for context.</div>';},
+  macro:()=>{const P=(D.persist&&D.persist.industries)||[];
+    if(!P.length){const g=((D.ind&&D.ind.groups)||[]).slice(); if(!g.length)return '<div class="empty">industry data not built.</div>';
+      g.sort((a,b)=>b.ret20-a.ret20); return '<table><thead><tr><th>industry</th><th>ret20</th><th>breadth</th></tr></thead><tbody>'+g.slice(0,14).map(x=>'<tr><td>'+(x.leading?'🟢 ':'🔴 ')+x.group.slice(0,28)+'</td><td class="'+(x.ret20>=0?"pos":"neg")+'">'+pct(x.ret20)+'</td><td>'+x.breadth+'%</td></tr>').join('')+'</tbody></table><div class="note">β/persistence not built yet — run marleg_industry_persistence.py.</div>';}
+    const bcol=b=>b==null?'var(--dim)':b>=1.2?'var(--red)':b<=0.8?'var(--green)':'var(--amber)';
+    let h='<div class="note" style="margin-bottom:9px">Once an industry leads it stays a leader a median of <b style="color:var(--ink)">'+D.persist.overall_median_lead_weeks+' weeks</b> (mean '+D.persist.overall_mean_lead_weeks+') — so <b>rebalance ~every 3 weeks, don’t churn</b>. β = market risk: <span style="color:var(--red)">🔴 ≥1.2 amplifies</span> · <span style="color:var(--green)">🟢 ≤0.8 defensive</span>.</div>'+
+      '<table><thead><tr><th>industry — bullish this week ↓</th><th>wk RS</th><th>63d</th><th>β risk</th><th>vol</th><th>stays</th></tr></thead><tbody>';
+    P.slice(0,16).forEach(x=>{h+='<tr><td>'+x.industry.slice(0,30)+'</td><td class="'+(x.rs_week>=0?"pos":"neg")+'">'+pct(x.rs_week)+'</td>'+
+      '<td class="'+(x.rs_63d>=0?"pos":"neg")+'">'+(x.rs_63d>0?'+':'')+x.rs_63d+'%</td>'+
+      '<td style="color:'+bcol(x.beta)+';font-weight:700">'+(x.beta==null?'—':x.beta)+'</td><td style="color:var(--dim)">'+x.vol+'%</td><td>'+x.median_lead_weeks+'w</td></tr>';});
+    h+='</tbody></table><div class="note">Sorted by THIS WEEK’s 5-day relative strength. "stays" = median weeks this industry holds leadership once it gets there. Backtested: rotating into the top-3 momentum sectors (bull-gated) beat holding the market by a wide margin (CAGR 64% vs 21%, far smaller drawdown — relative result is robust; absolute is survivorship-inflated).</div>';
+    return h;},
   cup:()=>{const C=(D.cup&&D.cup.setups)||[]; if(!C.length)return '<div class="empty">no cup-with-handle setups in the universe right now.</div>';
     const sc={'CONFIRMED+':'coil','CONFIRMED':'pull','BREAKOUT':'watch','IN_HANDLE':'watch','FAILED':'down'};
     let h='<div class="note" style="margin-bottom:8px"><b style="color:var(--green)">'+(D.cup.n_confirmed||0)+' confirmed</b> of '+D.cup.n+' setups · '+(D.cup.bull?'🟢 bull regime (edge on)':'🔴 bear — edge trimmed ~3×')+' · ★ = winning sector · click → dossier</div>'+

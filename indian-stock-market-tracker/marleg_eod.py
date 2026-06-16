@@ -49,6 +49,7 @@ def main():
         ("VIX conscience + drivers", [py, os.path.join(HERE, "marleg_vix_study.py")], None),
         ("tier ladder", [py, os.path.join(HERE, "marleg_tier_study.py")], None),
         ("cup-with-handle radar", [py, os.path.join(HERE, "marleg_cuphandle.py")], env_g),
+        ("industry persistence + beta", [py, os.path.join(HERE, "marleg_industry_persistence.py")], None),
     ]:
         try:
             log(label, "...")
