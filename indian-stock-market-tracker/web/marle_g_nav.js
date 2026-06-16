@@ -273,18 +273,41 @@
       nav.appendChild(rb);
     }
   });
+  function ensureBanner() {
+    var b = document.getElementById("mg-macrobanner");
+    if (b) return b;
+    b = document.createElement("div"); b.id = "mg-macrobanner";
+    b.style.cssText = "display:none;width:100%;text-align:center;font-family:var(--mono,ui-monospace,monospace);" +
+      "font-size:12px;font-weight:800;letter-spacing:.02em;padding:9px 16px;line-height:1.4;position:sticky;top:0;z-index:60";
+    var nav = document.querySelector(".nav");
+    if (nav && nav.parentNode) nav.parentNode.insertBefore(b, nav.nextSibling);
+    else document.body.insertBefore(b, document.body.firstChild);
+    return b;
+  }
   function fillRegime() {
-    fetch("/api/regime_gate").then(function (r) { return r.json(); }).then(function (d) {
-      var bull = d.bull;
-      var col = bull === true ? "#22c55e" : bull === false ? "#ef4444" : "var(--dim,#646c7a)";
-      var label = bull === true ? "🟢 BULL · deploy" : bull === false ? "🔴 BEAR · cash/hedge" : "REGIME —";
+    // /api/shock = the macro gate: bull/bear + the fast shock override (VIX/NIFTH/breadth/correlation)
+    fetch("/api/shock").then(function (r) { return r.json(); }).then(function (d) {
+      var map = { SHOCK: ["⚠ MACRO SHOCK", "#ef4444"], STRESS: ["🟠 MACRO STRESS", "#fbbf24"],
+                  BULL: ["🟢 BULL · deploy", "#22c55e"], BEAR: ["🔴 BEAR · cash", "#ef4444"] };
+      var m = map[d.badge] || ["REGIME —", "var(--dim,#646c7a)"];
+      var extra = d.vix != null ? " · VIX " + d.vix : (d.breadth != null ? " · " + d.breadth + "%" : "");
       document.querySelectorAll(".mg-regime").forEach(function (el) {
-        el.textContent = label + (d.breadth != null ? " · " + d.breadth + "%" : "");
-        el.style.color = col; el.style.borderColor = col;
-        el.title = (d.verdict || "") + (d.breadth != null ? " · breadth " + d.breadth + "% above 50DMA" : "") + (d.asof ? " · " + d.asof : "");
+        el.textContent = m[0] + extra; el.style.color = m[1]; el.style.borderColor = m[1];
+        el.title = (d.verdict || "") + ((d.reasons && d.reasons.length) ? " — " + d.reasons.join(" · ") : "");
       });
+      var b = ensureBanner();
+      if (d.state === "SHOCK" || d.state === "ELEVATED") {
+        var shock = d.state === "SHOCK";
+        b.style.background = shock ? "rgba(239,68,68,.96)" : "rgba(251,191,36,.94)";
+        b.style.color = shock ? "#fff" : "#180f02";
+        b.innerHTML = (shock ? "⚠ MACRO SHOCK — " : "🟠 MACRO STRESS — ") + (d.verdict || "") +
+          ((d.reasons && d.reasons.length) ? "<span style='opacity:.85'>  ·  " + d.reasons.join("  ·  ") + "</span>" : "");
+        b.style.display = "block";
+      } else {
+        b.style.display = "none";
+      }
     }).catch(function () {});
   }
   fillRegime();
-  setInterval(fillRegime, 300000);
+  setInterval(fillRegime, 180000);
 })();

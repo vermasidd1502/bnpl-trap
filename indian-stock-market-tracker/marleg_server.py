@@ -411,6 +411,14 @@ def api_regime_gate():
     return jsonify(cached("regime_badge", load, 300))
 
 
+@app.route("/api/shock")
+def api_shock():
+    """Fast macro-shock / regime-break read (VIX + NIFTY + breadth + correlation) — the trade-gate
+    overlay. NORMAL -> defer to bull/bear; ELEVATED -> cut size; SHOCK -> refrain, long-term hold only."""
+    import marleg_shock
+    return jsonify(cached("shock", marleg_shock.read, 180))
+
+
 @app.route("/api/industry_members")
 def api_industry_members():
     """Static taxonomy-backed member lists (symbol+name) per industry and per macro sector —
