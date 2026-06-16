@@ -16,6 +16,7 @@ import numpy as np
 import pandas as pd
 import yfinance as yf
 import marleg_volume_scan as mvs
+import marleg_eventfilter as ef
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SECT = json.load(open(os.path.join(HERE, "marleg_sectors.json"), encoding="utf-8"))
@@ -81,6 +82,7 @@ def main():
         tr = pd.concat([(h - l), (h - pc).abs(), (l - pc).abs()], axis=1).max(axis=1)
         atr = float(tr.rolling(14).mean().iloc[-1])
         gr = ind_grow.get(grp, {})
+        fp = ef.footprint(c, volume[s])            # event-footprint: earnings/news spike vs organic accumulation
         ret5 = round(float(c.iloc[-1] / c.iloc[-6] - 1) * 100, 1) if c.dropna().shape[0] > 6 else None
         rsi = round(_rsi(c))
         # entry quality (backtested: gate_pullback — buying the gated leader ON A 5d DIP — is the best entry;
@@ -96,11 +98,24 @@ def main():
                       "ud": round(float(ud_now[s]), 2), "ud_ma": round(float(ud_ma[s]), 2),
                       "fib": round(float(fibpos[s]), 2), "sec_rank": round(float(sec_rank.get(sec, 1)) * 100),
                       "ret5": ret5, "rsi": rsi, "entry": entry,
+                      "clean": fp["clean"], "event_flags": fp["flags"],
                       "price": round(price, 2), "target": round(price + 2 * atr, 1),
                       "tgtpct": round(2 * atr / price * 100, 1), "stop": round(price - atr, 1)})
-    # leader-in-leading-group first (lowest industry rank); within that, PULLBACK setups first, then strongest volume
+    # leader-in-leading-group first; within that, CLEAN (organic) before event-driven, then PULLBACK, then volume
     _ep = {"PULLBACK": 0, "OK": 1, "EXTENDED": 2, "HOT": 3}
-    picks.sort(key=lambda x: (x["ind_rank"], _ep.get(x["entry"], 9), -x["ud"]))
+    picks.sort(key=lambda x: (x["ind_rank"], 0 if x.get("clean") else 1, _ep.get(x["entry"], 9), -x["ud"]))
+    # earnings proximity for the top picks (best-effort, cached) — refine the event flags so the strict list drops them
+    for p in picks[:25]:
+        try:
+            e = ef.earnings_proximity(p["s"])
+        except Exception:
+            e = {}
+        p["earnings_in"], p["earnings_ago"] = e.get("in_days"), e.get("ago_days")
+        if e.get("ago_days") is not None and e["ago_days"] <= 10:
+            p["event_flags"] = p["event_flags"] + [f"reported {e['ago_days']}d ago"]; p["clean"] = False
+        if e.get("in_days") is not None and 0 <= e["in_days"] <= 7:
+            p["event_flags"] = p["event_flags"] + [f"earnings in {e['in_days']}d"]; p["clean"] = False
+    n_strict = sum(1 for p in picks if p.get("clean"))
     # WEAKEST CONFLUENCE (inverse gate): lagging sector + U/D < MA & falling + price < 0.382 fib.
     # Backtested (marleg_short_gate_study) as NO short edge — these mean-revert UP, shorting them
     # loses ~0.8-1.1% net of cost. Surfaced as AVOID-on-longs / hedge reference, NOT a short signal.
@@ -134,7 +149,7 @@ def main():
               "verdict": "DEPLOY — bull regime, gate OPEN" if bull else "CASH / CAUTION — bear regime, gate SHUT",
               "note": ("Backtested: bull-gating the long book (mkt>50DMA) ~halves drawdown + lifts Sharpe above the market. "
                        "In bear, the long edge turns negative — stand aside or run mean-reversion only.")}
-    json.dump({"asof": ist, "n": len(picks), "n_weak": len(shorts), "universe": close.shape[1],
+    json.dump({"asof": ist, "n": len(picks), "n_strict": n_strict, "n_weak": len(shorts), "universe": close.shape[1],
                "regime": regime, "leading_industries": leading, "picks": picks, "shorts": shorts},
               open(out_path, "w", encoding="utf-8"), ensure_ascii=False)
     print(f"gated longs: {len(picks)} / {close.shape[1]}  ->  {out_path}")

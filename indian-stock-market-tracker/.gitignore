@@ -92,3 +92,6 @@ marleg_macro_gate_bt.json
 
 # macro overlay backtest output (research artifact, regenerable)
 marleg_macro_overlay_bt.json
+
+# earnings-date cache (runtime, best-effort, regenerable)
+marleg_earnings_cache.json

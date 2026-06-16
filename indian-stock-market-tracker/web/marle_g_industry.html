@@ -325,7 +325,7 @@ async function loadLeaders(){
   const rows = picks.slice(0,14).map((p,i)=>{ const [el,ec]=etag(p.entry);
     return `<tr class="lrow" onclick="location.href='marle_g_chart.html?q=${enc(p.s)}'">
       <td class="lrk">${i+1}</td>
-      <td><span class="lsym">${p.s}</span><span class="lnm">${(p.n||"").replace(/[<>]/g,"").slice(0,22)}</span></td>
+      <td><span class="lsym">${p.s}</span>${(p.event_flags&&p.event_flags.length)?` <span title="event-driven: ${p.event_flags.join(' · ')}" style="color:var(--amber);font-weight:700">⚠</span>`:(p.clean!==false?` <span title="news-clean" style="color:var(--green);font-size:9px">🔒</span>`:"")}<span class="lnm">${(p.n||"").replace(/[<>]/g,"").slice(0,20)}</span></td>
       <td><span style="color:var(--saffron)">${p.industry||p.sector||""}</span> <span style="color:var(--dim);font-size:9px">#${p.ind_rank}</span></td>
       <td style="color:${ec};font-weight:700">${el}</td>
       <td>${p.ud}</td><td class="${p.rsi>70?'down':''}">${p.rsi??"–"}</td>
