@@ -466,6 +466,14 @@ def api_alerts():
     return jsonify(cached("alerts", lambda: marleg_alerts.build(), 180))
 
 
+@app.route("/api/cuphandle")
+def api_cuphandle():
+    """Live cup-with-handle radar with the STAGE (forming/handle/breakout/confirmed/failed) + the backtested
+    win/net per stage. The strategy: buy the CONFIRMED breakout, never the raw bar."""
+    import marleg_cuphandle
+    return jsonify(cached("cuphandle", lambda: marleg_cuphandle.build(), 180))
+
+
 @app.route("/api/regime_gate")
 def api_regime_gate():
     """Tiny market bull/bear read (the durable macro gate) for the nav badge on every pod.

@@ -353,9 +353,12 @@ async function loadShock(){ try{ SHOCK=await (await fetch('/api/shock')).json();
 
 async function loadAlerts(){
   try{
-    const d=await (await fetch('/api/alerts')).json();
+    const [d,cup]=await Promise.all([fetch('/api/alerts').then(r=>r.json()),fetch('/api/cuphandle').then(r=>r.json()).catch(()=>null)]);
     const A=d.alerts||[], up=(d.catalysts&&d.catalysts.upcoming)||[], rec=(d.catalysts&&d.catalysts.recent)||[];
     let h='';
+    const conf=((cup&&cup.setups)||[]).filter(x=>x.stage&&x.stage.indexOf('CONFIRMED')===0);
+    if(conf.length){ h+='<div style="margin-bottom:12px"><div class="note" style="margin:0 0 5px">🏆 cup-with-handle CONFIRMED (buy the HELD breakout — ~62–67% backtested, not the raw bar):</div>'+
+      conf.slice(0,8).map(x=>'<span class="chip on" style="cursor:pointer;border-color:var(--green);color:var(--green);background:rgba(34,197,94,.1)" onclick="goStock(\''+x.s+'\')" title="'+(x.read||'').replace(/"/g,'')+'">🏆 '+x.s+' · ₹'+x.pivot+'→₹'+x.target+' (+'+x.target_pct+'%)</span>').join('')+'</div>'; }
     if(up.length||rec.length){
       h+='<div style="margin-bottom:12px"><div class="note" style="margin:0 0 5px">📅 earnings / catalysts (trade AROUND, not through):</div>';
       h+=up.map(c=>'<span class="chip on" style="cursor:pointer;border-color:var(--amber);color:var(--amber);background:rgba(251,191,36,.1)" onclick="goStock(\''+c.s+'\')" title="'+(c.advice||'').replace(/"/g,'')+'">⚠ '+c.s+' · in '+c.days+'d</span>').join('');

@@ -99,8 +99,8 @@ let D={}, OPEN=null, TAB='a', MFILT='HIGH';
 
 async function jget(u){ try{ return await (await fetch(u)).json(); }catch(e){ return null; } }
 async function loadAll(){
-  const [mov,vix,tiers,lc,shock,ind]=await Promise.all([jget('/api/movers'),jget('/api/vix'),jget('/api/tiers'),jget('/api/lastcandle'),jget('/api/shock'),jget('/api/industry_rs')]);
-  D={mov,vix,tiers,lc,shock,ind};
+  const [mov,vix,tiers,lc,shock,ind,cup]=await Promise.all([jget('/api/movers'),jget('/api/vix'),jget('/api/tiers'),jget('/api/lastcandle'),jget('/api/shock'),jget('/api/industry_rs'),jget('/api/cuphandle')]);
+  D={mov,vix,tiers,lc,shock,ind,cup};
   $('sub').textContent=(mov&&mov.asof)?('radar as of '+mov.asof+' · click any engine for analysis + theory'):'click any engine for analysis + theory';
   renderStrip(); renderCards(); if(OPEN) renderDetail();
 }
@@ -133,6 +133,8 @@ const ENGINES=[
    sum:d=>'Does a final-10-min volume spike + fib + Ichimoku + U/D predict the next day? (backtested, honest)'},
   {id:'macro',icon:'🏭',title:'Industry Macro',badge:d=>{const g=(d.ind&&d.ind.groups)||[];const n=g.filter(x=>x.leading).length;return n?[n+' leading','var(--green)']:null;},
    sum:d=>'Which industries are leading vs lagging (momentum + breadth) — fish for longs only in green sectors.'},
+  {id:'cup',icon:'🏆',title:'Cup-with-Handle',badge:d=>{const n=(d.cup&&d.cup.n_confirmed)||0,t=(d.cup&&d.cup.n)||0;return n?[n+' confirmed','var(--green)']:(t?[t+' setups','var(--amber)']:null);},
+   sum:d=>'O’Neil’s base, VALIDATED in India. Buy the CONFIRMED breakout (62–67% win) — never the raw bar (51% coin-flip).'},
 ];
 
 function renderCards(){
@@ -201,6 +203,16 @@ const ANALYSIS={
       '<tr><td colspan=5 style="color:var(--saffron);text-align:left;font-size:9px;letter-spacing:.05em">▲ LEADING — fish here</td></tr>'+top.map(row).join('')+
       '<tr><td colspan=5 style="color:var(--red);text-align:left;font-size:9px;letter-spacing:.05em">▼ LAGGING — avoid longs</td></tr>'+bot.map(row).join('')+'</tbody></table>'+
       '<div class="note">ret20 in red = the industry is falling — don\'t hunt longs there. 🟢 leaders = top 40% by momentum+breadth. Same rotation read as the rotation pod, here for context.</div>';},
+  cup:()=>{const C=(D.cup&&D.cup.setups)||[]; if(!C.length)return '<div class="empty">no cup-with-handle setups in the universe right now.</div>';
+    const sc={'CONFIRMED+':'coil','CONFIRMED':'pull','BREAKOUT':'watch','IN_HANDLE':'watch','FAILED':'down'};
+    let h='<div class="note" style="margin-bottom:8px"><b style="color:var(--green)">'+(D.cup.n_confirmed||0)+' confirmed</b> of '+D.cup.n+' setups · '+(D.cup.bull?'🟢 bull regime (edge on)':'🔴 bear — edge trimmed ~3×')+' · ★ = winning sector · click → dossier</div>'+
+      '<table><thead><tr><th>name</th><th>stage</th><th>price → pivot</th><th>target</th><th>R:R</th><th>backtested</th></tr></thead><tbody>';
+    C.forEach(x=>{const bt=x.bt_win?('~'+x.bt_win+'% win · +'+x.bt_net+'%'):'—';
+      h+='<tr class="stk" data-s="'+x.s+'" title="'+(x.read||'').replace(/"/g,'')+'"><td><span class="sym">'+x.s+'</span>'+(x.sector_edge?' <span class="fl" title="winning cup-handle sector (CapGoods/IT/Power/Construction/Telecom)">★</span>':'')+'<span class="cmp">'+String(x.sector||'').slice(0,18)+'</span></td>'+
+        '<td><span class="mp '+(sc[x.stage]||'watch')+'">'+x.stage+'</span></td>'+
+        '<td>₹'+x.price+' → ₹'+x.pivot+'</td><td class="pos">₹'+x.target+' <span style="font-size:10px">+'+x.target_pct+'%</span></td>'+
+        '<td>'+(x.rr||'—')+'</td><td style="font-size:10px;color:var(--muted)">'+bt+'</td></tr>';});
+    h+='</tbody></table><div class="note">'+(D.cup.note||'')+' Hover a row for the exact read; the ✕ FAILED rows are traps to avoid.</div>'; bindStk(); return h;},
 };
 
 /* ---------- deep theory per engine ---------- */
@@ -211,6 +223,7 @@ const THEORY={
   drivers:'<div class="theory"><h4>why bother attributing the move</h4>"VIX is up" is useless without "why" — the <b>driver</b> tells you which industries to lean long vs short.<h4>what we found</h4>India VIX is <b>mostly a LOCAL fear gauge</b> — it tracks NIFTY itself far more (ρ≈−0.63) than any global series. So step one when VIX rises: <b>is NIFTY selling off (local), or is a global/commodity shock leading?</b> US VIX and crude are secondary (ρ≈0.14–0.17).<h4>the industry map</h4><ul><li><b>Crude ↑</b> → OMCs / aviation / paints / tyres / logistics hurt (input cost); upstream (ONGC, Oil India) benefit.</li><li><b>Weak rupee (USDINR ↑)</b> → IT &amp; pharma <b>exporters</b> benefit; oil importers &amp; capital goods hurt.</li><li><b>US VIX ↑ (global risk-off)</b> → high-beta &amp; midcaps hit hardest; exporters cushioned.</li></ul><span class="anchor">News headlines</span> — the qualitative "why" — we can\'t read reliably from a US IP, so the quantitative attribution is the honest substitute.</div>',
   tiers:'<div class="theory"><h4>tiering by volatility</h4>Industries ranked into 5 tiers by annualized vol. <b>Tier-1 (~32%/yr: Capital Goods, Defense, Renewables, Fertilizers)</b> is high-beta, sentiment-driven, smaller-cap-heavy — <b>where the 3–8% amplitude lives</b> (and the biggest drawdowns).<h4>your "tier-2 follows tier-1" hypothesis — tested</h4>Intuitive, but <b>mostly false in liquid markets.</b> Our lead-lag test: tier-1 yesterday → tier-2 today correlation is <b>~0.13 — identical to tier-1\'s own autocorrelation and the reverse (T2→T1).</b> That means it\'s <b>generic 1-day market momentum, not a tier-specific propagation</b> you can trade. (There\'s a faint echo — after a big tier-1 up-day the market drifts +0.67%/3d — but that\'s "buy strength," not "tier-2 follows.")<h4>where propagation actually lives</h4>Real, tradeable "X moves → Y follows" is between <b>specifically linked</b> industries — oil → OMC → paint — via supply-chain/input-output links and Granger tests. That\'s the <span class="anchor">Cascade engine</span>, not broad vol tiers. <span class="anchor">Moskowitz &amp; Grinblatt (1999)</span> industry momentum is real; cross-tier lead-lag is not. <b>Use tiers as your amplitude/risk map; use the cascade graph for propagation.</b></div>',
   lastcandle:'<div class="theory"><h4>the idea</h4>The <b>closing auction / final candle</b> is where benchmark-tracking and institutional MOC flow concentrate. A surge of volume into the close <i>could</i> signal informed positioning that carries into the next session.<h4>what we already knew (and why we doubted it)</h4>Our micro-structure work found <b>closing pressure MEAN-REVERTS</b> — the last move tends to <b>reverse</b>, not continue (close-location-value inverts at the micro-horizon). So a naive "buy the closing spike" loses.<h4>this test</h4>We ask whether a closing-volume spike, <b>gated by the bullish daily confluence</b> (fib &gt; 0.618 + above the Ichimoku cloud &amp; Kijun + U/D ratio rising), flips that into a continuation edge — and compare it to each piece alone. The "live analysis" tab has the win ratios.<h4>honest caveat</h4>Intraday history is <b>shallow (~40–60 sessions)</b>, so samples are small and this is <b>indicative, not 5y-grade</b>. Treat any edge here as a hypothesis to watch, not a rule to bet the book on. <span class="anchor">Ichimoku</span> (Hosoda) and the closing-auction literature motivate it; the data decides.</div>',
+  cup:'<div class="theory"><h4>the pattern</h4>William O’Neil’s signature base: a stock runs up, carves a <b>cup</b> (a rounded decline then recovery back near the prior high — your "pan"), then a <b>handle</b> (a short, shallow pullback near the rim — the "fight"/shakeout), bought on the <b>breakout above the handle pivot</b>. A pattern <span class="anchor">isn’t active until the breakout</span> (Kirkpatrick).<h4>what our backtest found (5y India, 7,280 triggers)</h4>The pattern is real — the <b>first chart pattern to clearly beat baseline</b> in our tests. But the RAW breakout is a <b>coin-flip (51% win)</b> because <b>~half are false breakouts</b> — the "morph into a trap" you described. The edge is the <span class="anchor">confirmation filter</span>:<ul><li>wait 1 day for the breakout to <b>HOLD</b> → <b>62% win / +3.0%/10d</b></li><li>require a close <b>+1% beyond the pivot</b> → <b>67% win / +4.4%/10d</b></li></ul>So this radar tags the live STAGE and the rule is: <b>buy the CONFIRMED stage, never the raw bar.</b><h4>where it works</h4>Winners cluster in <b>Capital Goods, IT, Power, Construction, Telecom</b> (★); cup-depth and prior run-up do <i>not</i> separate winners. Best <b>bull-gated</b> and <b>held 2–4 weeks</b> (the edge grows from +0.95%/10d to +2.49%/20d). Target = O’Neil measured move (pivot + cup depth); stop = the handle low.</div>',
 };
 
 window.podRefresh=loadAll;

@@ -48,6 +48,7 @@ def main():
         ("movers / squeeze radar", [py, os.path.join(HERE, "marleg_movers.py")], env_g),
         ("VIX conscience + drivers", [py, os.path.join(HERE, "marleg_vix_study.py")], None),
         ("tier ladder", [py, os.path.join(HERE, "marleg_tier_study.py")], None),
+        ("cup-with-handle radar", [py, os.path.join(HERE, "marleg_cuphandle.py")], env_g),
     ]:
         try:
             log(label, "...")
