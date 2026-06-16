@@ -450,6 +450,14 @@ def api_lastcandle():
     return jsonify(cached("lastcandle", lambda: _read_json("marleg_lastcandle_study.json", "last-candle study not built — run marleg_lastcandle_study.py"), 600))
 
 
+@app.route("/api/dossier/<ticker>")
+def api_dossier(ticker):
+    """Per-stock dossier: conviction + squeeze-ceiling + move-potential + Monte Carlo cone + levels +
+    suggested trade + read-only same-sector overlap. Drives the click-to-expand chart on the Movers pod."""
+    import marleg_dossier
+    return jsonify(cached("dossier:" + ticker.upper(), lambda: marleg_dossier.dossier(ticker), 240))
+
+
 @app.route("/api/regime_gate")
 def api_regime_gate():
     """Tiny market bull/bear read (the durable macro gate) for the nav badge on every pod.
