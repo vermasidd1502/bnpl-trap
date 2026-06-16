@@ -10,6 +10,8 @@ a US IP, but we detect its FOOTPRINT and flag the name as event-CONTAMINATED so 
   • volume blast           — the big day had RVOL >> normal (a reaction, not steady demand)
   • earnings proximity     — reported in the last ~10 sessions, OR reports within ~7 sessions (don't enter
                              a short-term trade in front of a binary event) — yfinance dates, cached
+  • pre-earnings run-up    — up sharply (>=6%) INTO an upcoming results date: the "green into results,
+                             round-trips overnight" trap. Hard-flagged, never on the strict list.
 
 clean = organic/sustained -> keep on the strict list.  flagged = event-driven -> drop / ⚠.
 """
@@ -47,6 +49,31 @@ def footprint(close, volume, lookback=20):
     if avgvol and pd.notna(v.get(mxday)) and float(v.loc[mxday]) >= 3 * avgvol and mx >= 0.05:
         flags.append(f"vol blast {float(v.loc[mxday]) / avgvol:.0f}x")
     return {"clean": len(flags) == 0, "flags": flags, "max_day_pct": round(mx * 100, 1)}
+
+
+def coiled_breakout(high, low, close, box=20, atr_n=14, look=126, q=0.25):
+    """Is the LATEST bar a breakout out of an ATR-CONTRACTED base — the user's 'fight then burst'?
+    Backtested (marleg_breakout_timing_study, 5y canonical panel) as the highest-conviction breakout
+    subset: net ~1.2%/10d and, unusually, still POSITIVE in bear tapes (+0.62%) where raw breakouts
+    LOSE (-0.25%). It's a ⚡ conviction tag, not a hard gate (it only ties our fib gate overall, but
+    it's what protects you when the market is weak). Entry rule: buy the breakout CLOSE — the pullback
+    retest underperforms and only fills ~70% of the time. The coil ALONE predicts nothing; the edge is
+    the resolution UP, so we require the actual breakout."""
+    c = close.dropna()
+    if len(c) < look + atr_n + 5:
+        return False
+    idx = c.index
+    h = high.reindex(idx)
+    l = low.reindex(idx)
+    hh20 = h.rolling(box).max().shift(1)
+    brk = bool(c.iloc[-1] > hh20.iloc[-1]) and bool(c.iloc[-2] <= hh20.iloc[-2])
+    if not brk:
+        return False
+    pc = c.shift(1)
+    tr = pd.concat([h - l, (h - pc).abs(), (l - pc).abs()], axis=1).max(axis=1)
+    atrp = (tr.rolling(atr_n).mean() / c).shift(1)            # base measured through yesterday
+    thr = atrp.rolling(look, min_periods=40).quantile(q).iloc[-1]
+    return bool(atrp.iloc[-1] <= thr) if thr == thr else False
 
 
 def _load_ecache():
@@ -103,8 +130,20 @@ def earnings_proximity(tk, refresh_days=5):
     return out
 
 
+def pre_earnings_runup(ret_recent, earnings_in, runup_thresh=6.0, window=7):
+    """The trap that round-trips a green trade overnight: a sharp run-up INTO a known upcoming
+    results date. If the name is up >= runup_thresh% (recent) AND earnings land within `window`
+    sessions, return a flag string; else None. Holding a short-term trade through a binary event
+    is uncompensated risk — strike it. (This is the move that burned us.)"""
+    if earnings_in is None or not (0 <= earnings_in <= window):
+        return None
+    if ret_recent is not None and ret_recent >= runup_thresh:
+        return f"pre-earnings run-up +{ret_recent:.0f}% (results in {earnings_in}d)"
+    return None
+
+
 def classify(close, volume, tk=None, with_earnings=False):
-    """Combined verdict for a candidate: footprint (+ optional earnings proximity)."""
+    """Combined verdict for a candidate: footprint (+ optional earnings proximity / pre-earnings run-up)."""
     fp = footprint(close, volume)
     flags = list(fp["flags"])
     earn = {}
@@ -113,6 +152,8 @@ def classify(close, volume, tk=None, with_earnings=False):
         if earn.get("ago_days") is not None and earn["ago_days"] <= 10:
             flags.append(f"reported {earn['ago_days']}d ago")
         if earn.get("in_days") is not None and 0 <= earn["in_days"] <= 7:
-            flags.append(f"⚠ earnings in {earn['in_days']}d")
+            c = close.dropna()
+            ret5 = (float(c.iloc[-1] / c.iloc[-6] - 1) * 100) if len(c) > 6 else None
+            flags.append(pre_earnings_runup(ret5, earn["in_days"]) or f"earnings in {earn['in_days']}d")
     return {"clean": len(flags) == 0, "flags": flags, "max_day_pct": fp.get("max_day_pct"),
             "earnings_in": earn.get("in_days"), "earnings_ago": earn.get("ago_days")}

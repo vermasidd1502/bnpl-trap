@@ -83,6 +83,7 @@ def main():
         atr = float(tr.rolling(14).mean().iloc[-1])
         gr = ind_grow.get(grp, {})
         fp = ef.footprint(c, volume[s])            # event-footprint: earnings/news spike vs organic accumulation
+        coiled = ef.coiled_breakout(high[s], low[s], c)   # ⚡ breakout out of an ATR-contracted base (bear-proof subset)
         ret5 = round(float(c.iloc[-1] / c.iloc[-6] - 1) * 100, 1) if c.dropna().shape[0] > 6 else None
         rsi = round(_rsi(c))
         # entry quality (backtested: gate_pullback — buying the gated leader ON A 5d DIP — is the best entry;
@@ -98,7 +99,7 @@ def main():
                       "ud": round(float(ud_now[s]), 2), "ud_ma": round(float(ud_ma[s]), 2),
                       "fib": round(float(fibpos[s]), 2), "sec_rank": round(float(sec_rank.get(sec, 1)) * 100),
                       "ret5": ret5, "rsi": rsi, "entry": entry,
-                      "clean": fp["clean"], "event_flags": fp["flags"],
+                      "clean": fp["clean"], "event_flags": fp["flags"], "coiled": coiled,
                       "price": round(price, 2), "target": round(price + 2 * atr, 1),
                       "tgtpct": round(2 * atr / price * 100, 1), "stop": round(price - atr, 1)})
     # leader-in-leading-group first; within that, CLEAN (organic) before event-driven, then PULLBACK, then volume
@@ -114,7 +115,11 @@ def main():
         if e.get("ago_days") is not None and e["ago_days"] <= 10:
             p["event_flags"] = p["event_flags"] + [f"reported {e['ago_days']}d ago"]; p["clean"] = False
         if e.get("in_days") is not None and 0 <= e["in_days"] <= 7:
-            p["event_flags"] = p["event_flags"] + [f"earnings in {e['in_days']}d"]; p["clean"] = False
+            ru = ef.pre_earnings_runup(p.get("ret5"), e["in_days"])     # hot INTO results = the trap that burned us
+            p["event_flags"] = p["event_flags"] + [ru or f"earnings in {e['in_days']}d"]
+            p["clean"] = False
+            if ru:
+                p["pre_earn_runup"] = True
     n_strict = sum(1 for p in picks if p.get("clean"))
     # WEAKEST CONFLUENCE (inverse gate): lagging sector + U/D < MA & falling + price < 0.382 fib.
     # Backtested (marleg_short_gate_study) as NO short edge — these mean-revert UP, shorting them
@@ -136,6 +141,9 @@ def main():
                        "sec_rank": round(float(sec_rank.get(sec, 1)) * 100),
                        "price": round(float(close[s].iloc[-1]), 2)})
     shorts.sort(key=lambda x: x["ud"])        # weakest (lowest U/D) first
+    if len(picks) == 0 and close.shape[1] >= 200:    # 0 picks on a big universe = stale/pre-market panel (last bar NaN)
+        print(f"[no picks] 0 gated of {close.shape[1]} names — keeping prior caches, not overwriting.")
+        return
     from datetime import datetime, timezone, timedelta
     ist = datetime.now(timezone(timedelta(hours=5, minutes=30))).strftime("%Y-%m-%d %H:%M IST")  # true IST (machine is US-CT)
     # persist the full industry-RS table so /api/industry_rs (rotation heatmap) needs no re-download

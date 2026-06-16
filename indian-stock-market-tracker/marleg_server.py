@@ -396,6 +396,27 @@ def api_industry_rs():
         return jsonify({"error": str(e), "groups": []})
 
 
+@app.route("/api/warroom")
+def api_warroom():
+    """The WAR ROOM payload — regime + leading sectors + strict news-clean watchlist with per-name
+    setup / holding-period / entry-exit plan + risk-per-share. Pure cache assembly (fast)."""
+    import marleg_warroom
+    return jsonify(cached("warroom", lambda: marleg_warroom.build(), 60))
+
+
+@app.route("/api/warroom/config", methods=["GET", "POST"])
+def api_warroom_config():
+    """User's own session settings (capital / risk-% / daily goal / loss-limit / pinned sectors).
+    Local preference state — never an account or order action."""
+    import marleg_warroom
+    if request.method == "POST":
+        cfg = marleg_warroom.set_config(request.get_json(force=True, silent=True) or {})
+        with _LOCK:
+            _CACHE.pop("warroom", None)        # bust so the watchlist re-filters to the new pinned sectors
+        return jsonify(cfg)
+    return jsonify(marleg_warroom.config())
+
+
 @app.route("/api/regime_gate")
 def api_regime_gate():
     """Tiny market bull/bear read (the durable macro gate) for the nav badge on every pod.

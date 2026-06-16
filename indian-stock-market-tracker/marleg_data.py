@@ -112,9 +112,17 @@ def _groww_bulk(symbols, days, pause=0.0):
 
 
 def _frame(close, volume, high, low):
-    # drop phantom all-NaN trailing rows (yfinance appends a NaN "today" row pre-market, which would
-    # make close.iloc[-1] NaN -> breadth 0 + the gate collapses). Keep only real sessions.
+    # drop phantom trailing rows. yfinance appends a NaN/near-empty "today" row pre-market (before the
+    # bar prints), making close.iloc[-1] NaN -> breadth 0 and EVERY gate collapses to 0 picks.
+    # dropna(how="all") only catches FULLY empty rows; a partial phantom (a few stray names) survives, so
+    # we also trim any trailing row whose coverage is far below the recent norm — relative, so it works for
+    # both the ~750 liquid panel and the ~2700 full universe without a brittle absolute threshold.
     c = pd.DataFrame(close).sort_index().dropna(how="all")
+    if c.shape[0] > 12 and c.shape[1] >= 20:
+        cnt = c.notna().sum(axis=1)
+        typical = float(cnt.iloc[-12:-2].median())
+        while c.shape[0] > 1 and typical > 0 and float(cnt.iloc[-1]) < 0.5 * typical:
+            c = c.iloc[:-1]; cnt = cnt.iloc[:-1]
     return {"close": c,
             "volume": pd.DataFrame(volume).reindex(c.index),
             "high": pd.DataFrame(high).reindex(c.index),

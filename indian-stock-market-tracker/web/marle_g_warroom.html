@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>War Room · Marle-G</title>
+<style>
+  :root{ --bg:#080a0e;--bg2:#0e1116;--card:#14171e;--border:rgba(255,255,255,.08);
+    --ink:#eef1f6;--muted:#9aa3b4;--dim:#646c7a;--mono:'SF Mono',ui-monospace,Consolas,monospace;
+    --saffron:#ff9933;--india-green:#138808;--green:#22c55e;--red:#ef4444;--amber:#fbbf24;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(1100px 520px at 50% -10%,rgba(255,153,51,.05),transparent 60%),var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--border);background:rgba(8,10,14,.8);backdrop-filter:blur(10px);position:sticky;top:0;z-index:10}
+  .brand{font-family:var(--mono);font-weight:800;letter-spacing:.18em;font-size:13px;display:flex;align-items:center;gap:9px}
+  .brand .mark{width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,var(--saffron),var(--india-green))}
+  .brand .w{background:linear-gradient(90deg,var(--saffron),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tabs{display:flex;gap:16px;font-family:var(--mono);font-size:11px;flex-wrap:wrap}
+  .tabs a{color:var(--dim);text-decoration:none}
+  .preview-tag{font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--saffron);border:1px solid var(--saffron);border-radius:5px;padding:3px 7px}
+  .wrap{max-width:1280px;margin:0 auto;padding:20px 24px 80px}
+  .head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+  .head h1{font-size:23px;font-weight:800;letter-spacing:.01em} .head .sub{font-family:var(--mono);font-size:11px;color:var(--dim)}
+  /* gate banner */
+  .gate{display:flex;align-items:center;gap:16px;border-radius:14px;padding:15px 20px;margin-bottom:16px;border:1px solid var(--border);background:var(--card)}
+  .gate .dot{width:13px;height:13px;border-radius:50%;flex:0 0 auto;box-shadow:0 0 16px currentColor}
+  .gate .gv{font-family:var(--mono);font-weight:800;font-size:15px} .gate .gm{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:3px}
+  .gate.bull{border-color:rgba(34,197,94,.4)} .gate.bear{border-color:rgba(239,68,68,.4)}
+  /* generic card + grid */
+  .grid{display:grid;grid-template-columns:1fr;gap:16px}
+  .panel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px}
+  .panel h2{font-family:var(--mono);font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--saffron);font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+  .panel h2 .hint{color:var(--dim);font-weight:500;text-transform:none;letter-spacing:0;font-size:10px}
+  /* discipline bar */
+  .disc{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end}
+  .fld{display:flex;flex-direction:column;gap:4px}
+  .fld label{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--dim)}
+  .fld input{background:var(--bg2);border:1px solid var(--border);color:var(--ink);border-radius:9px;padding:9px 11px;font-family:var(--mono);font-size:13px;width:120px}
+  .fld input:focus{outline:none;border-color:var(--saffron)}
+  .pnlbox{margin-left:auto;text-align:right;min-width:230px}
+  .pnlbox .v{font-family:var(--mono);font-size:26px;font-weight:800;line-height:1}
+  .pnlbox .verdict{font-family:var(--mono);font-size:11px;font-weight:700;margin-top:6px}
+  .meter{height:7px;border-radius:5px;background:rgba(255,255,255,.07);margin-top:9px;overflow:hidden;position:relative}
+  .meter span{position:absolute;top:0;bottom:0;border-radius:5px}
+  /* sector chips */
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{font-family:var(--mono);font-size:11px;color:var(--muted);background:var(--bg2);border:1px solid var(--border);border-radius:999px;padding:7px 13px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:all .12s}
+  .chip:hover{border-color:var(--saffron);color:var(--ink)}
+  .chip.on{background:rgba(255,153,51,.14);border-color:var(--saffron);color:var(--saffron);font-weight:700}
+  .chip .r{font-size:9.5px;color:var(--dim)} .chip.on .r{color:var(--saffron)}
+  .chip .pin{font-size:10px;opacity:.6}
+  /* watchlist */
+  table{width:100%;border-collapse:collapse}
+  th{font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);text-align:right;padding:7px 12px;font-weight:600}
+  th:first-child,th.l{text-align:left}
+  td{padding:10px 12px;font-size:13px;border-top:1px solid rgba(255,255,255,.04);text-align:right;font-family:var(--mono);vertical-align:middle}
+  td:first-child,td.l{text-align:left}
+  tr.stk{cursor:pointer} tr.stk:hover{background:rgba(255,153,51,.06)} tr.stk.sel{background:rgba(255,153,51,.10)}
+  tr.standdown{opacity:.5} tr.standdown:hover{opacity:.8}
+  .sym{font-weight:800;color:var(--ink);font-size:13.5px} .cmp{color:var(--dim);font-size:10px;display:block;margin-top:1px;font-family:Inter,sans-serif}
+  .setup{font-family:var(--mono);font-size:9.5px;font-weight:800;padding:3px 8px;border-radius:6px;white-space:nowrap}
+  .setup.coil{background:rgba(255,153,51,.18);color:var(--saffron)} .setup.pull{background:rgba(34,197,94,.16);color:var(--green)}
+  .setup.watch{background:rgba(255,255,255,.06);color:var(--muted)} .setup.down{background:rgba(239,68,68,.14);color:var(--red)} .setup.verify{background:rgba(251,191,36,.14);color:var(--amber)}
+  .mk{font-size:11px;margin-left:5px;cursor:help} .mk.g{color:var(--green)} .mk.a{color:var(--amber)} .mk.s{color:var(--saffron)}
+  .pos{color:var(--green)} .neg{color:var(--red)} .neu{color:var(--amber)}
+  .irank{font-size:11px;color:var(--muted)} .irank b{color:var(--ink)}
+  .qty{font-weight:800;color:var(--ink)} .risk{font-size:10px;color:var(--dim)}
+  /* plan card (expanded row) */
+  .plan{background:var(--bg2);border-top:1px solid var(--saffron)}
+  .plan td{padding:0}
+  .plancard{padding:16px 20px;display:grid;grid-template-columns:1.4fr 1fr;gap:18px}
+  .plancard .why{font-family:Inter,sans-serif;font-size:12.5px;color:var(--ink);line-height:1.55}
+  .plancard .row{margin-bottom:9px} .plancard .k{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--saffron);margin-bottom:2px}
+  .plancard .val{font-family:var(--mono);font-size:11.5px;color:var(--muted);line-height:1.5}
+  .plancard .val b{color:var(--ink)}
+  .pillbtn{font-family:var(--mono);font-size:10.5px;color:var(--saffron);background:transparent;border:1px solid var(--saffron);border-radius:8px;padding:6px 12px;cursor:pointer;margin-right:8px;margin-top:6px}
+  .pillbtn:hover{background:rgba(255,153,51,.12)}
+  /* checklist */
+  .check{display:flex;flex-direction:column;gap:9px}
+  .ck{display:flex;align-items:flex-start;gap:11px;font-family:var(--mono);font-size:12px}
+  .ck .b{width:20px;height:20px;border-radius:6px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;border:1px solid var(--border);background:var(--bg2);color:var(--dim)}
+  .ck.y .b{background:rgba(34,197,94,.16);border-color:var(--green);color:var(--green)}
+  .ck.n .b{background:rgba(239,68,68,.13);border-color:var(--red);color:var(--red)}
+  .ck .t{color:var(--muted);padding-top:2px} .ck.y .t{color:var(--ink)}
+  .ck .t small{display:block;color:var(--dim);font-size:10px;margin-top:1px}
+  .verdictbig{margin-top:14px;padding:12px 14px;border-radius:10px;font-family:var(--mono);font-weight:800;font-size:14px;text-align:center;border:1px solid var(--border)}
+  .twocol{display:grid;grid-template-columns:1fr 340px;gap:16px;align-items:start}
+  @media(max-width:980px){.twocol{grid-template-columns:1fr}.plancard{grid-template-columns:1fr}}
+  .empty{text-align:center;color:var(--muted);padding:40px;font-family:var(--mono);font-size:12px}
+  .note{font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:10px;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span></span></div>
+  <div class="tabs"></div>
+  <span class="preview-tag">WAR ROOM</span>
+</div>
+
+<main class="wrap">
+  <div class="head"><h1>⚔ War Room</h1><span class="sub" id="sub">the heart — one screen, every validated engine. loading…</span></div>
+
+  <!-- 1. GATE -->
+  <div class="gate" id="gate"><div class="dot" style="color:var(--dim)"></div><div><div class="gv">checking the gate…</div><div class="gm"></div></div></div>
+
+  <!-- 2. DISCIPLINE -->
+  <div class="panel" style="margin-bottom:16px">
+    <h2>① daily discipline <span class="hint">— you set the rules; the room holds you to them (read-only, never trades)</span></h2>
+    <div class="disc">
+      <div class="fld"><label>capital ₹</label><input id="cap" type="number" step="1000"></div>
+      <div class="fld"><label>risk / trade %</label><input id="risk" type="number" step="0.1"></div>
+      <div class="fld"><label>daily goal ₹</label><input id="goal" type="number" step="500"></div>
+      <div class="fld"><label>daily loss-limit ₹</label><input id="loss" type="number" step="500"></div>
+      <div class="fld"><label>today's P&L ₹ <span style="color:var(--dim)" id="pnlsrc"></span></label><input id="pnl" type="number" step="100"></div>
+      <div class="pnlbox">
+        <div class="v" id="pnlv">₹0</div>
+        <div class="verdict" id="pnlverdict">enter capital + your P&L</div>
+        <div class="meter" id="pnlmeter"></div>
+      </div>
+    </div>
+    <div class="note" id="discnote"></div>
+  </div>
+
+  <!-- 3. WINNER SECTORS -->
+  <div class="panel" style="margin-bottom:16px">
+    <h2>② winner sectors <span class="hint">— pin the few leading industries that drive the tape; the watchlist fishes only there</span></h2>
+    <div class="chips" id="leaders"><span class="empty">loading leaders…</span></div>
+  </div>
+
+  <!-- 4. WATCHLIST + CHECKLIST -->
+  <div class="twocol">
+    <div class="panel">
+      <h2>③ the watchlist <span class="hint" id="wlhint">— strict, news-clean gated leaders · click a name for the plan</span></h2>
+      <div id="wlout"><div class="empty">loading the watchlist…</div></div>
+    </div>
+    <div class="panel" id="checkpanel">
+      <h2>④ gate checklist <span class="hint">— the 5 steps, so you never forget</span></h2>
+      <div class="check" id="check"></div>
+      <div class="verdictbig" id="ckverdict" style="color:var(--dim)">click a name to run it through the gates</div>
+      <div class="note">Disciplined entry = ALL five green. This is exactly the checklist that would've stopped the TEJAS chase (it fails step ④).</div>
+    </div>
+  </div>
+</main>
+
+<script src="marleg_stockmodal.js"></script>
+<script>
+window.MG_SELF_REFRESH = true;                 // we poll our own data; tell nav.js not to full-reload
+const $=id=>document.getElementById(id);
+const money=x=>'₹'+Math.round(x).toLocaleString('en-IN');
+let WR=null, CFG=null, SHOCK=null, SEL=null, PNL=0, PNL_AUTO=null;
+
+/* ---------- config ---------- */
+async function loadConfig(){
+  CFG = await (await fetch('/api/warroom/config')).json();
+  $('cap').value=CFG.capital; $('risk').value=CFG.risk_pct; $('goal').value=CFG.daily_goal; $('loss').value=CFG.daily_loss_limit;
+}
+let saveT=null;
+function saveConfig(extra){
+  clearTimeout(saveT);
+  saveT=setTimeout(async ()=>{
+    const body=Object.assign({
+      capital:+$('cap').value||0, risk_pct:+$('risk').value||0,
+      daily_goal:+$('goal').value||0, daily_loss_limit:+$('loss').value||0
+    }, extra||{});
+    CFG = await (await fetch('/api/warroom/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})).json();
+    renderPnl(); renderWatchlist();          // sizing + pinned filter depend on config
+    if(extra && extra.pinned_sectors) loadWarroom();
+  }, 350);
+}
+['cap','risk','goal','loss'].forEach(id=>$(id).addEventListener('input',()=>{renderPnl();saveConfig();}));
+$('pnl').addEventListener('input',()=>{PNL=+$('pnl').value||0; renderPnl();});
+
+/* ---------- P&L discipline ---------- */
+function findDayPnl(d){
+  let arr = Array.isArray(d)?d:(d&&(d.positions||d.data||d.net||d.day))||[];
+  if(!Array.isArray(arr)) arr=[];
+  let sum=0, found=false;
+  arr.forEach(p=>{ if(!p||typeof p!=='object')return;
+    for(const k of ['day_pnl','dayPnl','pnl','m2m','pl','net_pnl','dayPnL']){
+      if(typeof p[k]==='number'){ sum+=p[k]; found=true; break; } } });
+  if(found) return Math.round(sum);
+  if(d&&typeof d.day_pnl==='number') return Math.round(d.day_pnl);
+  if(d&&typeof d.pnl==='number') return Math.round(d.pnl);
+  return null;
+}
+async function loadPnl(){
+  try{
+    const d = await (await fetch('/api/positions')).json();
+    const v = findDayPnl(d);
+    if(v!=null){ PNL_AUTO=v; $('pnlsrc').textContent='(Groww: '+money(v)+')';
+      if(!$('pnl').value){ PNL=v; $('pnl').value=v; } }
+    else $('pnlsrc').textContent='(no live positions — enter manually)';
+  }catch(e){ $('pnlsrc').textContent='(broker offline — enter manually)'; }
+  renderPnl();
+}
+function renderPnl(){
+  const goal=+$('goal').value||0, loss=+$('loss').value||0;
+  const v=$('pnlv'), vd=$('pnlverdict'), m=$('pnlmeter');
+  v.textContent=(PNL>=0?'+':'−')+money(Math.abs(PNL)).slice(1); v.style.color=PNL>0?'var(--green)':PNL<0?'var(--red)':'var(--ink)';
+  let txt,col,frac,mcol;
+  if(goal>0 && PNL>=goal){ txt='🎯 GOAL HIT — bank it. Keep ONLY a position that\'s still strongly favorable; close the rest.'; col='var(--green)'; frac=1; mcol='var(--green)'; }
+  else if(loss>0 && PNL<=-loss){ txt='🛑 LOSS LIMIT — stop. Step out for the day, no revenge trades.'; col='var(--red)'; frac=1; mcol='var(--red)'; }
+  else if(PNL>=0){ const to=goal-PNL; txt='🟢 in range — trade the plan. '+money(to)+' to goal.'; col='var(--green)'; frac=goal>0?PNL/goal:0; mcol='var(--green)'; }
+  else { const cush=loss+PNL; txt='🟠 drawing down — '+money(cush)+' cushion before the loss-limit.'; col='var(--amber)'; frac=loss>0?(-PNL)/loss:0; mcol='var(--amber)'; }
+  vd.textContent=txt; vd.style.color=col;
+  m.innerHTML='<span style="left:0;width:'+Math.min(100,Math.max(0,frac*100))+'%;background:'+mcol+'"></span>';
+}
+
+/* ---------- sizing ---------- */
+function sizeQty(price, rps){
+  const cap=+$('cap').value||0, riskpct=+$('risk').value||0;
+  if(!price||!rps||rps<=0||cap<=0||riskpct<=0) return {qty:0,risk:0,notional:0};
+  let qty=Math.floor(cap*riskpct/100/rps);
+  if(qty*price>cap) qty=Math.floor(cap/price);              // can't deploy more than capital
+  return {qty:qty, risk:Math.round(qty*rps), notional:Math.round(qty*price)};
+}
+
+/* ---------- gate banner ---------- */
+function renderGate(){
+  const g=$('gate'), r=(WR&&WR.regime)||{};
+  const shockBad = SHOCK && (SHOCK.state==='SHOCK'||SHOCK.state==='ELEVATED');
+  const bull=!!r.bull && !shockBad;
+  g.className='gate '+(bull?'bull':'bear');
+  g.querySelector('.dot').style.color=bull?'var(--green)':'var(--red)';
+  let v = shockBad ? ('⚠ '+(SHOCK.verdict||'macro stress — stand down')) : (r.verdict||'—');
+  g.querySelector('.gv').textContent=v;
+  g.querySelector('.gv').style.color=bull?'var(--green)':'var(--red)';
+  g.querySelector('.gm').textContent='breadth '+(r.breadth!=null?r.breadth+'% above 50DMA':'—')+
+    ' · strict '+(WR.n_strict!=null?WR.n_strict:'—')+'/'+(WR.n!=null?WR.n:'—')+' news-clean of '+(WR.universe||'—')+' · '+(WR.tradeable_count||0)+' tradeable now';
+}
+
+/* ---------- winner sectors ---------- */
+function renderLeaders(){
+  const box=$('leaders'); const L=(WR&&WR.leaders)||[]; const pinned=new Set((WR.pinned||[]).map(s=>String(s).toLowerCase()));
+  if(!L.length){ box.innerHTML='<span class="empty">no leading industries in cache</span>'; return; }
+  box.innerHTML=L.map(g=>{
+    const name=g.group||g.industry||g.name||g.g||'?';
+    const on=pinned.has(String(name).toLowerCase());
+    const ret=(g.ret20!=null)?(g.ret20>0?'+':'')+g.ret20+'%':'';
+    return '<span class="chip'+(on?' on':'')+'" data-s="'+String(name).replace(/"/g,'')+'">'+
+      '<span class="pin">'+(on?'📌':'+')+'</span>'+name+(ret?' <span class="r">'+ret+'</span>':'')+'</span>';
+  }).join('');
+  box.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>togglePin(c.dataset.s)));
+}
+function togglePin(name){
+  const cur=(WR.pinned||[]).slice(); const i=cur.findIndex(s=>String(s).toLowerCase()===name.toLowerCase());
+  if(i>=0) cur.splice(i,1); else cur.push(name);
+  WR.pinned=cur; saveConfig({pinned_sectors:cur});
+}
+
+/* ---------- watchlist ---------- */
+const SETUP_CLS={'COILED BREAKOUT':'coil','PULLBACK BUY':'pull','WATCH':'watch','STAND DOWN':'down','VERIFY FIRST':'verify'};
+function flagMarks(p){
+  let s='';
+  if(p.coiled) s+=' <span class="mk s" title="coiled breakout — broke out of a tight base (bear-proof subset)">⚡</span>';
+  if(p.clean===false){ const t=(p.event_flags||[]).join('; ')||'event-driven'; s+=' <span class="mk a" title="'+t.replace(/"/g,'')+'">⚠</span>'; }
+  else s+=' <span class="mk g" title="news-clean — organic, no event footprint">🔒</span>';
+  return s;
+}
+function renderWatchlist(){
+  const out=$('wlout'); const W=(WR&&WR.watchlist)||[];
+  $('wlhint').textContent = (WR.pinned&&WR.pinned.length) ? ('— '+WR.pinned.length+' sector(s) pinned · click a name for the plan') : '— strict, news-clean gated leaders · click a name for the plan';
+  if(!W.length){ out.innerHTML='<div class="empty">no gated leaders'+((WR.pinned&&WR.pinned.length)?' in your pinned sectors — unpin to widen':'')+' right now.</div>'; return; }
+  let h='<table><thead><tr><th class="l">name</th><th class="l">setup</th><th>industry</th><th>entry</th><th>price</th><th>stop</th><th>target</th><th>qty</th></tr></thead><tbody>';
+  W.forEach((p,i)=>{
+    const sz=sizeQty(p.price, p.plan&&p.plan.risk_per_share);
+    const cls=SETUP_CLS[p.hold.setup]||'watch';
+    const down=!p.hold.tradeable;
+    h+='<tr class="stk'+(SEL===i?' sel':'')+(down?' standdown':'')+'" data-i="'+i+'">'+
+      '<td class="l"><span class="sym">'+p.s+flagMarks(p)+'</span><span class="cmp">'+(p.n||'').replace(/[<>]/g,'')+'</span></td>'+
+      '<td class="l"><span class="setup '+cls+'">'+p.hold.setup+'</span></td>'+
+      '<td><span class="irank">#<b>'+p.ind_rank+'</b> '+String(p.industry||'').slice(0,18)+'</span></td>'+
+      '<td>'+(p.entry||'—')+(p.ret5!=null?' <span class="'+(p.ret5>=0?'pos':'neg')+'" style="font-size:10px">'+(p.ret5>0?'+':'')+p.ret5+'%</span>':'')+'</td>'+
+      '<td>₹'+p.price+'</td>'+
+      '<td class="neg">₹'+p.stop+'</td>'+
+      '<td class="pos">₹'+p.target+' <span style="font-size:10px;color:var(--dim)">+'+p.tgtpct+'%</span></td>'+
+      '<td>'+(sz.qty>0?'<span class="qty">'+sz.qty+'</span><br><span class="risk">risk '+money(sz.risk)+'</span>':'<span class="risk">—</span>')+'</td>'+
+      '</tr>';
+    if(SEL===i) h+=planRow(p,sz);
+  });
+  h+='</tbody></table>';
+  out.innerHTML=h;
+  out.querySelectorAll('tr.stk').forEach(tr=>tr.addEventListener('click',e=>{
+    if(e.target.classList.contains('pillbtn'))return;
+    const i=+tr.dataset.i; SEL=(SEL===i?null:i); renderWatchlist(); renderCheck();
+  }));
+}
+function planRow(p,sz){
+  const pl=p.plan||{};
+  return '<tr class="plan"><td colspan="8"><div class="plancard">'+
+    '<div><div class="why" style="margin-bottom:12px"><b>'+p.hold.setup+'</b> · '+p.hold.horizon+' — '+p.hold.why+'</div>'+
+      '<div class="row"><div class="k">entry trigger — what move confirms it</div><div class="val">'+pl.trigger+'</div></div>'+
+      '<div class="row"><div class="k">confirmation (the gates that fired)</div><div class="val">'+pl.confirm+'</div></div>'+
+      '<div class="row"><div class="k">exit & stop</div><div class="val">'+pl.exit+'</div></div>'+
+      '<div class="row"><div class="k">invalidation — when the thesis is wrong</div><div class="val">'+pl.invalidate+'</div></div>'+
+      '<button class="pillbtn" onclick="window.openStock&&openStock(\''+p.s+'\')">📊 full analysis</button>'+
+      '<button class="pillbtn" onclick="location.href=\'marle_g_intraday.html\'">⏱ intraday read</button>'+
+    '</div>'+
+    '<div><div class="row"><div class="k">position size (your rules)</div><div class="val">'+
+      (sz.qty>0? '<b>'+sz.qty+' shares</b> = '+money(sz.notional)+' deployed<br>risking <b>'+money(sz.risk)+'</b> ('+($('risk').value||'?')+'% of capital) to the ₹'+pl.stop+' stop<br>per-share risk ₹'+(pl.risk_per_share||'—')
+        : 'set capital + risk-% above to size this') +'</div></div>'+
+      '<div class="row"><div class="k">reward : risk</div><div class="val">'+
+        (pl.risk_per_share&&p.price&&p.target? '≈ '+(((p.target-p.price)/pl.risk_per_share)||0).toFixed(1)+' : 1  (target vs stop)':'—')+'</div></div>'+
+    '</div>'+
+    '</div></td></tr>';
+}
+
+/* ---------- gate checklist ---------- */
+function renderCheck(){
+  const box=$('check'), vb=$('ckverdict');
+  if(SEL==null || !WR || !WR.watchlist[SEL]){
+    box.innerHTML=[
+      ['regime open?','bull tape, no macro shock'],
+      ['leading industry?','its group in the top 40%'],
+      ['news-clean?','no earnings/news footprint'],
+      ['good entry?','pullback or coiled breakout — not chasing'],
+      ['sized to risk?','qty fits your capital & risk-%']
+    ].map((s,i)=>'<div class="ck"><div class="b">'+(i+1)+'</div><div class="t">'+s[0]+'<small>'+s[1]+'</small></div></div>').join('');
+    vb.textContent='click a name to run it through the gates'; vb.style.color='var(--dim)'; vb.style.borderColor='var(--border)';
+    return;
+  }
+  const p=WR.watchlist[SEL], r=(WR.regime)||{}, sz=sizeQty(p.price,p.plan&&p.plan.risk_per_share);
+  const shockBad = SHOCK && (SHOCK.state==='SHOCK'||SHOCK.state==='ELEVATED');
+  const steps=[
+    [!!r.bull&&!shockBad, 'regime open', r.bull?(shockBad?'macro shock overrides — stand down':'bull tape, gate open'):'bear tape — long edge turns negative'],
+    [p.ind_rank<=40, 'leading industry', '#'+p.ind_rank+' '+(p.ind_rank<=40?'(top 40% — a leader)':'(not leading — skip)')],
+    [p.clean!==false&&!p.pre_earn_runup, 'news-clean', p.pre_earn_runup?'pre-earnings run-up — the trap':(p.clean===false?((p.event_flags||[]).join('; ')||'event-driven'):'organic, no event footprint')],
+    [p.hold.setup==='COILED BREAKOUT'||p.hold.setup==='PULLBACK BUY', 'good entry', p.hold.setup==='WATCH'?'gated but no entry yet — wait for a dip/break':(p.hold.tradeable?p.hold.setup.toLowerCase():'chasing — '+p.entry)],
+    [sz.qty>0, 'sized to risk', sz.qty>0? sz.qty+' shares · risk '+money(sz.risk):'set capital + risk-%']
+  ];
+  box.innerHTML=steps.map((s,i)=>'<div class="ck '+(s[0]?'y':'n')+'"><div class="b">'+(s[0]?'✓':'✕')+'</div><div class="t">'+s[1]+'<small>'+s[2]+'</small></div></div>').join('');
+  const go=steps.every(s=>s[0]);
+  vb.textContent=go?('✓ GO — '+p.s+' clears all five'):('✕ NOT YET — '+p.s+' fails '+steps.filter(s=>!s[0]).length+' gate(s)');
+  vb.style.color=go?'var(--green)':'var(--red)'; vb.style.borderColor=go?'rgba(34,197,94,.4)':'rgba(239,68,68,.4)';
+}
+
+/* ---------- load ---------- */
+async function loadWarroom(){
+  try{
+    WR = await (await fetch('/api/warroom')).json();
+    if(!WR.ok){ $('sub').textContent=WR.error||'scan not built yet'; return; }
+    $('sub').textContent='as of '+WR.asof+' · assembled from the gated scan, regime gate, event filter & backtested setups';
+    renderGate(); renderLeaders(); renderWatchlist(); renderCheck();
+  }catch(e){ $('sub').textContent='failed to load /api/warroom'; }
+}
+async function loadShock(){ try{ SHOCK=await (await fetch('/api/shock')).json(); renderGate(); renderCheck(); }catch(e){} }
+
+window.podRefresh=function(){ loadWarroom(); loadPnl(); loadShock(); };
+(async function(){ await loadConfig(); renderPnl(); await loadWarroom(); loadShock(); loadPnl(); })();
+setInterval(()=>{ if(!document.hidden){ loadWarroom(); loadPnl(); } }, 60000);
+</script>
+<script src="marle_g_nav.js"></script>
+</body>
+</html>

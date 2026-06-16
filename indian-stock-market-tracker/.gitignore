@@ -95,3 +95,9 @@ marleg_macro_overlay_bt.json
 
 # earnings-date cache (runtime, best-effort, regenerable)
 marleg_earnings_cache.json
+
+# accumulation-edge backtest output (research artifact, regenerable)
+marleg_accum_study.json
+
+# War Room session settings (user's own capital / risk / goal / pinned sectors — local state)
+marleg_warroom_config.json
