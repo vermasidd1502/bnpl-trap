@@ -215,6 +215,7 @@ const THEORY={
 
 window.podRefresh=loadAll;
 loadAll();
+(function(){var m=(location.hash||'').match(/stock=([A-Za-z0-9&.\-]+)/i); if(m) setTimeout(function(){ if(window.openDossier) openDossier(decodeURIComponent(m[1]).toUpperCase()); },800);})();
 setInterval(()=>{ if(!document.hidden) loadAll(); }, 90000);
 
 /* ================= STOCK DOSSIER (click any stock) ================= */

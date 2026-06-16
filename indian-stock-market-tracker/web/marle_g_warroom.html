@@ -120,9 +120,16 @@
     <div class="note" id="discnote"></div>
   </div>
 
+  <!-- ALERTS & CATALYSTS -->
+  <div class="panel" style="margin-bottom:16px">
+    <h2>⚡ alerts & catalysts <span class="hint">— CAN SLIM gates cleared (fundamentals→value→volume→entry) + timed earnings · click → full dossier</span></h2>
+    <div style="margin-bottom:12px"><input id="dsearch" placeholder="🔍 search any stock → open its dossier (chart · conviction · Monte Carlo)…" spellcheck="false" style="width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--ink);border-radius:10px;padding:10px 13px;font-family:var(--mono);font-size:13px"></div>
+    <div id="alertsOut"><div class="empty">loading alerts…</div></div>
+  </div>
+
   <!-- 3. WINNER SECTORS -->
   <div class="panel" style="margin-bottom:16px">
-    <h2>② winner sectors <span class="hint">— pin the few leading industries that drive the tape; the watchlist fishes only there</span></h2>
+    <h2>③ winner sectors <span class="hint">— pin the few leading industries that drive the tape; the watchlist fishes only there</span></h2>
     <div class="chips" id="leaders"><span class="empty">loading leaders…</span></div>
   </div>
 
@@ -344,9 +351,36 @@ async function loadWarroom(){
 }
 async function loadShock(){ try{ SHOCK=await (await fetch('/api/shock')).json(); renderGate(); renderCheck(); }catch(e){} }
 
-window.podRefresh=function(){ loadWarroom(); loadPnl(); loadShock(); };
-(async function(){ await loadConfig(); renderPnl(); await loadWarroom(); loadShock(); loadPnl(); })();
-setInterval(()=>{ if(!document.hidden){ loadWarroom(); loadPnl(); } }, 60000);
+async function loadAlerts(){
+  try{
+    const d=await (await fetch('/api/alerts')).json();
+    const A=d.alerts||[], up=(d.catalysts&&d.catalysts.upcoming)||[], rec=(d.catalysts&&d.catalysts.recent)||[];
+    let h='';
+    if(up.length||rec.length){
+      h+='<div style="margin-bottom:12px"><div class="note" style="margin:0 0 5px">📅 earnings / catalysts (trade AROUND, not through):</div>';
+      h+=up.map(c=>'<span class="chip on" style="cursor:pointer;border-color:var(--amber);color:var(--amber);background:rgba(251,191,36,.1)" onclick="goStock(\''+c.s+'\')" title="'+(c.advice||'').replace(/"/g,'')+'">⚠ '+c.s+' · in '+c.days+'d</span>').join('');
+      h+=rec.map(c=>'<span class="chip" style="cursor:pointer" onclick="goStock(\''+c.s+'\')" title="'+(c.advice||'').replace(/"/g,'')+'">'+c.s+' · reported '+c.days+'d ago</span>').join('');
+      h+='</div>';
+    } else h+='<div class="note" style="margin-bottom:10px">📅 no earnings in the next ~3 weeks for the watchlist (results season ≈ July).</div>';
+    if(!A.length){ h+='<div class="empty">no names cleared all 4 gates right now.</div>'; }
+    else{
+      h+='<div class="note" style="margin-bottom:5px">'+A.length+' cleared the CAN SLIM funnel — click for the dossier:</div>'+
+        '<table><thead><tr><th class="l">name</th><th class="l">industry</th><th>entry</th><th>price → tgt</th><th>fundamentals</th><th></th></tr></thead><tbody>'+
+        A.map(a=>'<tr class="stk" style="cursor:pointer" onclick="goStock(\''+a.s+'\')"><td class="l"><span class="sym">'+a.s+'</span></td>'+
+          '<td class="l"><span class="irank">#<b>'+a.ind_rank+'</b> '+String(a.industry||'').slice(0,16)+'</span></td><td>'+(a.entry||'')+'</td>'+
+          '<td>₹'+a.price+' <span class="pos">+'+a.tgtpct+'%</span></td>'+
+          '<td>'+(a.funda_verified?'<span class="pos">✓ verified</span>':'<span class="neu">unverified</span>')+'</td>'+
+          '<td>'+(a.same_sector_held?'<span title="you already hold this sector">⭐</span>':'')+'</td></tr>').join('')+'</tbody></table>'+
+        '<div class="note">⭐ = you already hold this sector (concentration) · "unverified" = fundamentals data missing, gate ① soft-passed — confirm the financials before you trust it.</div>';
+    }
+    $('alertsOut').innerHTML=h;
+  }catch(e){ $('alertsOut').innerHTML='<div class="empty">alerts unavailable</div>'; }
+}
+window.goStock=function(s){ location.href='marle_g_movers.html#stock='+encodeURIComponent(s); };
+document.addEventListener('keydown',function(e){ if(e.target&&e.target.id==='dsearch'&&e.key==='Enter'){ var v=(e.target.value||'').trim().toUpperCase(); if(v) goStock(v); } });
+window.podRefresh=function(){ loadWarroom(); loadPnl(); loadShock(); loadAlerts(); };
+(async function(){ await loadConfig(); renderPnl(); await loadWarroom(); loadShock(); loadPnl(); loadAlerts(); })();
+setInterval(()=>{ if(!document.hidden){ loadWarroom(); loadPnl(); loadAlerts(); } }, 60000);
 </script>
 <script src="marle_g_nav.js"></script>
 </body>

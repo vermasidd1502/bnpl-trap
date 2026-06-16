@@ -458,6 +458,14 @@ def api_dossier(ticker):
     return jsonify(cached("dossier:" + ticker.upper(), lambda: marleg_dossier.dossier(ticker), 240))
 
 
+@app.route("/api/alerts")
+def api_alerts():
+    """Strategy alerts: the CAN SLIM staged-gate funnel (fundamentals->fair-value->volume->entry) + a timed
+    earnings/catalyst monitor + the gate ladder. Read-only assembly of the gated/fundamentals/movers caches."""
+    import marleg_alerts
+    return jsonify(cached("alerts", lambda: marleg_alerts.build(), 180))
+
+
 @app.route("/api/regime_gate")
 def api_regime_gate():
     """Tiny market bull/bear read (the durable macro gate) for the nav badge on every pod.
