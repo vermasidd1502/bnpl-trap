@@ -239,3 +239,52 @@
   if (document.querySelector('script[src*="marle_g_guide.js"]')) return;
   var s = document.createElement("script"); s.src = "marle_g_guide.js"; document.head.appendChild(s);
 })();
+
+/* ---- back/forward nav buttons + market-regime badge (every pod; vital in the chromeless app window) ---- */
+(function () {
+  function navBtn(txt, title, fn) {
+    var b = document.createElement("button");
+    b.type = "button"; b.textContent = txt; b.title = title;
+    b.style.cssText = "font-family:var(--mono,ui-monospace,monospace);font-size:14px;font-weight:700;color:var(--dim,#646c7a);" +
+      "background:rgba(255,255,255,.03);border:1px solid var(--border,rgba(255,255,255,.08));border-radius:8px;width:30px;height:28px;" +
+      "cursor:pointer;flex:0 0 auto;line-height:1;display:inline-flex;align-items:center;justify-content:center";
+    b.addEventListener("mouseenter", function () { b.style.color = "var(--saffron,#ff9933)"; b.style.borderColor = "var(--saffron,#ff9933)"; });
+    b.addEventListener("mouseleave", function () { b.style.color = "var(--dim,#646c7a)"; b.style.borderColor = "var(--border,rgba(255,255,255,.08))"; });
+    b.addEventListener("click", fn);
+    return b;
+  }
+  document.querySelectorAll(".nav").forEach(function (nav) {
+    if (!nav.querySelector(".mg-navbtns")) {
+      var wrap = document.createElement("span");
+      wrap.className = "mg-navbtns";
+      wrap.style.cssText = "display:inline-flex;gap:6px;margin-left:12px;align-items:center;flex:0 0 auto";
+      wrap.appendChild(navBtn("←", "Back (previous page)", function () { history.back(); }));
+      wrap.appendChild(navBtn("→", "Forward", function () { history.forward(); }));
+      var brand = nav.querySelector(".brand");
+      if (brand && brand.parentNode === nav) brand.insertAdjacentElement("afterend", wrap);
+      else nav.insertBefore(wrap, nav.firstChild);
+    }
+    if (!nav.querySelector(".mg-regime")) {
+      var rb = document.createElement("span");
+      rb.className = "mg-regime";
+      rb.style.cssText = "font-family:var(--mono,ui-monospace,monospace);font-size:9.5px;font-weight:800;letter-spacing:.05em;" +
+        "padding:4px 9px;border-radius:7px;margin-left:10px;flex:0 0 auto;color:var(--dim,#646c7a);border:1px solid var(--border,rgba(255,255,255,.08))";
+      rb.textContent = "REGIME —";
+      nav.appendChild(rb);
+    }
+  });
+  function fillRegime() {
+    fetch("/api/regime_gate").then(function (r) { return r.json(); }).then(function (d) {
+      var bull = d.bull;
+      var col = bull === true ? "#22c55e" : bull === false ? "#ef4444" : "var(--dim,#646c7a)";
+      var label = bull === true ? "🟢 BULL · deploy" : bull === false ? "🔴 BEAR · cash/hedge" : "REGIME —";
+      document.querySelectorAll(".mg-regime").forEach(function (el) {
+        el.textContent = label + (d.breadth != null ? " · " + d.breadth + "%" : "");
+        el.style.color = col; el.style.borderColor = col;
+        el.title = (d.verdict || "") + (d.breadth != null ? " · breadth " + d.breadth + "% above 50DMA" : "") + (d.asof ? " · " + d.asof : "");
+      });
+    }).catch(function () {});
+  }
+  fillRegime();
+  setInterval(fillRegime, 300000);
+})();

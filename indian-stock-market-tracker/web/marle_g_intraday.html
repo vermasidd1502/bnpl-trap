@@ -208,7 +208,21 @@ async function loadPos(){
     const tbl=`<div class="sh" style="margin-top:6px">Bar-by-bar (${IV}m) · most recent first · green vwap = bar above VWAP</div>
       <table><tr><td class="tl">time</td><td class="tr tl">close</td><td class="tr tl">cum%</td><td class="tr tl">vwap</td><td class="tr tl">rsi</td><td class="tr tl">vol</td></tr>
       ${bars.map(b=>`<tr><td>${b.t}</td><td class="tr">${b.c}</td><td class="tr" style="color:${dc(b.cum)}">${b.cum>0?'+':''}${b.cum}%</td><td class="tr" style="color:${b.av?'var(--green)':'var(--red)'}">${b.vwap??'—'}</td><td class="tr">${b.rsi??'—'}</td><td class="tr tl">${(b.v||0).toLocaleString('en-IN')}</td></tr>`).join('')}</table>`;
-    $('posbody').innerHTML=cards+tbl;
+    // synthesized INTRADAY TREND verdict (the clear bull/bear read at a glance)
+    var _t=0,_r=[];
+    if(p.vwap_dist>0){_t++;_r.push('above VWAP');}else if(p.vwap_dist<0){_t--;_r.push('below VWAP');}
+    if((m.score||0)>0)_t++;else if((m.score||0)<0)_t--;
+    if(p.ud_label==='accumulation'){_t++;_r.push('accumulation');}else if(p.ud_label==='distribution'){_t--;_r.push('distribution');}
+    if(p.rsi!=null){if(p.rsi>=55&&p.rsi<=72)_t++;else if(p.rsi<45)_t--;}
+    if((p.consecutive||0)>0)_t++;else if((p.consecutive||0)<0)_t--;
+    var _tv=_t>=2?'BULLISH':_t<=-2?'BEARISH':'NEUTRAL',_tc=_t>=2?'var(--green)':_t<=-2?'var(--red)':'var(--muted)',_ti=_t>=2?'🟢':_t<=-2?'🔴':'⚪';
+    var _hot=p.rsi>72?" · ⚠ RSI hot (don't chase)":'';
+    const trend=`<div class="card" style="border-left:4px solid ${_tc};display:flex;align-items:center;gap:16px;padding:12px 16px;margin-bottom:10px">
+      <div><div style="font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:.1em">INTRADAY TREND</div>
+      <div style="font-size:20px;font-weight:800;color:${_tc}">${_ti} ${_tv}${_hot}</div></div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted);line-height:1.5">${_r.join(' · ')||'mixed signals'}<br>
+      <span style="color:var(--dim)">score ${_t>0?'+':''}${_t} · VWAP × momentum × U/D × RSI × bar-trend · honest: intraday edge is thin — a read, not a promise</span></div></div>`;
+    $('posbody').innerHTML=trend+cards+tbl;
   }catch(e){ $('posbody').innerHTML='<span style="color:var(--red)">position load error</span>'; }
 }
 async function loadDD(){

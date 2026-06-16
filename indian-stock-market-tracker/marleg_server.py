@@ -396,6 +396,21 @@ def api_industry_rs():
         return jsonify({"error": str(e), "groups": []})
 
 
+@app.route("/api/regime_gate")
+def api_regime_gate():
+    """Tiny market bull/bear read (the durable macro gate) for the nav badge on every pod.
+    Distinct from /api/regime (the dispersion Regime Dial) — this is the NIFTY>50DMA deploy/cash gate."""
+    def load():
+        try:
+            d = json.load(open(os.path.join(HERE, "marleg_gated_cache.json"), encoding="utf-8"))
+            r = d.get("regime") or {}
+            return {"bull": r.get("bull"), "breadth": r.get("breadth"),
+                    "verdict": r.get("verdict"), "asof": d.get("asof")}
+        except Exception:
+            return {"bull": None, "verdict": "no scan yet"}
+    return jsonify(cached("regime_badge", load, 300))
+
+
 @app.route("/api/industry_members")
 def api_industry_members():
     """Static taxonomy-backed member lists (symbol+name) per industry and per macro sector —

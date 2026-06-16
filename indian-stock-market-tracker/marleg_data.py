@@ -112,7 +112,9 @@ def _groww_bulk(symbols, days, pause=0.0):
 
 
 def _frame(close, volume, high, low):
-    c = pd.DataFrame(close).sort_index()
+    # drop phantom all-NaN trailing rows (yfinance appends a NaN "today" row pre-market, which would
+    # make close.iloc[-1] NaN -> breadth 0 + the gate collapses). Keep only real sessions.
+    c = pd.DataFrame(close).sort_index().dropna(how="all")
     return {"close": c,
             "volume": pd.DataFrame(volume).reindex(c.index),
             "high": pd.DataFrame(high).reindex(c.index),
