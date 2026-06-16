@@ -41,11 +41,17 @@ def main():
     except Exception as e:
         log("ledger error:", str(e)[:120])
     # 3: full-universe scans (separate processes so one failure doesn't kill the other)
-    for label, cmd in [("volume scan (full universe)", [py, os.path.join(HERE, "marleg_volume_scan.py"), "--universe"]),
-                       ("gated scan", [py, os.path.join(HERE, "marleg_gated_scan.py")])]:
+    env_g = {**os.environ, "MARLEG_DATA_SOURCE": "groww"}   # throttle-proof source for the broad radars
+    for label, cmd, env in [
+        ("volume scan (full universe)", [py, os.path.join(HERE, "marleg_volume_scan.py"), "--universe"], None),
+        ("gated scan", [py, os.path.join(HERE, "marleg_gated_scan.py")], None),
+        ("movers / squeeze radar", [py, os.path.join(HERE, "marleg_movers.py")], env_g),
+        ("VIX conscience + drivers", [py, os.path.join(HERE, "marleg_vix_study.py")], None),
+        ("tier ladder", [py, os.path.join(HERE, "marleg_tier_study.py")], None),
+    ]:
         try:
             log(label, "...")
-            subprocess.run(cmd, cwd=HERE, timeout=3600)
+            subprocess.run(cmd, cwd=HERE, timeout=3600, env=env)
             log(label, "done")
         except Exception as e:
             log(label, "error:", str(e)[:120])

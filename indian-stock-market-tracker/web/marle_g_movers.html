@@ -7,7 +7,7 @@
 <style>
   :root{ --bg:#080a0e;--bg2:#0e1116;--card:#14171e;--border:rgba(255,255,255,.08);
     --ink:#eef1f6;--muted:#9aa3b4;--dim:#646c7a;--mono:'SF Mono',ui-monospace,Consolas,monospace;
-    --saffron:#ff9933;--india-green:#138808;--green:#22c55e;--red:#ef4444;--amber:#fbbf24;}
+    --saffron:#ff9933;--india-green:#138808;--green:#22c55e;--red:#ef4444;--amber:#fbbf24;--blue:#60a5fa;}
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:radial-gradient(1100px 520px at 50% -10%,rgba(255,153,51,.05),transparent 60%),var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
   .nav{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--border);background:rgba(8,10,14,.8);backdrop-filter:blur(10px);position:sticky;top:0;z-index:10}
@@ -16,42 +16,60 @@
   .brand .w{background:linear-gradient(90deg,var(--saffron),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
   .tabs{display:flex;gap:16px;font-family:var(--mono);font-size:11px;flex-wrap:wrap}.tabs a{color:var(--dim);text-decoration:none}
   .preview-tag{font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--saffron);border:1px solid var(--saffron);border-radius:5px;padding:3px 7px}
-  .wrap{max-width:1280px;margin:0 auto;padding:20px 24px 80px}
-  .head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:14px}
-  .head h1{font-size:23px;font-weight:800}.head .sub{font-family:var(--mono);font-size:11px;color:var(--dim)}
-  .panel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin-bottom:16px}
-  .panel h2{font-family:var(--mono);font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--saffron);font-weight:800;margin-bottom:12px}
-  .panel h2 .hint{color:var(--dim);font-weight:500;text-transform:none;letter-spacing:0;font-size:10px;margin-left:6px}
-  /* VIX banner */
-  .vixrow{display:flex;gap:20px;flex-wrap:wrap;align-items:center}
-  .vixbig{font-family:var(--mono);font-weight:800;font-size:30px;line-height:1}
-  .vixlbl{font-family:var(--mono);font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em}
-  .pill{font-family:var(--mono);font-size:10px;font-weight:800;padding:3px 9px;border-radius:7px}
-  .attr{font-family:Inter,sans-serif;font-size:12.5px;color:var(--ink);line-height:1.5;flex:1;min-width:280px}
-  .secchips{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
-  .sc{font-family:var(--mono);font-size:10.5px;padding:5px 11px;border-radius:999px;border:1px solid var(--border)}
-  .sc.def{color:var(--green);border-color:rgba(34,197,94,.4)} .sc.hot{color:var(--amber);border-color:rgba(251,191,36,.4)}
-  /* table */
-  .ctrl{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
-  .seg button{font-family:var(--mono);font-size:11px;color:var(--muted);background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;cursor:pointer}
-  .seg button.on{background:var(--saffron);color:#160f02;border-color:var(--saffron);font-weight:700}
+  .wrap{max-width:1340px;margin:0 auto;padding:20px 24px 90px}
+  .head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:8px}
+  .head h1{font-size:24px;font-weight:800}.head .sub{font-family:var(--mono);font-size:11px;color:var(--dim)}
+  /* top strip */
+  .strip{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0 20px}
+  .kpi{flex:1;min-width:150px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:13px 15px}
+  .kpi .l{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--dim)}
+  .kpi .v{font-family:var(--mono);font-weight:800;font-size:20px;margin-top:4px}
+  .kpi .d{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:2px}
+  /* engine grid */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(285px,1fr));gap:14px}
+  .eng{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 17px;cursor:pointer;transition:border-color .14s,transform .14s;position:relative}
+  .eng:hover{border-color:var(--saffron);transform:translateY(-2px)}
+  .eng.on{border-color:var(--saffron);box-shadow:0 0 0 1px var(--saffron) inset}
+  .eng .et{display:flex;align-items:center;gap:9px;font-weight:800;font-size:14px}
+  .eng .ei{font-size:18px}
+  .eng .eh{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:9px;line-height:1.5;min-height:32px}
+  .eng .ebadge{font-family:var(--mono);font-size:9px;font-weight:800;padding:2px 7px;border-radius:5px;position:absolute;top:14px;right:14px}
+  .eng .more{font-family:var(--mono);font-size:9.5px;color:var(--saffron);margin-top:10px}
+  /* detail */
+  .detail{background:var(--card);border:1px solid var(--saffron);border-radius:14px;margin-top:16px;overflow:hidden;display:none}
+  .detail.show{display:block}
+  .dh{display:flex;align-items:center;justify-content:space-between;padding:15px 18px;border-bottom:1px solid var(--border);background:rgba(255,153,51,.05)}
+  .dh .t{font-weight:800;font-size:16px;display:flex;align-items:center;gap:9px}
+  .dh .x{font-family:var(--mono);font-size:12px;color:var(--dim);cursor:pointer;border:1px solid var(--border);border-radius:8px;padding:5px 10px}
+  .dh .x:hover{color:var(--ink);border-color:var(--saffron)}
+  .dtabs{display:flex;gap:4px;padding:12px 18px 0}
+  .dtabs button{font-family:var(--mono);font-size:11px;color:var(--muted);background:transparent;border:none;border-bottom:2px solid transparent;padding:7px 12px;cursor:pointer}
+  .dtabs button.on{color:var(--saffron);border-bottom-color:var(--saffron);font-weight:700}
+  .dbody{padding:16px 18px 20px}
+  .theory{font-family:Inter,sans-serif;font-size:13px;line-height:1.65;color:var(--muted);max-width:820px}
+  .theory h4{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--saffron);margin:14px 0 6px}
+  .theory b{color:var(--ink)} .theory .anchor{color:var(--blue);font-style:italic}
+  .theory ul{margin:6px 0 6px 18px}.theory li{margin:3px 0}
+  /* tables/chips reused */
   table{width:100%;border-collapse:collapse}
-  th{font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);text-align:right;padding:7px 10px;font-weight:600}
-  th:first-child{text-align:left}
-  td{padding:9px 10px;font-size:12.5px;border-top:1px solid rgba(255,255,255,.04);text-align:right;font-family:var(--mono)}
-  td:first-child{text-align:left}
+  th{font-family:var(--mono);font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);text-align:right;padding:7px 9px;font-weight:600}th:first-child{text-align:left}
+  td{padding:8px 9px;font-size:12px;border-top:1px solid rgba(255,255,255,.04);text-align:right;font-family:var(--mono)}td:first-child{text-align:left}
   tr.stk{cursor:pointer}tr.stk:hover{background:rgba(255,153,51,.07)}
-  .sym{font-weight:800;color:var(--ink)}.cmp{color:var(--dim);font-size:10px;display:block;font-family:Inter,sans-serif}
-  .mp{font-family:var(--mono);font-size:9.5px;font-weight:800;padding:2px 7px;border-radius:5px}
+  .sym{font-weight:800}.cmp{color:var(--dim);font-size:10px;display:block;font-family:Inter,sans-serif}
+  .mp{font-family:var(--mono);font-size:9px;font-weight:800;padding:2px 6px;border-radius:5px}
   .mp.HIGH{background:rgba(34,197,94,.18);color:var(--green)}.mp.MED{background:rgba(251,191,36,.15);color:var(--amber)}.mp.LOW{background:rgba(255,255,255,.06);color:var(--dim)}
   .pos{color:var(--green)}.neg{color:var(--red)}
-  .fl{font-size:11px;margin-left:4px;cursor:help}
-  .tier{display:flex;align-items:center;gap:14px;padding:10px 0;border-top:1px solid rgba(255,255,255,.05)}
-  .tier .tn{font-family:var(--mono);font-weight:800;font-size:13px;width:120px;flex:0 0 auto}
-  .tier .tv{font-family:var(--mono);font-size:11px;color:var(--dim);width:120px;flex:0 0 auto}
-  .tier .te{font-family:Inter,sans-serif;font-size:11.5px;color:var(--muted)}
-  .empty{text-align:center;color:var(--muted);padding:30px;font-family:var(--mono);font-size:12px}
+  .fl{font-size:11px;margin-left:3px;cursor:help}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 12px}
+  .sc{font-family:var(--mono);font-size:10.5px;padding:5px 11px;border-radius:999px;border:1px solid var(--border)}
+  .sc.def{color:var(--green);border-color:rgba(34,197,94,.4)}.sc.hot{color:var(--amber);border-color:rgba(251,191,36,.4)}
+  .ctrl{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+  .ctrl button{font-family:var(--mono);font-size:10.5px;color:var(--muted);background:var(--bg2);border:1px solid var(--border);border-radius:7px;padding:6px 11px;cursor:pointer}
+  .ctrl button.on{background:var(--saffron);color:#160f02;border-color:var(--saffron);font-weight:700}
+  .tier{display:flex;align-items:center;gap:14px;padding:9px 0;border-top:1px solid rgba(255,255,255,.05)}
+  .tier .tn{font-family:var(--mono);font-weight:800;font-size:12px;width:96px;flex:0 0 auto}.tier .tv{font-family:var(--mono);font-size:10.5px;color:var(--dim);width:110px;flex:0 0 auto}.tier .te{font-family:Inter,sans-serif;font-size:11px;color:var(--muted)}
   .note{font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:10px;line-height:1.5}
+  .empty{color:var(--muted);padding:18px;font-family:var(--mono);font-size:11px}
 </style>
 </head>
 <body>
@@ -62,33 +80,13 @@
 </div>
 
 <main class="wrap">
-  <div class="head"><h1>⚡ Movers & Volatility</h1><span class="sub" id="sub">loading…</span></div>
-
-  <div class="panel">
-    <h2>VIX conscience <span class="hint">— when to chase the 3–8% movers vs sit out, + why VIX is moving</span></h2>
-    <div class="vixrow">
-      <div><div class="vixbig" id="vixv">—</div><div class="vixlbl">India VIX</div></div>
-      <div id="vixregime"></div>
-      <div class="attr" id="vixattr">attributing the VIX move…</div>
-    </div>
-    <div class="secchips" id="secchips"></div>
-    <div class="note" id="vixnote"></div>
-  </div>
-
-  <div class="panel">
-    <h2>high-mover radar <span class="hint">— ranked by amplitude × heat; only HIGH can do 3–8% routinely</span></h2>
-    <div class="ctrl">
-      <div class="seg"><button id="fHIGH" class="on" onclick="setF('HIGH')">⚡ HIGH only</button><button id="fall" onclick="setF('all')">all</button><button id="fsq" onclick="setF('sq')">🔥 squeeze/abnormal</button></div>
-      <span class="note" style="margin:0">move-potential = can it move 3–8%? (ATR% & how often it's done ≥5%). NOT a direction call.</span>
-    </div>
-    <div id="movout"><div class="empty">loading movers…</div></div>
-    <div class="note" id="movnote"></div>
-  </div>
-
-  <div class="panel">
-    <h2>5-tier volatility ladder <span class="hint">— tier-1 = where the 3–8% amplitude lives (highest risk too)</span></h2>
-    <div id="tierout"><div class="empty">loading tiers…</div></div>
-    <div class="note">Backtest: "tier-2 follows tier-1" is mostly generic market momentum, not a special propagation (1-day lead ≈0.13, same as tier-1's own). Real propagation lives in the <a href="marle_g_cascade.html" style="color:var(--saffron)">cascade</a> graph. Use tier-1 as your amplitude hunting ground.</div>
+  <div class="head"><h1>⚡ Movers & Volatility</h1><span class="sub" id="sub">loading the engines…</span></div>
+  <div class="strip" id="strip"></div>
+  <div class="grid" id="grid"></div>
+  <div class="detail" id="detail">
+    <div class="dh"><div class="t" id="dt"></div><div class="x" onclick="closeEng()">✕ close</div></div>
+    <div class="dtabs"><button id="tabA" class="on" onclick="setTab('a')">live analysis</button><button id="tabT" onclick="setTab('t')">📖 the theory</button></div>
+    <div class="dbody" id="dbody"></div>
   </div>
 </main>
 
@@ -96,86 +94,119 @@
 <script>
 window.MG_SELF_REFRESH=true;
 const $=id=>document.getElementById(id);
-let MOV=[], FILT='HIGH';
 const pct=x=>(x>0?'+':'')+(+x).toFixed(1)+'%';
+let D={}, OPEN=null, TAB='a', MFILT='HIGH';
 
-async function loadVix(){
-  try{
-    const d=await (await fetch('/api/vix')).json();
-    if(d.error){ $('vixattr').textContent=d.error; return; }
-    const a=d.asof_vix||{};
-    $('vixv').textContent=a.vix!=null?a.vix:'—';
-    const rmap={CALM:['🟢 CALM','var(--green)'],NORMAL:['🟢 NORMAL','var(--green)'],ELEVATED:['🟠 ELEVATED','var(--amber)'],STRESS:['🔴 STRESS','var(--red)']};
-    const rm=rmap[a.regime]||['—','var(--dim)'];
-    $('vixregime').innerHTML='<span class="pill" style="background:rgba(255,255,255,.06);color:'+rm[1]+'">'+rm[0]+'</span>'+
-      '<div class="vixlbl" style="margin-top:5px">'+(a.chg5d!=null?pct(a.chg5d)+' / 5d':'')+(a.trailing_lo!=null?' · 1y band '+a.trailing_lo+'–'+a.trailing_hi:'')+'</div>';
-    const dr=d.drivers;
-    if(dr){ let h='<b style="color:var(--ink)">Why:</b> '+dr.attribution;
-      const lead=(dr.contributions||[]).filter(c=>dr.lead&&dr.lead.includes(c.driver));
-      if(lead.length) h+='<div class="note" style="margin-top:6px">'+lead.map(c=>'• <b style="color:var(--amber)">'+c.driver+'</b>: '+c.impact).join('<br>')+'</div>';
-      $('vixattr').innerHTML=h;
-    }
-    // sector conscience: defensive = best STRESS-day return; high-beta = biggest CALM up-move
-    const S=(d.sectors||[]).filter(x=>x.STRESS!=null);
-    const defs=[...S].sort((a,b)=>b.STRESS-a.STRESS).slice(0,4);
-    const hots=[...S].filter(x=>x.CALM!=null).sort((a,b)=>b.CALM-a.CALM).slice(0,4);
-    $('secchips').innerHTML='<span class="vixlbl" style="align-self:center">when VIX spikes →</span>'+
-      defs.map(x=>'<span class="sc def" title="best when VIX high">🛡 '+x.sector.slice(0,22)+'</span>').join('')+
-      '<span class="vixlbl" style="align-self:center;margin-left:8px">when VIX calm →</span>'+
-      hots.map(x=>'<span class="sc hot" title="biggest up-move when VIX calm">⚡ '+x.sector.slice(0,22)+'</span>').join('');
-    $('vixnote').textContent='🛡 defensives hold up when fear spikes · ⚡ high-beta give the biggest up-moves when VIX is calm (and the biggest down-moves when it spikes).';
-  }catch(e){ $('vixattr').textContent='VIX feed unavailable'; }
+async function jget(u){ try{ return await (await fetch(u)).json(); }catch(e){ return null; } }
+async function loadAll(){
+  const [mov,vix,tiers,lc,shock]=await Promise.all([jget('/api/movers'),jget('/api/vix'),jget('/api/tiers'),jget('/api/lastcandle'),jget('/api/shock')]);
+  D={mov,vix,tiers,lc,shock};
+  $('sub').textContent=(mov&&mov.asof)?('radar as of '+mov.asof+' · click any engine for analysis + theory'):'click any engine for analysis + theory';
+  renderStrip(); renderCards(); if(OPEN) renderDetail();
 }
 
-async function loadMovers(){
-  try{
-    const d=await (await fetch('/api/movers')).json();
-    MOV=d.movers||[];
-    $('sub').textContent=d.asof? ('as of '+d.asof+' · '+(d.n_high||0)+' HIGH-amplitude of '+(d.n||0)+' F&O names'):'movers radar';
-    $('movnote').textContent=d.note||'';
-    renderMovers();
-  }catch(e){ $('movout').innerHTML='<div class="empty">movers radar not built — run marleg_movers.py</div>'; }
+function renderStrip(){
+  const v=D.vix&&D.vix.asof_vix, sh=D.shock||{}, mov=D.mov||{};
+  const rmap={CALM:'var(--green)',NORMAL:'var(--green)',ELEVATED:'var(--amber)',STRESS:'var(--red)'};
+  const sq=(mov.movers||[]).filter(x=>x.short_covering).length;
+  const cells=[
+    ['India VIX', v?v.vix:'—', v?(v.regime+' · '+pct(v.chg5d||0)+'/5d'):'', v?rmap[v.regime]:'var(--ink)'],
+    ['Macro gate', sh.badge||'—', (sh.verdict||'').slice(0,42), sh.badge&&sh.badge.includes('BULL')?'var(--green)':sh.badge&&(sh.badge.includes('BEAR')||sh.badge.includes('SHOCK'))?'var(--red)':'var(--amber)'],
+    ['HIGH-amplitude', mov.n_high!=null?mov.n_high:'—', 'of '+(mov.n||'—')+' F&O — can do 3–8%','var(--saffron)'],
+    ['Squeeze (covering)', sq||'0', 'price↑ + OI↓ in top movers','var(--blue)'],
+  ];
+  $('strip').innerHTML=cells.map(c=>'<div class="kpi"><div class="l">'+c[0]+'</div><div class="v" style="color:'+c[3]+'">'+c[1]+'</div><div class="d">'+c[2]+'</div></div>').join('');
 }
-function setF(f){ FILT=f; ['HIGH','all','sq'].forEach(k=>$( k==='HIGH'?'fHIGH':k==='all'?'fall':'fsq').classList.toggle('on',k===f)); renderMovers(); }
-function renderMovers(){
-  let rows=MOV.slice();
-  if(FILT==='HIGH') rows=rows.filter(x=>x.tag==='HIGH');
-  else if(FILT==='sq') rows=rows.filter(x=>x.short_covering||x.abnormal_up||x.bounce_shape);
-  if(!rows.length){ $('movout').innerHTML='<div class="empty">none match this filter right now.</div>'; return; }
-  let h='<table><thead><tr><th>name</th><th>amp</th><th>ATR%</th><th>P≥5%</th><th>ret5</th><th>RVOL</th><th>price</th><th>exp. day range</th></tr></thead><tbody>';
-  rows.slice(0,50).forEach(r=>{
-    let fl='';
-    if(r.short_covering) fl+=' <span class="fl" title="'+(r.oi_signal||'short covering')+'">🔥</span>';
-    if(r.bounce_shape) fl+=' <span class="fl" title="sharp up after a downtrend — squeeze/bounce shape">↩</span>';
-    else if(r.abnormal_up) fl+=' <span class="fl" title="abnormal up-move on volume">⚡</span>';
+
+const ENGINES=[
+  {id:'squeeze',icon:'🔥',title:'Squeeze Radar',badge:d=>{const n=(d.mov&&d.mov.movers||[]).filter(x=>x.short_covering||x.bounce_shape).length;return n?['#'+n,'var(--blue)']:null;},
+   sum:d=>{const m=d.mov||{};return 'Auto-scans all '+(m.n||'~190')+' F&O names for short-covering (price↑+OI↓) & abnormal-up moves — now news/earnings-gated.';}},
+  {id:'amp',icon:'🎯',title:'Move-Potential',badge:d=>{const n=(d.mov&&d.mov.n_high)||0;return ['HIGH '+n,'var(--green)'];},
+   sum:d=>'The 3–8%/day amplitude filter: ATR% + how often a name has done ≥5% days. Only HIGH can hit your target routinely.'},
+  {id:'vix',icon:'🌪',title:'VIX Conscience',badge:d=>{const v=d.vix&&d.vix.asof_vix;return v?[v.regime,v.regime==='STRESS'?'var(--red)':'var(--green)']:null;},
+   sum:d=>'Which sectors lead when VIX is calm vs which hold up when it spikes — when to chase amplitude vs sit out.'},
+  {id:'drivers',icon:'🧭',title:'Why VIX is Moving',badge:d=>null,
+   sum:d=>{const dr=d.vix&&d.vix.drivers;return dr?dr.attribution.slice(0,120):'Attributes the VIX move to US VIX / crude / gold / USDINR / NIFTY.';}},
+  {id:'tiers',icon:'🪜',title:'5-Tier Ladder',badge:d=>['T1=⚡','var(--saffron)'],
+   sum:d=>'Industries ranked by volatility. Tier-1 (CapGoods/Defense/Renewables) = where 3–8% amplitude lives.'},
+  {id:'lastcandle',icon:'🕯',title:'Last-Candle Confluence',badge:d=>{const r=d.lc&&d.lc.results&&d.lc.results.full;return r?[r.win+'% win','var(--amber)']:['indicative','var(--dim)'];},
+   sum:d=>'Does a final-10-min volume spike + fib + Ichimoku + U/D predict the next day? (backtested, honest)'},
+];
+
+function renderCards(){
+  $('grid').innerHTML=ENGINES.map(e=>{
+    const b=e.badge(D);
+    return '<div class="eng'+(OPEN===e.id?' on':'')+'" onclick="openEng(\''+e.id+'\')">'+
+      (b?'<span class="ebadge" style="background:rgba(255,255,255,.06);color:'+b[1]+'">'+b[0]+'</span>':'')+
+      '<div class="et"><span class="ei">'+e.icon+'</span>'+e.title+'</div>'+
+      '<div class="eh">'+e.sum(D)+'</div><div class="more">click to expand ▾</div></div>';
+  }).join('');
+}
+function openEng(id){ OPEN=(OPEN===id?null:id); TAB='a'; renderCards(); if(OPEN){ $('detail').classList.add('show'); renderDetail(); $('detail').scrollIntoView({behavior:'smooth',block:'nearest'});} else $('detail').classList.remove('show'); }
+function closeEng(){ OPEN=null; renderCards(); $('detail').classList.remove('show'); }
+function setTab(t){ TAB=t; $('tabA').classList.toggle('on',t==='a'); $('tabT').classList.toggle('on',t==='t'); renderDetail(); }
+function renderDetail(){
+  const e=ENGINES.find(x=>x.id===OPEN); if(!e)return;
+  $('dt').innerHTML='<span style="font-size:20px">'+e.icon+'</span> '+e.title;
+  $('dbody').innerHTML = TAB==='t' ? (THEORY[e.id]||'<div class="empty">—</div>') : (ANALYSIS[e.id]?ANALYSIS[e.id]():'<div class="empty">—</div>');
+}
+
+/* ---------- live analysis per engine ---------- */
+function movTable(filter){
+  let rows=(D.mov&&D.mov.movers||[]).slice();
+  if(filter==='HIGH') rows=rows.filter(x=>x.tag==='HIGH');
+  else if(filter==='sq') rows=rows.filter(x=>x.short_covering||x.abnormal_up||x.bounce_shape);
+  else if(filter==='clean') rows=rows.filter(x=>x.tag==='HIGH'&&x.clean!==false);
+  if(!rows.length) return '<div class="empty">none match.</div>';
+  let h='<table><thead><tr><th>name</th><th>amp</th><th>ATR%</th><th>P≥5%</th><th>ret5</th><th>RVOL</th><th>price</th><th>exp range</th></tr></thead><tbody>';
+  rows.slice(0,40).forEach(r=>{let fl='';
+    if(r.short_covering)fl+=' <span class="fl" title="'+(r.oi_signal||'short covering')+'">🔥</span>';
+    if(r.bounce_shape)fl+=' <span class="fl" title="sharp up after a downtrend — squeeze shape">↩</span>';else if(r.abnormal_up)fl+=' <span class="fl" title="abnormal up-move on volume">⚡</span>';
+    if(r.clean===false)fl+=' <span class="fl" title="'+((r.event_flags||[]).join("; ")||"event/news").replace(/"/g,'')+'">⚠</span>';
     h+='<tr class="stk" data-s="'+r.s+'"><td><span class="sym">'+r.s+'</span>'+fl+'<span class="cmp">'+(r.n||'').replace(/[<>]/g,'')+'</span></td>'+
-      '<td><span class="mp '+r.tag+'">'+r.tag+'</span></td>'+
-      '<td>'+r.atrp+'</td><td>'+r.p5+'%</td>'+
-      '<td class="'+(r.ret5>=0?'pos':'neg')+'">'+pct(r.ret5)+'</td>'+
-      '<td>'+r.rvol+'×</td><td>₹'+r.price+'</td>'+
-      '<td style="color:var(--dim)">₹'+r.exp_lo+'–'+r.exp_hi+'</td></tr>';
+      '<td><span class="mp '+r.tag+'">'+r.tag+'</span></td><td>'+r.atrp+'</td><td>'+r.p5+'%</td>'+
+      '<td class="'+(r.ret5>=0?'pos':'neg')+'">'+pct(r.ret5)+'</td><td>'+r.rvol+'×</td><td>₹'+r.price+'</td><td style="color:var(--dim)">₹'+r.exp_lo+'–'+r.exp_hi+'</td></tr>';
   });
-  h+='</tbody></table>';
-  $('movout').innerHTML=h;
-  $('movout').querySelectorAll('tr.stk').forEach(tr=>tr.addEventListener('click',()=>window.openStock&&openStock(tr.dataset.s)));
+  return h+'</tbody></table>';
 }
+function bindStk(){ setTimeout(()=>document.querySelectorAll('#dbody tr.stk').forEach(tr=>tr.onclick=()=>window.openStock&&openStock(tr.dataset.s)),0); }
+const ANALYSIS={
+  squeeze:()=>{const html='<div class="ctrl"><button class="'+(MFILT==="sq"?"on":"")+'" onclick="MFILT=\'sq\';renderDetail()">🔥 squeeze/abnormal</button><button class="'+(MFILT==="HIGH"?"on":"")+'" onclick="MFILT=\'HIGH\';renderDetail()">⚡ HIGH amp</button><button class="'+(MFILT==="clean"?"on":"")+'" onclick="MFILT=\'clean\';renderDetail()">🔒 HIGH + news-clean</button><button class="'+(MFILT==="all"?"on":"")+'" onclick="MFILT=\'all\';renderDetail()">all</button></div>'+movTable(MFILT)+'<div class="note">🔥 short-covering (F&O OI) · ↩ bounce shape · ⚡ abnormal up · ⚠ earnings/news (gated). India has no equity short-interest — these are covering/abnormal proxies.</div>'; bindStk(); return html;},
+  amp:()=>{const html=movTable('HIGH')+'<div class="note">HIGH = ATR% ≥ 3 (can do 3–8% routinely). P≥5% = how often it has actually printed a ≥5% day. Amplitude, not a promise — pair with the War Room daily loss-limit.</div>'; bindStk(); return html;},
+  vix:()=>{const S=(D.vix&&D.vix.sectors||[]).filter(x=>x.STRESS!=null); if(!S.length)return '<div class="empty">VIX study not built.</div>';
+    const defs=[...S].sort((a,b)=>b.STRESS-a.STRESS).slice(0,5), hots=[...S].filter(x=>x.CALM!=null).sort((a,b)=>b.CALM-a.CALM).slice(0,5);
+    return '<div class="chips"><span class="note" style="align-self:center;margin:0">when VIX SPIKES, hold up best →</span>'+defs.map(x=>'<span class="sc def">🛡 '+x.sector.slice(0,20)+'</span>').join('')+'</div>'+
+      '<div class="chips"><span class="note" style="align-self:center;margin:0">when VIX CALM, biggest up-moves →</span>'+hots.map(x=>'<span class="sc hot">⚡ '+x.sector.slice(0,20)+'</span>').join('')+'</div>'+
+      '<table><thead><tr><th>sector</th><th>VIX calm</th><th>elevated</th><th>VIX stress</th><th>β-VIX</th></tr></thead><tbody>'+
+      S.slice(0,18).map(x=>'<tr><td>'+x.sector.slice(0,24)+'</td><td class="'+(x.CALM>=0?"pos":"neg")+'">'+x.CALM+'</td><td>'+x.ELEVATED+'</td><td class="'+(x.STRESS>=0?"pos":"neg")+'">'+x.STRESS+'</td><td>'+x.vix_beta+'</td></tr>').join('')+'</tbody></table>'+
+      '<div class="note">mean daily % return by VIX regime. β-VIX = sensitivity to VIX daily change (all negative; magnitude = how hard it gets hit when fear rises).</div>';},
+  drivers:()=>{const dr=D.vix&&D.vix.drivers; if(!dr)return '<div class="empty">drivers not built.</div>';
+    return '<div class="theory" style="margin-bottom:12px"><b>'+dr.attribution+'</b></div>'+
+      '<table><thead><tr><th>driver</th><th>corr to VIX</th><th>5d move</th><th>read</th></tr></thead><tbody>'+
+      dr.contributions.map(c=>'<tr><td>'+c.driver+(dr.lead.includes(c.driver)?' <span style="color:var(--saffron)">◄ lead</span>':'')+'</td><td>'+c.corr+'</td><td class="'+(c.chg5d>=0?"pos":"neg")+'">'+(c.chg5d!=null?pct(c.chg5d):"—")+'</td><td style="text-align:left;font-family:Inter;font-size:11px;color:var(--muted)">'+c.impact+'</td></tr>').join('')+'</tbody></table>';},
+  tiers:()=>{const t=D.tiers; if(!t||!t.tiers)return '<div class="empty">tiers not built.</div>';
+    let h=''; for(let i=1;i<=5;i++){const x=t.tiers['T'+i];if(!x)continue;h+='<div class="tier"><div class="tn">'+(i===1?'⚡ ':'')+'Tier '+i+'</div><div class="tv">~'+x.vol_pct+'%/yr · '+x.n+' inds</div><div class="te">'+(x.examples||[]).slice(0,5).join(' · ')+'</div></div>';}
+    const ll=t.leadlag&&t.leadlag['T1->T2']; return h+'<div class="note">lead-lag T1→T2: contemp '+(ll?ll.contemp:'—')+' (co-move) vs 1-day '+(ll?ll.lag1:'—')+' — the 1-day lead ≈ market momentum, NOT special propagation. Use tier-1 for amplitude; the <a href="marle_g_cascade.html" style="color:var(--saffron)">cascade</a> graph for real "X→Y follows".</div>';},
+  lastcandle:()=>{const r=D.lc&&D.lc.results; if(!r)return '<div class="empty">backtest still running — check back in a minute.</div>';
+    const lab={baseline:'any day (baseline)',last_spike:'closing-volume spike alone',confluence_daily:'fib + Ichimoku + U/D (no spike)',full:'full confluence + spike',spike_x_fib:'spike + fib',spike_x_ichi:'spike + Ichimoku'};
+    let h='<table><thead><tr><th>signal</th><th>n</th><th>next-day win%</th><th>net%</th></tr></thead><tbody>';
+    Object.keys(lab).forEach(k=>{const x=r[k];h+='<tr><td style="text-align:left">'+lab[k]+'</td>'+(x?'<td>'+x.n+'</td><td class="'+(x.win>=50?"pos":"neg")+'">'+x.win+'%</td><td class="'+(x.net>=0?"pos":"neg")+'">'+x.net+'</td>':'<td colspan=3 style="color:var(--dim)">n&lt;30</td>')+'</tr>';});
+    return h+'</tbody></table><div class="note">'+(D.lc.caveat||'')+'</div>';},
+};
 
-async function loadTiers(){
-  try{
-    const d=await (await fetch('/api/tiers')).json();
-    if(d.error){ $('tierout').innerHTML='<div class="empty">'+d.error+'</div>'; return; }
-    let h='';
-    for(let i=1;i<=5;i++){ const t=d.tiers['T'+i]; if(!t)continue;
-      h+='<div class="tier"><div class="tn">'+(i===1?'⚡ ':'')+'Tier '+i+'</div><div class="tv">vol ~'+t.vol_pct+'%/yr · '+t.n+' inds</div>'+
-        '<div class="te">'+(t.examples||[]).slice(0,5).join(' · ')+'</div></div>';
-    }
-    $('tierout').innerHTML=h;
-  }catch(e){ $('tierout').innerHTML='<div class="empty">tier ladder not built</div>'; }
-}
+/* ---------- deep theory per engine ---------- */
+const THEORY={
+  squeeze:'<div class="theory"><h4>what a squeeze is</h4>A short squeeze is forced demand: shorts who must buy back as price rises, fuelling more rise. In the US you measure it with public <b>short-interest</b> data (GME, 2021). <b>India publishes no daily equity short-interest</b>, so a literal squeeze isn\'t directly observable.<h4>our India proxy</h4>We infer covering from <b>F&amp;O open interest</b>: price <b>up</b> + OI <b>down</b> = shorts closing positions (<span class="anchor">the covering signature</span>); price up + OI up = fresh long buildup. We add the <b>abnormal-up-after-downtrend</b> footprint (a beaten-down name ripping on volume) — the classic squeeze shape.<h4>the catch</h4>A covering rally is often <b>less durable</b> — once shorts are out, the buying that drove it dries up. Treat it as a burst to ride briefly with a tight stop, not a trend to marry. And our breakout backtest showed a <b>volume blast on the move often signals exhaustion/event, not demand</b> — which is why every candidate is now run through the earnings/news gate (⚠). The radar auto-scans the whole F&amp;O list daily; you never type a ticker.</div>',
+  amp:'<div class="theory"><h4>the honest version of "3–8% a day"</h4>Consistent 5%/day on capital is not a real, repeatable edge — so we don\'t promise the <b>outcome</b>. We screen the <b>amplitude</b>: can this name even move that much?<h4>how it\'s measured</h4>• <b>ATR%</b> = average daily range as a % of price. A 1.5%-ATR name can\'t do 5% without a catalyst; a 5%-ATR name does it routinely.<br>• <b>P(≥5% day)</b> = how often it has actually printed a ≥5% move historically — the empirical frequency, not a guess.<h4>the trade-off</h4>Amplitude is <b>symmetric</b> — the name that can +6% can −6%. So HIGH move-potential <b>demands</b> the daily loss-limit and tight sizing (both in the War Room). <span class="anchor">F&amp;O leverage</span> is the realistic path: a 2–3% underlying move on a near-month future or ATM option is already your 6–8% on the position — you don\'t need a 5% cash move.</div>',
+  vix:'<div class="theory"><h4>what India VIX is</h4>The 30-day implied volatility of NIFTY options — the market\'s <b>fear gauge</b>. Rising VIX = the market is paying up for protection.<h4>why every sector has negative VIX-beta</h4>When implied vol jumps, the equity risk premium reprices and <b>everything falls</b> — but by different amounts. <span class="anchor">Ang, Hodrick, Xing &amp; Zhang (2006)</span>: high vol-beta assets earn lower returns. High-beta cyclicals (Realty, Metals, IT) have <b>steep</b> negative VIX-beta — crushed when fear spikes, but the biggest gainers when it subsides. Defensives (Pharma, FMCG) have <b>shallow</b> VIX-beta — stable cash flows reprice less.<h4>the conscience (regime-conditional, not blanket de-risking)</h4><span class="anchor">Moreira &amp; Muir (2017)</span> vol-managed portfolios scale down when vol is high — but in India\'s structural up-drift, blanket vol-management <b>backfired</b> in our tests. The nuance that works: <b>VIX calm → fish high-beta for the 3–8% amplitude; VIX spiking → rotate to defensives or cash.</b> Same names, opposite role depending on the regime.</div>',
+  drivers:'<div class="theory"><h4>why bother attributing the move</h4>"VIX is up" is useless without "why" — the <b>driver</b> tells you which industries to lean long vs short.<h4>what we found</h4>India VIX is <b>mostly a LOCAL fear gauge</b> — it tracks NIFTY itself far more (ρ≈−0.63) than any global series. So step one when VIX rises: <b>is NIFTY selling off (local), or is a global/commodity shock leading?</b> US VIX and crude are secondary (ρ≈0.14–0.17).<h4>the industry map</h4><ul><li><b>Crude ↑</b> → OMCs / aviation / paints / tyres / logistics hurt (input cost); upstream (ONGC, Oil India) benefit.</li><li><b>Weak rupee (USDINR ↑)</b> → IT &amp; pharma <b>exporters</b> benefit; oil importers &amp; capital goods hurt.</li><li><b>US VIX ↑ (global risk-off)</b> → high-beta &amp; midcaps hit hardest; exporters cushioned.</li></ul><span class="anchor">News headlines</span> — the qualitative "why" — we can\'t read reliably from a US IP, so the quantitative attribution is the honest substitute.</div>',
+  tiers:'<div class="theory"><h4>tiering by volatility</h4>Industries ranked into 5 tiers by annualized vol. <b>Tier-1 (~32%/yr: Capital Goods, Defense, Renewables, Fertilizers)</b> is high-beta, sentiment-driven, smaller-cap-heavy — <b>where the 3–8% amplitude lives</b> (and the biggest drawdowns).<h4>your "tier-2 follows tier-1" hypothesis — tested</h4>Intuitive, but <b>mostly false in liquid markets.</b> Our lead-lag test: tier-1 yesterday → tier-2 today correlation is <b>~0.13 — identical to tier-1\'s own autocorrelation and the reverse (T2→T1).</b> That means it\'s <b>generic 1-day market momentum, not a tier-specific propagation</b> you can trade. (There\'s a faint echo — after a big tier-1 up-day the market drifts +0.67%/3d — but that\'s "buy strength," not "tier-2 follows.")<h4>where propagation actually lives</h4>Real, tradeable "X moves → Y follows" is between <b>specifically linked</b> industries — oil → OMC → paint — via supply-chain/input-output links and Granger tests. That\'s the <span class="anchor">Cascade engine</span>, not broad vol tiers. <span class="anchor">Moskowitz &amp; Grinblatt (1999)</span> industry momentum is real; cross-tier lead-lag is not. <b>Use tiers as your amplitude/risk map; use the cascade graph for propagation.</b></div>',
+  lastcandle:'<div class="theory"><h4>the idea</h4>The <b>closing auction / final candle</b> is where benchmark-tracking and institutional MOC flow concentrate. A surge of volume into the close <i>could</i> signal informed positioning that carries into the next session.<h4>what we already knew (and why we doubted it)</h4>Our micro-structure work found <b>closing pressure MEAN-REVERTS</b> — the last move tends to <b>reverse</b>, not continue (close-location-value inverts at the micro-horizon). So a naive "buy the closing spike" loses.<h4>this test</h4>We ask whether a closing-volume spike, <b>gated by the bullish daily confluence</b> (fib &gt; 0.618 + above the Ichimoku cloud &amp; Kijun + U/D ratio rising), flips that into a continuation edge — and compare it to each piece alone. The "live analysis" tab has the win ratios.<h4>honest caveat</h4>Intraday history is <b>shallow (~40–60 sessions)</b>, so samples are small and this is <b>indicative, not 5y-grade</b>. Treat any edge here as a hypothesis to watch, not a rule to bet the book on. <span class="anchor">Ichimoku</span> (Hosoda) and the closing-auction literature motivate it; the data decides.</div>',
+};
 
-window.podRefresh=function(){ loadVix(); loadMovers(); loadTiers(); };
-(function(){ loadVix(); loadMovers(); loadTiers(); })();
-setInterval(()=>{ if(!document.hidden){ loadVix(); loadMovers(); } }, 90000);
+window.podRefresh=loadAll;
+loadAll();
+setInterval(()=>{ if(!document.hidden) loadAll(); }, 90000);
 </script>
 <script src="marle_g_nav.js"></script>
 </body>

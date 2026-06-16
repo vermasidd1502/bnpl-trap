@@ -82,12 +82,12 @@ def scan(oi_top=14):
                      "ret1": round(ret1, 1), "ret5": round(ret5, 1), "trend20": round(trend20, 1),
                      "rvol": round(rvol, 1), **{k: mp[k] for k in ("atrp", "p5", "tag", "exp_lo", "exp_hi")},
                      "abnormal_up": bool(abnormal_up), "bounce_shape": bool(bounce),
-                     "flags": fp["flags"], "heat": round(heat, 1)})
+                     "clean": fp["clean"], "event_flags": list(fp["flags"]), "heat": round(heat, 1)})
     rows.sort(key=lambda x: x["heat"], reverse=True)
 
     # enrich the hottest names with live F&O OI -> short-covering (the India squeeze tell). Best-effort.
-    try:
-        for r in rows[:oi_top]:
+    for r in rows[:oi_top]:
+        try:
             q = mom.option_quote(r["s"])
             if isinstance(q, dict) and "error" not in q:
                 oc, dc = q.get("oi_change"), q.get("day_change_pct")
@@ -98,8 +98,20 @@ def scan(oi_top=14):
                                       "long buildup (price up, OI up)" if (dc > 0 and oc > 0) else
                                       "short buildup (price down, OI up)" if (dc < 0 and oc > 0) else
                                       "long unwinding (price down, OI down)")
-    except Exception as e:
-        print("OI enrich skipped:", str(e)[:80])
+        except Exception:
+            pass
+        try:                                                       # NEWS/EARNINGS GATE — confirm the mover isn't an event spike
+            e = ef.earnings_proximity(r["s"])
+            r["earnings_in"], r["earnings_ago"] = e.get("in_days"), e.get("ago_days")
+            ru = ef.pre_earnings_runup(r.get("ret5"), e.get("in_days"))
+            if e.get("ago_days") is not None and e["ago_days"] <= 10:
+                r["event_flags"].append(f"reported {e['ago_days']}d ago"); r["clean"] = False
+            if ru:
+                r["event_flags"].append(ru); r["clean"] = False; r["pre_earn_runup"] = True
+            elif e.get("in_days") is not None and 0 <= e["in_days"] <= 7:
+                r["event_flags"].append(f"earnings in {e['in_days']}d"); r["clean"] = False
+        except Exception:
+            pass
 
     ist = datetime.now(timezone(timedelta(hours=5, minutes=30))).strftime("%Y-%m-%d %H:%M IST")
     hi = [r for r in rows if r["tag"] == "HIGH"]

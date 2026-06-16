@@ -444,6 +444,12 @@ def api_tiers():
     return jsonify(cached("tier_study", lambda: _read_json("marleg_tier_study.json", "tier study not built — run marleg_tier_study.py"), 600))
 
 
+@app.route("/api/lastcandle")
+def api_lastcandle():
+    """Final-10-min volume-spike x fib x Ichimoku x U/D -> next-day win ratio (indicative; shallow intraday)."""
+    return jsonify(cached("lastcandle", lambda: _read_json("marleg_lastcandle_study.json", "last-candle study not built — run marleg_lastcandle_study.py"), 600))
+
+
 @app.route("/api/regime_gate")
 def api_regime_gate():
     """Tiny market bull/bear read (the durable macro gate) for the nav badge on every pod.
