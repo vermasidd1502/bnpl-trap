@@ -114,6 +114,16 @@ def _entry_exit(p):
     }
 
 
+def _move_potential(p):
+    """Amplitude tag (the 3-8%/day filter). ATR% ~= tgtpct/2 (target = price + 2*ATR). HIGH = can do 3-8%
+    routinely; LOW = won't without a catalyst. Amplitude, not a direction call — pair with the loss-limit."""
+    tp = p.get("tgtpct")
+    atrp = round(tp / 2, 2) if tp else None
+    a = atrp or 0
+    return {"atrp": atrp, "tag": "HIGH" if a >= 3 else "MED" if a >= 1.8 else "LOW",
+            "fno_note": "F&O leverage turns a ~2-3% underlying move into your 6-8%"}
+
+
 def build(top=40):
     try:
         g = json.load(open(GATED, encoding="utf-8"))
@@ -125,7 +135,7 @@ def build(top=40):
     for p in g.get("picks", []):
         if pinned and str(p.get("industry", "")).lower() not in pinned:
             continue
-        wl.append({**p, "hold": _hold(p), "plan": _entry_exit(p)})
+        wl.append({**p, "hold": _hold(p), "plan": _entry_exit(p), "mp": _move_potential(p)})
     _rank = {"COILED BREAKOUT": 0, "PULLBACK BUY": 1, "WATCH": 2, "VERIFY FIRST": 3, "STAND DOWN": 4}
     wl.sort(key=lambda x: (0 if x["hold"]["tradeable"] else 1,
                            _rank.get(x["hold"]["setup"], 5), x.get("ind_rank", 99)))

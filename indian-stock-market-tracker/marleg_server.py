@@ -417,6 +417,33 @@ def api_warroom_config():
     return jsonify(marleg_warroom.config())
 
 
+def _read_json(fname, err="not built yet"):
+    try:
+        with open(os.path.join(HERE, fname), encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {"error": err}
+
+
+@app.route("/api/movers")
+def api_movers():
+    """High-mover / squeeze radar — move-potential (the 3-8%/day amplitude filter) + abnormal-up + F&O short-covering."""
+    import marleg_movers
+    return jsonify(cached("movers", lambda: marleg_movers.build(), 120))
+
+
+@app.route("/api/vix")
+def api_vix():
+    """VIX conscience (sector behavior in calm vs volatile) + driver attribution (why VIX is moving)."""
+    return jsonify(cached("vix_study", lambda: _read_json("marleg_vix_study.json", "VIX study not built — run marleg_vix_study.py"), 300))
+
+
+@app.route("/api/tiers")
+def api_tiers():
+    """5-tier industry volatility ladder + the tier1->tier2 lead-lag result."""
+    return jsonify(cached("tier_study", lambda: _read_json("marleg_tier_study.json", "tier study not built — run marleg_tier_study.py"), 600))
+
+
 @app.route("/api/regime_gate")
 def api_regime_gate():
     """Tiny market bull/bear read (the durable macro gate) for the nav badge on every pod.

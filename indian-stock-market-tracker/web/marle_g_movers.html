@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Movers & Volatility · Marle-G</title>
+<style>
+  :root{ --bg:#080a0e;--bg2:#0e1116;--card:#14171e;--border:rgba(255,255,255,.08);
+    --ink:#eef1f6;--muted:#9aa3b4;--dim:#646c7a;--mono:'SF Mono',ui-monospace,Consolas,monospace;
+    --saffron:#ff9933;--india-green:#138808;--green:#22c55e;--red:#ef4444;--amber:#fbbf24;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(1100px 520px at 50% -10%,rgba(255,153,51,.05),transparent 60%),var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--border);background:rgba(8,10,14,.8);backdrop-filter:blur(10px);position:sticky;top:0;z-index:10}
+  .brand{font-family:var(--mono);font-weight:800;letter-spacing:.18em;font-size:13px;display:flex;align-items:center;gap:9px}
+  .brand .mark{width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,var(--saffron),var(--india-green))}
+  .brand .w{background:linear-gradient(90deg,var(--saffron),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tabs{display:flex;gap:16px;font-family:var(--mono);font-size:11px;flex-wrap:wrap}.tabs a{color:var(--dim);text-decoration:none}
+  .preview-tag{font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--saffron);border:1px solid var(--saffron);border-radius:5px;padding:3px 7px}
+  .wrap{max-width:1280px;margin:0 auto;padding:20px 24px 80px}
+  .head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+  .head h1{font-size:23px;font-weight:800}.head .sub{font-family:var(--mono);font-size:11px;color:var(--dim)}
+  .panel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin-bottom:16px}
+  .panel h2{font-family:var(--mono);font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--saffron);font-weight:800;margin-bottom:12px}
+  .panel h2 .hint{color:var(--dim);font-weight:500;text-transform:none;letter-spacing:0;font-size:10px;margin-left:6px}
+  /* VIX banner */
+  .vixrow{display:flex;gap:20px;flex-wrap:wrap;align-items:center}
+  .vixbig{font-family:var(--mono);font-weight:800;font-size:30px;line-height:1}
+  .vixlbl{font-family:var(--mono);font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em}
+  .pill{font-family:var(--mono);font-size:10px;font-weight:800;padding:3px 9px;border-radius:7px}
+  .attr{font-family:Inter,sans-serif;font-size:12.5px;color:var(--ink);line-height:1.5;flex:1;min-width:280px}
+  .secchips{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+  .sc{font-family:var(--mono);font-size:10.5px;padding:5px 11px;border-radius:999px;border:1px solid var(--border)}
+  .sc.def{color:var(--green);border-color:rgba(34,197,94,.4)} .sc.hot{color:var(--amber);border-color:rgba(251,191,36,.4)}
+  /* table */
+  .ctrl{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+  .seg button{font-family:var(--mono);font-size:11px;color:var(--muted);background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;cursor:pointer}
+  .seg button.on{background:var(--saffron);color:#160f02;border-color:var(--saffron);font-weight:700}
+  table{width:100%;border-collapse:collapse}
+  th{font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);text-align:right;padding:7px 10px;font-weight:600}
+  th:first-child{text-align:left}
+  td{padding:9px 10px;font-size:12.5px;border-top:1px solid rgba(255,255,255,.04);text-align:right;font-family:var(--mono)}
+  td:first-child{text-align:left}
+  tr.stk{cursor:pointer}tr.stk:hover{background:rgba(255,153,51,.07)}
+  .sym{font-weight:800;color:var(--ink)}.cmp{color:var(--dim);font-size:10px;display:block;font-family:Inter,sans-serif}
+  .mp{font-family:var(--mono);font-size:9.5px;font-weight:800;padding:2px 7px;border-radius:5px}
+  .mp.HIGH{background:rgba(34,197,94,.18);color:var(--green)}.mp.MED{background:rgba(251,191,36,.15);color:var(--amber)}.mp.LOW{background:rgba(255,255,255,.06);color:var(--dim)}
+  .pos{color:var(--green)}.neg{color:var(--red)}
+  .fl{font-size:11px;margin-left:4px;cursor:help}
+  .tier{display:flex;align-items:center;gap:14px;padding:10px 0;border-top:1px solid rgba(255,255,255,.05)}
+  .tier .tn{font-family:var(--mono);font-weight:800;font-size:13px;width:120px;flex:0 0 auto}
+  .tier .tv{font-family:var(--mono);font-size:11px;color:var(--dim);width:120px;flex:0 0 auto}
+  .tier .te{font-family:Inter,sans-serif;font-size:11.5px;color:var(--muted)}
+  .empty{text-align:center;color:var(--muted);padding:30px;font-family:var(--mono);font-size:12px}
+  .note{font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:10px;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span></span></div>
+  <div class="tabs"></div>
+  <span class="preview-tag">MOVERS</span>
+</div>
+
+<main class="wrap">
+  <div class="head"><h1>⚡ Movers & Volatility</h1><span class="sub" id="sub">loading…</span></div>
+
+  <div class="panel">
+    <h2>VIX conscience <span class="hint">— when to chase the 3–8% movers vs sit out, + why VIX is moving</span></h2>
+    <div class="vixrow">
+      <div><div class="vixbig" id="vixv">—</div><div class="vixlbl">India VIX</div></div>
+      <div id="vixregime"></div>
+      <div class="attr" id="vixattr">attributing the VIX move…</div>
+    </div>
+    <div class="secchips" id="secchips"></div>
+    <div class="note" id="vixnote"></div>
+  </div>
+
+  <div class="panel">
+    <h2>high-mover radar <span class="hint">— ranked by amplitude × heat; only HIGH can do 3–8% routinely</span></h2>
+    <div class="ctrl">
+      <div class="seg"><button id="fHIGH" class="on" onclick="setF('HIGH')">⚡ HIGH only</button><button id="fall" onclick="setF('all')">all</button><button id="fsq" onclick="setF('sq')">🔥 squeeze/abnormal</button></div>
+      <span class="note" style="margin:0">move-potential = can it move 3–8%? (ATR% & how often it's done ≥5%). NOT a direction call.</span>
+    </div>
+    <div id="movout"><div class="empty">loading movers…</div></div>
+    <div class="note" id="movnote"></div>
+  </div>
+
+  <div class="panel">
+    <h2>5-tier volatility ladder <span class="hint">— tier-1 = where the 3–8% amplitude lives (highest risk too)</span></h2>
+    <div id="tierout"><div class="empty">loading tiers…</div></div>
+    <div class="note">Backtest: "tier-2 follows tier-1" is mostly generic market momentum, not a special propagation (1-day lead ≈0.13, same as tier-1's own). Real propagation lives in the <a href="marle_g_cascade.html" style="color:var(--saffron)">cascade</a> graph. Use tier-1 as your amplitude hunting ground.</div>
+  </div>
+</main>
+
+<script src="marleg_stockmodal.js"></script>
+<script>
+window.MG_SELF_REFRESH=true;
+const $=id=>document.getElementById(id);
+let MOV=[], FILT='HIGH';
+const pct=x=>(x>0?'+':'')+(+x).toFixed(1)+'%';
+
+async function loadVix(){
+  try{
+    const d=await (await fetch('/api/vix')).json();
+    if(d.error){ $('vixattr').textContent=d.error; return; }
+    const a=d.asof_vix||{};
+    $('vixv').textContent=a.vix!=null?a.vix:'—';
+    const rmap={CALM:['🟢 CALM','var(--green)'],NORMAL:['🟢 NORMAL','var(--green)'],ELEVATED:['🟠 ELEVATED','var(--amber)'],STRESS:['🔴 STRESS','var(--red)']};
+    const rm=rmap[a.regime]||['—','var(--dim)'];
+    $('vixregime').innerHTML='<span class="pill" style="background:rgba(255,255,255,.06);color:'+rm[1]+'">'+rm[0]+'</span>'+
+      '<div class="vixlbl" style="margin-top:5px">'+(a.chg5d!=null?pct(a.chg5d)+' / 5d':'')+(a.trailing_lo!=null?' · 1y band '+a.trailing_lo+'–'+a.trailing_hi:'')+'</div>';
+    const dr=d.drivers;
+    if(dr){ let h='<b style="color:var(--ink)">Why:</b> '+dr.attribution;
+      const lead=(dr.contributions||[]).filter(c=>dr.lead&&dr.lead.includes(c.driver));
+      if(lead.length) h+='<div class="note" style="margin-top:6px">'+lead.map(c=>'• <b style="color:var(--amber)">'+c.driver+'</b>: '+c.impact).join('<br>')+'</div>';
+      $('vixattr').innerHTML=h;
+    }
+    // sector conscience: defensive = best STRESS-day return; high-beta = biggest CALM up-move
+    const S=(d.sectors||[]).filter(x=>x.STRESS!=null);
+    const defs=[...S].sort((a,b)=>b.STRESS-a.STRESS).slice(0,4);
+    const hots=[...S].filter(x=>x.CALM!=null).sort((a,b)=>b.CALM-a.CALM).slice(0,4);
+    $('secchips').innerHTML='<span class="vixlbl" style="align-self:center">when VIX spikes →</span>'+
+      defs.map(x=>'<span class="sc def" title="best when VIX high">🛡 '+x.sector.slice(0,22)+'</span>').join('')+
+      '<span class="vixlbl" style="align-self:center;margin-left:8px">when VIX calm →</span>'+
+      hots.map(x=>'<span class="sc hot" title="biggest up-move when VIX calm">⚡ '+x.sector.slice(0,22)+'</span>').join('');
+    $('vixnote').textContent='🛡 defensives hold up when fear spikes · ⚡ high-beta give the biggest up-moves when VIX is calm (and the biggest down-moves when it spikes).';
+  }catch(e){ $('vixattr').textContent='VIX feed unavailable'; }
+}
+
+async function loadMovers(){
+  try{
+    const d=await (await fetch('/api/movers')).json();
+    MOV=d.movers||[];
+    $('sub').textContent=d.asof? ('as of '+d.asof+' · '+(d.n_high||0)+' HIGH-amplitude of '+(d.n||0)+' F&O names'):'movers radar';
+    $('movnote').textContent=d.note||'';
+    renderMovers();
+  }catch(e){ $('movout').innerHTML='<div class="empty">movers radar not built — run marleg_movers.py</div>'; }
+}
+function setF(f){ FILT=f; ['HIGH','all','sq'].forEach(k=>$( k==='HIGH'?'fHIGH':k==='all'?'fall':'fsq').classList.toggle('on',k===f)); renderMovers(); }
+function renderMovers(){
+  let rows=MOV.slice();
+  if(FILT==='HIGH') rows=rows.filter(x=>x.tag==='HIGH');
+  else if(FILT==='sq') rows=rows.filter(x=>x.short_covering||x.abnormal_up||x.bounce_shape);
+  if(!rows.length){ $('movout').innerHTML='<div class="empty">none match this filter right now.</div>'; return; }
+  let h='<table><thead><tr><th>name</th><th>amp</th><th>ATR%</th><th>P≥5%</th><th>ret5</th><th>RVOL</th><th>price</th><th>exp. day range</th></tr></thead><tbody>';
+  rows.slice(0,50).forEach(r=>{
+    let fl='';
+    if(r.short_covering) fl+=' <span class="fl" title="'+(r.oi_signal||'short covering')+'">🔥</span>';
+    if(r.bounce_shape) fl+=' <span class="fl" title="sharp up after a downtrend — squeeze/bounce shape">↩</span>';
+    else if(r.abnormal_up) fl+=' <span class="fl" title="abnormal up-move on volume">⚡</span>';
+    h+='<tr class="stk" data-s="'+r.s+'"><td><span class="sym">'+r.s+'</span>'+fl+'<span class="cmp">'+(r.n||'').replace(/[<>]/g,'')+'</span></td>'+
+      '<td><span class="mp '+r.tag+'">'+r.tag+'</span></td>'+
+      '<td>'+r.atrp+'</td><td>'+r.p5+'%</td>'+
+      '<td class="'+(r.ret5>=0?'pos':'neg')+'">'+pct(r.ret5)+'</td>'+
+      '<td>'+r.rvol+'×</td><td>₹'+r.price+'</td>'+
+      '<td style="color:var(--dim)">₹'+r.exp_lo+'–'+r.exp_hi+'</td></tr>';
+  });
+  h+='</tbody></table>';
+  $('movout').innerHTML=h;
+  $('movout').querySelectorAll('tr.stk').forEach(tr=>tr.addEventListener('click',()=>window.openStock&&openStock(tr.dataset.s)));
+}
+
+async function loadTiers(){
+  try{
+    const d=await (await fetch('/api/tiers')).json();
+    if(d.error){ $('tierout').innerHTML='<div class="empty">'+d.error+'</div>'; return; }
+    let h='';
+    for(let i=1;i<=5;i++){ const t=d.tiers['T'+i]; if(!t)continue;
+      h+='<div class="tier"><div class="tn">'+(i===1?'⚡ ':'')+'Tier '+i+'</div><div class="tv">vol ~'+t.vol_pct+'%/yr · '+t.n+' inds</div>'+
+        '<div class="te">'+(t.examples||[]).slice(0,5).join(' · ')+'</div></div>';
+    }
+    $('tierout').innerHTML=h;
+  }catch(e){ $('tierout').innerHTML='<div class="empty">tier ladder not built</div>'; }
+}
+
+window.podRefresh=function(){ loadVix(); loadMovers(); loadTiers(); };
+(function(){ loadVix(); loadMovers(); loadTiers(); })();
+setInterval(()=>{ if(!document.hidden){ loadVix(); loadMovers(); } }, 90000);
+</script>
+<script src="marle_g_nav.js"></script>
+</body>
+</html>

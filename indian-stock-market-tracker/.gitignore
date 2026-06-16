@@ -101,3 +101,8 @@ marleg_accum_study.json
 
 # War Room session settings (user's own capital / risk / goal / pinned sectors — local state)
 marleg_warroom_config.json
+
+# VIX conscience + driver study, tier-ladder study, high-mover radar (research/runtime, regenerable)
+marleg_vix_study.json
+marleg_tier_study.json
+marleg_movers.json

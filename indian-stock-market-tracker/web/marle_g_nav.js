@@ -10,7 +10,7 @@
     { label: "markets", icon: "📈", items: [
       ["marle_g_equity.html", "equity"], ["marle_g_buyhold.html", "buy & hold"], ["marle_g_intraday.html", "intraday"],
       ["marle_g_patterns.html", "patterns"], ["marle_g_volume.html", "volume"], ["marle_g_industry.html", "rotation"],
-      ["marle_g_live.html", "live"], ["marle_g_macro_preview.html", "macro"]] },
+      ["marle_g_movers.html", "⚡ movers"], ["marle_g_live.html", "live"], ["marle_g_macro_preview.html", "macro"]] },
     { label: "strategies", icon: "🎯", items: [
       ["marle_g_strategies.html", "strategies"], ["marle_g_weekend.html", "weekend"], ["marle_g_builder.html", "builder"],
       ["marle_g_volbook.html", "day-book"], ["marle_g_autotrader.html", "auto-trader"], ["marle_g_quality.html", "quality"],
