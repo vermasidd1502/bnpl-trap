@@ -160,8 +160,14 @@ def dossier(tk):
     # chart history (last 70 closes, downsampled to keep payload small)
     hist = [{"d": str(idx.date()) if hasattr(idx, "date") else str(idx), "c": round(float(x), 1)}
             for idx, x in c.tail(70).items()]
+    try:
+        import marleg_horizon
+        horizon = marleg_horizon.rate(tk)
+    except Exception:
+        horizon = None
 
     return {"ok": True, "s": tk, "name": sect.get("n") or tk, "sector": sector, "industry": industry,
+            "horizon": horizon,
             "price": round(price, 2), "ret5": ret5, "ret20": ret20, "rsi": rsi, "fib": fib,
             "dma50": round(dma50, 1), "dma200": round(dma200, 1) if dma200 else None,
             "move_potential": {"atrp": round(atrp, 2) if atrp else None, "p5": p5,

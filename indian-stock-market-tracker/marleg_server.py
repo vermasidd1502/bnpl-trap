@@ -514,6 +514,14 @@ def api_bearish():
     return jsonify(cached("bearish", lambda: marleg_bearish.build(), 600))
 
 
+@app.route("/api/horizon/<tk>")
+def api_horizon(tk):
+    """Holding-horizon rating for one stock: LONG-TERM / SWING / SHORT-TERM / AVOID + ideal hold & payout,
+    fusing volume (U/D, gated) + rotation (industry leading/beta/persistence) + the validated edges."""
+    import marleg_horizon
+    return jsonify(cached(f"horizon:{tk.upper()}", lambda: marleg_horizon.rate(tk.upper()), 300))
+
+
 @app.route("/api/regime_gate")
 def api_regime_gate():
     """Tiny market bull/bear read (the durable macro gate) for the nav badge on every pod.

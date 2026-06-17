@@ -317,7 +317,15 @@ function dossBody(d){
   var acol=a.action==='LONG'?'var(--green)':a.action==='WATCH'?'var(--amber)':'var(--red)';
   var ov=d.overlap;
   var left='<div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:6px">'+d.direction+'</div>'+chartSVG(d);
-  var right=meter(cv)+
+  var hz=d.horizon, hzhtml='';
+  if(hz&&hz.ok){
+    var hc={'LONG-TERM':'var(--green)','SWING':'var(--saffron)','SHORT-TERM':'var(--blue)'}[hz.horizon]||'var(--red)';
+    hzhtml='<div class="tile" style="border-color:'+hc+'"><div class="l">holding horizon · rating '+hz.rating+'/100</div>'+
+      '<div class="v" style="color:'+hc+'">'+hz.horizon+(hz.ideal_hold_label?' · '+hz.ideal_hold_label:'')+'</div>'+
+      (hz.ideal_payout_pct!=null?'<div class="s">ideal payout <span style="color:var(--green)">+'+hz.ideal_payout_pct+'%</span> → ₹'+hz.target+' · stop ₹'+hz.stop+' · R:R '+hz.rr+'</div>':'')+
+      '<div class="s" style="color:var(--muted);margin-top:4px">'+(hz.rationale||[]).slice(0,2).join(' · ')+'</div></div>';
+  }
+  var right=hzhtml+meter(cv)+
     '<div style="border:1px solid '+acol+';border-radius:10px;padding:11px 13px;margin:10px 0;background:rgba(255,255,255,.02)"><div style="font-family:var(--mono);font-weight:800;color:'+acol+'">▶ '+a.action+'</div><div style="font-size:12px;color:var(--ink);margin-top:5px;line-height:1.5">'+a.text+'</div></div>'+
     (ov&&ov.warn?'<div style="border:1px solid var(--amber);border-radius:9px;padding:9px 11px;margin-bottom:9px;font-size:11.5px;color:var(--amber)">'+ov.msg+'</div>':(ov?'<div class="note">✓ '+ov.msg+'</div>':''))+
     '<div class="tile"><div class="l">squeeze ceiling (how high it can run)</div><div class="v">₹'+sq.resistance+' <span style="font-size:11px;color:var(--green)">+'+sq.room_pct+'% room</span></div><div class="s">MC 10d p95 ₹'+(sq.mc_p95_10d||'—')+' · '+sq.note+'</div></div>'+
