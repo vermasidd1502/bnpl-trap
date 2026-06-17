@@ -116,6 +116,7 @@ if __name__ == "__main__":
     r = build()
     if not r.get("ok"):
         print(r.get("error")); sys.exit()
+    json.dump(r, open(OUT, "w", encoding="utf-8"), ensure_ascii=False)   # persist for the EOD scan + autopilot consolidator
     print(f"REVERSAL-TO-LONG {r['asof']} — {r['n']} signals ({r['n_prime']} PRIME re-entries)")
     for x in r["signals"][:14]:
         print(f"  {x['s']:<11} conv {x['conv']:>3} {x['tag']:<22} {'/'.join(x['signals'])[:28]:<28} ₹{x['price']} stop ₹{x['stop']} (~{x['win']}% win)")

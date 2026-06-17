@@ -546,6 +546,14 @@ def api_conscience():
     return jsonify(cached("conscience", lambda: marleg_conscience.build(), 300))
 
 
+@app.route("/api/autopilot")
+def api_autopilot():
+    """Conviction consolidator + autonomous paper-trader: open paper positions (live P&L + conviction +
+    thesis), the fresh high-conviction queue, and the track record by engine. Paper only — never an order."""
+    import marleg_autopilot
+    return jsonify(cached("autopilot", lambda: marleg_autopilot.view(), 120))
+
+
 @app.route("/api/regime_gate")
 def api_regime_gate():
     """Tiny market bull/bear read (the durable macro gate) for the nav badge on every pod.

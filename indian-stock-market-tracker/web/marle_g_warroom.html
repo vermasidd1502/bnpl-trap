@@ -102,6 +102,9 @@
   <!-- NIFTY CONSCIENCE -->
   <div class="panel" id="consciencePanel" style="margin-bottom:16px"><div class="empty">reading the market conscience…</div></div>
 
+  <!-- AUTO-PILOT (paper) -->
+  <div class="panel" id="autopilotPanel" style="margin-bottom:16px"><div class="empty">starting the auto-pilot…</div></div>
+
   <!-- 1. GATE -->
   <div class="gate" id="gate"><div class="dot" style="color:var(--dim)"></div><div><div class="gv">checking the gate…</div><div class="gm"></div></div></div>
 
@@ -472,9 +475,30 @@ async function loadConscience(){
       '</div><div class="note">'+(nd.note||'')+'</div>';
   }catch(e){}
 }
-window.podRefresh=function(){ loadConscience(); loadWarroom(); loadPnl(); loadShock(); loadAlerts(); loadLookahead(); loadTrigger(); };
-(async function(){ await loadConfig(); renderPnl(); loadConscience(); await loadWarroom(); loadShock(); loadPnl(); loadAlerts(); loadLookahead(); loadTrigger(); })();
-setInterval(()=>{ if(!document.hidden){ loadConscience(); loadWarroom(); loadPnl(); loadAlerts(); loadLookahead(); loadTrigger(); } }, 60000);
+async function loadAutopilot(){
+  try{
+    const d=await (await fetch('/api/autopilot')).json();
+    if(!d.ok) return;
+    const ec=(d.ret_pct>=0)?'var(--green)':'var(--red)';
+    let h='<h2>🤖 auto-pilot <span class="hint">— paper-trades the highest-conviction signals from every engine on its own, so nothing gets overlooked · click any to its dossier, mirror what you trust</span></h2>';
+    h+='<div style="display:flex;gap:18px;flex-wrap:wrap;align-items:baseline;margin-bottom:12px;font-family:var(--mono)"><span style="font-size:20px;font-weight:800;color:'+ec+'">₹'+(d.equity||0).toLocaleString('en-IN')+' <span style="font-size:12px">'+(d.ret_pct>=0?'+':'')+d.ret_pct+'%</span></span><span style="font-size:11px;color:var(--dim)">realized ₹'+(d.realized||0).toLocaleString('en-IN')+' · win '+(d.win_rate!=null?d.win_rate+'%':'—')+' · '+d.n_open+' open / '+d.n_closed+' closed</span></div>';
+    const P=d.positions||[];
+    if(P.length){ h+='<div class="note" style="margin:0 0 5px">open paper positions (live):</div><table><thead><tr><th class="l">stock</th><th>conv</th><th>entry→now</th><th>P&L</th><th class="l">thesis</th></tr></thead><tbody>'+
+      P.map(p=>'<tr class="stk" style="cursor:pointer" onclick="goStock(\''+p.s+'\')"><td class="l"><span class="sym">'+p.s+'</span> <span style="color:var(--dim);font-size:9px">'+(p.sources||[]).join('+')+'</span></td>'+
+        '<td style="font-weight:800;color:'+(p.conv>=75?'var(--green)':'var(--amber)')+'">'+p.conv+'</td><td>₹'+p.entry+'→₹'+p.now+'</td>'+
+        '<td style="color:'+(p.upnl>=0?'var(--green)':'var(--red)')+'">₹'+p.upnl+'</td><td class="l" style="font-size:11px;color:var(--muted)">'+(p.thesis||'')+'</td></tr>').join('')+'</tbody></table>'; }
+    const Q=d.queue||[];
+    if(Q.length){ h+='<div class="note" style="margin:11px 0 5px">📋 queue — high-conviction, not yet taken:</div><div class="chips">'+
+      Q.slice(0,10).map(s=>'<span class="chip" style="cursor:pointer" onclick="goStock(\''+s.s+'\')" title="'+(s.thesis||'').replace(/"/g,'')+' · stop ₹'+s.stop+'">'+s.s+' <span class="r">'+s.conv+' · +'+s.payout_pct+'%</span></span>').join('')+'</div>'; }
+    const bs=d.by_source||{};
+    if(Object.keys(bs).length){ h+='<div class="note" style="margin-top:11px">track record by engine: '+Object.entries(bs).map(([k,v])=>k+' '+v.win+'%/'+v.n+' (₹'+v.pnl+')').join(' · ')+'</div>'; }
+    h+='<div class="note">'+(d.note||'')+'</div>';
+    $('autopilotPanel').innerHTML=h;
+  }catch(e){}
+}
+window.podRefresh=function(){ loadConscience(); loadAutopilot(); loadWarroom(); loadPnl(); loadShock(); loadAlerts(); loadLookahead(); loadTrigger(); };
+(async function(){ await loadConfig(); renderPnl(); loadConscience(); loadAutopilot(); await loadWarroom(); loadShock(); loadPnl(); loadAlerts(); loadLookahead(); loadTrigger(); })();
+setInterval(()=>{ if(!document.hidden){ loadConscience(); loadAutopilot(); loadWarroom(); loadPnl(); loadAlerts(); loadLookahead(); loadTrigger(); } }, 60000);
 </script>
 <script src="marle_g_nav.js"></script>
 </body>
