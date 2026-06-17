@@ -1595,6 +1595,13 @@ def api_diag():
 def api_nifty_sim():
     return jsonify(cached("nifty_sim", marleg_nifty_sim.run_tournament, 21600))   # heavy multi-year backtest -> cache 6h
 
+@app.route("/api/expiry")
+def api_expiry():
+    """Options-expiry tracker: where NIFTY is in the weekly/monthly expiry cycle + the backtested
+    day-of-week / expiry-day effect (expiry = chop/pin, not trend) + a plain live read."""
+    import marleg_expiry
+    return jsonify(cached("expiry", lambda: marleg_expiry.build(), 3600))
+
 @app.route("/api/sectoral")
 def api_sectoral():
     return jsonify(cached("sectoral", marleg_nifty_sim.sector_compare, 21600))   # 4 tournaments -> cache 6h

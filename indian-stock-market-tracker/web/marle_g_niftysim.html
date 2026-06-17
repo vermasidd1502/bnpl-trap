@@ -43,6 +43,7 @@
 
   <div class="caveat">⚠ Options are <b>Black-Scholes priced with India VIX</b> as the implied vol — no skew/smile, no bid-ask spread, and VIX is a 30-day measure used on weekly options. <b style="color:var(--ink)">Absolute P&amp;L is approximate; the relative ranking across strategies is the trustworthy signal.</b> Returns = per-cycle P&amp;L as a fraction of spot (unleveraged notional). Monitor-only; not advice.</div>
 
+  <div id="expiryPanel" class="card" style="margin-bottom:14px"><span style="color:var(--dim);font-family:var(--mono);font-size:12px">⟳ checking the expiry cycle…</span></div>
   <div id="verdict"></div>
   <div class="card"><div id="board"><span style="color:var(--dim);font-family:var(--mono);font-size:12px">⟳ backtesting ~12 strategies over 6 years (first load ~10s)…</span></div></div>
 </main>
@@ -80,7 +81,22 @@ async function load(){
       <div style="font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:10px;line-height:1.55">(C) = enter at close · (O) = enter at open. Ranked by Sharpe. Grade: A ≥ 1.5 (DD &lt; 25%) · B ≥ 1.0 · C ≥ 0.5 · D ≥ 0 · F &lt; 0. Premium-selling harvests India's positive vol-risk-premium; long-vol pays it; the benchmark is buy-and-hold Nifty.</div>`;
   }catch(e){ $('board').innerHTML='<span style="color:var(--red)">backend offline? run: python marleg_server.py</span>'; }
 }
-load();
+async function loadExpiry(){
+  try{
+    const e=await (await fetch('/api/expiry')).json();
+    if(!e.ok){ $('expiryPanel').innerHTML='<span style="color:var(--dim);font-family:var(--mono);font-size:12px">expiry data unavailable</span>'; return; }
+    const c=e.calendar, p=e.profile, isexp=c.is_weekly_today||c.is_monthly_today;
+    const col=isexp?'var(--red)':(c.days_to_weekly<=1?'var(--amber)':'var(--green)');
+    let strip='';
+    if(p&&p.by_dow){ strip='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:11px">'+p.by_dow.map(x=>'<div style="text-align:center;border:1px solid '+(x.expiry?'var(--red)':'rgba(255,255,255,.12)')+';border-radius:7px;padding:5px 10px;font-family:var(--mono);'+(x.dow===c.today_dow?'background:rgba(255,153,51,.12)':'')+'"><div style="font-size:10px;color:'+(x.expiry?'var(--red)':'var(--dim)')+'">'+x.dow+(x.expiry?' ⚡':'')+(x.dow===c.today_dow?' •':'')+'</div><div style="font-size:13px;font-weight:800;color:'+(x.mean_ret>=0?'var(--green)':'var(--red)')+'">'+(x.mean_ret>=0?'+':'')+x.mean_ret+'%</div><div style="font-size:9px;color:var(--dim)">'+x.win+'%w · '+x.range+'%r</div></div>').join('')+'</div>'; }
+    $('expiryPanel').innerHTML='<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap"><span style="font-family:var(--mono);font-weight:800;font-size:14px;color:'+col+'">⏳ '+c.cycle_position+'</span>'+
+      '<span style="font-family:var(--mono);font-size:11px;color:var(--dim)">weekly '+c.weekly_expiry+' ('+c.days_to_weekly+'d) · monthly '+c.monthly_expiry+' ('+c.days_to_monthly+'d)</span></div>'+
+      '<div style="font-size:12.5px;color:var(--ink);margin-top:7px;line-height:1.5">'+e.read+'</div>'+strip+
+      '<div style="font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:10px;line-height:1.5">⚡ = expiry day · • = today · '+e.verdict+'</div>';
+  }catch(err){ $('expiryPanel').innerHTML='<span style="color:var(--dim);font-family:var(--mono);font-size:12px">expiry unavailable</span>'; }
+}
+window.podRefresh=function(){ load(); loadExpiry(); };
+load(); loadExpiry();
 </script>
   <script src="marle_g_nav.js"></script>
 </body>
