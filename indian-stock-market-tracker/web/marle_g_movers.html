@@ -99,8 +99,8 @@ let D={}, OPEN=null, TAB='a', MFILT='HIGH';
 
 async function jget(u){ try{ return await (await fetch(u)).json(); }catch(e){ return null; } }
 async function loadAll(){
-  const [mov,vix,tiers,lc,shock,ind,cup,persist]=await Promise.all([jget('/api/movers'),jget('/api/vix'),jget('/api/tiers'),jget('/api/lastcandle'),jget('/api/shock'),jget('/api/industry_rs'),jget('/api/cuphandle'),jget('/api/industry_persistence')]);
-  D={mov,vix,tiers,lc,shock,ind,cup,persist};
+  const [mov,vix,tiers,lc,shock,ind,cup,persist,gated]=await Promise.all([jget('/api/movers'),jget('/api/vix'),jget('/api/tiers'),jget('/api/lastcandle'),jget('/api/shock'),jget('/api/industry_rs'),jget('/api/cuphandle'),jget('/api/industry_persistence'),jget('/api/gated')]);
+  D={mov,vix,tiers,lc,shock,ind,cup,persist,gated};
   $('sub').textContent=(mov&&mov.asof)?('radar as of '+mov.asof+' · click any engine for analysis + theory'):'click any engine for analysis + theory';
   renderStrip(); renderCards(); if(OPEN) renderDetail();
 }
@@ -196,17 +196,30 @@ const ANALYSIS={
     let h='<table><thead><tr><th>signal</th><th>n</th><th>next-day win%</th><th>net%</th></tr></thead><tbody>';
     Object.keys(lab).forEach(k=>{const x=r[k];h+='<tr><td style="text-align:left">'+lab[k]+'</td>'+(x?'<td>'+x.n+'</td><td class="'+(x.win>=50?"pos":"neg")+'">'+x.win+'%</td><td class="'+(x.net>=0?"pos":"neg")+'">'+x.net+'</td>':'<td colspan=3 style="color:var(--dim)">n&lt;30</td>')+'</tr>';});
     return h+'</tbody></table><div class="note">'+(D.lc.caveat||'')+'</div>';},
-  macro:()=>{const P=(D.persist&&D.persist.industries)||[];
-    if(!P.length){const g=((D.ind&&D.ind.groups)||[]).slice(); if(!g.length)return '<div class="empty">industry data not built.</div>';
-      g.sort((a,b)=>b.ret20-a.ret20); return '<table><thead><tr><th>industry</th><th>ret20</th><th>breadth</th></tr></thead><tbody>'+g.slice(0,14).map(x=>'<tr><td>'+(x.leading?'🟢 ':'🔴 ')+x.group.slice(0,28)+'</td><td class="'+(x.ret20>=0?"pos":"neg")+'">'+pct(x.ret20)+'</td><td>'+x.breadth+'%</td></tr>').join('')+'</tbody></table><div class="note">β/persistence not built yet — run marleg_industry_persistence.py.</div>';}
-    const bcol=b=>b==null?'var(--dim)':b>=1.2?'var(--red)':b<=0.8?'var(--green)':'var(--amber)';
-    let h='<div class="note" style="margin-bottom:9px">Once an industry leads it stays a leader a median of <b style="color:var(--ink)">'+D.persist.overall_median_lead_weeks+' weeks</b> (mean '+D.persist.overall_mean_lead_weeks+') — so <b>rebalance ~every 3 weeks, don’t churn</b>. β = market risk: <span style="color:var(--red)">🔴 ≥1.2 amplifies</span> · <span style="color:var(--green)">🟢 ≤0.8 defensive</span>.</div>'+
-      '<table><thead><tr><th>industry — bullish this week ↓</th><th>wk RS</th><th>63d</th><th>β risk</th><th>vol</th><th>stays</th></tr></thead><tbody>';
-    P.slice(0,16).forEach(x=>{h+='<tr><td>'+x.industry.slice(0,30)+'</td><td class="'+(x.rs_week>=0?"pos":"neg")+'">'+pct(x.rs_week)+'</td>'+
-      '<td class="'+(x.rs_63d>=0?"pos":"neg")+'">'+(x.rs_63d>0?'+':'')+x.rs_63d+'%</td>'+
-      '<td style="color:'+bcol(x.beta)+';font-weight:700">'+(x.beta==null?'—':x.beta)+'</td><td style="color:var(--dim)">'+x.vol+'%</td><td>'+x.median_lead_weeks+'w</td></tr>';});
-    h+='</tbody></table><div class="note">Sorted by THIS WEEK’s 5-day relative strength. "stays" = median weeks this industry holds leadership once it gets there. Backtested: rotating into the top-3 momentum sectors (bull-gated) beat holding the market by a wide margin (CAGR 64% vs 21%, far smaller drawdown — relative result is robust; absolute is survivorship-inflated).</div>';
-    return h;},
+  macro:()=>{const groups=((D.ind&&D.ind.groups)||[]).slice(), P=(D.persist&&D.persist.industries)||[];
+    if(!groups.length&&!P.length)return '<div class="empty">industry data not built.</div>';
+    const gm={}; ((D.gated&&D.gated.picks)||[]).forEach(p=>{gm[p.s]={target:p.target,tgtpct:p.tgtpct,entry:p.entry,clean:p.clean};});
+    const udc=u=>u==null?'var(--dim)':u>=1.5?'var(--green)':u<=0.7?'var(--red)':'var(--amber)';
+    const med=D.persist&&D.persist.overall_median_lead_weeks;
+    let h='<div class="note" style="margin-bottom:9px">'+(med?'Leadership lasts a median ~<b style="color:var(--ink)">'+med+' weeks</b> (rebalance ~3-weekly). ':'')+'Click any industry → its stocks. <span style="color:var(--green)">● gated long</span> · <span style="color:var(--red)">▼ falling</span> · grey = neutral · U/D ≥1.5 green / ≤0.7 red.</div>';
+    if(P.length){h+='<div class="chips" style="margin-bottom:11px"><span class="note" style="align-self:center;margin:0">bullish this week →</span>'+P.slice(0,6).map(x=>'<span class="sc" style="border-color:'+(x.beta>=1.2?'rgba(239,68,68,.4)':x.beta<=0.8?'rgba(34,197,94,.4)':'var(--border)')+'" title="β '+x.beta+' · stays '+x.median_lead_weeks+'w">'+x.industry.slice(0,20)+' '+pct(x.rs_week)+' · β'+x.beta+'</span>').join('')+'</div>';}
+    groups.sort((a,b)=>(b.leading?1:0)-(a.leading?1:0)||b.ret20-a.ret20);
+    groups.slice(0,22).forEach(g=>{const mem=(g.members||[]).slice().sort((a,b)=>b.ret20-a.ret20), ng=mem.filter(m=>gm[m.s]&&gm[m.s].clean!==false).length;
+      h+='<details style="border-top:0.5px solid rgba(255,255,255,.06)"><summary style="cursor:pointer;padding:8px 4px;display:flex;align-items:center;gap:10px;list-style:none">'+
+        '<span style="font-size:12.5px;font-weight:700;color:var(--ink)">'+(g.leading?'🟢 ':'🔴 ')+g.group.slice(0,30)+'</span>'+
+        '<span class="'+(g.ret20>=0?'pos':'neg')+'" style="font-family:var(--mono);font-size:11px">'+pct(g.ret20)+'</span>'+
+        '<span style="font-family:var(--mono);font-size:10px;color:var(--dim)">br '+g.breadth+'%</span>'+
+        '<span style="font-family:var(--mono);font-size:9px;font-weight:800;margin-left:auto;color:'+(ng?'var(--green)':'var(--dim)')+'">'+(ng?ng+' gated ':mem.length+' stk ')+'▾</span></summary>'+
+        '<table style="margin:0 0 8px"><thead><tr><th class="l">stock</th><th>U/D</th><th>ret20</th><th>target</th><th>status</th></tr></thead><tbody>'+
+        mem.slice(0,12).map(m=>{const q=gm[m.s], fall=m.ret20<0||m.up===false,
+          st=q&&q.clean!==false?'<span style="color:var(--green);font-weight:700">● GATED '+(q.entry||'')+'</span>':fall?'<span style="color:var(--red)">▼ falling</span>':'<span style="color:var(--dim)">— neutral</span>';
+          return '<tr class="stk" data-s="'+m.s+'" style="cursor:pointer"><td class="l"><span class="sym" style="font-size:12px">'+m.s+'</span></td>'+
+            '<td style="color:'+udc(m.ud)+';font-family:var(--mono)">'+(m.ud!=null?m.ud:'—')+'</td>'+
+            '<td class="'+(m.ret20>=0?'pos':'neg')+'">'+pct(m.ret20)+'</td>'+
+            '<td>'+(q?'₹'+q.target+' <span style="color:var(--dim);font-size:9px">+'+q.tgtpct+'%</span>':'<span style="color:var(--dim)">—</span>')+'</td>'+
+            '<td>'+st+'</td></tr>';}).join('')+
+        '</tbody></table></details>';});
+    bindStk(); return h;},
   cup:()=>{const C=(D.cup&&D.cup.setups)||[]; if(!C.length)return '<div class="empty">no cup-with-handle setups in the universe right now.</div>';
     const sc={'CONFIRMED+':'coil','CONFIRMED':'pull','BREAKOUT':'watch','IN_HANDLE':'watch','FAILED':'down'};
     let h='<div class="note" style="margin-bottom:8px"><b style="color:var(--green)">'+(D.cup.n_confirmed||0)+' confirmed</b> of '+D.cup.n+' setups · '+(D.cup.bull?'🟢 bull regime (edge on)':'🔴 bear — edge trimmed ~3×')+' · ★ = winning sector · click → dossier</div>'+
