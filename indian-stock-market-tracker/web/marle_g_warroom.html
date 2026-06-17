@@ -133,6 +133,16 @@
     <div id="alertsOut"><div class="empty">loading alerts…</div></div>
   </div>
 
+  <!-- LIVE INTRADAY TRIGGER -->
+  <div class="panel" style="margin-bottom:16px">
+    <h2>🎯 live trigger watch <span class="hint">— the moment bulls take over: VWAP reclaim → opening-range break, with an objective entry/stop/target · refreshes ~60s</span></h2>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <input id="trigtk" placeholder="ticker you're stalking (e.g. TEJASNET)" spellcheck="false" value="TEJASNET" style="flex:1;background:var(--bg2);border:1px solid var(--border);color:var(--ink);border-radius:10px;padding:9px 12px;font-family:var(--mono);font-size:13px;text-transform:uppercase">
+      <button onclick="loadTrigger()" style="background:var(--bg2);border:1px solid var(--border);color:var(--ink);border-radius:10px;padding:0 16px;cursor:pointer;font-family:var(--mono);font-size:13px">watch ▸</button>
+    </div>
+    <div id="trigOut"><div class="empty">enter a ticker you're stalking →</div></div>
+  </div>
+
   <!-- 3. WINNER SECTORS -->
   <div class="panel" style="margin-bottom:16px">
     <h2>③ winner sectors <span class="hint">— pin the few leading industries that drive the tape; the watchlist fishes only there</span></h2>
@@ -415,9 +425,34 @@ function calcGap(){
     '<div style="font-family:var(--mono);font-weight:800;font-size:22px;color:'+(gap>=0?'var(--green)':'var(--red)')+'">'+(gap>=0?'+':'')+gap.toFixed(2)+'%</div>'+
     '<div style="font-family:var(--mono);font-size:9px;font-weight:700;color:'+(gap>=0.3?'var(--green)':gap<=-0.3?'var(--red)':'var(--amber)')+'">'+(gap>=0.3?'GAP UP':gap<=-0.3?'GAP DOWN':'flat open')+'</div>';
 }
-window.podRefresh=function(){ loadWarroom(); loadPnl(); loadShock(); loadAlerts(); loadLookahead(); };
-(async function(){ await loadConfig(); renderPnl(); await loadWarroom(); loadShock(); loadPnl(); loadAlerts(); loadLookahead(); })();
-setInterval(()=>{ if(!document.hidden){ loadWarroom(); loadPnl(); loadAlerts(); loadLookahead(); } }, 60000);
+async function loadTrigger(){
+  const tk=((document.getElementById('trigtk')||{}).value||'TEJASNET').trim().toUpperCase();
+  const el=document.getElementById('trigOut'); if(!el) return;
+  try{
+    const p=await fetch('/api/intraday_trigger/'+encodeURIComponent(tk)).then(r=>r.json());
+    if(!p.ok){ el.innerHTML='<div class="empty">'+(p.error||'no live intraday bars yet')+'</div>'; return; }
+    const lc={green:'var(--green)',amber:'var(--amber)',red:'var(--red)',dim:'var(--dim)'}[p.light]||'var(--dim)';
+    const bo=p.plan_breakout, vw=p.plan_vwap;
+    let h='<div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:8px">'+
+      '<span style="font-weight:800;font-size:16px">'+p.tk+' ₹'+p.price+'</span>'+
+      '<span style="font-weight:800;color:'+lc+'">'+p.status+'</span>'+
+      '<span style="color:var(--dim);font-family:var(--mono);font-size:11px;margin-left:auto">'+p.asof+'</span></div>';
+    h+='<div style="display:flex;gap:16px;flex-wrap:wrap;font-family:var(--mono);font-size:11.5px;margin-bottom:12px">'+
+      '<span>VWAP <b>₹'+p.vwap+'</b> <span style="color:var(--dim)">('+p.to_vwap_pct+'%)</span></span>'+
+      '<span>pivot <b style="color:var(--green)">₹'+p.pivot+'</b> <span style="color:var(--dim)">('+p.to_pivot_pct+'% to break)</span></span>'+
+      '<span>support <b style="color:var(--red)">₹'+p.support+'</b> <span style="color:var(--dim)">(+'+p.cushion_pct+'% cushion)</span></span></div>';
+    h+='<table style="width:100%;font-size:12px"><thead><tr><th style="text-align:left">entry model</th><th>trigger / entry</th><th>stop</th><th>target</th><th>R:R</th><th>risk</th></tr></thead><tbody>'+
+      '<tr><td style="text-align:left">🟢 '+bo.label+'</td><td>break+hold ₹'+bo.entry+'</td><td>₹'+bo.stop+'</td><td class="pos">₹'+bo.target+'</td><td>'+bo.rr+'</td><td>'+bo.risk_pct+'%</td></tr>'+
+      '<tr><td style="text-align:left">🟡 '+vw.label+'</td><td>reclaim ₹'+vw.entry+'</td><td>₹'+vw.stop+'</td><td>₹'+vw.target+'</td><td>'+vw.rr+'</td><td>'+vw.risk_pct+'%</td></tr>'+
+      '</tbody></table>';
+    h+='<div class="note">'+(p.note||'')+'</div>';
+    el.innerHTML=h;
+  }catch(e){ el.innerHTML='<div class="empty">trigger unavailable</div>'; }
+}
+document.addEventListener('keydown',function(e){ if(e.target&&e.target.id==='trigtk'&&e.key==='Enter') loadTrigger(); });
+window.podRefresh=function(){ loadWarroom(); loadPnl(); loadShock(); loadAlerts(); loadLookahead(); loadTrigger(); };
+(async function(){ await loadConfig(); renderPnl(); await loadWarroom(); loadShock(); loadPnl(); loadAlerts(); loadLookahead(); loadTrigger(); })();
+setInterval(()=>{ if(!document.hidden){ loadWarroom(); loadPnl(); loadAlerts(); loadLookahead(); loadTrigger(); } }, 60000);
 </script>
 <script src="marle_g_nav.js"></script>
 </body>

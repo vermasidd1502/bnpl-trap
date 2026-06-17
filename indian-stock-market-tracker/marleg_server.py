@@ -496,6 +496,16 @@ def api_reversal():
     return jsonify(cached("reversal", lambda: marleg_reversal.build(), 180))
 
 
+@app.route("/api/intraday_trigger/<tk>")
+def api_intraday_trigger(tk):
+    """Live intraday trigger scoreboard for one name: VWAP / opening-range pivot / support + the staged
+    'bulls take over' triggers (VWAP reclaim -> breakout) and the disciplined entry/stop/target. Read-only."""
+    import marleg_intraday_trigger as itr
+    sup = request.args.get("support", type=float)
+    piv = request.args.get("pivot", type=float)
+    return jsonify(cached(f"itrig:{tk.upper()}:{sup}:{piv}", lambda: itr.pulse(tk.upper(), support=sup, pivot=piv), 45))
+
+
 @app.route("/api/regime_gate")
 def api_regime_gate():
     """Tiny market bull/bear read (the durable macro gate) for the nav badge on every pod.
