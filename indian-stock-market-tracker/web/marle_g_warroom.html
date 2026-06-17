@@ -149,6 +149,9 @@
     <div id="trigOut"><div class="empty">enter a ticker you're stalking →</div></div>
   </div>
 
+  <!-- INDUSTRY ROTATION CONTEXT -->
+  <div class="panel" id="rotationPanel" style="margin-bottom:16px"><div class="empty">loading industry rotation…</div></div>
+
   <!-- 3. WINNER SECTORS -->
   <div class="panel" style="margin-bottom:16px">
     <h2>③ winner sectors <span class="hint">— pin the few leading industries that drive the tape; the watchlist fishes only there</span></h2>
@@ -496,9 +499,30 @@ async function loadAutopilot(){
     $('autopilotPanel').innerHTML=h;
   }catch(e){}
 }
-window.podRefresh=function(){ loadConscience(); loadAutopilot(); loadWarroom(); loadPnl(); loadShock(); loadAlerts(); loadLookahead(); loadTrigger(); };
-(async function(){ await loadConfig(); renderPnl(); loadConscience(); loadAutopilot(); await loadWarroom(); loadShock(); loadPnl(); loadAlerts(); loadLookahead(); loadTrigger(); })();
-setInterval(()=>{ if(!document.hidden){ loadConscience(); loadAutopilot(); loadWarroom(); loadPnl(); loadAlerts(); loadLookahead(); loadTrigger(); } }, 60000);
+async function loadRotation(){
+  try{
+    const [ind,per]=await Promise.all([fetch('/api/industry_rs').then(r=>r.json()),fetch('/api/industry_persistence').then(r=>r.json()).catch(()=>null)]);
+    const groups=(ind&&ind.groups)||[], P=(per&&per.industries)||[];
+    const pm={}; P.forEach(x=>pm[String(x.industry).toLowerCase()]=x);
+    const leading=groups.filter(g=>g.leading).sort((a,b)=>(b.ret20||0)-(a.ret20||0));
+    if(!leading.length&&!P.length){ $('rotationPanel').innerHTML='<h2>🏭 industry rotation</h2><div class="empty">rotation data not built yet.</div>'; return; }
+    const fp=v=>((v||0)>=0?'+':'')+(v||0).toFixed(1)+'%', med=per&&per.overall_median_lead_weeks;
+    let h='<h2>🏭 industry rotation <span class="hint">— where the tape is leading + how long it lasts + risk (β) + overheat · the watchlist fishes only here</span></h2>';
+    h+='<div class="note" style="margin-bottom:9px">'+(med?'leadership lasts a median ~<b style="color:var(--ink)">'+med+' weeks</b> (rebalance ~3-weekly, don\'t churn). ':'')+'<span style="color:var(--green)">●</span> leading this week · β = risk (>1.2 hot / <0.8 defensive) · 🌡 overheated = rollback risk, don\'t chase.</div>';
+    h+='<div class="chips">'+leading.slice(0,12).map(g=>{const p=pm[String(g.group).toLowerCase()]||{};
+        const hot=p.heat_class==='OVERBLOWN'?'🌡':p.heat_class==='HEATING'?'♨':'';
+        return '<span class="chip" title="'+(p.heat_class||'NORMAL')+' · heat '+(p.heat!=null?p.heat:'?')+' · breadth '+(g.breadth!=null?g.breadth+'%':'?')+'" style="border-color:'+(hot?'rgba(239,68,68,.4)':'rgba(34,197,94,.35)')+'">'+(hot?hot+' ':'● ')+String(g.group).slice(0,20)+' <span class="r">'+fp(g.ret20)+(p.beta?' · β'+p.beta:'')+(p.median_lead_weeks?' · '+p.median_lead_weeks+'w':'')+'</span></span>';}).join('')+'</div>';
+    const ob=P.filter(x=>x.heat_class==='OVERBLOWN'||x.heat_class==='HEATING').sort((a,b)=>(b.heat||0)-(a.heat||0));
+    if(ob.length) h+='<div class="note" style="margin-top:8px">🌡 <b style="color:var(--red)">overheated — rollback risk (trim / don\'t chase, not a short)</b>: '+ob.slice(0,6).map(x=>String(x.industry).slice(0,18)+' '+x.heat).join(' · ')+'</div>';
+    const h2=P.slice().filter(x=>x.rs_2d!=null).sort((a,b)=>b.rs_2d-a.rs_2d).slice(0,6);
+    if(h2.length) h+='<div class="note">🔥 <b style="color:var(--green)">hot last 2 sessions</b>: '+h2.map(x=>String(x.industry).slice(0,16)+' '+fp(x.rs_2d)).join(' · ')+'</div>';
+    h+='<div class="note" style="color:var(--dim)">Honest: mechanical rotation underperformed buy-hold in our walk-forward — this is a FILTER (buy the leader on a pullback within a leading group), not a churn signal.</div>';
+    $('rotationPanel').innerHTML=h;
+  }catch(e){ $('rotationPanel').innerHTML='<h2>🏭 industry rotation</h2><div class="empty">rotation unavailable</div>'; }
+}
+window.podRefresh=function(){ loadConscience(); loadAutopilot(); loadRotation(); loadWarroom(); loadPnl(); loadShock(); loadAlerts(); loadLookahead(); loadTrigger(); };
+(async function(){ await loadConfig(); renderPnl(); loadConscience(); loadAutopilot(); loadRotation(); await loadWarroom(); loadShock(); loadPnl(); loadAlerts(); loadLookahead(); loadTrigger(); })();
+setInterval(()=>{ if(!document.hidden){ loadConscience(); loadAutopilot(); loadRotation(); loadWarroom(); loadPnl(); loadAlerts(); loadLookahead(); loadTrigger(); } }, 60000);
 </script>
 <script src="marle_g_nav.js"></script>
 </body>
