@@ -102,6 +102,12 @@
   <!-- 1. GATE -->
   <div class="gate" id="gate"><div class="dot" style="color:var(--dim)"></div><div><div class="gv">checking the gate…</div><div class="gm"></div></div></div>
 
+  <!-- PRE-OPEN LOOK-AHEAD -->
+  <div class="panel" style="margin-bottom:16px">
+    <h2>🌅 pre-open look-ahead <span class="hint">— type the live GIFT Nifty → implied gap; + the global cues that drive it</span></h2>
+    <div id="laout"><div class="empty">loading global cues…</div></div>
+  </div>
+
   <!-- 2. DISCIPLINE -->
   <div class="panel" style="margin-bottom:16px">
     <h2>① daily discipline <span class="hint">— you set the rules; the room holds you to them (read-only, never trades)</span></h2>
@@ -381,9 +387,34 @@ async function loadAlerts(){
 }
 window.goStock=function(s){ location.href='marle_g_movers.html#stock='+encodeURIComponent(s); };
 document.addEventListener('keydown',function(e){ if(e.target&&e.target.id==='dsearch'&&e.key==='Enter'){ var v=(e.target.value||'').trim().toUpperCase(); if(v) goStock(v); } });
-window.podRefresh=function(){ loadWarroom(); loadPnl(); loadShock(); loadAlerts(); };
-(async function(){ await loadConfig(); renderPnl(); await loadWarroom(); loadShock(); loadPnl(); loadAlerts(); })();
-setInterval(()=>{ if(!document.hidden){ loadWarroom(); loadPnl(); loadAlerts(); } }, 60000);
+let NPREV=null;
+async function loadLookahead(){
+  try{
+    const d=await (await fetch('/api/lookahead')).json();
+    NPREV=d.nifty_prev;
+    const vcol={'GAP UP likely':'var(--green)','GAP DOWN likely':'var(--red)','FLAT-ish open':'var(--amber)'}[d.verdict]||'var(--ink)';
+    $('laout').innerHTML='<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-bottom:10px">'+
+      '<div class="fld"><label>GIFT Nifty (type live)</label><input id="giftin" type="number" placeholder="e.g. 24180" style="width:130px"></div>'+
+      '<div id="gapout"></div>'+
+      '<div style="margin-left:auto;text-align:right"><div style="font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--dim)">composite cue read</div>'+
+      '<div style="font-family:var(--mono);font-weight:800;font-size:15px;color:'+vcol+'">'+d.verdict+'</div>'+
+      '<div style="font-family:var(--mono);font-size:9px;color:var(--dim)">prev Nifty '+(NPREV!=null?NPREV.toFixed(0):'—')+'</div></div></div>'+
+      '<div class="note">'+(d.drivers||[]).join(' · ')+'</div>'+
+      '<div class="note" style="color:var(--dim)">'+(d.note||'')+'</div>';
+    const gi=document.getElementById('giftin'); if(gi) gi.addEventListener('input',calcGap);
+  }catch(e){ $('laout').innerHTML='<div class="empty">global cues unavailable</div>'; }
+}
+function calcGap(){
+  const gi=document.getElementById('giftin'), o=document.getElementById('gapout'); if(!gi||!o) return;
+  const v=+gi.value; if(!v||!NPREV){ o.innerHTML=''; return; }
+  const gap=(v-NPREV)/NPREV*100;
+  o.innerHTML='<div style="font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--dim)">implied gap vs '+NPREV.toFixed(0)+'</div>'+
+    '<div style="font-family:var(--mono);font-weight:800;font-size:22px;color:'+(gap>=0?'var(--green)':'var(--red)')+'">'+(gap>=0?'+':'')+gap.toFixed(2)+'%</div>'+
+    '<div style="font-family:var(--mono);font-size:9px;font-weight:700;color:'+(gap>=0.3?'var(--green)':gap<=-0.3?'var(--red)':'var(--amber)')+'">'+(gap>=0.3?'GAP UP':gap<=-0.3?'GAP DOWN':'flat open')+'</div>';
+}
+window.podRefresh=function(){ loadWarroom(); loadPnl(); loadShock(); loadAlerts(); loadLookahead(); };
+(async function(){ await loadConfig(); renderPnl(); await loadWarroom(); loadShock(); loadPnl(); loadAlerts(); loadLookahead(); })();
+setInterval(()=>{ if(!document.hidden){ loadWarroom(); loadPnl(); loadAlerts(); loadLookahead(); } }, 60000);
 </script>
 <script src="marle_g_nav.js"></script>
 </body>

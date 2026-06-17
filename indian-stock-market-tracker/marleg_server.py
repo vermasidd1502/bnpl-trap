@@ -480,6 +480,14 @@ def api_industry_persistence():
     return jsonify(cached("ind_persist", lambda: _read_json("marleg_industry_persistence.json", "industry persistence not built — run marleg_industry_persistence.py"), 600))
 
 
+@app.route("/api/lookahead")
+def api_lookahead():
+    """Pre-open look-ahead: live global cues (US close / US VIX / Asia / Brent / USDINR) + a composite gap
+    read + the prior Nifty close (so the page turns a typed GIFT Nifty level into an implied gap)."""
+    import marleg_lookahead
+    return jsonify(cached("lookahead", lambda: marleg_lookahead.build(), 300))
+
+
 @app.route("/api/regime_gate")
 def api_regime_gate():
     """Tiny market bull/bear read (the durable macro gate) for the nav badge on every pod.
