@@ -35,7 +35,8 @@ def _save(d):
 def _compact(f):
     h = f.get("health", {}) or {}
     return {"q": f.get("qscore"), "pe": h.get("P/E"), "roe": h.get("ROE"),
-            "growth": h.get("Rev growth"), "cov": f.get("coverage")}
+            "growth": h.get("Rev growth"), "cov": f.get("coverage"),
+            "gap": f.get("gap"), "verdict": f.get("verdict")}   # for the valuation-breadth gauge
 
 
 def cache_one(tk, f):

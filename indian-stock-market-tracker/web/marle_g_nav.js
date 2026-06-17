@@ -24,8 +24,8 @@
       ["marle_g_profile.html", "profile"], ["marle_g_dashboard.html", "dashboard"], ["marle_g_funds.html", "funds"],
       ["marle_g_options.html", "options"]] },
     { label: "tools", icon: "🔧", items: [
-      ["marle_g_chart.html", "chart"], ["marle_g_canslim.html", "canslim"], ["marle_g_architecture_3d.html", "3D"],
-      ["marle_g_diag.html", "diag"]] }
+      ["marle_g_chart.html", "chart"], ["marle_g_canslim.html", "canslim"], ["marle_g_fundamentals.html", "📒 fundamentals"],
+      ["marle_g_architecture_3d.html", "3D"], ["marle_g_diag.html", "diag"]] }
   ];
   var cur = (location.pathname.split("/").pop() || "marle_g_pod.html").toLowerCase();
 

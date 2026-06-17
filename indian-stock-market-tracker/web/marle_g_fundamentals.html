@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fundamentals · Marle-G</title>
+<style>
+  :root{ --bg:#080a0e;--bg2:#0e1116;--card:#14171e;--border:rgba(255,255,255,.08);
+    --ink:#eef1f6;--muted:#9aa3b4;--dim:#646c7a;--mono:'SF Mono',ui-monospace,Consolas,monospace;
+    --saffron:#ff9933;--india-green:#138808;--green:#22c55e;--red:#ef4444;--amber:#fbbf24;--blue:#60a5fa;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(1100px 520px at 50% -10%,rgba(96,165,250,.05),transparent 60%),var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--border);background:rgba(8,10,14,.8);backdrop-filter:blur(10px);position:sticky;top:0;z-index:10}
+  .brand{font-family:var(--mono);font-weight:800;letter-spacing:.18em;font-size:13px;display:flex;align-items:center;gap:9px}
+  .brand .mark{width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,var(--saffron),var(--india-green))}
+  .wrap{max-width:1080px;margin:0 auto;padding:20px 24px 80px}
+  .head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+  .head h1{font-size:23px;font-weight:800}
+  .searchbar{display:flex;gap:8px;margin-bottom:10px}
+  .searchbar input{flex:1;background:var(--bg2);border:1px solid var(--border);color:var(--ink);border-radius:11px;padding:13px 16px;font-family:var(--mono);font-size:15px;text-transform:uppercase}
+  .searchbar input:focus{outline:none;border-color:var(--blue)}
+  .searchbar button{background:var(--bg2);border:1px solid var(--blue);color:var(--blue);border-radius:11px;padding:0 20px;cursor:pointer;font-family:var(--mono);font-size:14px;font-weight:700}
+  .cov{font-family:var(--mono);font-size:11px;color:var(--dim);margin-bottom:18px}
+  .cov b{color:var(--ink)}
+  .panel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:14px}
+  .verdict{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+  .vbadge{font-family:var(--mono);font-weight:800;font-size:22px;padding:8px 16px;border-radius:11px}
+  .fairrow{display:flex;gap:24px;flex-wrap:wrap;font-family:var(--mono);font-size:13px;margin-top:4px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:9px;margin-top:6px}
+  .tile{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:9px 11px}
+  .tile .l{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--dim)}
+  .tile .v{font-family:var(--mono);font-weight:800;font-size:15px;margin-top:3px}
+  h2{font-family:var(--mono);font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--blue);font-weight:800;margin-bottom:10px}
+  .narr h4{font-size:13px;color:var(--ink);margin:12px 0 4px}
+  .narr p{font-size:13px;color:var(--muted);line-height:1.6}
+  .empty{color:var(--dim);font-family:var(--mono);font-size:13px;padding:30px;text-align:center}
+  .note{font-size:11px;color:var(--dim);margin-top:10px;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="nav"><div class="brand"><span class="mark"></span>MARLE·G <span style="color:var(--dim);font-weight:500;letter-spacing:0">/ fundamentals</span></div><div class="tabs"></div></div>
+<div class="wrap">
+  <div class="head"><h1>📒 Fundamentals & Fair Value</h1></div>
+  <div class="searchbar">
+    <input id="q" placeholder="search any NSE stock — e.g. RELIANCE, DIXON, TEJASNET…" spellcheck="false" autofocus>
+    <button onclick="go()">value it →</button>
+  </div>
+  <div class="cov" id="cov">checking coverage…</div>
+  <div id="out"><div class="empty">Type a ticker and hit enter — computes ratios, Graham + DCF fair value, and an over/under-valued verdict live from the financial statements (yfinance), then caches it.</div></div>
+  <div class="note">Fair value = average of a Graham number (conservative floor) and a 5-yr DCF; verdict flags &gt;15% gap either way. Ratios computed from TTM statements (not Yahoo's often-wrong .info). Coverage % = how complete the data is. Decision-support, not advice.</div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+async function loadCov(){
+  try{
+    const c=await (await fetch('/api/fundamentals_cache')).json();
+    const m=c.cache||c||{}; const ks=Object.keys(m);
+    let over=0,under=0,fair=0,rated=0;
+    ks.forEach(k=>{const v=m[k]||{}; if(v.verdict){rated++; if(v.verdict[0]==='O')over++; else if(v.verdict[0]==='U')under++; else fair++;}});
+    let breadth = rated? (' · of <b>'+rated+'</b> rated: <span style="color:var(--red)">'+over+' overvalued</span> / <span style="color:var(--amber)">'+fair+' fair</span> / <span style="color:var(--green)">'+under+' undervalued</span>') : ' · valuation breadth fills as more names are scraped';
+    $('cov').innerHTML='<b>'+ks.length+'</b> of ~3,167 names cached'+breadth;
+  }catch(e){ $('cov').textContent=''; }
+}
+async function go(){
+  const tk=($('q').value||'').trim().toUpperCase(); if(!tk) return;
+  $('out').innerHTML='<div class="empty">scraping '+tk+' financial statements… (a few seconds)</div>';
+  try{
+    const f=await (await fetch('/api/fundamentals/'+encodeURIComponent(tk))).json();
+    if(f.error){ $('out').innerHTML='<div class="empty">'+f.error+'</div>'; return; }
+    const vc={UNDERVALUED:'var(--green)',OVERVALUED:'var(--red)','FAIRLY VALUED':'var(--amber)'}[f.verdict]||'var(--dim)';
+    const H=f.health||{};
+    const order=['P/E','Fwd P/E','P/B','PEG','EV/EBITDA','ROE','ROA','Net margin','Op margin','Rev growth','EPS growth','D/E (x)','Current ratio','Div yield %'];
+    const tiles=order.filter(k=>H[k]!=null).map(k=>'<div class="tile"><div class="l">'+k+'</div><div class="v">'+H[k]+'</div></div>').join('');
+    const pio=f.piotroski;
+    let html='<div class="panel"><div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:12px"><span style="font-weight:800;font-size:18px">'+f.name+'</span>'+
+      '<span style="font-family:var(--mono);color:var(--dim);font-size:12px">'+f.tk+' · ₹'+f.price+' · '+(f.sector||'')+(f.industry?' / '+f.industry:'')+'</span></div>'+
+      '<div class="verdict"><span class="vbadge" style="color:'+vc+';border:1px solid '+vc+';background:rgba(255,255,255,.03)">'+f.verdict+(f.gap!=null?' '+(f.gap>0?'+':'')+f.gap+'%':'')+'</span>'+
+        '<div class="fairrow"><span>fair ≈ <b style="color:var(--ink)">₹'+(f.fair!=null?f.fair:'—')+'</b></span><span style="color:var(--dim)">Graham ₹'+(f.graham!=null?f.graham:'—')+'</span><span style="color:var(--dim)">DCF ₹'+(f.dcf!=null?f.dcf:'—')+'</span>'+
+        (f.target!=null?'<span>analyst tgt ₹'+f.target+(f.upside!=null?' ('+(f.upside>0?'+':'')+f.upside+'%)':'')+(f.n_analysts?' · '+f.n_analysts+' analysts':'')+'</span>':'')+'</div></div></div>';
+    html+='<div class="panel"><h2>ratios <span style="color:var(--dim);font-weight:500;text-transform:none">— quality '+(f.qscore!=null?f.qscore+'/100':'n/a')+(f.q_coverage!=null?' (inputs '+f.q_coverage+'%)':'')+(pio?' · Piotroski '+pio.score+'/'+pio.of:'')+' · data coverage '+(f.coverage||0)+'%</span></h2><div class="grid">'+tiles+'</div></div>';
+    if(f.narrative&&f.narrative.length){ html+='<div class="panel narr"><h2>read</h2>'+f.narrative.map(n=>'<h4>'+n.h+'</h4><p>'+n.p+'</p>').join('')+'</div>'; }
+    $('out').innerHTML=html; loadCov();
+  }catch(e){ $('out').innerHTML='<div class="empty">lookup failed — backend offline?</div>'; }
+}
+$('q').addEventListener('keydown',e=>{ if(e.key==='Enter') go(); });
+(function(){var m=(location.hash||location.search||'').match(/(?:stock|q)=([A-Za-z0-9&.\-]+)/i); if(m){ $('q').value=decodeURIComponent(m[1]).toUpperCase(); go(); }})();
+loadCov();
+</script>
+<script src="marle_g_nav.js"></script>
+</body>
+</html>
