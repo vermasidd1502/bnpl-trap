@@ -99,6 +99,9 @@
 <main class="wrap">
   <div class="head"><h1>⚔ War Room</h1><span class="sub" id="sub">the heart — one screen, every validated engine. loading…</span></div>
 
+  <!-- NIFTY CONSCIENCE -->
+  <div class="panel" id="consciencePanel" style="margin-bottom:16px"><div class="empty">reading the market conscience…</div></div>
+
   <!-- 1. GATE -->
   <div class="gate" id="gate"><div class="dot" style="color:var(--dim)"></div><div><div class="gv">checking the gate…</div><div class="gm"></div></div></div>
 
@@ -450,9 +453,28 @@ async function loadTrigger(){
   }catch(e){ el.innerHTML='<div class="empty">trigger unavailable</div>'; }
 }
 document.addEventListener('keydown',function(e){ if(e.target&&e.target.id==='trigtk'&&e.key==='Enter') loadTrigger(); });
-window.podRefresh=function(){ loadWarroom(); loadPnl(); loadShock(); loadAlerts(); loadLookahead(); loadTrigger(); };
-(async function(){ await loadConfig(); renderPnl(); await loadWarroom(); loadShock(); loadPnl(); loadAlerts(); loadLookahead(); loadTrigger(); })();
-setInterval(()=>{ if(!document.hidden){ loadWarroom(); loadPnl(); loadAlerts(); loadLookahead(); loadTrigger(); } }, 60000);
+async function loadConscience(){
+  try{
+    const d=await (await fetch('/api/conscience')).json();
+    if(!d.ok) return;
+    const b=d.bias||{}, nd=d.next_day||{}, nf=d.nifty||{}, vx=d.vix||{}, br=d.breadth||{};
+    const bc={BULL:'var(--green)',BEAR:'var(--red)',NEUTRAL:'var(--amber)'}[b.label]||'var(--dim)';
+    const lc=/UP/i.test(nd.lean||'')?'var(--green)':/DOWN/i.test(nd.lean||'')?'var(--red)':'var(--amber)';
+    $('consciencePanel').innerHTML=
+      '<h2>🧭 nifty conscience <span class="hint">— where we are (trend+breadth+VIX) + tomorrow\'s lean (US close drives it; Japan doesn\'t predict)</span></h2>'+
+      '<div style="display:flex;gap:22px;flex-wrap:wrap;align-items:center">'+
+        '<div><div style="font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--dim)">bias</div>'+
+        '<div style="font-family:var(--mono);font-weight:800;font-size:26px;color:'+bc+'">'+(b.label||'—')+' <span style="font-size:13px;color:var(--dim)">'+(b.score!=null?b.score:'')+'/100</span></div></div>'+
+        '<div style="flex:1;min-width:200px"><div style="font-size:12px;color:var(--muted);line-height:1.5">'+(b.reasons||[]).join(' · ')+'</div></div>'+
+        '<div style="text-align:right"><div style="font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--dim)">tomorrow\'s lean</div>'+
+        '<div style="font-family:var(--mono);font-weight:800;font-size:15px;color:'+lc+'">'+(nd.lean||'—')+'</div>'+
+        '<div style="font-family:var(--mono);font-size:10px;color:var(--dim)">US o/n '+(nd.us_overnight_pct!=null?nd.us_overnight_pct+'%':'—')+' · NIFTY '+(nf.price||'—')+' · VIX '+(vx.level||'—')+' · breadth '+(br.pct_above_50dma!=null?br.pct_above_50dma+'%':'—')+'</div></div>'+
+      '</div><div class="note">'+(nd.note||'')+'</div>';
+  }catch(e){}
+}
+window.podRefresh=function(){ loadConscience(); loadWarroom(); loadPnl(); loadShock(); loadAlerts(); loadLookahead(); loadTrigger(); };
+(async function(){ await loadConfig(); renderPnl(); loadConscience(); await loadWarroom(); loadShock(); loadPnl(); loadAlerts(); loadLookahead(); loadTrigger(); })();
+setInterval(()=>{ if(!document.hidden){ loadConscience(); loadWarroom(); loadPnl(); loadAlerts(); loadLookahead(); loadTrigger(); } }, 60000);
 </script>
 <script src="marle_g_nav.js"></script>
 </body>

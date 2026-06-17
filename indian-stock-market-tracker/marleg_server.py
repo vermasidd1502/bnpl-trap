@@ -538,6 +538,14 @@ def api_live_price(tk):
     return jsonify(p)
 
 
+@app.route("/api/conscience")
+def api_conscience():
+    """NIFTY bull/bear conscience (trend + breadth + VIX) + next-day lean from the US close
+    (backtest-weighted; Japan doesn't predict). The 'where are we + what's tomorrow' gauge."""
+    import marleg_conscience
+    return jsonify(cached("conscience", lambda: marleg_conscience.build(), 300))
+
+
 @app.route("/api/regime_gate")
 def api_regime_gate():
     """Tiny market bull/bear read (the durable macro gate) for the nav badge on every pod.
