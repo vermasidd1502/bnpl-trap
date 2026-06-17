@@ -50,6 +50,7 @@ def main():
         ("tier ladder", [py, os.path.join(HERE, "marleg_tier_study.py")], None),
         ("cup-with-handle radar", [py, os.path.join(HERE, "marleg_cuphandle.py")], env_g),
         ("industry persistence + beta", [py, os.path.join(HERE, "marleg_industry_persistence.py")], None),
+        ("reversal-to-long radar", [py, os.path.join(HERE, "marleg_reversal.py")], None),
     ]:
         try:
             log(label, "...")

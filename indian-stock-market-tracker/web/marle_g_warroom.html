@@ -359,9 +359,12 @@ async function loadShock(){ try{ SHOCK=await (await fetch('/api/shock')).json();
 
 async function loadAlerts(){
   try{
-    const [d,cup]=await Promise.all([fetch('/api/alerts').then(r=>r.json()),fetch('/api/cuphandle').then(r=>r.json()).catch(()=>null)]);
+    const [d,cup,rev]=await Promise.all([fetch('/api/alerts').then(r=>r.json()),fetch('/api/cuphandle').then(r=>r.json()).catch(()=>null),fetch('/api/reversal').then(r=>r.json()).catch(()=>null)]);
     const A=d.alerts||[], up=(d.catalysts&&d.catalysts.upcoming)||[], rec=(d.catalysts&&d.catalysts.recent)||[];
     let h='';
+    const rsig=((rev&&rev.signals)||[]).filter(x=>x.tag==='PRIME re-entry'||x.above50).slice(0,8);
+    if(rsig.length){ h+='<div style="margin-bottom:12px"><div class="note" style="margin:0 0 5px">🔄 reversal-to-long — bulls retaking control after a pullback (re-entry; confirm next bar holds, stop below the signal low):</div>'+
+      rsig.map(x=>{const c=(x.tag==='PRIME re-entry')?'var(--green)':'var(--amber)';return '<span class="chip on" style="cursor:pointer;border-color:'+c+';color:'+c+';background:rgba(34,197,94,.08)" onclick="goStock(\''+x.s+'\')" title="'+x.signals.join(", ")+' · conv '+x.conv+' · stop ₹'+x.stop+' (−'+x.stop_pct+'%)">'+((x.tag==='PRIME re-entry')?'★ ':'')+x.s+' · ₹'+x.price+' ('+x.signals[0]+')</span>';}).join('')+'</div>'; }
     const conf=((cup&&cup.setups)||[]).filter(x=>x.stage&&x.stage.indexOf('CONFIRMED')===0);
     if(conf.length){ h+='<div style="margin-bottom:12px"><div class="note" style="margin:0 0 5px">🏆 cup-with-handle CONFIRMED (buy the HELD breakout — ~62–67% backtested, not the raw bar):</div>'+
       conf.slice(0,8).map(x=>'<span class="chip on" style="cursor:pointer;border-color:var(--green);color:var(--green);background:rgba(34,197,94,.1)" onclick="goStock(\''+x.s+'\')" title="'+(x.read||'').replace(/"/g,'')+'">🏆 '+x.s+' · ₹'+x.pivot+'→₹'+x.target+' (+'+x.target_pct+'%)</span>').join('')+'</div>'; }

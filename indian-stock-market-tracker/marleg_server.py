@@ -488,6 +488,14 @@ def api_lookahead():
     return jsonify(cached("lookahead", lambda: marleg_lookahead.build(), 300))
 
 
+@app.route("/api/reversal")
+def api_reversal():
+    """Reversal-to-long radar: validated bullish reversal signals (Hammer/Morning Star/Piercing/Engulfing +
+    pullback-turn) ranked by conviction — PRIME = reversal in an uptrend in a leader (the re-entry trigger)."""
+    import marleg_reversal
+    return jsonify(cached("reversal", lambda: marleg_reversal.build(), 180))
+
+
 @app.route("/api/regime_gate")
 def api_regime_gate():
     """Tiny market bull/bear read (the durable macro gate) for the nav badge on every pod.
