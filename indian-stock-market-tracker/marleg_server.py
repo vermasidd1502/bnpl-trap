@@ -522,6 +522,22 @@ def api_horizon(tk):
     return jsonify(cached(f"horizon:{tk.upper()}", lambda: marleg_horizon.rate(tk.upper()), 300))
 
 
+@app.route("/api/live/<tk>")
+def api_live_price(tk):
+    """Real-time last price (Groww LTP → yfinance fallback) for tight milestone re-checks — so the UI can
+    flag TARGET HIT / STOP HIT / entry-passed live, independent of the EOD-built analysis."""
+    import marleg_live
+    tk = tk.upper()
+    p = cached(f"live:{tk}", lambda: marleg_live.price(tk), 5)   # 5s cache: fresh but Groww-friendly
+    if p.get("ok"):
+        tgt = request.args.get("target", type=float)
+        stp = request.args.get("stop", type=float)
+        ent = request.args.get("entry", type=float)
+        if tgt or stp or ent:
+            p = {**p, "milestone": marleg_live.milestone(p["price"], ent, tgt, stp)}
+    return jsonify(p)
+
+
 @app.route("/api/regime_gate")
 def api_regime_gate():
     """Tiny market bull/bear read (the durable macro gate) for the nav badge on every pod.

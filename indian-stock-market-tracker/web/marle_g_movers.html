@@ -295,7 +295,7 @@ setInterval(()=>{ if(!document.hidden) loadAll(); }, 90000);
   document.body.appendChild(ov);
   ov.addEventListener('click',function(e){ if(e.target===ov) closeDossier(); });
 })();
-window.closeDossier=function(){ document.getElementById('doss-ov').classList.remove('show'); };
+window.closeDossier=function(){ document.getElementById('doss-ov').classList.remove('show'); if(window.stopDossLive)stopDossLive(); };
 window.openDossier=async function(sym){
   var ov=document.getElementById('doss-ov'); ov.classList.add('show');
   document.getElementById('doss-nm').textContent=sym;
@@ -304,6 +304,7 @@ window.openDossier=async function(sym){
   if(!d||!d.ok){ document.getElementById('doss-body').innerHTML='<div class="empty">'+((d&&d.error)||'no data for '+sym)+'</div>'; return; }
   document.getElementById('doss-nm').innerHTML=d.s+' <span class="cmp">'+(d.name||'')+' · '+(d.sector||'')+'</span>';
   document.getElementById('doss-body').innerHTML=dossBody(d);
+  window._dossD=d; startDossLive(d.s);
 };
 function meter(cv){
   var col=cv.label==='HIGH'?'var(--green)':cv.label==='MEDIUM'?'var(--amber)':'var(--red)';
@@ -333,8 +334,36 @@ function dossBody(d){
     (mc?'<div class="tile"><div class="l">monte carlo (10d, from recent vol)</div><div class="v" style="font-size:13px">P(+5%) '+mc.p_up5+'% · P(+8%) '+mc.p_up8+'% · P(−5%) '+mc.p_dn5+'%</div><div class="s">median ₹'+mc.exp+' · band ₹'+mc.p05+'–₹'+mc.p95+'</div></div>':'');
   var comps='<div style="margin-top:14px"><div class="note" style="margin:0 0 6px">conviction breakdown — what\'s firing:</div>'+
     cv.components.map(function(c){return '<div class="cmpx"><span class="b" style="color:'+(c.ok?'var(--green)':'var(--red)')+'">'+(c.ok?'✓':'✗')+'</span><span style="color:'+(c.ok?'var(--ink)':'var(--dim)')+'">'+c.k+'</span><span style="color:var(--dim);margin-left:auto">'+c.pts+'/'+c.max+' — '+c.why+'</span></div>';}).join('')+'</div>';
-  return '<div class="dgrid"><div>'+left+'</div><div>'+right+'</div></div>'+comps+
+  return '<div id="doss-live" class="tile" style="border-color:var(--saffron);margin-bottom:12px"><div class="l">live</div><div class="v" style="color:var(--dim)">⟳ fetching real-time price…</div></div>'+
+    '<div class="dgrid"><div>'+left+'</div><div>'+right+'</div></div>'+comps+
     '<div style="margin-top:12px"><button class="ctrl" style="font-family:var(--mono);font-size:11px;color:var(--saffron);background:transparent;border:1px solid var(--saffron);border-radius:8px;padding:7px 13px;cursor:pointer" onclick="window.openStock&&openStock(\''+d.s+'\')">📊 full chart & financials</button></div>';
+}
+window._dossT=null;
+function stopDossLive(){ if(window._dossT){clearTimeout(window._dossT);window._dossT=null;} window._dossSym=null; }
+function startDossLive(sym){ stopDossLive(); window._dossSym=sym; pollDossLive(); }
+async function pollDossLive(){
+  var sym=window._dossSym, d=window._dossD; if(!sym||!d) return;
+  var hz=d.horizon||{}, lv=d.levels||{};
+  var tgt=(hz&&hz.ok&&hz.target)||lv.target, stop=(hz&&hz.ok&&hz.stop)||lv.stop, ref=lv.price||d.price;
+  try{
+    var qs='?'+[tgt?'target='+tgt:'',stop?'stop='+stop:'',ref?'entry='+ref:''].filter(Boolean).join('&');
+    var r=await jget('/api/live/'+encodeURIComponent(sym)+qs);
+    var el=document.getElementById('doss-live'); if(!el||window._dossSym!==sym) return;
+    if(!r||!r.ok){ el.innerHTML='<div class="l">live</div><div class="v" style="color:var(--dim)">live price unavailable</div>'; }
+    else{
+      var m=r.milestone||{}, chg=(ref?((r.price/ref-1)*100):null), badge='', bc='var(--ink)';
+      if(m.status==='TARGET_HIT'){ badge='🎯 TARGET REACHED (₹'+tgt+')'; bc='var(--green)'; }
+      else if(m.status==='STOP_HIT'){ badge='🛑 STOP HIT (₹'+stop+')'; bc='var(--red)'; }
+      else if(tgt){ badge='▲ '+m.to_target_pct+'% to target ₹'+tgt; bc='var(--amber)'; }
+      var note=(m.entry_passed?'entry ₹'+ref+' already passed (+'+m.since_entry_pct+'%) — chasing cuts R:R':'')+
+        (m.status==='TARGET_HIT'?' <b style="color:var(--green)">— book/trail, do NOT initiate a fresh long here</b>':'');
+      el.style.borderColor=bc;
+      el.innerHTML='<div class="l">🔴 LIVE · '+r.source+' · '+r.ts+'</div>'+
+        '<div class="v" style="color:'+bc+'">₹'+r.price+' <span style="font-size:11px;color:'+((chg||0)>=0?'var(--green)':'var(--red)')+'">'+((chg||0)>=0?'+':'')+(chg!=null?chg.toFixed(2):(r.chg||0))+'% vs signal</span>'+(badge?' &nbsp; '+badge:'')+'</div>'+
+        (note?'<div class="s" style="color:var(--muted)">'+note+'</div>':'');
+    }
+  }catch(e){}
+  if(window._dossSym===sym) window._dossT=setTimeout(pollDossLive, 10000);
 }
 function chartSVG(d){
   var hist=d.hist||[], mc=d.montecarlo, lv=d.levels||{}; if(!hist.length) return '<div class="empty">no chart data</div>';
