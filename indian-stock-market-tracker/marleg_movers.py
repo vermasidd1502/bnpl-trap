@@ -49,11 +49,23 @@ def move_potential(c, h=None, l=None, lookback=120):
             "fno_2pct_leveraged": "a 2% underlying move ~ 6-8% on a near-month future/ATM option"}
 
 
+def _squeeze_industries():
+    """The backtest-blessed squeeze whitelist/traps (marleg_squeeze_study.py): which industries' squeezes PAY
+    vs FADE. Pooled, a squeeze is a 46%-win lottery; the industry filter is what makes it tradeable."""
+    try:
+        d = json.load(open(os.path.join(HERE, "marleg_squeeze_study.json"), encoding="utf-8"))
+        return set(d.get("whitelist", [])), set(d.get("traps", [])), d
+    except Exception:
+        return set(), set(), None
+
+
 def scan(oi_top=14):
     import marleg_data as md
     import marleg_options_monitor as mom
     import marleg_eventfilter as ef
     NAMES = {r["s"]: r["n"] for r in json.load(open(os.path.join(HERE, "marleg_symbols.json"), encoding="utf-8"))}
+    SECT = json.load(open(os.path.join(HERE, "marleg_sectors.json"), encoding="utf-8"))
+    FOCUS, TRAPS, SQ = _squeeze_industries()
     U = sorted(mom.FNO_UNDERLYINGS)
     print(f"scanning {len(U)} F&O underlyings for high-movers (move-potential + abnormal-up + squeeze)...")
     panel = md.daily_panel(U, period="1y")
@@ -77,8 +89,14 @@ def scan(oi_top=14):
         fp = ef.footprint(c, v)
         abnormal_up = (ret1 >= 4) or (not fp["clean"] and ret1 > 0)
         bounce = abnormal_up and trend20 < -3            # sharp up after a downtrend = the squeeze shape
+        ind = (SECT.get(s) or {}).get("industry") or (SECT.get(s) or {}).get("sector")
+        sq_class = "focus" if ind in FOCUS else "trap" if ind in TRAPS else "neutral"
         heat = abs(ret5) * max(1.0, rvol) * (mp["atrp"] / 2)
-        rows.append({"s": s, "n": NAMES.get(s, s), "price": round(px, 2),
+        if bounce and sq_class == "focus":               # backtest says this industry's squeezes PAY — boost it
+            heat *= 1.5
+        elif bounce and sq_class == "trap":              # squeezy but the snap fades — demote, don't chase
+            heat *= 0.5
+        rows.append({"s": s, "n": NAMES.get(s, s), "price": round(px, 2), "industry": ind, "sq_class": sq_class,
                      "ret1": round(ret1, 1), "ret5": round(ret5, 1), "trend20": round(trend20, 1),
                      "rvol": round(rvol, 1), **{k: mp[k] for k in ("atrp", "p5", "tag", "exp_lo", "exp_hi")},
                      "abnormal_up": bool(abnormal_up), "bounce_shape": bool(bounce),
@@ -115,11 +133,20 @@ def scan(oi_top=14):
 
     ist = datetime.now(timezone(timedelta(hours=5, minutes=30))).strftime("%Y-%m-%d %H:%M IST")
     hi = [r for r in rows if r["tag"] == "HIGH"]
+    n_focus_sq = len([r for r in rows if r.get("bounce_shape") and r.get("sq_class") == "focus"])
+    sq_summary = None
+    if SQ:
+        sq_summary = {"whitelist": sorted(FOCUS), "traps": sorted(TRAPS),
+                      "pooled": SQ.get("pooled"), "base5": SQ.get("pooled_baseline_net5"),
+                      "top": [{k: x.get(k) for k in ("industry", "n_events", "freq_per_kday", "win5", "net5", "edge5", "verdict")}
+                              for x in (SQ.get("industries") or [])[:14]]}
     out = {"asof": ist, "n": len(rows), "n_high": len(hi), "universe": close.shape[1],
-           "movers": rows[:60],
+           "n_focus_squeeze": n_focus_sq, "squeeze_study": sq_summary, "movers": rows[:60],
            "note": "Move-potential = amplitude (can it do 3-8%?), NOT a direction call. India has no equity "
                    "short-interest; short_covering is an F&O OI proxy. High amplitude = high RISK — size to "
-                   "the daily loss-limit. F&O leverage turns a 2-3% underlying move into 6-8%."}
+                   "the daily loss-limit. F&O leverage turns a 2-3% underlying move into 6-8%. Squeezes are now "
+                   "graded by industry: backtest-blessed FOCUS industries' snaps pay (~52-71% win); TRAP "
+                   "industries' snaps fade (don't chase)."}
     json.dump(out, open(OUT, "w", encoding="utf-8"), ensure_ascii=False)
     print(f"high-movers: {len(rows)} (HIGH move-potential {len(hi)}) -> {OUT}")
     for r in rows[:12]:

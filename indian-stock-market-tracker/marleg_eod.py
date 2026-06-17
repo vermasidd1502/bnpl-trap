@@ -51,6 +51,7 @@ def main():
         ("cup-with-handle radar", [py, os.path.join(HERE, "marleg_cuphandle.py")], env_g),
         ("industry persistence + beta", [py, os.path.join(HERE, "marleg_industry_persistence.py")], None),
         ("reversal-to-long radar", [py, os.path.join(HERE, "marleg_reversal.py")], None),
+        ("squeeze-by-industry study", [py, os.path.join(HERE, "marleg_squeeze_study.py")], None),
     ]:
         try:
             log(label, "...")
