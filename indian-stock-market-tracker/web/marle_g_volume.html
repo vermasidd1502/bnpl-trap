@@ -86,6 +86,18 @@
     <button class="addb" onclick="toggleAdd()">➕ Add / edit stock</button>
   </div>
   <div class="legend">Up/Down volume ratio over 20 sessions &nbsp;·&nbsp; <b class="g">≥1.5 accumulation</b> &nbsp; <b class="r">≤0.7 distribution</b> &nbsp;·&nbsp; sectors ranked by median U/D &nbsp;·&nbsp; click a stock for full analysis</div>
+  <style>
+  @keyframes mgshim{0%{background-position:200% 0}100%{background-position:-200% 0}}
+  .vs-row{border:1px solid var(--border);border-radius:10px;padding:9px 13px;margin-bottom:7px;overflow:hidden;background-size:200% 100%;animation:mgshim 3.6s linear infinite;display:flex;align-items:center;gap:12px;flex-wrap:wrap;cursor:pointer}
+  .vs-row.gold{background-image:linear-gradient(110deg,rgba(255,193,7,.05),rgba(255,193,7,.28),rgba(255,193,7,.05));border-color:rgba(255,193,7,.55)}
+  .vs-row.green{background-image:linear-gradient(110deg,rgba(34,197,94,.04),rgba(34,197,94,.20),rgba(34,197,94,.04));border-color:rgba(34,197,94,.40)}
+  .vs-row.red{background-image:linear-gradient(110deg,rgba(239,68,68,.04),rgba(239,68,68,.17),rgba(239,68,68,.04));border-color:rgba(239,68,68,.32)}
+  .vs-sym{font-weight:800;font-size:14px;min-width:100px}
+  .vs-ud{font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:6px;background:rgba(255,255,255,.05)}
+  .vs-h{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--saffron);font-weight:800;margin:15px 0 9px}
+  </style>
+  <div id="vstate"><div style="color:var(--dim);font-family:var(--mono);font-size:12px;padding:6px 0">loading the live state board…</div></div>
+
   <div id="addform" style="display:none">
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
       <div class="af-f"><label>Symbol</label><input id="af-sym" placeholder="e.g. ETERNAL" spellcheck="false"></div>
@@ -288,8 +300,27 @@ async function loadGated(){
   }catch(e){ f.innerHTML=toggle+'<span style="color:var(--dim)">unavailable</span>'; }
 }
 window.MG_SELF_REFRESH = true;   // self-refreshes every 5 min (below) — nav.js skips its 60s full reload
-load();
+async function loadVolumeState(){
+  try{
+    const d=await (await fetch('/api/volume_state')).json();
+    if(!d.ok){ $('vstate').innerHTML=''; return; }
+    const c=d.counts, bc={disciplined:'var(--green)',heating:'var(--amber)',blowoff:'var(--red)',weak:'var(--dim)'};
+    const row=x=>{const tt=x.state==='gold'?('🎯 TARGET ₹'+x.target+' reached'):x.state==='green'?('▲ climbing · +'+x.to_target_pct+'% to ₹'+x.target):('▼ '+(x.why_watch||'false move'));
+      return '<div class="vs-row '+x.state+'" onclick="window.openStock&&openStock(\''+x.s+'\')">'+
+        '<span class="vs-sym">'+x.s+'</span>'+
+        '<span class="vs-ud" style="color:'+bc[x.ud_band]+'">U/D '+x.ud+' · '+x.ud_band+(x.ud_rising?' ↑':'')+'</span>'+
+        '<span style="font-family:var(--mono);font-size:12px">₹'+x.now+' <span style="color:'+(x.chg>=0?'var(--green)':'var(--red)')+'">'+(x.chg>=0?'+':'')+x.chg+'%</span></span>'+
+        '<span style="font-family:var(--mono);font-size:11px;color:var(--dim);margin-left:auto">'+tt+(x.streak?' · '+x.streak+'d':'')+'</span></div>';};
+    let h='<div style="font-family:var(--mono);font-size:11px;color:var(--dim);margin-bottom:10px">🎨 live state · '+d.price_source+' · '+d.asof+' &nbsp; 🟡'+c.gold+' reached · 🟢'+c.green+' climbing · 🔴'+c.red+' false · '+c.blowoff+' blow-off held back</div>';
+    h+='<div class="vs-h">✅ main — promoted (held the gate ≥2 sessions · disciplined U/D) · '+d.n_main+'</div>'+(d.main.length?d.main.map(row).join(''):'<div style="color:var(--dim);font-size:12px">none promoted yet</div>');
+    h+='<div class="vs-h">👁 watchlist — gate-2, provisional ('+d.n_watch+') · promotes once it holds the gate with a disciplined U/D</div>'+(d.watch.length?d.watch.slice(0,30).map(row).join(''):'<div style="color:var(--dim);font-size:12px">empty</div>');
+    h+='<div style="font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:8px">'+(d.note||'')+'</div>';
+    $('vstate').innerHTML=h;
+  }catch(e){ $('vstate').innerHTML=''; }
+}
+load(); loadVolumeState();
 setInterval(()=>{ load(); if($('gatedpanel') && $('gatedpanel').style.display!=='none') loadGated(); }, 300000);  // refresh table + gated panel (if open) every 5 min
+setInterval(loadVolumeState, 50000);   // live state board — fast refresh
 </script>
   <script>
 (async function(){

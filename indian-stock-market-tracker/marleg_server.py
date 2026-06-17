@@ -554,6 +554,14 @@ def api_autopilot():
     return jsonify(cached("autopilot", lambda: marleg_autopilot.view(), 120))
 
 
+@app.route("/api/volume_state")
+def api_volume_state():
+    """Live state board for the gated list: GOLD (target hit) / GREEN (climbing, disciplined U/D) / RED
+    (false move / blow-off), split into MAIN (promoted) vs WATCHLIST (provisional, gate-2). Read-only."""
+    import marleg_volume_state
+    return jsonify(cached("volume_state", lambda: marleg_volume_state.build(), 45))
+
+
 @app.route("/api/regime_gate")
 def api_regime_gate():
     """Tiny market bull/bear read (the durable macro gate) for the nav badge on every pod.
