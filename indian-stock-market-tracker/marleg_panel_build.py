@@ -26,8 +26,20 @@ MIN_BARS = 250
 
 def _syms():
     import json
-    tax = json.load(open(os.path.join(HERE, "marleg_industry_taxonomy.json"), encoding="utf-8"))
-    return list(tax.get("by_symbol", {}).keys())
+    tax = list(json.load(open(os.path.join(HERE, "marleg_industry_taxonomy.json"), encoding="utf-8")).get("by_symbol", {}).keys())
+    sect = json.load(open(os.path.join(HERE, "marleg_sectors.json"), encoding="utf-8"))
+    extra = []
+    try:
+        import marleg_volume_scan as mvs
+        taxset = set(tax)
+        # WIDEN: every Groww-universe name that carries an industry classification (so it shows up in the
+        # rotation/persistence views). MIN_BARS in build() drops illiquid / short-history names, so we don't
+        # add untradeable penny stocks — they simply won't survive the 1y-history filter.
+        extra = [s for s in mvs.load_universe()
+                 if s not in taxset and isinstance(sect.get(s), dict) and sect[s].get("industry")]
+    except Exception:
+        pass
+    return list(dict.fromkeys(tax + extra))     # curated taxonomy first, then the rest (deduped, order-stable)
 
 
 def build(years=5):

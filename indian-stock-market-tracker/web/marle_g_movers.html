@@ -202,7 +202,11 @@ const ANALYSIS={
     const udc=u=>u==null?'var(--dim)':u>=1.5?'var(--green)':u<=0.7?'var(--red)':'var(--amber)';
     const med=D.persist&&D.persist.overall_median_lead_weeks;
     let h='<div class="note" style="margin-bottom:9px">'+(med?'Leadership lasts a median ~<b style="color:var(--ink)">'+med+' weeks</b> (rebalance ~3-weekly). ':'')+'Click any industry → its stocks. <span style="color:var(--green)">● gated long</span> · <span style="color:var(--red)">▼ falling</span> · grey = neutral · U/D ≥1.5 green / ≤0.7 red.</div>';
-    if(P.length){h+='<div class="chips" style="margin-bottom:11px"><span class="note" style="align-self:center;margin:0">bullish this week →</span>'+P.slice(0,6).map(x=>'<span class="sc" style="border-color:'+(x.beta>=1.2?'rgba(239,68,68,.4)':x.beta<=0.8?'rgba(34,197,94,.4)':'var(--border)')+'" title="β '+x.beta+' · stays '+x.median_lead_weeks+'w">'+x.industry.slice(0,20)+' '+pct(x.rs_week)+' · β'+x.beta+'</span>').join('')+'</div>';}
+    if(P.length){h+='<div class="chips" style="margin-bottom:11px"><span class="note" style="align-self:center;margin:0">bullish this week →</span>'+P.slice(0,6).map(x=>'<span class="sc" style="border-color:'+(x.beta>=1.2?'rgba(239,68,68,.4)':x.beta<=0.8?'rgba(34,197,94,.4)':'var(--border)')+'" title="β '+x.beta+' · stays '+x.median_lead_weeks+'w">'+x.industry.slice(0,20)+' '+pct(x.rs_week)+' · β'+x.beta+'</span>').join('')+'</div>';
+      const ob=P.filter(x=>x.heat_class==='OVERBLOWN'||x.heat_class==='HEATING').sort((a,b)=>b.heat-a.heat);
+      const h2=P.slice().sort((a,b)=>(b.rs_2d||0)-(a.rs_2d||0)).slice(0,6);
+      if(ob.length)h+='<div class="note" style="margin-bottom:7px">🌡 <b style="color:var(--red)">overblown — rollback risk</b> (don\'t chase / trim; not a short): '+ob.map(x=>x.industry.slice(0,18)+' <span style="color:'+(x.heat_class==='OVERBLOWN'?'var(--red)':'var(--amber)')+'">'+x.heat+'</span>').join(' · ')+'</div>';
+      h+='<div class="note" style="margin-bottom:11px">🔥 <b style="color:var(--green)">hot last 2 sessions</b>: '+h2.map(x=>x.industry.slice(0,16)+' '+pct(x.rs_2d||0)).join(' · ')+'</div>';}
     groups.sort((a,b)=>(b.leading?1:0)-(a.leading?1:0)||b.ret20-a.ret20);
     groups.slice(0,22).forEach(g=>{const mem=(g.members||[]).slice().sort((a,b)=>b.ret20-a.ret20), ng=mem.filter(m=>gm[m.s]&&gm[m.s].clean!==false).length;
       h+='<details style="border-top:0.5px solid rgba(255,255,255,.06)"><summary style="cursor:pointer;padding:8px 4px;display:flex;align-items:center;gap:10px;list-style:none">'+
