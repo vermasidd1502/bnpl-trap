@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bearish / Hedge · Marle-G</title>
+<style>
+  :root{ --bg:#080a0e;--bg2:#0e1116;--card:#14171e;--border:rgba(255,255,255,.08);
+    --ink:#eef1f6;--muted:#9aa3b4;--dim:#646c7a;--mono:'SF Mono',ui-monospace,Consolas,monospace;
+    --saffron:#ff9933;--india-green:#138808;--green:#22c55e;--red:#ef4444;--amber:#fbbf24;--blue:#60a5fa;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(1100px 520px at 50% -10%,rgba(239,68,68,.05),transparent 60%),var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--border);background:rgba(8,10,14,.8);backdrop-filter:blur(10px);position:sticky;top:0;z-index:10}
+  .brand{font-family:var(--mono);font-weight:800;letter-spacing:.18em;font-size:13px;display:flex;align-items:center;gap:9px}
+  .brand .mark{width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,var(--saffron),var(--india-green))}
+  .wrap{max-width:1180px;margin:0 auto;padding:20px 24px 80px}
+  .head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:8px}
+  .head h1{font-size:23px;font-weight:800} .head .sub{font-family:var(--mono);font-size:11px;color:var(--dim)}
+  .evid{border:1px solid rgba(239,68,68,.35);background:rgba(239,68,68,.06);border-radius:12px;padding:13px 16px;margin:14px 0 18px;font-size:13px;line-height:1.5;color:var(--muted)}
+  .evid b{color:var(--ink)} .evid .tag{font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--red);border:1px solid var(--red);border-radius:5px;padding:2px 7px;text-transform:uppercase;margin-right:8px}
+  .panel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin-bottom:16px}
+  .panel h2{font-family:var(--mono);font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--saffron);font-weight:800;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+  .panel .hint{color:var(--dim);font-weight:500;text-transform:none;letter-spacing:0;font-size:10px;font-family:Inter}
+  .panel .lead{font-size:12px;color:var(--muted);margin:6px 0 12px;line-height:1.5}
+  table{width:100%;border-collapse:collapse}
+  th{font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);text-align:right;padding:7px 10px;font-weight:600}
+  th:first-child,th.l{text-align:left}
+  td{padding:9px 10px;font-size:13px;border-top:1px solid rgba(255,255,255,.04);text-align:right;font-family:var(--mono);vertical-align:middle}
+  td:first-child,td.l{text-align:left}
+  tr.exit{background:rgba(239,68,68,.07)}
+  .sym{font-weight:800;color:var(--ink);font-size:13px} .cmp{color:var(--dim);font-size:10px;display:block;font-family:Inter}
+  .pos{color:var(--green)} .neg{color:var(--red)} .dim{color:var(--dim)}
+  .flag{font-family:var(--mono);font-size:9.5px;color:var(--amber);background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);border-radius:5px;padding:1px 6px;margin:1px 2px 1px 0;display:inline-block}
+  .badge{font-family:var(--mono);font-size:10px;font-weight:800;padding:3px 9px;border-radius:6px}
+  .hedgebox{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+  .hedgebox .big{font-family:var(--mono);font-size:34px;font-weight:800;line-height:1}
+  .pairrow td{vertical-align:middle} .arrow{color:var(--dim);padding:0 4px}
+  .empty{color:var(--dim);font-family:var(--mono);font-size:12px;padding:14px;text-align:center}
+  .note{font-size:11px;color:var(--dim);margin-top:10px;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="nav"><div class="brand"><span class="mark"></span>MARLE·G <span style="color:var(--dim);font-weight:500;letter-spacing:0">/ bearish · hedge</span></div><div class="tabs"></div></div>
+<div class="wrap">
+  <div class="head"><h1>🛡 Bearish / Defensive</h1><span class="sub" id="sub">loading…</span></div>
+
+  <div class="evid">
+    <span class="tag">backtest verdict</span> <b>Bearish ≠ short.</b> Across 5 years and 6 short-entry categories, outright shorting India <b>lost in every one</b> — the average stock drifts <b>+0.85%/10d</b>, and even breakdowns and parabolics bounce (shorting strength was the <b>worst</b>, −2.62%/10d). So this pod does <b>only what the data supports</b>: avoid/exit relative laggards, market-neutral pairs, and regime-gated index hedging. No "short these weak names" list — that bleeds.
+  </div>
+
+  <!-- HEDGE -->
+  <div class="panel">
+    <h2>① hedge <span class="hint">— index puts when the macro gate is red; nothing when it's green (hedging an up-market is pure drag)</span></h2>
+    <div id="hedgeOut"><div class="empty">loading the macro gate…</div></div>
+  </div>
+
+  <!-- AVOID / EXIT -->
+  <div class="panel">
+    <h2>② avoid / exit <span class="hint">— relative laggards breaking down: don't buy the dip, trim/exit longs (held names flagged)</span></h2>
+    <div class="lead">These <b>underperform the market</b> (the honest edge in weakness is relative, not absolute). NOT short candidates — they still bounce with the tape. Names you <span style="color:var(--red)">hold</span> are surfaced first as exit candidates.</div>
+    <div id="avoidOut"><div class="empty">scanning…</div></div>
+  </div>
+
+  <!-- PAIRS -->
+  <div class="panel">
+    <h2>③ pairs — market-neutral <span class="hint">— long the industry leader, short the laggard: the index drift cancels, you trade the relative gap</span></h2>
+    <div class="lead">The <b>only structure where a short leg pays its way</b> — both legs in the same industry, so beta/drift nets out and you capture the relative spread. Short leg must be F&O-shortable.</div>
+    <div id="pairsOut"><div class="empty">building pairs…</div></div>
+  </div>
+
+  <div class="note" id="foot"></div>
+</div>
+
+<script>
+async function load(){
+  try{
+    const d=await (await fetch('/api/bearish')).json();
+    if(!d.ok){ document.getElementById('sub').textContent='pod not built yet'; return; }
+    document.getElementById('sub').textContent='as of '+d.asof+' · '+d.held_n+' names in your book · monitor-only, not advice';
+    // HEDGE
+    const h=d.hedge||{}, on=h.hedge_on;
+    const bc={SHOCK:'var(--red)',STRESS:'var(--red)',BEAR:'var(--amber)',NORMAL:'var(--green)',BULL:'var(--green)'}[h.badge]||'var(--dim)';
+    document.getElementById('hedgeOut').innerHTML=
+      '<div class="hedgebox"><div><div class="dim" style="font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.05em">macro gate</div>'+
+      '<span class="badge" style="color:'+bc+';border:1px solid '+bc+';background:rgba(255,255,255,.04)">'+(h.badge||'—')+'</span></div>'+
+      '<div><div class="dim" style="font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.05em">hedge ratio</div>'+
+      '<span class="big" style="color:'+(on?'var(--amber)':'var(--green)')+'">'+(h.hedge_pct||0)+'%</span></div>'+
+      '<div style="flex:1;min-width:240px"><div style="font-size:13px;color:var(--ink);margin-bottom:4px">'+(h.rationale||'')+'</div>'+
+      '<div class="dim" style="font-size:11px">instrument: '+(h.instrument||'')+'</div></div></div>'+
+      '<div class="note">'+(h.note||'')+'</div>';
+    // AVOID / EXIT
+    const A=d.avoid||[];
+    if(!A.length) document.getElementById('avoidOut').innerHTML='<div class="empty">no liquid relative-laggard breakdowns right now — the tape is broadly firm.</div>';
+    else document.getElementById('avoidOut').innerHTML='<table><thead><tr><th class="l">stock</th><th class="l">industry</th><th>20d</th><th>vs peers</th><th>score</th><th class="l">why</th><th class="l">action</th></tr></thead><tbody>'+
+      A.map(x=>'<tr class="'+(x.held?'exit':'')+'"><td class="l"><span class="sym">'+x.s+'</span><span class="cmp">'+String(x.n||'').slice(0,26)+'</span></td>'+
+        '<td class="l dim" style="font-family:Inter;font-size:11px">'+String(x.industry||'').slice(0,20)+'</td>'+
+        '<td class="'+(x.ret20>=0?'pos':'neg')+'">'+(x.ret20>0?'+':'')+x.ret20+'%</td>'+
+        '<td class="neg">'+(x.rel!=null?x.rel+'%':'—')+'</td>'+
+        '<td style="font-weight:800;color:var(--amber)">'+x.score+'</td>'+
+        '<td class="l">'+(x.flags||[]).map(f=>'<span class="flag">'+f+'</span>').join('')+'</td>'+
+        '<td class="l" style="font-size:11px;color:'+(x.held?'var(--red)':'var(--muted)')+';font-weight:'+(x.held?'800':'400')+'">'+x.action+'</td></tr>').join('')+'</tbody></table>';
+    // PAIRS
+    const P=d.pairs||[];
+    if(!P.length) document.getElementById('pairsOut').innerHTML='<div class="empty">no clean leader/laggard pairs with an F&O-shortable short leg right now.</div>';
+    else document.getElementById('pairsOut').innerHTML='<table><thead><tr><th class="l">industry</th><th class="l">LONG leader</th><th>20d</th><th class="l">SHORT laggard</th><th>20d</th><th>rel gap</th></tr></thead><tbody>'+
+      P.map(x=>'<tr class="pairrow"><td class="l dim" style="font-family:Inter;font-size:11px">'+String(x.industry).slice(0,22)+'</td>'+
+        '<td class="l"><span class="sym pos">'+x.long+'</span> <span class="dim">₹'+x.long_price+'</span></td>'+
+        '<td class="pos">+'+x.long_ret20+'%</td>'+
+        '<td class="l"><span class="sym neg">'+x.short+'</span> <span class="dim">₹'+x.short_price+'</span>'+(x.short_fno?'':' <span class="flag" title="not in F&O — may not be shortable">no-F&O</span>')+'</td>'+
+        '<td class="neg">'+x.short_ret20+'%</td>'+
+        '<td style="font-weight:800;color:var(--blue)">'+x.spread_pct+'%</td></tr>').join('')+'</tbody></table>'+
+        '<div class="note">Sizing: equal ₹ both legs (beta-neutral). The edge = the relative gap persisting (industry momentum); risk = the gap widening against you / correlation breaking. Short leg via F&O or SLB.</div>';
+    document.getElementById('foot').textContent=(d.note||'')+'  ·  '+((d.evidence&&d.evidence.verdict)||'');
+  }catch(e){ document.getElementById('sub').textContent='failed to load /api/bearish'; }
+}
+window.podRefresh=load;
+load();
+setInterval(()=>{ if(!document.hidden) load(); }, 120000);
+</script>
+<script src="marle_g_nav.js"></script>
+</body>
+</html>

@@ -52,6 +52,7 @@ def main():
         ("industry persistence + beta", [py, os.path.join(HERE, "marleg_industry_persistence.py")], None),
         ("reversal-to-long radar", [py, os.path.join(HERE, "marleg_reversal.py")], None),
         ("squeeze-by-industry study", [py, os.path.join(HERE, "marleg_squeeze_study.py")], None),
+        ("bearish / defensive pod", [py, os.path.join(HERE, "marleg_bearish.py")], None),
     ]:
         try:
             log(label, "...")

@@ -506,6 +506,14 @@ def api_intraday_trigger(tk):
     return jsonify(cached(f"itrig:{tk.upper()}:{sup}:{piv}", lambda: itr.pulse(tk.upper(), support=sup, pivot=piv), 45))
 
 
+@app.route("/api/bearish")
+def api_bearish():
+    """Honest bearish/defensive pod: avoid/exit relative laggards, market-neutral pairs, regime-gated index
+    hedge. Outright shorting backtested negative in India (all 6 categories) — this only does what pays."""
+    import marleg_bearish
+    return jsonify(cached("bearish", lambda: marleg_bearish.build(), 600))
+
+
 @app.route("/api/regime_gate")
 def api_regime_gate():
     """Tiny market bull/bear read (the durable macro gate) for the nav badge on every pod.

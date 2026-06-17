@@ -14,7 +14,7 @@
     { label: "strategies", icon: "🎯", items: [
       ["marle_g_strategies.html", "strategies"], ["marle_g_weekend.html", "weekend"], ["marle_g_builder.html", "builder"],
       ["marle_g_volbook.html", "day-book"], ["marle_g_autotrader.html", "auto-trader"], ["marle_g_quality.html", "quality"],
-      ["marle_g_robust.html", "robust"], ["marle_g_niftysim.html", "nifty-sim"], ["marle_g_sectoral.html", "sectoral"],
+      ["marle_g_robust.html", "robust"], ["marle_g_bearish.html", "🛡 bearish/hedge"], ["marle_g_niftysim.html", "nifty-sim"], ["marle_g_sectoral.html", "sectoral"],
       ["marle_g_vol.html", "vol-lab"], ["marle_g_paper.html", "paper"]] },
     { label: "scenarios", icon: "🌐", items: [
       ["marle_g_cascade.html", "cascade"], ["marle_g_regime.html", "regime"], ["marle_g_thesis.html", "thesis"],
