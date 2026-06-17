@@ -312,8 +312,11 @@ async function loadVolumeState(){
         '<span style="font-family:var(--mono);font-size:12px">₹'+x.now+' <span style="color:'+(x.chg>=0?'var(--green)':'var(--red)')+'">'+(x.chg>=0?'+':'')+x.chg+'%</span></span>'+
         '<span style="font-family:var(--mono);font-size:11px;color:var(--dim);margin-left:auto">'+tt+(x.streak?' · '+x.streak+'d':'')+'</span></div>';};
     let h='<div style="font-family:var(--mono);font-size:11px;color:var(--dim);margin-bottom:10px">🎨 live state · '+d.price_source+' · '+d.asof+' &nbsp; 🟡'+c.gold+' reached · 🟢'+c.green+' climbing · 🔴'+c.red+' false · '+c.blowoff+' blow-off held back</div>';
-    h+='<div class="vs-h">✅ main — promoted (held the gate ≥2 sessions · disciplined U/D) · '+d.n_main+'</div>'+(d.main.length?d.main.map(row).join(''):'<div style="color:var(--dim);font-size:12px">none promoted yet</div>');
-    h+='<div class="vs-h">👁 watchlist — gate-2, provisional ('+d.n_watch+') · promotes once it holds the gate with a disciplined U/D</div>'+(d.watch.length?d.watch.slice(0,30).map(row).join(''):'<div style="color:var(--dim);font-size:12px">empty</div>');
+    const bySector=rows=>{const m={};rows.forEach(r=>{(m[r.sector||'—']=m[r.sector||'—']||[]).push(r);});
+      return Object.entries(m).map(([sec,rs])=>({sec,rs:rs.slice().sort((a,b)=>(b.ud||0)-(a.ud||0)),top:Math.max.apply(null,rs.map(r=>r.ud||0))})).sort((a,b)=>b.top-a.top);};
+    const groups=rows=>bySector(rows).map(g=>'<div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin:9px 0 5px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);padding-bottom:3px">'+g.sec+' <span style="color:var(--dim)">· '+g.rs.length+' · top U/D '+g.top.toFixed(1)+'</span></div>'+g.rs.map(row).join('')).join('');
+    h+='<div class="vs-h">✅ main — promoted (held the gate ≥2 sessions · disciplined U/D) · '+d.n_main+' · by sector, U/D ↓</div>'+(d.main.length?groups(d.main):'<div style="color:var(--dim);font-size:12px">none promoted yet</div>');
+    h+='<div class="vs-h">👁 watchlist — gate-2, provisional ('+d.n_watch+') · promotes once it holds the gate with a disciplined U/D</div>'+(d.watch.length?groups(d.watch.slice(0,36)):'<div style="color:var(--dim);font-size:12px">empty</div>');
     h+='<div style="font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:8px">'+(d.note||'')+'</div>';
     $('vstate').innerHTML=h;
   }catch(e){ $('vstate').innerHTML=''; }
