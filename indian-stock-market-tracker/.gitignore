@@ -134,3 +134,6 @@ marleg_confluence_study.json
 
 # rotation paper-tracker book (runtime)
 marleg_rotation_book.json
+
+# fib-target study output (research)
+marleg_fib_target_study.json

@@ -304,7 +304,9 @@ function renderWatchlist(){
       '<td>'+(p.entry||'—')+(p.ret5!=null?' <span class="'+(p.ret5>=0?'pos':'neg')+'" style="font-size:10px">'+(p.ret5>0?'+':'')+p.ret5+'%</span>':'')+'</td>'+
       '<td>₹'+p.price+'</td>'+
       '<td class="neg">₹'+p.stop+'</td>'+
-      '<td class="pos">₹'+p.target+' <span style="font-size:10px;color:var(--dim)">+'+p.tgtpct+'%</span></td>'+
+      '<td class="pos">₹'+p.target+' <span style="font-size:10px;color:var(--dim)">+'+p.tgtpct+'%</span>'+
+        (p.at_resistance?' <span style="font-size:8px;font-weight:800;padding:1px 5px;border-radius:4px;background:rgba(251,191,36,.18);color:var(--amber)" title="'+String(p.tgt_note||"at the prior high — book partial/trail; extend only on a confirmed hold").replace(/"/g,"")+'">⚠ AT RES</span>':'')+
+        (p.ext_1272&&!p.at_resistance?'':(p.ext_1272?'<span class="cmp" style="display:block;color:var(--dim)">→ ₹'+p.ext_1272+' on break</span>':''))+'</td>'+
       '<td>'+(sz.qty>0?'<span class="qty">'+sz.qty+'</span><br><span class="risk">risk '+money(sz.risk)+'</span>':'<span class="risk">—</span>')+'</td>'+
       '</tr>';
     if(SEL===i) h+=planRow(p,sz);

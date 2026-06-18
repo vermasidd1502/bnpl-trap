@@ -81,6 +81,8 @@ def main():
         pc = c.shift(1)
         tr = pd.concat([(h - l), (h - pc).abs(), (l - pc).abs()], axis=1).max(axis=1)
         atr = float(tr.rolling(14).mean().iloc[-1])
+        import marleg_fib_target as ftgt
+        ft = ftgt.target(price, float(hh[s]), float(ll[s]), atr)   # fib-aware: target the resistance, extend on the break (backtested)
         gr = ind_grow.get(grp, {})
         fp = ef.footprint(c, volume[s])            # event-footprint: earnings/news spike vs organic accumulation
         coiled = ef.coiled_breakout(high[s], low[s], c)   # ⚡ breakout out of an ATR-contracted base (bear-proof subset)
@@ -100,8 +102,10 @@ def main():
                       "fib": round(float(fibpos[s]), 2), "sec_rank": round(float(sec_rank.get(sec, 1)) * 100),
                       "ret5": ret5, "rsi": rsi, "entry": entry,
                       "clean": fp["clean"], "event_flags": fp["flags"], "coiled": coiled,
-                      "price": round(price, 2), "target": round(price + 2 * atr, 1),
-                      "tgtpct": round(2 * atr / price * 100, 1), "stop": round(price - atr, 1)})
+                      "price": round(price, 2), "target": ft["first_target"], "tgtpct": ft["tgtpct"],
+                      "stop": ft["stop"], "resistance": ft["resistance"], "tgt_status": ft["status"],
+                      "ext_1272": ft["ext_1272"], "ext_1618": ft["ext_1618"],
+                      "at_resistance": ft["at_resistance"], "tgt_note": ft["note"]})
     # leader-in-leading-group first; within that, CLEAN (organic) before event-driven, then PULLBACK, then volume
     _ep = {"PULLBACK": 0, "OK": 1, "EXTENDED": 2, "HOT": 3}
     picks.sort(key=lambda x: (x["ind_rank"], 0 if x.get("clean") else 1, _ep.get(x["entry"], 9), -x["ud"]))
