@@ -128,3 +128,6 @@ marleg_autopilot_book.json
 
 # stock-lab simulator paper book (runtime)
 marleg_simulator_book.json
+
+# confluence (multi-engine agreement) study output (research/runtime)
+marleg_confluence_study.json
