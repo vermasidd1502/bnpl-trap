@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock Lab · Marle-G</title>
+<style>
+  :root{ --bg:#080a0e;--bg2:#0e1116;--card:#14171e;--border:rgba(255,255,255,.08);
+    --ink:#eef1f6;--muted:#9aa3b4;--dim:#646c7a;--mono:'SF Mono',ui-monospace,Consolas,monospace;
+    --saffron:#ff9933;--india-green:#138808;--green:#22c55e;--red:#ef4444;--amber:#fbbf24;--blue:#60a5fa;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(1100px 520px at 50% -10%,rgba(255,153,51,.05),transparent 60%),var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--border);background:rgba(8,10,14,.8);backdrop-filter:blur(10px);position:sticky;top:0;z-index:10}
+  .brand{font-family:var(--mono);font-weight:800;letter-spacing:.18em;font-size:13px;display:flex;align-items:center;gap:9px}
+  .brand .mark{width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,var(--saffron),var(--india-green))}
+  .wrap{max-width:1080px;margin:0 auto;padding:20px 24px 80px}
+  .head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+  .head h1{font-size:23px;font-weight:800}
+  .head .sub{font-family:var(--mono);font-size:11px;color:var(--dim)}
+  .searchbar{display:flex;gap:8px;margin-bottom:18px}
+  .searchbar input{flex:1;background:var(--bg2);border:1px solid var(--border);color:var(--ink);border-radius:11px;padding:13px 16px;font-family:var(--mono);font-size:15px;text-transform:uppercase}
+  .searchbar input:focus{outline:none;border-color:var(--saffron)}
+  .searchbar button{border-radius:11px;padding:0 18px;cursor:pointer;font-family:var(--mono);font-size:13px;font-weight:700;border:1px solid var(--saffron);color:var(--saffron);background:var(--bg2)}
+  .searchbar button.add{border-color:var(--green);color:var(--green)}
+  .panel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin-bottom:14px}
+  h2{font-family:var(--mono);font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--saffron);font-weight:800;margin-bottom:10px}
+  .vbadge{font-family:var(--mono);font-weight:800;font-size:18px;padding:7px 14px;border-radius:11px;display:inline-block}
+  .chips{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0}
+  .chip{font-family:var(--mono);font-size:10px;color:var(--muted);background:var(--bg2);border:1px solid var(--border);border-radius:999px;padding:4px 10px}
+  .sig{font-size:13px;line-height:1.6;padding:3px 0;display:flex;gap:8px}
+  .sig .b{flex:0 0 16px}
+  .tension{border:1px solid rgba(239,68,68,.4);background:rgba(239,68,68,.06);border-radius:9px;padding:9px 12px;margin:6px 0;font-size:12.5px;color:var(--ink);line-height:1.5}
+  table{width:100%;border-collapse:collapse}
+  th{font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);text-align:right;padding:7px 9px;font-weight:600}
+  th:first-child,th.l{text-align:left}
+  td{padding:9px 9px;font-size:13px;border-top:1px solid rgba(255,255,255,.04);text-align:right;font-family:var(--mono);vertical-align:middle}
+  td:first-child,td.l{text-align:left}
+  .sym{font-weight:800;color:var(--ink)} .pos{color:var(--green)} .neg{color:var(--red)} .dim{color:var(--dim)}
+  .x{cursor:pointer;color:var(--dim);border:1px solid var(--border);border-radius:7px;padding:3px 8px;font-size:11px}
+  .x:hover{color:var(--red);border-color:var(--red)}
+  .empty{color:var(--dim);font-family:var(--mono);font-size:12px;padding:18px;text-align:center}
+  .note{font-size:11px;color:var(--dim);margin-top:10px;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="nav"><div class="brand"><span class="mark"></span>MARLE·G <span style="color:var(--dim);font-weight:500;letter-spacing:0">/ stock lab</span></div><div class="tabs"></div></div>
+<div class="wrap">
+  <div class="head"><h1>🔬 Stock Lab</h1><span class="sub">every engine on one stock — conflicts made explicit · add to your paper simulator</span></div>
+  <div class="searchbar">
+    <input id="q" placeholder="search any stock — RELIANCE, DIXON, TEJASNET…" spellcheck="false" autofocus>
+    <button onclick="go()">analyze ↗</button>
+    <button class="add" onclick="addCur()">➕ simulate</button>
+  </div>
+  <div id="out"><div class="empty">Type a ticker → the all-sides read: cup-handle, reversal, squeeze, volume, rotation, horizon, fundamentals — reconciled, with the tensions between pods called out. Then ➕ add it to your paper simulator.</div></div>
+
+  <div class="panel">
+    <h2>🧪 your simulator <span style="color:var(--dim);font-weight:500;text-transform:none" id="simhead"></span></h2>
+    <div id="sim"><div class="empty">loading…</div></div>
+  </div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+let CUR=null;
+const vcol=l=>!l?'var(--dim)':/ALIGNED|LEAN LONG/.test(l)?'var(--green)':/AVOID|STAND/.test(l)?'var(--red)':/CONFLICT|MIXED/.test(l)?'var(--amber)':'var(--dim)';
+async function go(){
+  const tk=($('q').value||'').trim().toUpperCase(); if(!tk) return; CUR=tk;
+  $('out').innerHTML='<div class="empty">reconciling every engine for '+tk+'…</div>';
+  try{
+    const a=await (await fetch('/api/allsides/'+encodeURIComponent(tk))).json();
+    if(!a.ok){ $('out').innerHTML='<div class="empty">'+(a.error||'no data')+'</div>'; return; }
+    const eng=a.engines||{}, vc=vcol(a.net.label);
+    let h='<div class="panel"><div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:6px">'+
+      '<span style="font-weight:800;font-size:18px">'+a.tk+'</span>'+
+      (a.price?'<span style="font-family:var(--mono);color:var(--dim)">₹'+a.price+(a.chg!=null?' <span style="color:'+(a.chg>=0?'var(--green)':'var(--red)')+'">'+(a.chg>=0?'+':'')+a.chg+'%</span>':'')+'</span>':'')+
+      (a.industry?'<span class="dim" style="font-size:11px">'+a.industry+'</span>':'')+
+      '<span class="vbadge" style="margin-left:auto;color:'+vc+';border:1px solid '+vc+'">'+a.net.label+'</span></div>';
+    h+='<div class="chips"><span class="dim" style="font-family:var(--mono);font-size:10px;align-self:center">engines firing:</span>'+(Object.keys(eng).length?Object.keys(eng).map(k=>'<span class="chip">'+k+'</span>').join(''):'<span class="chip">none</span>')+'</div></div>';
+    if(a.tensions&&a.tensions.length){ h+='<div class="panel"><h2 style="color:var(--red)">⚡ tensions — pods disagree</h2>'+a.tensions.map(t=>'<div class="tension">'+t+'</div>').join('')+'</div>'; }
+    h+='<div class="panel"><h2 style="color:var(--green)">✅ bull case ('+a.bull.length+')</h2>'+(a.bull.length?a.bull.map(x=>'<div class="sig"><span class="b" style="color:var(--green)">+</span><span>'+x+'</span></div>').join(''):'<div class="dim" style="font-size:12px">no bullish engine firing</div>')+'</div>';
+    h+='<div class="panel"><h2 style="color:var(--amber)">⚠ caution / risks ('+a.caution.length+')</h2>'+(a.caution.length?a.caution.map(x=>'<div class="sig"><span class="b" style="color:var(--amber)">−</span><span>'+x+'</span></div>').join(''):'<div class="dim" style="font-size:12px">no flags</div>')+'</div>';
+    h+='<div class="note">'+(a.note||'')+' · as of '+a.asof+'</div>';
+    $('out').innerHTML=h;
+  }catch(e){ $('out').innerHTML='<div class="empty">analysis failed — backend offline?</div>'; }
+}
+async function addCur(){
+  const tk=CUR||($('q').value||'').trim().toUpperCase(); if(!tk){ return; }
+  const r=await (await fetch('/api/simulator/add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tk})})).json();
+  $('simhead').textContent=' · '+(r.msg||''); loadSim();
+}
+async function removeSim(tk){
+  await fetch('/api/simulator/remove',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tk})}); loadSim();
+}
+async function loadSim(){
+  try{
+    const d=await (await fetch('/api/simulator')).json();
+    if(!d.ok||!d.positions.length){ $('sim').innerHTML='<div class="empty">empty — analyze a stock and hit ➕ simulate.</div>'; $('simhead').textContent=''; return; }
+    $('simhead').textContent='— ₹'+(d.equity||0).toLocaleString('en-IN')+' ('+(d.ret_pct>=0?'+':'')+d.ret_pct+'%) · '+d.n+' paper positions';
+    $('sim').innerHTML='<table><thead><tr><th class="l">stock</th><th>entry→now</th><th>P&L</th><th>ret</th><th class="l">all-sides verdict</th><th></th></tr></thead><tbody>'+
+      d.positions.map(p=>'<tr><td class="l"><span class="sym" style="cursor:pointer" onclick="$(\'q\').value=\''+p.s+'\';go()">'+p.s+'</span></td>'+
+        '<td>₹'+p.entry+'→₹'+p.now+'</td><td class="'+(p.pnl>=0?'pos':'neg')+'">₹'+p.pnl+'</td><td class="'+(p.ret_pct>=0?'pos':'neg')+'">'+(p.ret_pct>=0?'+':'')+p.ret_pct+'%</td>'+
+        '<td class="l" style="color:'+vcol(p.verdict)+';font-size:11.5px">'+(p.verdict||'—')+(p.n_tension?' ⚡'+p.n_tension:'')+'</td>'+
+        '<td><span class="x" onclick="removeSim(\''+p.s+'\')">✕</span></td></tr>').join('')+'</tbody></table>'+
+        '<div class="note">'+(d.note||'')+'</div>';
+  }catch(e){ $('sim').innerHTML='<div class="empty">simulator unavailable</div>'; }
+}
+$('q').addEventListener('keydown',e=>{ if(e.key==='Enter') go(); });
+(function(){var m=(location.hash||location.search||'').match(/(?:stock|q)=([A-Za-z0-9&.\-]+)/i); if(m){ $('q').value=decodeURIComponent(m[1]).toUpperCase(); go(); }})();
+loadSim(); setInterval(loadSim, 45000);
+</script>
+<script src="marle_g_nav.js"></script>
+</body>
+</html>

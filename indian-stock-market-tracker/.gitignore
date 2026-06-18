@@ -125,3 +125,6 @@ marleg_reversal.json
 
 # autopilot paper book (runtime, account-style)
 marleg_autopilot_book.json
+
+# stock-lab simulator paper book (runtime)
+marleg_simulator_book.json

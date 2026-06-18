@@ -562,6 +562,39 @@ def api_volume_state():
     return jsonify(cached("volume_state", lambda: marleg_volume_state.build(), 45))
 
 
+@app.route("/api/allsides/<tk>")
+def api_allsides(tk):
+    """Cross-engine all-sides read for one stock: every engine's verdict + the tensions (conflicts) + a
+    net label. The homogeneous analyzer behind the Stock Lab and the dossier."""
+    import marleg_analyze
+    return jsonify(cached(f"allsides:{tk.upper()}", lambda: marleg_analyze.analyze(tk.upper()), 60))
+
+
+@app.route("/api/simulator")
+def api_simulator():
+    """Your manual paper tracker — holdings tracked live + re-analyzed across every engine."""
+    import marleg_simulator
+    return jsonify(cached("simulator", lambda: marleg_simulator.view(), 30))
+
+
+@app.route("/api/simulator/add", methods=["POST"])
+def api_simulator_add():
+    import marleg_simulator
+    tk = ((request.json or {}).get("tk") or "").strip().upper()
+    r = marleg_simulator.add(tk) if tk else {"ok": False, "msg": "no ticker"}
+    _CACHE.pop("simulator", None)
+    return jsonify(r)
+
+
+@app.route("/api/simulator/remove", methods=["POST"])
+def api_simulator_remove():
+    import marleg_simulator
+    tk = ((request.json or {}).get("tk") or "").strip().upper()
+    r = marleg_simulator.remove(tk) if tk else {"ok": False, "msg": "no ticker"}
+    _CACHE.pop("simulator", None)
+    return jsonify(r)
+
+
 @app.route("/api/regime_gate")
 def api_regime_gate():
     """Tiny market bull/bear read (the durable macro gate) for the nav badge on every pod.

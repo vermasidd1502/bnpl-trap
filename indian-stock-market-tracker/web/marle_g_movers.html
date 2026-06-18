@@ -336,7 +336,11 @@ function dossBody(d){
     cv.components.map(function(c){return '<div class="cmpx"><span class="b" style="color:'+(c.ok?'var(--green)':'var(--red)')+'">'+(c.ok?'✓':'✗')+'</span><span style="color:'+(c.ok?'var(--ink)':'var(--dim)')+'">'+c.k+'</span><span style="color:var(--dim);margin-left:auto">'+c.pts+'/'+c.max+' — '+c.why+'</span></div>';}).join('')+'</div>';
   return '<div id="doss-live" class="tile" style="border-color:var(--saffron);margin-bottom:12px"><div class="l">live</div><div class="v" style="color:var(--dim)">⟳ fetching real-time price…</div></div>'+
     '<div class="dgrid"><div>'+left+'</div><div>'+right+'</div></div>'+comps+
-    '<div style="margin-top:12px"><button class="ctrl" style="font-family:var(--mono);font-size:11px;color:var(--saffron);background:transparent;border:1px solid var(--saffron);border-radius:8px;padding:7px 13px;cursor:pointer" onclick="window.openStock&&openStock(\''+d.s+'\')">📊 full chart & financials</button></div>';
+    '<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">'+
+      '<button class="ctrl" style="font-family:var(--mono);font-size:11px;color:var(--saffron);background:transparent;border:1px solid var(--saffron);border-radius:8px;padding:7px 13px;cursor:pointer" onclick="window.openStock&&openStock(\''+d.s+'\')">📊 full chart & financials</button>'+
+      '<button class="ctrl" style="font-family:var(--mono);font-size:11px;color:var(--blue);background:transparent;border:1px solid var(--blue);border-radius:8px;padding:7px 13px;cursor:pointer" onclick="location.href=\'marle_g_lab.html#stock='+d.s+'\'">🔬 all-sides analysis</button>'+
+      '<button class="ctrl" style="font-family:var(--mono);font-size:11px;color:var(--green);background:transparent;border:1px solid var(--green);border-radius:8px;padding:7px 13px;cursor:pointer" onclick="var b=this;fetch(\'/api/simulator/add\',{method:\'POST\',headers:{\'Content-Type\':\'application/json\'},body:JSON.stringify({tk:\''+d.s+'\'})}).then(r=>r.json()).then(x=>b.textContent=\'✓ \'+(x.msg||\'added\')).catch(()=>b.textContent=\'✗ failed\')">➕ simulate</button>'+
+    '</div>';
 }
 window._dossT=null;
 function stopDossLive(){ if(window._dossT){clearTimeout(window._dossT);window._dossT=null;} window._dossSym=null; }

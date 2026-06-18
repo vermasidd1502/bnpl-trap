@@ -7,6 +7,7 @@
   var GROUPS = [
     { label: "home", solo: true, items: [["marle_g_pod.html", "home"]] },
     { label: "war room", solo: true, items: [["marle_g_warroom.html", "⚔ war room"]] },
+    { label: "lab", solo: true, items: [["marle_g_lab.html", "🔬 lab"]] },
     { label: "markets", icon: "📈", items: [
       ["marle_g_equity.html", "equity"], ["marle_g_buyhold.html", "buy & hold"], ["marle_g_intraday.html", "intraday"],
       ["marle_g_patterns.html", "patterns"], ["marle_g_volume.html", "volume"], ["marle_g_industry.html", "rotation"],
