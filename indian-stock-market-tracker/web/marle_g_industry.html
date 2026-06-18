@@ -111,6 +111,7 @@
 
   <div id="regime"></div>
   <div id="tradeleaders"></div>
+  <div id="rotpanel" style="margin:14px 0"></div>
 
   <div class="why">
     <b>Why this exists.</b> O'Neil's "L" — buy a leader inside a <b>leading industry group</b>, not just a leading sector.
@@ -336,6 +337,30 @@ async function loadLeaders(){
     <div class="lnote">Best entry (backtested) = <b style="color:var(--green)">🟢 pullback</b> — the gated leader bought on a 5-day DIP. <b style="color:var(--red)">🔴 hot</b> (RSI&gt;70) is a bull-only chase; <b style="color:var(--amber)">⚠ extended</b> = wait. Deploy only when the macro gate above is OPEN. Click a row → chart.</div>`;
 }
 
+async function loadRot(){
+  try{
+    const d = await (await fetch("/api/rotation")).json();
+    if(!d.ok){ return; }
+    const t = d.tracker||{}, ac = (t.alpha>=0)?'#22c55e':'#ef4444';
+    let h = '<div style="border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:14px 16px;background:rgba(255,255,255,.02)">';
+    h += '<div style="font-family:monospace;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--saffron,#ff9933);font-weight:800;margin-bottom:8px">📊 rotation paper-tracker — top-3 leaders’ gated stocks, vs NIFTY buy-hold</div>';
+    h += '<div style="display:flex;gap:18px;flex-wrap:wrap;align-items:baseline;font-family:monospace;font-size:12px"><span style="font-size:18px;font-weight:800;color:'+((t.ret_pct||0)>=0?'#22c55e':'#ef4444')+'">'+((t.ret_pct||0)>=0?'+':'')+t.ret_pct+'%</span><span style="color:#888">NIFTY '+((t.nifty_ret_pct||0)>=0?'+':'')+t.nifty_ret_pct+'%</span><span style="font-weight:800;color:'+ac+'">alpha '+((t.alpha||0)>=0?'+':'')+t.alpha+'%</span><span style="color:#888">since '+(t.inception_date||'today')+'</span></div>';
+    h += '<div style="font-family:monospace;font-size:11px;color:#9aa3b4;margin-top:6px">holding: '+((t.positions||[]).map(p=>p.s+' <span style="color:'+((p.upnl||0)>=0?'#22c55e':'#ef4444')+'">'+((p.upnl||0)>=0?'+':'')+p.upnl+'</span>').join(' · ')||'—')+'</div>';
+    h += '<div style="font-size:11px;color:#646c7a;margin-top:6px">'+(t.verdict||'')+'</div>';
+    const leaders = (d.board||[]).filter(g=>g.leading).slice(0,14);
+    h += '<div style="font-family:monospace;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--saffron,#ff9933);font-weight:800;margin:14px 0 8px">🏭 leading industries — gate-stacked ('+d.n_leading+'/'+d.n_industries+')</div>';
+    h += '<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="color:#646c7a;font-family:monospace;font-size:9px;text-transform:uppercase"><th style="text-align:left;padding:5px 8px">industry</th><th>RS</th><th>β</th><th>persist</th><th style="text-align:left;padding:5px 8px">gated setups inside (→ lab)</th></tr></thead><tbody>';
+    h += leaders.map(g=>{const hot=g.heat_class==='OVERBLOWN'?'🌡':g.heat_class==='HEATING'?'♨':'';
+      const setups=(g.setups||[]).map(p=>'<span style="cursor:pointer;color:#22c55e" onclick="location.href=\'marle_g_lab.html#stock='+p.s+'\'">'+p.s+'</span>').join(', ')||'<span style="color:#646c7a">—</span>';
+      return '<tr style="border-top:1px solid rgba(255,255,255,.05)"><td style="text-align:left;padding:6px 8px">'+hot+' '+g.industry+'</td>'+
+        '<td style="text-align:right;font-family:monospace;color:#22c55e">'+(g.rs_week!=null?'+'+g.rs_week+'%':'—')+'</td>'+
+        '<td style="text-align:right;font-family:monospace">'+(g.beta!=null?g.beta:'—')+'</td>'+
+        '<td style="text-align:right;font-family:monospace">'+(g.persist_weeks!=null?g.persist_weeks+'w':'—')+'</td>'+
+        '<td style="text-align:left;padding:6px 8px">'+(g.n_setups?'<b>'+g.n_setups+'</b> · ':'')+setups+'</td></tr>';}).join('');
+    h += '</tbody></table><div style="font-size:10px;color:#646c7a;margin-top:8px">'+(d.note||'')+'</div></div>';
+    document.getElementById('rotpanel').innerHTML = h;
+  }catch(e){}
+}
 async function load(){
   try{
     DATA = await (await fetch("/api/industry_rs")).json();
@@ -343,8 +368,9 @@ async function load(){
   render();
   loadLeaders();
 }
-window.podRefresh = load;
-load();
+window.podRefresh = function(){ load(); loadRot(); };
+load(); loadRot();
+setInterval(loadRot, 120000);
 </script>
 <script src="marle_g_nav.js"></script>
 </body>

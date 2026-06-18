@@ -131,3 +131,6 @@ marleg_simulator_book.json
 
 # confluence (multi-engine agreement) study output (research/runtime)
 marleg_confluence_study.json
+
+# rotation paper-tracker book (runtime)
+marleg_rotation_book.json

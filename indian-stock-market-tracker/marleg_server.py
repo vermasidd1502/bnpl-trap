@@ -603,6 +603,14 @@ def api_suggestions():
     return jsonify(cached("suggestions", lambda: marleg_suggest.suggest(), 180))
 
 
+@app.route("/api/rotation")
+def api_rotation():
+    """Industry leadership board (gate-stacked: RS · leading · β · persistence · overheat · gated setups
+    inside) + a mechanical rotation paper-tracker benchmarked vs NIFTY buy-hold."""
+    import marleg_rotation
+    return jsonify(cached("rotation", lambda: marleg_rotation.view(), 120))
+
+
 @app.route("/api/regime_gate")
 def api_regime_gate():
     """Tiny market bull/bear read (the durable macro gate) for the nav badge on every pod.
