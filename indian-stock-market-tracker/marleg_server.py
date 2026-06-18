@@ -595,6 +595,14 @@ def api_simulator_remove():
     return jsonify(r)
 
 
+@app.route("/api/suggestions")
+def api_suggestions():
+    """Stock-Lab suggestion box: candidates that clear live GATES (checklist) + carry their setup's
+    BACKTESTED edge (cup-handle / reversal / gated). One click adds to the simulator."""
+    import marleg_suggest
+    return jsonify(cached("suggestions", lambda: marleg_suggest.suggest(), 180))
+
+
 @app.route("/api/regime_gate")
 def api_regime_gate():
     """Tiny market bull/bear read (the durable macro gate) for the nav badge on every pod.

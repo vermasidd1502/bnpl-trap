@@ -54,6 +54,11 @@
   <div id="out"><div class="empty">Type a ticker → the all-sides read: cup-handle, reversal, squeeze, volume, rotation, horizon, fundamentals — reconciled, with the tensions between pods called out. Then ➕ add it to your paper simulator.</div></div>
 
   <div class="panel">
+    <h2>💡 suggestion box <span style="color:var(--dim);font-weight:500;text-transform:none">— candidates that clear live gates + carry a backtested edge · ➕ to simulate</span></h2>
+    <div id="sugg"><div class="empty">loading suggestions…</div></div>
+  </div>
+
+  <div class="panel">
     <h2>🧪 your simulator <span style="color:var(--dim);font-weight:500;text-transform:none" id="simhead"></span></h2>
     <div id="sim"><div class="empty">loading…</div></div>
   </div>
@@ -103,9 +108,26 @@ async function loadSim(){
         '<div class="note">'+(d.note||'')+'</div>';
   }catch(e){ $('sim').innerHTML='<div class="empty">simulator unavailable</div>'; }
 }
+function simAdd(tk,btn){ fetch('/api/simulator/add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tk})}).then(r=>r.json()).then(()=>{ if(btn)btn.textContent='✓'; loadSim(); }).catch(()=>{ if(btn)btn.textContent='✗'; }); }
+async function loadSugg(){
+  try{
+    const d=await (await fetch('/api/suggestions')).json();
+    if(!d.ok||!d.suggestions.length){ $('sugg').innerHTML='<div class="empty">no gated/backtested candidates right now.</div>'; return; }
+    $('sugg').innerHTML='<table><thead><tr><th class="l">stock</th><th class="l">setup</th><th>gates</th><th>backtest</th><th>entry→tgt</th><th></th></tr></thead><tbody>'+
+      d.suggestions.map(x=>{
+        const gchips=x.gates.map(g=>'<span title="'+g.k+'" style="color:'+(g.ok?'var(--green)':'var(--dim)')+'">'+(g.ok?'✓':'·')+'</span>').join(' ');
+        return '<tr><td class="l"><span class="sym" style="cursor:pointer" onclick="$(\'q\').value=\''+x.s+'\';go()">'+x.s+'</span>'+(x.industry?'<span class="dim" style="font-size:9px;display:block">'+String(x.industry).slice(0,22)+'</span>':'')+'</td>'+
+          '<td class="l" style="font-size:11px">'+(x.sources||[]).join('+')+' <span class="dim">c'+(x.conv||'')+'</span></td>'+
+          '<td title="'+x.gates.map(g=>g.k+(g.ok?' ✓':' ✗')).join(', ')+'"><b>'+x.gates_passed+'/'+x.gates_total+'</b> '+gchips+'</td>'+
+          '<td title="'+(x.backtest.label||'').replace(/"/g,'')+'">~'+x.backtest.win+'% <span class="dim">'+x.backtest.hold+'</span></td>'+
+          '<td>₹'+x.entry+'→₹'+x.target+' <span class="pos">+'+x.payout_pct+'%</span></td>'+
+          '<td><span class="x" style="border-color:var(--green);color:var(--green)" onclick="simAdd(\''+x.s+'\',this)">➕</span></td></tr>';
+      }).join('')+'</tbody></table><div class="note">'+(d.note||'')+'</div>';
+  }catch(e){ $('sugg').innerHTML='<div class="empty">suggestions unavailable</div>'; }
+}
 $('q').addEventListener('keydown',e=>{ if(e.key==='Enter') go(); });
 (function(){var m=(location.hash||location.search||'').match(/(?:stock|q)=([A-Za-z0-9&.\-]+)/i); if(m){ $('q').value=decodeURIComponent(m[1]).toUpperCase(); go(); }})();
-loadSim(); setInterval(loadSim, 45000);
+loadSugg(); loadSim(); setInterval(()=>{ loadSugg(); loadSim(); }, 45000);
 </script>
 <script src="marle_g_nav.js"></script>
 </body>
