@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock · Marle-G</title>
+<link rel="stylesheet" href="marle_g.css">
+<script src="lightweight-charts.js"></script>
+<style>
+  .selrow{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+  .selrow input{background:var(--bg2,#11151c);border:1px solid var(--border,#222);border-radius:9px;padding:9px 13px;color:var(--ink,#e8eef7);font-family:var(--mono,monospace);font-size:14px;width:230px}
+  .quick{cursor:pointer;font-family:var(--mono,monospace);font-size:11px;color:var(--dim,#888);border:1px solid var(--border,#222);border-radius:7px;padding:4px 9px}
+  .quick:hover{color:var(--saffron,#ff9933);border-color:var(--saffron,#ff9933)}
+  .statusbadge{font-family:var(--mono,monospace);font-size:12px;font-weight:800;letter-spacing:.04em;padding:5px 12px;border-radius:8px;border:1px solid}
+  .ev{font-family:var(--mono,monospace);font-size:11.5px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:780px){.grid2{grid-template-columns:1fr}}
+  .lvln{display:flex;justify-content:space-between;font-family:var(--mono,monospace);font-size:11.5px;padding:2px 0}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span> <span style="color:var(--dim);font-weight:500">/ stock</span></span></div>
+  <div class="tabs"></div>
+</div>
+
+<main class="wrap">
+  <div class="selrow">
+    <input id="q" list="ulist" placeholder="stock / index…" spellcheck="false">
+    <datalist id="ulist"></datalist>
+    <button class="quick" style="font-size:13px;padding:7px 14px" onclick="go($('q').value)">open ↵</button>
+    <span style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap">
+      <span class="quick" onclick="go('NIFTY')">NIFTY</span><span class="quick" onclick="go('RELIANCE')">RELIANCE</span>
+      <span class="quick" onclick="go('TEJASNET')">TEJASNET</span><span class="quick" onclick="go('SBIN')">SBIN</span>
+    </span>
+  </div>
+
+  <div class="head">
+    <div><h1 id="title" style="margin:0">—</h1><div class="sub" id="sub">enter a stock or index</div></div>
+    <div style="display:flex;gap:10px;align-items:center"><span id="statusbadge"></span><div class="clock" id="clock"></div></div>
+  </div>
+
+  <div class="cards" id="cards"><div class="skel"></div><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
+
+  <div class="card">
+    <div class="sh">price + key levels + time-coded milestones (S/R breaks, Ichimoku cloud, Bollinger)</div>
+    <div id="chartwrap"><div class="skel" style="height:320px"></div></div>
+  </div>
+
+  <div class="grid2">
+    <div class="card"><div class="sh">▸ milestones — what this name has actually done</div><div id="milestones"></div></div>
+    <div class="card"><div class="sh">▸ the numbers — trigger · target · stop · status</div><div id="numbers"></div></div>
+  </div>
+
+  <div class="grid2">
+    <div class="card"><div class="sh">▸ map the day — resistance pressure + Monte-Carlo of the session</div><div id="daymap"></div></div>
+    <div class="card"><div class="sh">▸ was it the stock or the market? (β · R² · live corr)</div><div id="decomp"></div></div>
+  </div>
+
+  <div class="card">
+    <div class="sh">▸ dossier — conviction · move-potential · squeeze ceiling · Monte-Carlo · suggested · diversification</div>
+    <div id="dossier"></div>
+  </div>
+</main>
+
+<script src="marle_g_nav.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const cls=x=>x>0?'pos':x<0?'neg':'neu';
+const esc=s=>(''+(s==null?'':s)).replace(/[<>]/g,'');
+const fnum=(x,d=2)=>x==null?'—':(+x).toFixed(d);
+function clocks(){const now=new Date(),o={hour:'2-digit',minute:'2-digit',hour12:false};
+  $('clock').innerHTML='IST <b>'+now.toLocaleString('en-US',{timeZone:'Asia/Kolkata',...o})+'</b> · CT '+now.toLocaleString('en-US',{timeZone:'America/Chicago',...o});}
+setInterval(clocks,1000);clocks();
+const FNO=["NIFTY","BANKNIFTY","FINNIFTY","RELIANCE","HDFCBANK","ICICIBANK","SBIN","INFY","TCS","TATASTEEL","HINDALCO","TATAMOTORS","AXISBANK","LT","TITAN","BHEL","BEL","HAL","DIXON","TRENT","TEJASNET","SUNPHARMA","ITC","MARUTI","ADANIENT"];
+$('ulist').innerHTML=FNO.map(s=>'<option value="'+s+'">').join('');
+function go(s){ s=(s||'').trim().toUpperCase(); if(!s) return; location.href='marle_g_stock.html?u='+encodeURIComponent(s); }   // SAME-WINDOW navigation to the dedicated page
+$('q').addEventListener('keydown',e=>{if(e.key==='Enter')go($('q').value);});
+let LVCHART=null;
+const STBADGE={'FIRED':['var(--green)','rgba(34,197,94,.12)'],'ARMED':['var(--saffron)','rgba(255,153,51,.12)'],
+  'WATCH':['var(--blue)','rgba(96,165,250,.12)'],'LATE':['var(--red)','rgba(239,68,68,.12)'],
+  'BLUE-SKY':['var(--blue)','rgba(96,165,250,.12)'],'STOPPED':['var(--red)','rgba(239,68,68,.12)'],'FAR':['var(--dim)','rgba(255,255,255,.04)']};
+
+async function jget(u){ try{ return await (await fetch(u)).json(); }catch(e){ return {ok:false,error:'offline'}; } }
+
+async function load(){
+  const u=(new URLSearchParams(location.search).get('u')||'').toUpperCase();
+  if(!u){ $('sub').textContent='enter a stock or index above'; return; }
+  $('q').value=u; $('title').textContent=u; $('sub').textContent='loading the full picture…'; document.title=u+' · Marle-G';
+  // fire every engine in parallel — assemble the one-stock command centre
+  const [chart,target,day,dec,dos]=await Promise.all([
+    jget('/api/levels_chart/'+encodeURIComponent(u)),
+    jget('/api/target/'+encodeURIComponent(u)),
+    jget('/api/daymap/'+encodeURIComponent(u)),
+    jget('/api/decomp/'+encodeURIComponent(u)),
+    jget('/api/dossier/'+encodeURIComponent(u)),
+  ]);
+  renderHeader(u,target,day,dec,dos);
+  renderChart(chart); renderMilestones(chart,dos);
+  renderNumbers(target); renderDay(day); renderDecomp(dec); renderDossier(dos);
+}
+window.podRefresh=load;
+
+function renderHeader(u,t,day,dec,dos){
+  const d=dos&&dos.ok?dos:{}; const price=d.price ?? (day&&day.spot) ?? (t&&t.ok&&t.spot);
+  $('title').textContent=(d.name&&d.name!==u)?(u+' · '+d.name):u;
+  $('sub').innerHTML=(d.sector?('<b>'+esc(d.sector)+'</b> · '+esc(d.industry||'')+' · '):'')+(d.horizon?esc(d.horizon):'live');
+  if(t&&t.ok){ const c=STBADGE[t.status]||['var(--dim)','rgba(255,255,255,.04)'];
+    $('statusbadge').innerHTML='<span class="statusbadge" style="color:'+c[0]+';border-color:'+c[0]+';background:'+c[1]+'">'+t.status+'</span>'; }
+  const cards=[];
+  cards.push(statCard('price', price!=null?('₹'+price):'—', (day&&day.ok)?((day.day_ret_pct>=0?'+':'')+day.day_ret_pct+'% today'):'', (day&&day.day_ret_pct>=0)?'var(--green)':'var(--red)', true));
+  if(t&&t.ok) cards.push(statCard('status · R:R', t.status+(t.rr?(' · '+t.rr):''), 'trig '+(t.trigger||'—')+' → tgt '+t.target, (STBADGE[t.status]||['var(--ink)'])[0]));
+  if(dos&&dos.ok&&dos.conviction) cards.push(statCard('conviction', dos.conviction.score+' · '+dos.conviction.label, 'multi-engine'));
+  if(dos&&dos.ok&&dos.move_potential) cards.push(statCard('move-potential', dos.move_potential.tag+' '+(dos.move_potential.atrp||'—')+'%', 'daily amplitude'));
+  if(day&&day.ok) cards.push(statCard('resistance press.', day.resistance_pressure+'/100', esc(day.resistance_state||'')));
+  if(dec&&dec.ok) cards.push(statCard('idiosyncratic', dec.idio_pct+'%', dec.market_driven_pct+'% market · corr '+dec.corr_now));
+  $('cards').innerHTML=cards.join('');
+}
+function statCard(n,v,s,color,hero){return `<div class="mc ${hero?'hero':''}"><div class="n">${esc(n)}</div><div class="v" ${color?`style="color:${color}"`:''}>${v}</div><div class="s">${esc(s||'')}</div></div>`;}
+
+function renderChart(d){
+  const wrap=$('chartwrap'); if(!d||!d.ok||!d.candles||!d.candles.length){ wrap.innerHTML='<span style="color:var(--dim);font-family:var(--mono);font-size:12px">no chart data</span>'; return; }
+  wrap.innerHTML='<div id="lvchart" style="height:340px;width:100%"></div>';
+  const LC=window.LightweightCharts, el=$('lvchart'); if(!LC){ el.innerHTML='chart lib missing'; return; }
+  if(LVCHART){try{LVCHART.remove()}catch(e){}}
+  const ch=LC.createChart(el,{width:el.clientWidth||700,height:340,layout:{background:{color:'transparent'},textColor:'#9aa3b4',fontFamily:'monospace'},grid:{vertLines:{color:'rgba(255,255,255,.04)'},horzLines:{color:'rgba(255,255,255,.04)'}},rightPriceScale:{borderColor:'rgba(255,255,255,.1)',scaleMargins:{top:0.12,bottom:0.12}},timeScale:{borderColor:'rgba(255,255,255,.1)',rightOffset:6},crosshair:{mode:0},handleScale:{axisPressedMouseMove:{time:true,price:true},pinch:true,mouseWheel:true}});
+  LVCHART=ch;
+  const mk=(a,c,o)=>{if(!a||!a.length||!ch.addLineSeries)return;const s=ch.addLineSeries(Object.assign({color:c,lineWidth:1,priceLineVisible:false,lastValueVisible:false},o||{}));try{s.setData(a)}catch(e){}};
+  if(d.ichimoku){mk(d.ichimoku.senkou_a,'rgba(34,197,94,.8)');mk(d.ichimoku.senkou_b,'rgba(245,158,11,.8)');mk(d.ichimoku.tenkan,'#3b82f6');mk(d.ichimoku.kijun,'#ef4444');}
+  if(d.bollinger){mk(d.bollinger.upper,'rgba(148,163,184,.5)',{lineStyle:2});mk(d.bollinger.lower,'rgba(148,163,184,.5)',{lineStyle:2});}
+  const cs=ch.addCandlestickSeries({upColor:'#22c55e',downColor:'#ef4444',borderVisible:false,wickUpColor:'#22c55e',wickDownColor:'#ef4444'});
+  cs.setData(d.candles.map(c=>({time:c.time,open:c.open,high:c.high,low:c.low,close:c.close})));
+  (d.levels||[]).forEach(x=>{if(x.strength>=30){try{cs.createPriceLine({price:x.price,color:x.type==='resistance'?'rgba(239,68,68,.6)':'rgba(34,197,94,.6)',lineWidth:x.strength>=70?2:1,lineStyle:2,axisLabelVisible:true,title:''+Math.round(x.price)})}catch(e){}}});
+  try{cs.setMarkers((d.events||[]).map(e=>({time:e.time,position:e.dir==='up'?'belowBar':'aboveBar',color:e.dir==='up'?'#22c55e':'#ef4444',shape:e.dir==='up'?'arrowUp':'arrowDown',text:''+Math.round(e.price)})))}catch(e){}
+  ch.timeScale().fitContent();
+  try{new ResizeObserver(()=>{try{ch.applyOptions({width:el.clientWidth})}catch(e){}}).observe(el)}catch(e){}
+}
+function renderMilestones(d,dos){
+  let h='';
+  const ist=d&&d.ichimoku_state, bol=d&&d.bollinger;
+  if(ist&&ist.verdict) h+='<div class="ev">'+esc(ist.verdict)+' <span style="color:var(--dim)">· stack '+(ist.bull_stack||0)+'/4</span></div>';
+  if(bol&&bol.bandwidth_pct!=null) h+='<div class="ev" style="color:var(--dim)">Bollinger bandwidth '+bol.bandwidth_pct+'%'+(bol.squeeze?' · 🔵 SQUEEZE (coiled)':'')+'</div>';
+  const evs=((d&&d.events)||[]).slice().reverse().slice(0,12);
+  h+='<div style="font-family:var(--mono);font-size:9.5px;color:var(--saffron);font-weight:700;margin:7px 0 4px">TIME-CODED S/R BREAKS (latest first)</div>';
+  h+=evs.map(e=>'<div class="ev" style="color:'+(e.dir==='up'?'var(--green)':'var(--red)')+'">'+e.time+' · '+esc(e.label)+' <span style="color:var(--dim)">close ₹'+e.close+'</span></div>').join('')
+     || '<div class="ev" style="color:var(--dim)">no decisive breaks in the window</div>';
+  $('milestones').innerHTML=h;
+}
+function renderNumbers(t){
+  if(!t||!t.ok){ $('numbers').innerHTML='<span style="color:var(--dim);font-family:var(--mono);font-size:12px">'+((t&&t.error)||'no read')+'</span>'; return; }
+  const c=(STBADGE[t.status]||['var(--ink)'])[0];
+  let h='<div class="lvln"><span style="color:var(--dim)">STATUS</span><b style="color:'+c+'">'+t.status+'</b></div>';
+  h+='<div class="lvln"><span style="color:var(--dim)">spot</span><b>₹'+t.spot+'</b></div>';
+  h+='<div class="lvln"><span style="color:var(--red)">TRIGGER (clear to go)</span><b>₹'+(t.trigger||'—')+(t.dist_to_trigger_pct!=null?(' ('+(t.dist_to_trigger_pct>=0?'+':'')+t.dist_to_trigger_pct+'%)'):'')+'</b></div>';
+  h+='<div class="lvln"><span style="color:var(--green)">TARGET</span><b>₹'+t.target+'</b></div>';
+  h+='<div class="lvln"><span style="color:var(--amber,#fbbf24)">STOP</span><b>₹'+t.stop+'</b></div>';
+  h+='<div class="lvln"><span style="color:var(--dim)">R:R · conviction</span><b>'+(t.rr||'—')+' · '+(t.conviction||0)+'/100</b></div>';
+  h+='<div class="sug '+(t.status==='LATE'||t.status==='STOPPED'?'neg':t.status==='FIRED'||t.status==='ARMED'?'pos':'neu')+'" style="margin-top:8px">'+esc(t.status_note||'')+'</div>';
+  $('numbers').innerHTML=h;
+}
+function renderDay(d){
+  if(!d||!d.ok){ $('daymap').innerHTML='<span style="color:var(--dim);font-family:var(--mono);font-size:12px">'+((d&&d.error)||'n/a')+'</span>'; return; }
+  let h='<div class="lvln"><span style="color:var(--dim)">resistance pressure</span><b>'+d.resistance_pressure+'/100</b></div>';
+  h+='<div class="ev" style="color:var(--dim)">'+esc(d.resistance_state||'')+'</div>';
+  h+='<div class="lvln" style="margin-top:5px"><span style="color:var(--dim)">expected close</span><b>₹'+d.expected_close+'</b></div>';
+  h+='<div class="lvln"><span style="color:var(--dim)">session cone (5–95)</span><b>₹'+(d.cone&&d.cone.p5)+' – ₹'+(d.cone&&d.cone.p95)+'</b></div>';
+  if(d.p_break_nearest_res!=null) h+='<div class="lvln"><span style="color:var(--dim)">P(break nearest R)</span><b>'+d.p_break_nearest_res+'%</b></div>';
+  h+='<div class="sug neu" style="margin-top:7px">'+esc(d.tracking||'')+' · '+d.session_left_pct+'% session left</div>';
+  $('daymap').innerHTML=h;
+}
+function renderDecomp(d){
+  if(!d||!d.ok){ $('decomp').innerHTML='<span style="color:var(--dim);font-family:var(--mono);font-size:12px">'+((d&&d.error)||'n/a')+'</span>'; return; }
+  const mkt=d.market_driven_pct, idio=d.idio_pct;
+  let h='<div style="display:flex;gap:14px;flex-wrap:wrap;font-family:var(--mono);font-size:12px;margin-bottom:8px"><span>β <b>'+d.beta+'</b></span><span>R² <b>'+d.r2+'</b></span><span>live corr→NIFTY <b>'+d.corr_now+'</b></span><span>idio vol <b>'+d.idio_vol_ann+'%</b></span></div>';
+  h+='<div style="height:9px;border-radius:5px;overflow:hidden;display:flex;margin-bottom:5px"><span style="width:'+mkt+'%;background:#3b82f6"></span><span style="width:'+idio+'%;background:var(--saffron)"></span></div>';
+  h+='<div class="ev" style="color:var(--dim)">'+mkt+'% market-driven · '+idio+'% its own story</div>';
+  h+='<div class="sug neu" style="margin-top:6px">'+esc(d.today_verdict||'')+'</div>';
+  $('decomp').innerHTML=h;
+}
+function renderDossier(d){
+  if(!d||!d.ok){ $('dossier').innerHTML='<span style="color:var(--dim);font-family:var(--mono);font-size:12px">'+((d&&d.error)||'n/a')+'</span>'; return; }
+  const sc=d.squeeze_ceiling||{}, mp=d.move_potential||{}, mc=d.montecarlo||{}, lv=d.levels||{}, sg=d.suggested||{}, ov=d.overlap||{};
+  let h='<div class="grid2">';
+  h+='<div><div style="font-family:var(--mono);font-size:9.5px;color:var(--saffron);font-weight:700;margin-bottom:4px">SQUEEZE CEILING / ROOM</div>'+
+     '<div class="lvln"><span style="color:var(--dim)">nearest resistance</span><b>₹'+sc.resistance+'</b></div>'+
+     '<div class="lvln"><span style="color:var(--dim)">room to it</span><b>'+(sc.room_pct!=null?('+'+sc.room_pct+'%'):'—')+'</b></div>'+
+     '<div class="lvln"><span style="color:var(--dim)">MC 10d p95</span><b>₹'+(sc.mc_p95_10d||'—')+'</b></div></div>';
+  h+='<div><div style="font-family:var(--mono);font-size:9.5px;color:var(--saffron);font-weight:700;margin-bottom:4px">MOVE-POTENTIAL</div>'+
+     '<div class="lvln"><span style="color:var(--dim)">amplitude</span><b>'+mp.tag+' · '+(mp.atrp||'—')+'%/day</b></div>'+
+     '<div class="lvln"><span style="color:var(--dim)">~1d range</span><b>₹'+(mp.exp_lo||'—')+' – ₹'+(mp.exp_hi||'—')+'</b></div>'+
+     '<div class="lvln"><span style="color:var(--dim)">RSI · fib</span><b>'+(d.rsi||'—')+' · '+(d.fib!=null?d.fib:'—')+'</b></div></div>';
+  h+='</div><div style="border-top:1px solid var(--border);margin:10px 0;padding-top:10px"></div>';
+  h+='<div class="lvln"><span style="color:var(--dim)">suggested</span><b>'+esc(sg.action||'—')+'</b></div>';
+  if(sg.text) h+='<div class="sug '+(/(BUY|LONG|ADD)/.test(sg.action||'')?'pos':/(AVOID|SELL|EXIT)/.test(sg.action||'')?'neg':'neu')+'">'+esc(sg.text)+'</div>';
+  if(sg.stop!=null) h+='<div class="ev" style="color:var(--dim)">stop ₹'+sg.stop+' · target ₹'+sg.target+(sg.tgtpct?(' ('+sg.tgtpct+'%)'):'')+'</div>';
+  if(ov&&ov.msg) h+='<div class="ev" style="color:'+(ov.warn?'var(--amber,#fbbf24)':'var(--dim)')+'">'+(ov.warn?'⚠ ':'')+esc(ov.msg||('overlap: '+(ov.held||[]).join(", ")))+'</div>';
+  if(d.event_flags&&d.event_flags.length) h+='<div class="ev" style="color:var(--amber,#fbbf24)">flags: '+esc(d.event_flags.join(' · '))+'</div>';
+  const isFno=FNO.indexOf(d.s)>=0;
+  h+='<div style="margin-top:9px;display:flex;gap:8px;flex-wrap:wrap">'+
+     (isFno?'<a class="quick" href="marle_g_options.html?u='+encodeURIComponent(d.s)+'" style="text-decoration:none">options surface ↗</a>':'')+
+     '<a class="quick" href="marle_g_intraday.html?q='+encodeURIComponent(d.s)+'" style="text-decoration:none">intraday ↗</a></div>';
+  $('dossier').innerHTML=h;
+}
+load();
+</script>
+</body>
+</html>

@@ -1038,18 +1038,259 @@ def api_mf(code):
 
 @app.route("/api/options/<und>")
 def api_options(und):
-    sym = und.upper()
-    sym = "NIFTY" if sym in ("NIFTY", "NIFTY50") else sym
-    def do():
+    """F&O option chain via Groww (mom.chain): real spot + premiums/IV/Greeks/breakevens, ATM±n, live where
+    Groww quotes + Black-Scholes fallback per strike. Optional ?expiry=YYYY-MM-DD. (Replaces the NSE scraper,
+    which is blocked on datacenter IPs.)"""
+    import marleg_options_monitor as mom
+    import datetime as _d
+    sym = "NIFTY" if und.upper() in ("NIFTY", "NIFTY50") else und.upper()
+    exp = request.args.get("expiry")
+    expd = None
+    if exp:
         try:
-            import nsepython
-            d = nsepython.nse_optionchain_scrapper(sym)
-            if isinstance(d, dict) and d.get("records", {}).get("data"):
-                return d
-            return {"error": "NSE returned empty — datacenter/VPN IP blocked by Akamai. NSE needs a RESIDENTIAL India IP (or a relay on a home India connection)."}
-        except Exception as e:
-            return {"error": "NSE fetch failed: " + str(e)[:140]}
-    return jsonify(cached("opt:" + sym, do, 90))
+            expd = _d.datetime.strptime(exp, "%Y-%m-%d").date()
+        except Exception:
+            expd = None
+    return jsonify(cached(f"optchain:{sym}:{exp}", lambda: mom.chain(sym, n=10, expiry=expd), 45))
+
+@app.route("/api/optimize/<und>")
+def api_optimize(und):
+    """OTM-call strike optimizer for the 'buy OTM → ride into ATM' style. Ranks strikes by the
+    touch-and-sell expected return under your VIEW. Query: ?expiry= &target= |&move= |&drift= ."""
+    import marleg_opt_value as ov
+    sym = und.upper()
+    exp = request.args.get("expiry")
+    tgt = request.args.get("target", type=float)
+    mv_ = request.args.get("move", type=float)
+    dr = request.args.get("drift", type=float)
+    key = f"optimize:{sym}:{exp}:{tgt}:{mv_}:{dr}"
+    return jsonify(cached(key, lambda: ov.optimize_otm_calls(sym, exp, tgt, mv_, dr), 45))
+
+@app.route("/api/optvalue/<und>")
+def api_optvalue(und):
+    """Per-strike fair-value-vs-order-book tally (CHEAP/RICH on the vol-risk-premium). ?expiry= ."""
+    import marleg_opt_value as ov
+    sym = und.upper()
+    exp = request.args.get("expiry")
+    return jsonify(cached(f"optvalue:{sym}:{exp}", lambda: ov.value_ladder(sym, exp), 45))
+
+@app.route("/api/greeks_book")
+def api_greeks_book():
+    """Net Greeks exposure (Δ/Γ/Θ/V) across the live Groww F&O book (read-only). Optional ?legs=SYM:qty,SYM:qty
+    to model a hypothetical book instead."""
+    import marleg_greeks_book as gb
+    legs_q = request.args.get("legs")
+    if legs_q:
+        legs = []
+        for a in legs_q.split(","):
+            if ":" in a:
+                s, q = a.rsplit(":", 1)
+                try:
+                    legs.append({"symbol": s.strip().upper(), "qty": int(q)})
+                except Exception:
+                    pass
+        return jsonify(cached("greeks_legs:" + legs_q, lambda: gb.book(legs), 20))
+    return jsonify(cached("greeks_book", lambda: gb.book(), 20))
+
+@app.route("/api/param_stability")
+def api_param_stability():
+    """Parameter-stability heatmap + MC-per-cell for a strategy (gated-volume gate): robust plateau vs
+    overfit spike. Heavy sweep — cached a day."""
+    import marleg_param_stability as ps
+    return jsonify(cached("param_stability", lambda: ps.sweep(), 86400))
+
+@app.route("/api/levels/<tk>")
+def api_levels(tk):
+    """Key support/resistance levels (volume-profile HVN + swing pivots + structure)."""
+    import marleg_levels as lv
+    return jsonify(cached("levels:" + tk.upper(), lambda: lv.levels(tk), 1800))
+
+@app.route("/api/levels_chart/<tk>")
+def api_levels_chart(tk):
+    """Candles + S/R levels + TIME-CODED break log + Ichimoku cloud + Bollinger, for the inline chart."""
+    import marleg_levels as lv
+    return jsonify(cached("levelschart:" + tk.upper(), lambda: lv.chart_data(tk), 1800))
+
+@app.route("/api/decomp/<tk>")
+def api_decomp(tk):
+    """Was the move the STOCK or the MARKET? beta/R^2 attribution + live rolling correlation to NIFTY."""
+    import marleg_decomp as dc
+    from flask import request
+    bench = (request.args.get("bench") or "NIFTY").upper()
+    return jsonify(cached(f"decomp:{tk.upper()}:{bench}", lambda: dc.decompose(tk, bench), 900))
+
+@app.route("/api/snip/<tk>")
+def api_snip(tk):
+    """Snip a chart slice: analyze ONLY the brushed [start,end] window (move/path/vol/volume/levels)."""
+    import marleg_snip as sn
+    from flask import request
+    start, end = request.args.get("start"), request.args.get("end")
+    if not start or not end:
+        return jsonify({"ok": False, "error": "need start & end dates"})
+    return jsonify(cached(f"snip:{tk.upper()}:{start}:{end}", lambda: sn.analyze(tk, start, end), 600))
+
+@app.route("/api/overnight")
+def api_overnight():
+    """Overnight (close->open) vs intraday (open->close) vs buy&hold on the India panel, gross + net of costs."""
+    import marleg_overnight as ov
+    from flask import request
+    u = (request.args.get("universe") or "largecap").lower()
+    return jsonify(cached(f"overnight:{u}", lambda: ov.analyze(u), 86400))
+
+@app.route("/api/expiry_ladder/<tk>")
+def api_expiry_ladder(tk):
+    """Short vs long expiry, same strike: compare the next 3 monthlies on cost/theta/touch-odds/EV-ride."""
+    import marleg_expiry_ladder as el
+    from flask import request
+    spot = request.args.get("spot")
+    tgt = request.args.get("target_pct")
+    kind = (request.args.get("kind") or "C").upper()
+    try:
+        spot = float(spot) if spot else None
+    except Exception:
+        spot = None
+    try:
+        tgt = float(tgt) if tgt else None
+    except Exception:
+        tgt = None
+    # live quotes -> short TTL; key on rounded spot so repeated clicks reuse, but it still refreshes intraday
+    skey = f"ladder:{tk.upper()}:{kind}:{int(spot) if spot else 0}:{tgt}"
+    return jsonify(cached(skey, lambda: el.ladder(tk, spot=spot, target_pct=tgt, kind=kind), 120))
+
+@app.route("/api/overnight_gate")
+def api_overnight_gate():
+    """Gated approval to CARRY a position overnight: strong-close (backtested) x regime x room, per name."""
+    import marleg_overnight_gate as og
+    from flask import request
+    names = request.args.get("names")
+    if names:
+        lst = [n.strip().upper() for n in names.split(",") if n.strip()][:30]
+    else:
+        lst = ["RELIANCE", "HDFCBANK", "TATASTEEL", "SBIN", "INFY", "ICICIBANK", "TEJASNET", "HINDALCO"]
+    return jsonify(cached("ongate:" + ",".join(sorted(lst)), lambda: og.scan(lst), 300))
+
+@app.route("/api/daymap/<tk>")
+def api_daymap(tk):
+    """Map the day: resistance-pressure metric + Monte-Carlo of the rest of the session + path-matching."""
+    import marleg_daymap as dm
+    from flask import request
+    spot = request.args.get("spot")
+    try:
+        spot = float(spot) if spot else None
+    except Exception:
+        spot = None
+    skey = f"daymap:{tk.upper()}:{int(spot) if spot else 0}"
+    return jsonify(cached(skey, lambda: dm.daymap(tk, spot=spot), 90))
+
+@app.route("/api/execution/<tk>")
+def api_execution(tk):
+    """Bulk buy/sell scheduler: Q/ADV impact, dump-vs-work cost, TWAP/VWAP/urgent child-order slices. MODEL ONLY."""
+    import marleg_execution as ex
+    from flask import request
+
+    def _f(k):
+        v = request.args.get(k)
+        try:
+            return float(v) if v else None
+        except Exception:
+            return None
+    qty, notional = _f("qty"), _f("notional")
+    side = (request.args.get("side") or "SELL").upper()
+    horizon = _f("horizon") or 375.0
+    pov = _f("pov") or 0.10
+    urgency = _f("urgency")
+    urgency = 0.5 if urgency is None else urgency
+    skey = f"exec:{tk.upper()}:{side}:{int(qty or 0)}:{int(notional or 0)}:{int(horizon)}:{pov}:{urgency}"
+    return jsonify(cached(skey, lambda: ex.plan(tk, qty=qty, notional=notional, side=side,
+                                                horizon_min=horizon, pov=pov, urgency=urgency), 120))
+
+@app.route("/api/target_board")
+def api_target_board():
+    """Every stock as numbers: TRIGGER/TARGET/STOP + STATUS (ARMED/FIRED/LATE/...) + R:R + conviction."""
+    import marleg_target as tg
+    from flask import request
+    names = request.args.get("names")
+    lst = [n.strip().upper() for n in names.split(",") if n.strip()][:40] if names else None
+    key = "targetboard:" + (",".join(sorted(lst)) if lst else "default")
+    return jsonify(cached(key, lambda: tg.board(lst), 600))
+
+@app.route("/api/target/<tk>")
+def api_target(tk):
+    """The four numbers + status for one stock."""
+    import marleg_target as tg
+    return jsonify(cached("target:" + tk.upper(), lambda: tg.target(tk), 600))
+
+@app.route("/api/watch")
+def api_watch():
+    """The WATCH board: run the desk over a watchlist + held book → FIRE/MANAGE/WATCH/ASIDE lanes."""
+    import marleg_watch as w
+    names = request.args.get("names")
+    heldp = request.args.get("held")                  # CSV of SYM:qty:avg
+    watch = [n.strip().upper() for n in names.split(",") if n.strip()][:24] if names else None
+    held = w._parse_held([h.strip() for h in heldp.split(",") if h.strip()]) if heldp else []
+    if not watch and not held:
+        watch = ["RELIANCE", "SBIN", "TEJASNET", "BHEL", "GAIL", "HINDALCO", "TATASTEEL", "INFY", "ICICIBANK", "AXISBANK"]
+
+    def _run():
+        rows = w.scan(watch or [], held)
+        out = [{"sym": r["sym"], "price": r.get("price"), "lane": r["_lane"], "headline": r.get("headline"),
+                "gate": r.get("gate"), "route_state": r.get("state"), "held": r.get("held"),
+                "plan": r.get("plan"), "buy_zone": r.get("buy_zone"), "pullback": r.get("pullback")} for r in rows]
+        return {"ok": True, "rows": out, "n_fire": sum(x["lane"] == "FIRE" for x in out),
+                "n_manage": sum(x["lane"] == "MANAGE" for x in out),
+                "regime_bull": (rows[0].get("regime_bull") if rows else None)}
+    key = "watch:" + ",".join(sorted(watch or [])) + "|" + (heldp or "")
+    return jsonify(cached(key, _run, 150))
+
+@app.route("/api/router_scan")
+def api_router_scan():
+    """Route every name to its lane (SWING-LONG / BUY-HOLD / INTRADAY / AVOID / STAND-ASIDE) + buckets."""
+    import marleg_router as rt
+    names = request.args.get("names")
+    lst = [n.strip().upper() for n in names.split(",") if n.strip()][:40] if names else None
+    if not lst:
+        lst = ["RELIANCE", "SBIN", "ICICIBANK", "AXISBANK", "INFY", "TCS", "BHEL", "BEL", "HAL", "TATASTEEL",
+               "HINDALCO", "MCX", "CUMMINSIND", "TITAN", "TRENT", "DIXON", "TEJASNET", "GAIL", "COALINDIA", "LT"]
+    return jsonify(cached("routerscan:" + ",".join(sorted(lst)), lambda: rt.scan(lst), 300))
+
+@app.route("/api/debugger/<sym>")
+def api_debugger(sym):
+    """Trade-discipline debugger: what validated rule did this trade break? (process, not P&L)."""
+    import marleg_debugger as db
+
+    def _f(k):
+        v = request.args.get(k)
+        try:
+            return float(v) if v else None
+        except Exception:
+            return None
+    side = (request.args.get("side") or "LONG").upper()
+    return jsonify(db.review(sym, side, entry=_f("entry"), qty=_f("qty"), capital=_f("capital"),
+                             stop=_f("stop"), outcome_pct=_f("outcome")))
+
+@app.route("/api/smartflow/<tk>")
+def api_smartflow(tk):
+    """Participant timeline — who (promoter/FII/DII/retail) accumulated vs distributed each quarter."""
+    import marleg_smartmoney as sm
+    return jsonify(cached("smartflow:" + tk.upper(), lambda: sm.timeline(tk), 21600))
+
+@app.route("/api/optsuggest")
+def api_optsuggest():
+    """Liquid-only option suggestions: scan the most option-liquid F&O for long-plausible setups, pick a
+    REACHABLE strike with real OI. Slow (~45s cold) → cached 10min. ?top= &min_oi= ."""
+    import marleg_option_suggest as osg
+    top = request.args.get("top", default=5, type=int)
+    moi = request.args.get("min_oi", default=200, type=int)
+    return jsonify(cached(f"optsuggest:{top}:{moi}", lambda: osg.suggest(top=top, min_oi=moi), 600))
+
+@app.route("/api/optiondeck/<und>")
+def api_optiondeck(und):
+    """Trade-verdict deck: is a long plausible, timeline + targets, and the theta-aware option buy/sell
+    calendar (synthesis of horizon.rate + the OTM optimizer). ?expiry= optional."""
+    import marleg_option_plan as opn
+    sym = und.upper()
+    exp = request.args.get("expiry")
+    return jsonify(cached(f"optdeck:{sym}:{exp}", lambda: opn.deck(sym, exp), 60))
 
 # ----------------------------------------------------------------- news + next-day outlook
 def _news(query, n=8):

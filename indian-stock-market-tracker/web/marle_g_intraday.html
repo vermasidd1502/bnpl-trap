@@ -104,6 +104,7 @@
   <div id="rsi"></div>
   <div id="ddcard"></div>
   <div id="ivadvisor"></div>
+  <div id="overnightcard"></div>
 
   <div class="sh" style="margin:18px 0 8px">FIN-537 volatility lab</div>
   <div id="out"><div class="card"><span style="color:var(--dim);font-family:var(--mono);font-size:12px">⟳ realized variance + HAR (~15s)…</span></div></div>
@@ -465,11 +466,39 @@ async function track(tk){
     LIVE_TK=tk; clearInterval(LIVE_TIMER); LIVE_TIMER=setInterval(poll,60000); poll();
   }catch(e){ $('out').innerHTML='<div class="card"><span style="color:var(--red)">backend offline? run: python marleg_server.py</span></div>'; }
 }
+async function loadOvernight(){
+  const c=$('overnightcard'); if(!c) return;
+  c.innerHTML='<div class="card"><span style="color:var(--dim,#646c7a);font-family:var(--mono),monospace;font-size:12px">⟳ overnight vs intraday (5y panel)…</span></div>';
+  try{
+    const d=await (await fetch('/api/overnight?universe=largecap')).json();
+    if(!d.ok){ c.innerHTML=''; return; }
+    const TD='padding:4px 9px;font-family:var(--mono),monospace;font-size:12px';
+    const TH='text-align:left;padding:4px 9px;color:var(--dim,#646c7a);font-size:10px;border-bottom:1px solid var(--border,rgba(255,255,255,.08))';
+    const row=(lbl,col,s,net)=>`<tr>
+      <td style="${TD};font-weight:700;color:${col}">${lbl}</td>
+      <td style="${TD}">${s.ann_pct>=0?'+':''}${s.ann_pct}%</td>
+      <td style="${TD};color:var(--dim,#646c7a)">${s.sharpe}</td>
+      <td style="${TD}">${s.win_pct}%</td>
+      <td style="${TD};color:${net===null?'var(--dim,#646c7a)':(net>=0?'var(--green,#22c55e)':'var(--red,#ef4444)')}">${net===null?'—':((net>=0?'+':'')+net+'%')}</td></tr>`;
+    c.innerHTML=`<div class="card" style="border-left:4px solid var(--saffron,#ff9933)">
+      <div class="sh">Overnight vs Intraday — does "buy close / sell open" pay in India? <span style="color:var(--dim,#646c7a);font-weight:400">(${d.universe}, ${d.days}d)</span></div>
+      <table style="width:100%;border-collapse:collapse;margin-top:4px"><thead><tr>
+        <th style="${TH}">leg</th><th style="${TH}">ann return</th><th style="${TH}">Sharpe</th><th style="${TH}">win%</th><th style="${TH}">net of costs</th></tr></thead><tbody>
+        ${row('OVERNIGHT (close→open)','var(--green,#22c55e)',d.overnight,d.overnight_net30.net_ann_pct)}
+        ${row('INTRADAY (open→close)','var(--red,#ef4444)',d.intraday,null)}
+        ${row('BUY & HOLD (close→close)','var(--saffron,#ff9933)',d.buyhold,null)}
+      </tbody></table>
+      <div style="font-family:var(--mono),monospace;font-size:11px;margin-top:8px">▸ ${d.verdict}</div>
+      <div class="legend" style="margin-top:5px">${d.note}</div>
+    </div>`;
+  }catch(e){ c.innerHTML=''; }
+}
 $('go').onclick=()=>track($('q').value);
 $('q').addEventListener('keydown',e=>{if(e.key==='Enter')track($('q').value);});
 $('chips').innerHTML=CHIPS.map(c=>`<span class="chip" onclick="track('${c}')">${c}</span>`).join('');
 const _qp=new URLSearchParams(location.search);
 track((_qp.get('q')||_qp.get('tk')||'TEJASNET').trim().toUpperCase());
+loadOvernight();
 </script>
   <script src="marle_g_nav.js"></script>
 </body>

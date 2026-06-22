@@ -189,20 +189,10 @@
   window.addEventListener("resize", function () { if (DD && DD.style.display === "block") place(); });
 })();
 
-/* ---- universal live auto-refresh: keeps every pod fresh on a ~60s tick ---- */
-(function () {
-  var EVERY = 60000;                                  // 60s; pages that self-poll opt out via MG_SELF_REFRESH
-  setInterval(function () {
-    if (window.MG_SELF_REFRESH) return;               // page already polls its own data faster
-    if (document.hidden) return;                      // tab not visible -> don't waste calls
-    var a = document.activeElement;
-    if (a && (a.tagName === "INPUT" || a.tagName === "TEXTAREA" || a.tagName === "SELECT" || a.isContentEditable)) return;  // user typing
-    var sg = document.querySelector(".mg-sg");
-    if (sg && sg.style.display === "block") return;   // ticker suggestion dropdown open
-    if (typeof window.podRefresh === "function") { try { window.podRefresh(); return; } catch (e) {} }
-    location.reload();                                // fallback: soft full reload (data is server-cached, so cheap)
-  }, EVERY);
-})();
+/* ---- universal auto-refresh DISABLED on purpose ----
+   It reloaded every pod every 60s and kept yanking you out of your place (scroll, snip, open panels,
+   the stock you'd searched). Removed. Use the manual ⟳ refresh button in the nav when YOU want fresh data.
+   Pages that truly need live data (intraday, portfolio) still soft-poll their OWN data — no full reload. */
 
 /* ---- universal manual Refresh button: injected into every nav bar ---- */
 (function () {

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Router · Marle-G</title>
+<link rel="stylesheet" href="marle_g.css">
+<style>
+  .selrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+  .selrow input{background:var(--bg2,#11151c);border:1px solid var(--border,#222);border-radius:8px;padding:8px 11px;color:var(--ink,#e8eef7);font-family:var(--mono,monospace);font-size:12px}
+  .bk{margin-bottom:12px}
+  .bk .h{font-family:var(--mono,monospace);font-size:11px;font-weight:800;letter-spacing:.03em;padding:5px 0;border-bottom:1px solid var(--border,rgba(255,255,255,.08));margin-bottom:6px}
+  .rrow{display:flex;gap:11px;align-items:baseline;padding:5px 9px;border-radius:7px;margin-bottom:4px}
+  .rrow .sym{font-family:var(--mono,monospace);font-weight:700;width:104px;flex:0 0 auto;cursor:pointer}
+  .rrow .sym:hover{color:var(--saffron,#ff9933)}
+  .rrow .cv{font-family:var(--mono,monospace);font-size:11px;width:54px;flex:0 0 auto;color:var(--dim,#888)}
+  .rrow .wy{font-family:var(--mono,monospace);font-size:11.5px;color:var(--ink,#e8eef7)}
+</style>
+</head>
+<body>
+<div class="nav"><div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span> <span style="color:var(--dim);font-weight:500">/ router</span></span></div><div class="tabs"></div></div>
+<main class="wrap">
+  <div class="head">
+    <div><h1 style="margin:0">Strategy Router</h1><div class="sub" id="sub">every name → its correct lane · validated-edge cascade (regime > don't-chase > confluence > setup)</div></div>
+    <div class="clock" id="clock"></div>
+  </div>
+  <div class="selrow">
+    <span style="font-family:var(--mono);font-size:11px;color:var(--dim)">universe</span>
+    <input id="wl" style="width:420px" placeholder="leave blank for the default liquid set, or RELIANCE,SBIN,…">
+    <button class="quick" style="padding:7px 13px;cursor:pointer" onclick="saveAndLoad()">route ↻</button>
+    <span id="counts" style="margin-left:auto;font-family:var(--mono);font-size:12px"></span>
+  </div>
+  <div class="card"><div id="board"><div class="skel" style="height:50px;margin-bottom:8px"></div><div class="skel" style="height:50px"></div></div></div>
+  <div class="legend" style="margin-top:8px">SWING-LONG = validated dip-in-uptrend setups · BUY-HOLD = compounders (add on dips) · INTRADAY-WATCH = high-amplitude movers (loss-limit!) · AVOID/PAIRS = laggards · STAND-ASIDE = extended/thin. Click a symbol → its full page. Read-only.</div>
+</main>
+<script src="marle_g_nav.js"></script>
+<script>
+window.MG_SELF_REFRESH=true;
+const $=id=>document.getElementById(id);
+const esc=s=>(''+(s==null?'':s)).replace(/[<>]/g,'');
+function clocks(){const n=new Date(),o={hour:'2-digit',minute:'2-digit',hour12:false};$('clock').innerHTML='IST <b>'+n.toLocaleString('en-US',{timeZone:'Asia/Kolkata',...o})+'</b> · CT '+n.toLocaleString('en-US',{timeZone:'America/Chicago',...o});}
+setInterval(clocks,1000);clocks();
+function go(s){location.href='marle_g_stock.html?u='+encodeURIComponent(s);}
+const ORDER=["SWING-LONG","BUY-HOLD","BUY-HOLD (buy the dip)","HOLD (don't add)","INTRADAY-WATCH","AVOID/PAIRS","STAND-ASIDE"];
+const COL={"SWING-LONG":"var(--green,#22c55e)","BUY-HOLD":"var(--blue,#3b82f6)","BUY-HOLD (buy the dip)":"var(--blue,#3b82f6)","HOLD (don't add)":"var(--amber,#fbbf24)","INTRADAY-WATCH":"var(--saffron,#ff9933)","AVOID/PAIRS":"var(--red,#ef4444)","STAND-ASIDE":"var(--dim,#888)"};
+function saveAndLoad(){localStorage.setItem('mg_routeruniverse',$('wl').value);load();}
+window.podRefresh=load;
+async function load(){
+  const wl=($('wl').value||'').trim();
+  try{
+    const d=await (await fetch('/api/router_scan'+(wl?('?names='+encodeURIComponent(wl)):''))).json();
+    if(!d.ok){ $('board').innerHTML='<span style="color:var(--dim);font-family:var(--mono);font-size:12px">scan failed</span>'; return; }
+    const rows=d.rows||[]; const bull=rows.length&&rows[0].regime_bull;
+    $('sub').innerHTML='regime <b style="color:'+(bull?'var(--green)':'var(--red)')+'">'+(bull?'BULL':'BEAR/▼')+'</b> · validated-edge cascade (regime > don\'t-chase > confluence > setup)';
+    const grp={}; rows.forEach(r=>{(grp[r.route]=grp[r.route]||[]).push(r);});
+    const seen=new Set(); let h='';
+    const lanes=ORDER.filter(k=>grp[k]).concat(Object.keys(grp).filter(k=>ORDER.indexOf(k)<0));
+    lanes.forEach(k=>{ seen.add(k); const rs=grp[k]||[];
+      h+='<div class="bk"><div class="h" style="color:'+(COL[k]||'var(--ink)')+'">'+esc(k)+' · '+rs.length+'</div>'+
+        rs.map(r=>'<div class="rrow"><span class="sym" onclick="go(\''+r.sym+'\')">'+r.sym+'</span><span class="cv">'+(r.conviction!=null?r.conviction:'')+'</span><span class="wy">'+esc(r.why)+'</span></div>').join('')+'</div>';
+    });
+    $('board').innerHTML=h||'<span style="color:var(--dim)">no names</span>';
+    $('counts').innerHTML=Object.keys(grp).map(k=>'<b style="color:'+(COL[k]||'var(--dim)')+'">'+(grp[k].length)+' '+k.split(' ')[0]+'</b>').join(' · ');
+  }catch(e){ $('board').innerHTML='<span style="color:var(--dim);font-family:var(--mono);font-size:12px">backend offline?</span>'; }
+}
+$('wl').value=localStorage.getItem('mg_routeruniverse')||'';
+load(); setInterval(load,300000);
+</script>
+</body>
+</html>

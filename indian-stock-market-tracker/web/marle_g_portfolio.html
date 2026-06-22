@@ -183,7 +183,30 @@ async function renderLive(){
       ${pos.map(p=>`<tr style="cursor:pointer" onclick="openStock('${p.sym}')"><td><span class="sym">${p.sym}</span> <span class="tag">${p.cls}</span></td><td>${p.qty}</td><td>${inr(p.avg)}</td><td>${inr(p.ltp)}</td><td>${inr(p.mv)}</td><td class="${cls(p.pl)}">${inr(p.pl)}</td><td class="${cls(p.plpct)}">${pct(p.plpct)}</td></tr>`).join('')||'<tr><td colspan=7 style="color:var(--muted);padding:14px">No delivery holdings</td></tr>'}
       </tbody></table>
     </div>
-    ${plist.length?`<div class="card"><div class="sh">Intraday / positions</div><table class="h"><thead><tr><th>Symbol</th><th>Net qty</th><th>Price</th><th>Realised P&L</th></tr></thead><tbody>${posRows}</tbody></table></div>`:''}`;
+    ${plist.length?`<div class="card"><div class="sh">Intraday / positions</div><table class="h"><thead><tr><th>Symbol</th><th>Net qty</th><th>Price</th><th>Realised P&L</th></tr></thead><tbody>${posRows}</tbody></table></div>`:''}
+    <div class="card" id="gbook"><div class="sh">Options book · net Greeks exposure</div><div style="padding:12px;color:var(--muted)">reading live F&O book…</div></div>`;
+  loadGreeksBook();
+}
+async function loadGreeksBook(){
+  const el=document.getElementById('gbook'); if(!el) return;
+  let d={}; try{ d=await (await fetch('/api/greeks_book')).json(); }catch(e){ d={ok:false,error:'read failed'}; }
+  const head='<div class="sh"><span>Options book · net Greeks exposure</span></div>';
+  if(!d||!d.ok){ el.innerHTML=head+'<div style="padding:12px;color:var(--muted)">'+((d&&d.error)||'no read')+'</div>'; return; }
+  if(d.empty){ el.innerHTML=head+'<div style="padding:12px;color:var(--muted)">'+(d.note||'no open F&O positions in the live book')+'</div>'; return; }
+  const n=d.net;
+  const tiles=[['net Δ delta',n.delta,(n.rupee_per_1pct>=0?'+':'')+'₹'+Math.round(n.rupee_per_1pct).toLocaleString()+' / +1%',cls(n.delta)],
+    ['net Θ theta','₹'+Math.round(n.theta).toLocaleString()+'/day',n.theta>=0?'collect decay':'pay decay',cls(n.theta)],
+    ['net Vega','₹'+Math.round(n.vega).toLocaleString(),'per +1 IV-pt',cls(n.vega)],
+    ['net Γ gamma',n.gamma,'δ change per ₹1','']];
+  let h='<div class="sh"><span>Options book · net Greeks exposure · <span style="color:var(--green)">● LIVE</span></span></div>';
+  h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;padding:4px 0 10px">'+
+     tiles.map(t=>'<div class="scard"><div class="n">'+t[0]+'</div><div class="v '+t[3]+'">'+t[1]+'</div><div style="font-size:11px;color:var(--muted)">'+t[2]+'</div></div>').join('')+'</div>';
+  if(d.legs&&d.legs.length){
+    h+='<table class="h"><thead><tr><th>Leg</th><th>Qty</th><th>Spot</th><th>IV</th><th>Δ</th><th>Γ</th><th>Θ</th><th>Vega</th></tr></thead><tbody>'+
+       d.legs.map(l=>'<tr><td><span class="sym">'+l.symbol+'</span></td><td>'+l.qty+'</td><td>'+l.spot+'</td><td>'+(l.iv||'—')+'</td><td class="'+cls(l.delta)+'">'+Math.round(l.delta)+'</td><td>'+l.gamma+'</td><td class="'+cls(l.theta)+'">'+Math.round(l.theta)+'</td><td>'+Math.round(l.vega)+'</td></tr>').join('')+'</tbody></table>';
+  }
+  h+='<div style="margin-top:6px;font-size:10px;color:var(--muted)">'+(d.source||'')+' · '+(d.asof||'')+' · read-only, never trades</div>';
+  el.innerHTML=h;
 }
 render();
 setInterval(()=>{ if(MODE==='live') renderLive(); }, 20000);   // live book auto-refreshes (surveillance)

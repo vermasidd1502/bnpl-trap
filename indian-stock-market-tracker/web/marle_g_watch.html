@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Watch Desk · Marle-G</title>
+<link rel="stylesheet" href="marle_g.css">
+<style>
+  .selrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+  .selrow input{background:var(--bg2,#11151c);border:1px solid var(--border,#222);border-radius:8px;padding:8px 11px;color:var(--ink,#e8eef7);font-family:var(--mono,monospace);font-size:12px}
+  .lane{display:flex;gap:11px;align-items:flex-start;padding:9px 11px;border-radius:9px;margin-bottom:6px;border:1px solid var(--border,rgba(255,255,255,.08))}
+  .lane .ic{font-family:var(--mono,monospace);font-size:11px;font-weight:800;white-space:nowrap;width:80px;flex:0 0 auto}
+  .lane .sym{font-family:var(--mono,monospace);font-weight:700;width:100px;flex:0 0 auto;cursor:pointer}
+  .lane .sym:hover{color:var(--saffron,#ff9933)}
+  .lane .hl{font-family:var(--mono,monospace);font-size:12px;color:var(--ink,#e8eef7)}
+  .L-FIRE{border-color:var(--green,#22c55e);background:rgba(34,197,94,.08)}
+  .L-MANAGE{border-color:var(--amber,#fbbf24);background:rgba(251,191,36,.07)}
+  .L-WATCH{border-color:rgba(96,165,250,.4);background:rgba(59,130,246,.05)}
+  .L-ASIDE,.L-HOLD{opacity:.55}
+</style>
+</head>
+<body>
+<div class="nav"><div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span> <span style="color:var(--dim);font-weight:500">/ watch</span></span></div><div class="tabs"></div></div>
+<main class="wrap">
+  <div class="head">
+    <div><h1 style="margin:0">Watch Desk</h1><div class="sub" id="sub">the validated dip-in-uptrend, live · read-only — you place the order</div></div>
+    <div class="clock" id="clock"></div>
+  </div>
+  <div class="selrow">
+    <span style="font-family:var(--mono);font-size:11px;color:var(--dim)">watch</span>
+    <input id="wl" style="width:300px" placeholder="RELIANCE,SBIN,BHEL,GAIL…">
+    <span style="font-family:var(--mono);font-size:11px;color:var(--dim)">held</span>
+    <input id="hl" style="width:230px" placeholder="TEJASNET:100:560,…">
+    <button class="quick" style="padding:7px 13px;cursor:pointer" onclick="saveAndLoad()">scan ↻</button>
+    <span id="counts" style="margin-left:auto;font-family:var(--mono);font-size:12px"></span>
+  </div>
+  <div class="card"><div id="board"><div class="skel" style="height:42px;margin-bottom:6px"></div><div class="skel" style="height:42px;margin-bottom:6px"></div><div class="skel" style="height:42px"></div></div></div>
+  <div class="legend" style="margin-top:8px">🔫 FIRE = a validated DIP-BUY is live (place it) · 🛠 MANAGE = a held name needs an action · 👀 WATCH = uptrend, waiting for the dip · ⛔ aside = no trade. Click a symbol → its full page. Read-only; nothing auto-fires.</div>
+</main>
+<script src="marle_g_nav.js"></script>
+<script>
+window.MG_SELF_REFRESH=true;
+const $=id=>document.getElementById(id);
+const esc=s=>(''+(s==null?'':s)).replace(/[<>]/g,'');
+function clocks(){const n=new Date(),o={hour:'2-digit',minute:'2-digit',hour12:false};$('clock').innerHTML='IST <b>'+n.toLocaleString('en-US',{timeZone:'Asia/Kolkata',...o})+'</b> · CT '+n.toLocaleString('en-US',{timeZone:'America/Chicago',...o});}
+setInterval(clocks,1000);clocks();
+function go(s){location.href='marle_g_stock.html?u='+encodeURIComponent(s);}
+const ICON={FIRE:'🔫 FIRE',MANAGE:'🛠 MANAGE',WATCH:'👀 WATCH',HOLD:'· hold',ASIDE:'⛔ aside'};
+function laneColor(l){return {FIRE:'var(--green,#22c55e)',MANAGE:'var(--amber,#fbbf24)',WATCH:'var(--blue,#3b82f6)',ASIDE:'var(--dim,#888)',HOLD:'var(--dim,#888)'}[l]||'var(--dim)';}
+function saveAndLoad(){localStorage.setItem('mg_watchlist',$('wl').value);localStorage.setItem('mg_held',$('hl').value);load();}
+window.podRefresh=load;
+async function load(){
+  const wl=($('wl').value||'').trim(), hl=($('hl').value||'').trim();
+  const q=[]; if(wl)q.push('names='+encodeURIComponent(wl)); if(hl)q.push('held='+encodeURIComponent(hl));
+  try{
+    const d=await (await fetch('/api/watch'+(q.length?('?'+q.join('&')):''))).json();
+    if(!d.ok){ $('board').innerHTML='<span style="color:var(--dim);font-family:var(--mono);font-size:12px">scan failed</span>'; return; }
+    $('sub').innerHTML='regime <b style="color:'+(d.regime_bull?'var(--green)':'var(--red)')+'">'+(d.regime_bull?'BULL':'BEAR/▼')+'</b> · validated dip-in-uptrend, live · read-only — you place the order';
+    $('counts').innerHTML='<b style="color:var(--green)">'+(d.n_fire||0)+' FIRE</b> &nbsp;·&nbsp; <b style="color:var(--amber,#fbbf24)">'+(d.n_manage||0)+' MANAGE</b>';
+    $('board').innerHTML=(d.rows||[]).map(r=>
+      '<div class="lane L-'+r.lane+'"><span class="ic" style="color:'+laneColor(r.lane)+'">'+(ICON[r.lane]||r.lane)+'</span>'+
+      '<span class="sym" onclick="go(\''+r.sym+'\')">'+r.sym+'</span>'+
+      '<span class="hl">₹'+(r.price!=null?r.price:'—')+' · '+esc(r.headline)+'</span></div>').join('')
+      || '<span style="color:var(--dim);font-family:var(--mono);font-size:12px">add names above and hit scan</span>';
+  }catch(e){ $('board').innerHTML='<span style="color:var(--dim);font-family:var(--mono);font-size:12px">backend offline?</span>'; }
+}
+$('wl').value=localStorage.getItem('mg_watchlist')||'';
+$('hl').value=localStorage.getItem('mg_held')||'';
+load(); setInterval(load,150000);   // self-poll every 2.5 min during the session
+</script>
+</body>
+</html>
