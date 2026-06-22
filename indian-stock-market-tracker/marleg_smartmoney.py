@@ -84,6 +84,82 @@ def flow(sym):
     return res
 
 
+_LBL = {"promoter": "promoter", "fii": "FII", "dii": "DII", "public": "retail"}
+
+
+def timeline(sym):
+    """Quarter-by-quarter PARTICIPANT timeline — who accumulated vs distributed each quarter, oldest→newest.
+    This is the 'what kind of investor is buying/selling' tape, built from the shareholding-pattern series."""
+    sh = fetch_shareholding(sym)
+    if not sh or not sh.get("quarters"):
+        return {"error": "no shareholding data for " + sym.upper()}
+    qs = sh["quarters"]
+    events = []
+    for i in range(1, len(qs)):
+        chg = {}
+        for key in ("promoter", "fii", "dii", "public"):
+            a = sh.get(key) or []
+            if len(a) > i and a[i] is not None and a[i - 1] is not None:
+                chg[key] = {"pct": a[i], "delta": round(a[i] - a[i - 1], 2)}
+        buyers = [_LBL[k] for k, v in chg.items() if v["delta"] >= 0.2]
+        sellers = [_LBL[k] for k, v in chg.items() if v["delta"] <= -0.2]
+        events.append({"quarter": qs[i], "changes": chg, "buyers": buyers, "sellers": sellers,
+                       "story": " · ".join(f"{_LBL[k]} {v['delta']:+.1f}" for k, v in chg.items() if abs(v["delta"]) >= 0.2) or "no notable change"})
+    # window trend (FII/DII/promoter over the whole series)
+    def trend(key):
+        a = sh.get(key) or []
+        return round(a[-1] - a[0], 2) if len(a) >= 2 else None
+    fii_t, dii_t, pro_t = trend("fii"), trend("dii"), trend("promoter")
+    reads = []
+    if fii_t is not None:
+        reads.append(f"FII over {len(qs)}q: {fii_t:+.1f}% ({'accumulating' if fii_t > 0.3 else 'distributing' if fii_t < -0.3 else 'flat'})")
+    if dii_t is not None:
+        reads.append(f"DII: {dii_t:+.1f}%")
+    if pro_t is not None:
+        reads.append(f"Promoter: {pro_t:+.1f}% ({'buying' if pro_t > 0.1 else 'selling' if pro_t < -0.1 else 'flat'})")
+    return {"symbol": sym.upper(), "quarters": qs, "events": events,
+            "trend": {"fii": fii_t, "dii": dii_t, "promoter": pro_t}, "reads": reads,
+            "note": "Quarterly shareholding deltas — the legal, public 'who'. Lagged (filed within 21 days of "
+                    "quarter-end). For trade-level named activity use bulk_deals(). Decision-support."}
+
+
+def _nse_session():
+    import requests
+    s = requests.Session()
+    s.headers.update({"User-Agent": UA["User-Agent"], "Accept": "*/*", "Accept-Language": "en-US,en;q=0.9",
+                      "Referer": "https://www.nseindia.com/"})
+    try:
+        s.get("https://www.nseindia.com", timeout=8)          # prime Akamai cookies
+    except Exception:
+        pass
+    return s
+
+
+def bulk_deals(sym=None, days=30):
+    """NSE bulk deals — NAMED buyer/seller at the trade level. Works from a RESIDENTIAL IP; datacenter
+    IPs are Akamai-blocked (so this runs best on the user's own machine, not the cloud guardian)."""
+    import datetime as dt
+    s = _nse_session()
+    end = dt.date.today(); start = end - dt.timedelta(days=days)
+    url = f"https://www.nseindia.com/api/historical/bulk-deals?from={start:%d-%m-%Y}&to={end:%d-%m-%Y}"
+    if sym:
+        url += f"&symbol={sym.upper()}"
+    try:
+        data = s.get(url, timeout=12).json()
+    except Exception as e:
+        return {"error": f"NSE bulk-deals unreachable (likely datacenter-IP/Akamai block): {str(e)[:80]}"}
+    rows = data.get("data", data) if isinstance(data, dict) else data
+    out = []
+    for d in (rows or []):
+        out.append({"date": d.get("mTIMESTAMP") or d.get("date") or d.get("BD_DT_DATE"),
+                    "symbol": d.get("BD_SYMBOL") or d.get("symbol"),
+                    "client": d.get("BD_CLIENT_NAME") or d.get("clientName"),
+                    "side": d.get("BD_BUY_SELL") or d.get("buySell"),
+                    "qty": d.get("BD_QTY_TRD") or d.get("quantity"),
+                    "price": d.get("BD_TP_WATP") or d.get("price")})
+    return {"ok": True, "n": len(out), "deals": out[:60]}
+
+
 def screen(universe, limit=40):
     """Rank a universe by 1-quarter institutional inflow (FII+DII delta)."""
     out = []

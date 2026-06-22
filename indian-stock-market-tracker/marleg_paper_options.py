@@ -36,7 +36,7 @@ def next_month_expiry(today):
     y, m = today.year, today.month + 1
     if m > 12:
         y, m = y + 1, 1
-    return mv.last_thursday(y, m)
+    return mv.monthly_expiry(y, m)
 
 
 def build_spread(sym, spot, today):

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Factor Lab · Marle-G</title>
+<link rel="stylesheet" href="marle_g.css">
+<style>
+  table.ft{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px}
+  table.ft th{font-size:10px;text-transform:uppercase;color:var(--dim);padding:6px 7px;text-align:right;border-bottom:1px solid var(--border)}
+  table.ft th:first-child,table.ft td:first-child{text-align:left}
+  table.ft td{padding:5px 7px;text-align:right;border-bottom:1px solid rgba(255,255,255,.04)}
+  .sig{font-weight:800;border-radius:5px;padding:1px 6px;font-size:10px}
+  .sig-long{background:rgba(34,197,94,.16);color:#22c55e}.sig-short{background:rgba(239,68,68,.16);color:#ef4444}.sig-none{color:var(--dim)}
+  .sym{cursor:pointer;color:var(--saffron);font-weight:700}.sym:hover{text-decoration:underline}
+  .fno{font-size:9px;background:rgba(96,165,250,.16);color:#60a5fa;border-radius:4px;padding:1px 5px;margin-left:5px}
+  .pos{color:#22c55e}.neg{color:#ef4444}.dim{color:var(--dim)}
+  .hh{font-family:var(--mono);font-size:10px;color:var(--saffron);font-weight:700;margin:10px 0 5px}
+  .keybox{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+  .keybox div{flex:1;min-width:200px;border:1px solid var(--border);border-radius:9px;padding:9px 12px;font-family:var(--mono);font-size:11.5px;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="nav"><div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span> <span style="color:var(--dim);font-weight:500">/ factor lab</span></span></div><div class="tabs"></div></div>
+<main class="wrap">
+  <div class="head">
+    <div><h1 style="margin:0">Factor Lab</h1><div class="sub">what actually predicts India returns — cross-sectional IC · strategy leaderboard · live long-side scanner</div></div>
+    <div class="clock" id="clock"></div>
+  </div>
+
+  <div class="keybox" id="takeaway"></div>
+
+  <div class="card">
+    <div class="sh">📈 live long screen · top names by the WINNING factors (low-vol + strength near 52w-high + liquidity) — click → options</div>
+    <div id="screen"><div class="skel" style="height:90px"></div></div>
+  </div>
+
+  <div class="card">
+    <div class="sh">🔬 factor IC · which signals predict forward returns · |t| &gt; 2 = real & stable</div>
+    <div id="ic"><div class="skel" style="height:120px"></div></div>
+  </div>
+
+  <div class="card">
+    <div class="sh">🏆 strategy leaderboard · long / short / long-short, net of ~0.15%/leg costs (annualised Sharpe)</div>
+    <div id="lb"><div class="skel" style="height:120px"></div></div>
+  </div>
+
+  <div class="legend" id="foot" style="margin-top:8px"></div>
+</main>
+<script src="marle_g_nav.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>(''+(s==null?'':s)).replace(/[<>]/g,'');
+const jget=async u=>{try{return await (await fetch(u)).json()}catch(e){return{ok:false,error:'offline'}}};
+function clocks(){const n=new Date(),o={hour:'2-digit',minute:'2-digit',hour12:false};$('clock').innerHTML='IST <b>'+n.toLocaleString('en-US',{timeZone:'Asia/Kolkata',...o})+'</b> · CT '+n.toLocaleString('en-US',{timeZone:'America/Chicago',...o});}
+setInterval(clocks,1000);clocks();
+const sgn=v=>v==null?'—':(v>=0?'+':'')+v;
+function go(s){location.href='marle_g_options.html?u='+encodeURIComponent(s);}
+window.podRefresh=load;
+
+$('takeaway').innerHTML=
+  '<div><b style="color:#22c55e">✅ the edge is LONG</b><br>Own/call quality <b>low-vol</b> names <b>near their 52w-highs</b> — robust in bull AND bear (Sharpe ~1.0). Market-neutral composites cut the drawdown.</div>'+
+  '<div><b style="color:#ef4444">❌ shorting is an anti-edge</b><br>Overbought/reversal shorts backtest <b>negative</b> (−2 to −2.8 Sharpe). If bearish: <b>intraday-short weak names</b> only — never overnight, never short strength.</div>'+
+  '<div><b style="color:#fbbf24">⏱ horizon matters</b><br><b>Monthly</b> beats weekly everywhere (costs). Strength is an <b>overnight</b> phenomenon — long-strong <i>intraday</i> loses −73%/yr.</div>';
+
+async function load(){
+  const [scr,fa,lb]=await Promise.all([jget('/api/factor_screen'),jget('/api/factors'),jget('/api/portfolio_bt')]);
+  renderScreen(scr); renderIC(fa); renderLB(lb);
+}
+function renderScreen(d){
+  if(!d||!d.ok||!d.names){ $('screen').innerHTML='<span class="dim" style="font-family:var(--mono);font-size:12px">screen offline</span>'; return; }
+  let h='<table class="ft"><tr><th>#</th><th>name</th><th>score</th><th>vs 52wH</th><th>ann vol</th><th>RSI</th><th>sector</th></tr>';
+  h+=d.names.map((x,i)=>'<tr><td class="dim">'+(i+1)+'</td><td><span class="sym" onclick="go(\''+x.s+'\')">'+x.s+'</span>'+(x.fno?'<span class="fno">F&O</span>':'')+'</td>'+
+    '<td><b>'+x.score+'</b></td><td class="'+(x.vs_52w_high_pct>=-3?'pos':'dim')+'">'+sgn(x.vs_52w_high_pct)+'%</td>'+
+    '<td class="dim">'+x.ann_vol_pct+'%</td><td class="dim">'+x.rsi+'</td><td class="dim" style="font-size:10.5px">'+esc(x.sector||'')+'</td></tr>').join('');
+  h+='</table>';
+  $('screen').innerHTML=h;
+}
+function renderIC(d){
+  if(!d||!d.ok||!d.factors){ $('ic').innerHTML='<span class="dim" style="font-family:var(--mono);font-size:12px">factor IC offline (first build runs ~1 min)</span>'; return; }
+  let h='';
+  (d.horizons||[5,21]).forEach(hz=>{
+    const rows=d.factors[String(hz)]||[];
+    h+='<div class="hh">▸ '+hz+'-DAY FORWARD HORIZON</div><table class="ft"><tr><th>factor</th><th>IC</th><th>t-stat</th><th>hit%</th><th>L-S %</th><th>read</th></tr>';
+    h+=rows.map(x=>{const sig=x.ic_t>=2?'sig-long':x.ic_t<=-2?'sig-short':'sig-none';
+      const lab=x.ic_t>=2?'LONG high':x.ic_t<=-2?'SHORT high':'noise';
+      return '<tr><td>'+esc(x.factor)+'</td><td>'+x.ic+'</td><td class="'+(x.ic_t>=2?'pos':x.ic_t<=-2?'neg':'dim')+'"><b>'+x.ic_t+'</b></td>'+
+      '<td class="dim">'+x.ic_hit+'%</td><td class="'+(x.ls_spread_pct>=0?'pos':'neg')+'">'+sgn(x.ls_spread_pct)+'</td>'+
+      '<td><span class="sig '+sig+'">'+lab+'</span></td></tr>';}).join('');
+    h+='</table>';
+  });
+  $('ic').innerHTML=h;
+  $('foot').innerHTML=esc(d.note||'');
+}
+function renderLB(d){
+  if(!d||!d.ok||!d.leaderboard){ $('lb').innerHTML='<span class="dim" style="font-family:var(--mono);font-size:12px">leaderboard offline (first build runs ~1-2 min)</span>'; return; }
+  let h='<table class="ft"><tr><th>#</th><th>strategy</th><th>horizon</th><th>Sharpe</th><th>ann ret</th><th>max DD</th><th>win</th></tr>';
+  h+=d.leaderboard.slice(0,16).map((x,i)=>{const good=x.sharpe>=0.7;
+    return '<tr><td class="dim">'+(i+1)+'</td><td'+(good?' style="font-weight:700"':'')+'>'+esc(x.strategy)+'</td><td class="dim">'+esc(x.horizon)+'</td>'+
+    '<td class="'+(x.sharpe>=0.7?'pos':x.sharpe<0?'neg':'dim')+'"><b>'+x.sharpe+'</b></td><td class="'+(x.ann_ret_pct>=0?'pos':'neg')+'">'+sgn(x.ann_ret_pct)+'%</td>'+
+    '<td class="neg">'+x.maxdd_pct+'%</td><td class="dim">'+x.win_pct+'%</td></tr>';}).join('');
+  h+='</table><div class="dim" style="font-family:var(--mono);font-size:10.5px;margin-top:6px">Best regime-robust: <b>dist_52w_high·long</b> (Bull 1.15/Bear 1.02) &amp; <b>lowvol+strength+liq·long-short</b> (0.92/0.92). Bull-only: momentum+lowvol·LS (2.47/0.00). Intraday: short-weak +18% ✅, long-strong −73% ❌.</div>';
+  $('lb').innerHTML=h;
+}
+load();
+</script>
+</body>
+</html>

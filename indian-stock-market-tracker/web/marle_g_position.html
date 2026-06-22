@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Position & Levels Desk · Marle-G</title>
+<link rel="stylesheet" href="marle_g.css">
+<style>
+  .pcard{border:1px solid var(--border,rgba(255,255,255,.09));border-radius:12px;padding:14px 16px;margin-bottom:14px;background:var(--bg2,#11151c)}
+  .prow{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:baseline;margin:7px 0}
+  .ptag{font-family:var(--mono,monospace);font-size:11px;color:var(--dim,#8a93a6)}
+  .pbig{font-family:var(--mono,monospace);font-weight:800;font-size:18px}
+  .met{font-family:var(--mono,monospace);font-size:12px}
+  .met b{font-weight:700}
+  .band{font-family:var(--mono,monospace);font-weight:800;font-size:12px;padding:3px 10px;border-radius:999px;display:inline-block}
+  .B-VIABLE{background:rgba(34,197,94,.16);color:#22c55e;border:1px solid rgba(34,197,94,.5)}
+  .B-MARGINAL{background:rgba(251,191,36,.14);color:#fbbf24;border:1px solid rgba(251,191,36,.5)}
+  .B-POOR{background:rgba(249,115,22,.14);color:#fb923c;border:1px solid rgba(249,115,22,.5)}
+  .B-DEAD{background:rgba(239,68,68,.16);color:#ef4444;border:1px solid rgba(239,68,68,.5)}
+  .gauge{height:9px;border-radius:6px;background:rgba(255,255,255,.08);overflow:hidden;flex:1;min-width:120px;max-width:240px}
+  .gauge>i{display:block;height:100%;border-radius:6px}
+  .split{height:13px;border-radius:5px;overflow:hidden;display:flex;min-width:160px;max-width:280px;font-size:9px;font-family:var(--mono);line-height:13px}
+  .split>span{display:block;text-align:center;color:#0b0d12;font-weight:700;white-space:nowrap;overflow:hidden}
+  .scope{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px;margin-top:4px}
+  .scope td{padding:3px 8px;border-bottom:1px solid rgba(255,255,255,.05)}
+  .pos{color:var(--green,#22c55e)} .neg{color:var(--red,#ef4444)} .dim{color:var(--dim,#8a93a6)}
+  .reasons{font-family:var(--mono);font-size:11.5px;line-height:1.65;margin-top:8px}
+  .reasons div{padding:1px 0}
+  .lvlgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:10px}
+  .lvltbl{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11.5px}
+  .lvltbl td{padding:2px 6px}
+  .pivtbl{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px}
+  .pivtbl td,.pivtbl th{padding:4px 8px;text-align:right;border-bottom:1px solid rgba(255,255,255,.05)}
+  .pivtbl th{color:var(--saffron,#ff9933);font-size:10px;text-transform:uppercase}
+  .pivtbl td:first-child{text-align:left;color:var(--dim);font-weight:700}
+  .ladrow{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11.5px;padding:2px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+  .obrow{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;margin:2px 0}
+  .obbar{height:11px;border-radius:3px}
+  .srch{background:#0b0d12;border:1px solid var(--border);color:var(--ink);border-radius:10px;padding:11px 13px;font-family:var(--mono);font-size:13px;text-transform:uppercase;width:260px}
+  @media(max-width:760px){.lvlgrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="nav"><div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span> <span style="color:var(--dim);font-weight:500">/ position desk</span></span></div><div class="tabs"></div></div>
+<main class="wrap">
+  <div class="head">
+    <div><h1 style="margin:0">Position &amp; Levels Desk</h1>
+      <div class="sub" id="sub">option viability + scope · pivots · L1/L2 walls · stop pools — read-only, decision-support (not advice)</div></div>
+    <div class="clock" id="clock"></div>
+  </div>
+
+  <div class="card">
+    <div class="sh">📊 your option positions — is the contract viable, and what's the scope?</div>
+    <div id="positions"><div class="skel" style="height:90px;margin-bottom:8px"></div><div class="skel" style="height:90px"></div></div>
+    <div class="legend" id="posfoot" style="margin-top:6px"></div>
+  </div>
+
+  <div class="card">
+    <div class="sh">🎯 levels desk — any stock / equity / index (pivots + walls + stop pools)</div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:4px 0 12px">
+      <input id="q" class="srch" placeholder="RELIANCE / NIFTY / LT …" title="Any NSE stock, equity or index. Daily pivots come from the prior session; order book is live during market hours.">
+      <button class="quick" style="padding:9px 15px;cursor:pointer" onclick="loadDesk()">levels →</button>
+      <span class="ptag" id="deskhint">Groww-style daily Pivot + R1-R3 + S1-S3 (Classic · Fibonacci · Camarilla) + live order book</span>
+    </div>
+    <div id="desk"></div>
+  </div>
+
+  <div class="legend" style="margin-top:8px">
+    <b>Viability</b> = a 0–100 heuristic (odds × reachability × runway × decay-drag × liquidity × vol). <b>Scope</b> = the option's value if the underlying moves ±σ (a near-term "if it gets there, you sell" read) vs the decay floor if it sits flat. Odds are risk-neutral — no assumed edge. Pivots/walls/pools are a level MAP, not a signal (the sweep edge backtested negative net of costs). <b>Read-only; decision-support, not investment advice.</b>
+  </div>
+</main>
+<script src="marle_g_nav.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>(''+(s==null?'':s)).replace(/[<>]/g,'');
+const jget=async u=>{try{return await (await fetch(u)).json()}catch(e){return{ok:false,error:'offline'}}};
+function clocks(){const n=new Date(),o={hour:'2-digit',minute:'2-digit',hour12:false};$('clock').innerHTML='IST <b>'+n.toLocaleString('en-US',{timeZone:'Asia/Kolkata',...o})+'</b> · CT '+n.toLocaleString('en-US',{timeZone:'America/Chicago',...o});}
+setInterval(clocks,1000);clocks();
+const sgn=v=>v==null?'':(v>=0?'+':'')+v;
+const cls=v=>v==null?'dim':(v>=0?'pos':'neg');
+const rs=v=>v==null?'—':'₹'+(+v).toLocaleString('en-IN',{maximumFractionDigits:2});
+const bandColor=b=>({VIABLE:'#22c55e',MARGINAL:'#fbbf24',POOR:'#fb923c',DEAD:'#ef4444'}[b]||'#8a93a6');
+
+window.podRefresh=loadAll;
+
+// ---------------- positions ----------------
+async function loadAll(){
+  const b=await jget('/api/opt_position');
+  if(!b||!b.ok){ $('positions').innerHTML='<span class="dim met">'+esc((b&&b.error)||'no Groww positions / backend offline')+'</span>'; return; }
+  $('posfoot').innerHTML=(b.n||0)+' open option leg(s)'+((b.closed_today||0)?' · '+b.closed_today+' closed today (hidden)':'')+' · '+esc(b.asof||'')+' · '+esc(b.caveat||'');
+  if(!b.positions||!b.positions.length){ $('positions').innerHTML='<span class="dim met">no F&O option positions open right now</span>'; return; }
+  $('positions').innerHTML=b.positions.map((p,i)=>posCard(p,i)).join('');
+  // hydrate each position's underlying levels
+  b.positions.forEach((p,i)=>{ if(p.ok&&p.underlying) hydrateLevels('ulev'+i, p.underlying, p); });
+}
+function posCard(p,i){
+  if(!p.ok) return '<div class="pcard"><b class="met">'+esc(p.symbol)+'</b> <span class="dim met">— '+esc(p.error||'could not analyze')+'</span></div>';
+  const v=p.viability, m=p.moneyness, o=p.odds, d=p.decay, g=p.greeks, vol=p.vol;
+  const pnlc=cls(p.pnl&&p.pnl.pct);
+  const intr=m.intrinsic, ext=m.extrinsic, exr=m.extrinsic_pct;
+  const split='<div class="split" title="intrinsic never decays; time value bleeds to zero by expiry">'+
+    '<span style="width:'+(100-exr)+'%;background:#22c55e">'+(100-exr>14?'intrinsic '+Math.round(100-exr)+'%':'')+'</span>'+
+    '<span style="width:'+exr+'%;background:#fb923c">'+(exr>14?'time '+Math.round(exr)+'%':'')+'</span></div>';
+  const sc=(p.scope&&p.scope.scenarios)||[];
+  const scopeRows=sc.map(s=>'<tr><td class="dim">'+esc(s.label)+'</td><td>'+(s.move_pct!=null?sgn(s.move_pct)+'%':'')+'</td><td>'+rs(s.opt_value)+'</td><td class="'+cls(s.ret_vs_avg_pct)+'">'+sgn(s.ret_vs_avg_pct)+'%</td></tr>').join('');
+  const floor=p.scope&&p.scope.floor;
+  const reasons=(v.reasons||[]).map(r=>{const neg=r.trim().startsWith('−');const pos=r.trim().startsWith('+');return '<div style="color:'+(neg?'#ef9a9a':pos?'#86efac':'var(--dim)')+'">'+esc(r)+'</div>';}).join('');
+  return '<div class="pcard">'+
+    '<div class="prow"><span class="pbig">'+esc(p.symbol)+'</span>'+
+      '<span class="band B-'+v.band+'">'+v.band+' · '+v.score+'/100</span>'+
+      '<span class="ptag">'+esc(p.underlying)+' spot '+rs(p.spot)+' · '+esc(p.expiry)+' ('+p.trading_days_left+' sessions) · <b style="color:'+(m.state==='ITM'?'#22c55e':m.state==='OTM'?'#fb923c':'#fbbf24')+'">'+m.state+'</b></span>'+
+      '<span class="met" style="margin-left:auto">P&L <b class="'+pnlc+'">'+sgn(p.pnl&&p.pnl.pct)+'% ('+rs(p.pnl&&p.pnl.abs)+')</b></span></div>'+
+    '<div class="prow"><div class="gauge" title="viability score"><i style="width:'+v.score+'%;background:'+bandColor(v.band)+'"></i></div>'+
+      '<span class="met dim">premium <b style="color:var(--ink)">'+rs(p.premium)+'</b> · avg '+rs(p.avg)+' · qty '+(p.qty||'—')+'</span></div>'+
+    '<div class="prow">'+split+'<span class="met dim">intrinsic <b style="color:#22c55e">'+rs(intr)+'</b> · time value <b style="color:#fb923c">'+rs(ext)+'</b> ('+exr+'%)</span></div>'+
+    '<div class="prow">'+
+      '<span class="met dim">breakeven <b style="color:var(--ink)">'+rs(o.breakeven)+'</b> ('+sgn(o.breakeven_move_pct)+'%)</span>'+
+      '<span class="met dim">1σ→exp <b style="color:var(--ink)">±'+o.sigma_move_pct+'%</b></span>'+
+      '<span class="met dim">P(beat entry) <b style="color:'+(o.p_profit_vs_entry>=45?'#22c55e':'#fb923c')+'">'+o.p_profit_vs_entry+'%</b></span>'+
+      '<span class="met dim">P(finish ITM) <b style="color:var(--ink)">'+o.p_itm_expiry+'%</b></span>'+
+      (o.p_touch_atm!=null?'<span class="met dim">P→ATM <b style="color:var(--ink)">'+o.p_touch_atm+'%</b></span>':'')+
+      '<span class="met dim">θ <b class="neg">'+rs(g.theta_rupees_day)+'/day</b></span>'+
+      '<span class="met dim">IV <b style="color:var(--ink)">'+vol.iv_pct+'%</b> vs RV '+(vol.rv_pct!=null?vol.rv_pct+'%':'—')+'</span></div>'+
+    '<div class="prow" style="background:rgba(239,68,68,.07);border-radius:8px;padding:6px 10px"><span class="met">⏚ decay floor — if '+esc(p.underlying)+' sits flat to expiry: <b>'+rs(floor&&floor.opt_value)+'</b> <span class="'+cls(floor&&floor.ret_vs_avg_pct)+'">('+sgn(floor&&floor.ret_vs_avg_pct)+'% vs your avg)</span></span></div>'+
+    '<div class="lvlgrid">'+
+      '<div><div class="ptag" style="margin-bottom:4px">SCOPE — value if it moves (sell on the move)</div><table class="scope"><tr class="dim"><td>move</td><td></td><td>option</td><td>vs avg</td></tr>'+scopeRows+'</table></div>'+
+      '<div><div class="ptag" style="margin-bottom:4px">'+esc(p.underlying)+' — resistance / support / stops</div><div id="ulev'+i+'"><span class="dim met">loading levels…</span></div></div>'+
+    '</div>'+
+    '<div class="reasons">'+reasons+'</div>'+
+    (p.liquidity?'<div class="ptag" style="margin-top:6px">'+esc(p.liquidity.verdict||'')+'</div>':'')+
+  '</div>';
+}
+
+// ---------------- underlying levels (compact, inside a position card) ----------------
+async function hydrateLevels(elid, sym, p){
+  const d=await jget('/api/levels_desk/'+encodeURIComponent(sym));
+  const el=$(elid); if(!el) return;
+  if(!d||!d.ok){ el.innerHTML='<span class="dim met">levels n/a</span>'; return; }
+  const s=d.synthesis||{};
+  const res=(s.resistance_above||[]).slice(0,4), sup=(s.support_below||[]).slice(0,4);
+  const row=(x,c)=>'<div class="ladrow"><span style="color:'+c+'">'+rs(x.price)+'</span><span class="dim">'+esc(x.src)+(x.state?' ['+x.state+']':'')+'</span><span class="'+cls(x.dist_pct)+'">'+sgn(x.dist_pct)+'%</span></div>';
+  let h=res.map(x=>row(x,'#ef9a9a')).reverse().join('');
+  h+='<div class="ladrow" style="border-top:1px dashed rgba(255,255,255,.18);border-bottom:none"><span style="color:var(--saffron)">▸ spot '+rs(d.spot)+'</span><span></span><span></span></div>';
+  h+=sup.map(x=>row(x,'#86efac')).join('');
+  const ob=d.order_book;
+  if(ob&&!ob.error){ h+='<div class="ptag" style="margin-top:5px">book ('+esc(ob.kind)+'): buy '+(ob.buy_pct||'—')+'% / sell '+(ob.sell_pct||'—')+'%'+
+    (ob.bid_wall?' · 🟢 bid wall '+(ob.bid_wall.quantity||'').toLocaleString('en-IN')+'@'+rs(ob.bid_wall.price):'')+
+    (ob.ask_wall?' · 🔴 ask wall '+(ob.ask_wall.quantity||'').toLocaleString('en-IN')+'@'+rs(ob.ask_wall.price):'')+'</div>'; }
+  el.innerHTML=h;
+}
+
+// ---------------- any-stock levels desk ----------------
+async function loadDesk(){
+  const sym=($('q').value||'').trim().toUpperCase(); if(!sym) return;
+  $('desk').innerHTML='<span class="dim met">loading '+esc(sym)+'…</span>';
+  const [d,pv]=await Promise.all([jget('/api/levels_desk/'+encodeURIComponent(sym)), jget('/api/pivots/'+encodeURIComponent(sym))]);
+  if(!d||!d.ok){ $('desk').innerHTML='<span class="dim met">'+esc((d&&d.error)||'no levels')+'</span>'; return; }
+  $('desk').innerHTML=deskHtml(d,pv);
+}
+function pivTable(pv){
+  if(!pv||!pv.ok) return '<span class="dim met">pivots n/a</span>';
+  const M=pv.methods, cl=M.classic, fb=M.fibonacci, cm=M.camarilla;
+  const lvls=['R4','R3','R2','R1','P','S1','S2','S3','S4'];
+  const cell=(o,k)=>o&&o[k]!=null?rs(o[k]):'·';
+  let h='<table class="pivtbl"><tr><th>level</th><th>classic</th><th>fibonacci</th><th>camarilla</th></tr>';
+  h+=lvls.map(k=>{const isP=k==='P';return '<tr'+(isP?' style="background:rgba(255,153,51,.10)"':'')+'><td>'+k+'</td><td>'+cell(cl,k)+'</td><td>'+cell(fb,k)+'</td><td>'+cell(cm,k)+'</td></tr>';}).join('');
+  h+='</table>';
+  const p=pv.position||{};
+  h+='<div class="ptag" style="margin-top:6px">basis '+esc(pv.basis_date)+' (O'+pv.basis.open+' H'+pv.basis.high+' L'+pv.basis.low+' C'+pv.basis.close+') · '+esc(p.bias||'')+' · '+esc(p.zone||'')+'</div>';
+  return h;
+}
+function deskHtml(d,pv){
+  const s=d.synthesis||{}, ob=d.order_book||{};
+  const res=(s.resistance_above||[]), sup=(s.support_below||[]);
+  const row=(x,c)=>'<div class="ladrow"><span style="color:'+c+'">'+rs(x.price)+'</span><span class="dim">'+esc(x.src)+(x.strength?' · str'+x.strength:'')+(x.state?' ['+x.state+']':'')+'</span><span class="'+cls(x.dist_pct)+'">'+sgn(x.dist_pct)+'%</span></div>';
+  let ladder=res.map(x=>row(x,'#ef9a9a')).reverse().join('');
+  ladder+='<div class="ladrow" style="border-top:1px dashed rgba(255,255,255,.2)"><span style="color:var(--saffron);font-weight:700">▸ spot '+rs(d.spot)+'</span><span class="dim">'+(d.poc?'POC '+rs(d.poc):'')+'</span><span></span></div>';
+  ladder+=sup.map(x=>row(x,'#86efac')).join('');
+  // order book ladder
+  let obh='<span class="dim met">'+esc(ob.error||'no book')+'</span>';
+  if(ob&&!ob.error){
+    const mx=ob.maxq||1;
+    const lv=(arr,c)=>(arr||[]).slice(0,5).map(x=>'<div class="obrow"><span style="width:64px;text-align:right">'+rs(x.price)+'</span><div class="obbar" style="width:'+Math.max(4,(x.quantity/mx*120))+'px;background:'+c+'"></div><span class="dim">'+(x.quantity||0).toLocaleString('en-IN')+'</span></div>').join('');
+    obh='<div class="ptag" style="margin-bottom:4px">'+esc(ob.kind)+' '+esc(ob.instrument||'')+' · buy '+(ob.buy_pct||'—')+'% / sell '+(ob.sell_pct||'—')+'% · spread '+(ob.spread_pct!=null?ob.spread_pct+'%':'—')+'</div>'+
+      '<div style="font-size:9px;color:#ef9a9a;font-family:var(--mono)">ASKS</div>'+lv((ob.sell||[]).slice().reverse(),'rgba(239,68,68,.5)')+
+      '<div style="font-size:9px;color:#86efac;font-family:var(--mono);margin-top:3px">BIDS</div>'+lv(ob.buy,'rgba(34,197,94,.5)')+
+      (ob.note?'<div class="ptag" style="margin-top:4px">'+esc(ob.note)+'</div>':'');
+  }
+  const nr=s.nearest_resistance, ns=s.nearest_support;
+  return '<div class="prow"><span class="pbig">'+esc(d.tk)+'</span><span class="ptag">spot '+rs(d.spot)+(d.poc?' · POC '+rs(d.poc):'')+'</span>'+
+    '<span class="met" style="margin-left:auto">➤ R '+(nr?'<b class="neg">'+rs(nr.price)+'</b> ('+esc(nr.src)+', '+sgn(nr.dist_pct)+'%)':'—')+' &nbsp; ➤ S '+(ns?'<b class="pos">'+rs(ns.price)+'</b> ('+esc(ns.src)+', '+sgn(ns.dist_pct)+'%)':'—')+'</span></div>'+
+    '<div class="lvlgrid"><div><div class="ptag" style="margin-bottom:4px">DAILY PIVOTS (Groww-style)</div>'+pivTable(pv)+'</div>'+
+    '<div><div class="ptag" style="margin-bottom:4px">MERGED LADDER — resistance ↑ / support ↓ (pivots + HVN + stops + walls)</div>'+ladder+'</div></div>'+
+    '<div style="margin-top:12px"><div class="ptag" style="margin-bottom:4px">LIVE ORDER BOOK (L1/L2)</div>'+obh+'</div>'+
+    '<div class="legend" style="margin-top:8px">'+esc(d.note||'')+'</div>';
+}
+
+loadAll();
+const params=new URLSearchParams(location.search); if(params.get('u')){ $('q').value=params.get('u'); loadDesk(); }
+</script>
+</body>
+</html>

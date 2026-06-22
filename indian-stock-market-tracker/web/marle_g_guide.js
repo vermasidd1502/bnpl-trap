@@ -10,6 +10,18 @@
   // ---------------------------------------------------------------- content
   // Each scene: { h: headline, t: story text, sel: optional CSS selector to spotlight }
   var GUIDES = {
+    "marle_g_factors.html": { title: "Factor Lab", scenes: [
+      { h: "The edge is long", t: "The top boxes summarise the research: India's tradeable edge is LONG (own/call low-vol names near their highs); shorting is an anti-edge. Read these first.", sel: "#takeaway" },
+      { h: "Live long screen", t: "Today's top names by the backtested winning composite — low realized vol + strength near the 52-week high + liquidity. Click any name to open it in the options pod (express it with calls).", sel: "#screen" },
+      { h: "Factor IC", t: "Which raw signals predict forward returns: IC = rank-correlation, |t|>2 = real & stable. Green = long-the-high; red = short-the-high; dim = noise. Note RSI/over-extension are noise — overbought-short isn't real.", sel: "#ic" },
+      { h: "Strategy leaderboard", t: "Long/short/long-short portfolios net of costs, ranked by annualised Sharpe. The bold rows beat the benchmark; the footnote flags which are regime-robust vs bull-only.", sel: "#lb" }
+    ]},
+    "marle_g_position.html": { title: "Position & Levels Desk", scenes: [
+      { h: "Is the contract viable?", t: "Each held option gets a 0–100 viability band: odds of beating YOUR breakeven × reachability × time runway × decay-drag × liquidity × vol. The intrinsic/time-value split shows how much of the premium will simply bleed away by expiry.", sel: "#positions" },
+      { h: "Mind the decay floor", t: "The red strip is the honest base case: what the option is worth if the underlying sits flat to expiry. An OTM call's floor is zero — green-on-screen can still be a losing hold.", sel: ".pcard" },
+      { h: "Scope = the upside", t: "The scope ladder reprices the SAME contract at ±1σ / ±2σ moves — what you'd make if it gets there and you sell, vs the flat-floor downside. Odds are risk-neutral (no assumed edge)." },
+      { h: "Where's resistance & the stops", t: "Each position shows its underlying's merged levels; the search box runs the full Levels Desk on ANY stock — Groww-style daily pivots (Classic/Fib/Camarilla) + volume HVN + stop pools + the live L1/L2 order book.", sel: "#q" }
+    ]},
     "marle_g_pod.html": { title: "Home — the cockpit", scenes: [
       { h: "Welcome to Marle-G", t: "Your India-market decision desk. Every pod is a lens on the same live book — paper-safe, read-only on Groww. Nothing here places an order." },
       { h: "Navigate by group", t: "The top bar is grouped: markets · strategies · scenarios · portfolio · tools. Click any tab to jump. The orange tab is where you are now.", sel: ".tabs" },
@@ -58,6 +70,13 @@
     "marle_g_strategies.html": { title: "Strategies — playbooks", scenes: [
       { h: "Honest playbooks", t: "Each strategy ships with a real backtest and a cost-of-trading reality check — survivors only." },
       { h: "Try it on a stock", t: "Paper-trade any playbook on a name you pick before risking capital." }
+    ]},
+    "marle_g_watch.html": { title: "Watch Desk — sit & fire", scenes: [
+      { h: "Your live trade board", t: "Every name in your watchlist + held book is sorted into a lane and re-scanned every 2½ minutes. It does all the thinking — you just tap the order. Read-only: it NEVER places a trade." },
+      { h: "Two inputs", t: "‘watch’ = names to scan (RELIANCE,SBIN,BHEL…). ‘held’ = your positions as SYMBOL:qty:avg (TEJASNET:100:560). Both save in this browser. Hit ‘scan ↻’ to refresh now.", sel: "#wl" },
+      { h: "The four lanes", t: "🔫 FIRE = a VALIDATED dip-buy is live — place it. 🛠 MANAGE = a held name needs a stop/target move. 👀 WATCH = uptrend, waiting for the dip (shows the buy-zone). ⛔ aside = no trade.", sel: "#board" },
+      { h: "Only what matters", t: "The FIRE/MANAGE counts up top tell you instantly if there’s anything to do. Click any symbol to open its full single-stock page.", sel: "#counts" },
+      { h: "Slack when you’re away", t: "Run ‘marleg_watch.py --slack --loop 180’ during market hours and it pings only FIRE/MANAGE to Slack — so you can leave the screen and still get the call." }
     ]}
   };
 

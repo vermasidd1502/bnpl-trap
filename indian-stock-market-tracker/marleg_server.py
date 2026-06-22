@@ -425,6 +425,13 @@ def _read_json(fname, err="not built yet"):
         return {"error": err}
 
 
+@app.route("/api/news_bt")
+def api_news_bt():
+    """Backtest: do news/rating-driven GAP moves continue or fade? (PEAD on the full universe). Heavy → cache 6h."""
+    import marleg_news_bt as nb
+    gap = request.args.get("gap", default=3.0, type=float)
+    return jsonify(cached(f"news_bt:{gap}", lambda: nb.study(gap), 21600))
+
 @app.route("/api/movers")
 def api_movers():
     """High-mover / squeeze radar — move-potential (the 3-8%/day amplitude filter) + abnormal-up + F&O short-covering."""
@@ -1051,7 +1058,8 @@ def api_options(und):
             expd = _d.datetime.strptime(exp, "%Y-%m-%d").date()
         except Exception:
             expd = None
-    return jsonify(cached(f"optchain:{sym}:{exp}", lambda: mom.chain(sym, n=10, expiry=expd), 45))
+    n = max(6, min(25, request.args.get("n", default=14, type=int)))     # ATM±n strikes (widened, ?n=)
+    return jsonify(cached(f"optchain:{sym}:{exp}:{n}", lambda: mom.chain(sym, n=n, expiry=expd), 45))
 
 @app.route("/api/optimize/<und>")
 def api_optimize(und):
@@ -1073,6 +1081,124 @@ def api_optvalue(und):
     sym = und.upper()
     exp = request.args.get("expiry")
     return jsonify(cached(f"optvalue:{sym}:{exp}", lambda: ov.value_ladder(sym, exp), 45))
+
+@app.route("/api/opt_position")
+def api_opt_position():
+    """VIABILITY + SCOPE scorecard for every held F&O option position (live Groww book, read-only)."""
+    import marleg_opt_position as op
+    return jsonify(cached("opt_position:book", lambda: op.book(), 20))
+
+@app.route("/api/opt_position/<sym>")
+def api_opt_position_one(sym):
+    """Single-contract viability+scope. Query: ?avg= &qty= &target= (avg/qty optional — for ad-hoc)."""
+    import marleg_opt_position as op
+    avg = request.args.get("avg", type=float)
+    qty = request.args.get("qty", type=float)
+    tgt = request.args.get("target", type=float)
+    key = f"opt_position:{sym.upper()}:{avg}:{qty}:{tgt}"
+    return jsonify(cached(key, lambda: op.analyze_position(sym.upper(), avg=avg, qty=qty, view_target=tgt), 20))
+
+@app.route("/api/levels_desk/<sym>")
+def api_levels_desk(sym):
+    """Levels & smart-money desk: pivots + volume HVN/POC + stop pools + L1/L2 order book, merged."""
+    import marleg_levels_desk as ld
+    return jsonify(cached("levels_desk:" + sym.upper(), lambda: ld.desk(sym.upper()), 45))
+
+@app.route("/api/orderbook/<sym>")
+def api_orderbook(sym):
+    """Live L1/L2 order ladder for any instrument (option symbol / index→future / equity)."""
+    import marleg_levels_desk as ld
+    return jsonify(cached("orderbook:" + sym.upper(), lambda: ld.order_ladder(sym.upper()), 8))
+
+@app.route("/api/pivots/<sym>")
+def api_pivots(sym):
+    """Daily Pivot + R1-R3 + S1-S3 (Classic/Fibonacci/Camarilla) for any stock/equity/index, like Groww."""
+    import marleg_pivots as pvm
+    return jsonify(cached("pivots:" + sym.upper(), lambda: pvm.pivots(sym.upper()), 300))
+
+@app.route("/api/pivot_bias/<sym>")
+def api_pivot_bias(sym):
+    """Bull/bear by PIVOT ACCEPTANCE — how often & how long price holds above the daily pivot / R1 / S1."""
+    import marleg_pivots as pvm
+    return jsonify(cached("pivot_bias:" + sym.upper(), lambda: pvm.bias(sym.upper()), 600))
+
+@app.route("/api/sector_bias")
+def api_sector_bias():
+    """Sectoral bull/bear monitor by pivot acceptance + bearish-now flag + PUT candidates (with caveat)."""
+    import marleg_sector_bias as sb
+    return jsonify(cached("sector_bias", lambda: sb.build(), 900))
+
+@app.route("/api/session_split")
+def api_session_split():
+    """Intraday (open→close) vs overnight (close→open) returns — answers whether a SHORT should be held
+    intraday or overnight. Heavy (full panel) → cache 6h."""
+    import marleg_session_split as ss
+    return jsonify(cached("session_split", lambda: ss.study(), 21600))
+
+@app.route("/api/factors")
+def api_factors():
+    """Cross-sectional FACTOR DISCOVERY: rank-IC + L-S spread per factor at 5d/21d horizons. Heavy → cache 6h."""
+    import marleg_factors as fa
+    return jsonify(cached("factors", lambda: fa.discover(), 21600))
+
+@app.route("/api/overbought")
+def api_overbought():
+    """Today's most overbought/extended names + the honest verdict (overbought-short is NOT a validated edge)."""
+    import marleg_overbought as ob
+    return jsonify(cached("overbought", lambda: ob.screen(), 300))
+
+@app.route("/api/portfolio_bt")
+def api_portfolio_bt():
+    """Cross-sectional portfolio backtest leaderboard: long/short/long-short per factor + composites, net."""
+    import marleg_portfolio_bt as pbt
+    def do():
+        try:
+            return json.load(open(pbt.OUT, encoding="utf-8"))
+        except Exception:
+            return pbt.run()
+    return jsonify(cached("portfolio_bt", do, 3600))
+
+@app.route("/api/factor_screen")
+def api_factor_screen():
+    """Live TOP-LONG picks by the backtested winning factors (low-vol + strength + liquidity)."""
+    import marleg_factor_screen as fs
+    return jsonify(cached("factor_screen", lambda: fs.screen(), 600))
+
+@app.route("/api/expiry_matrix/<und>")
+def api_expiry_matrix(und):
+    """P&L of one strike across EVERY live expiry, for a 1wk/2wk hold, + best stop + BUY/AVOID stance. Groww-only.
+    Query: ?strike= (default ATM) &kind=C|P ."""
+    import marleg_expiry_matrix as em
+    strike = request.args.get("strike", type=float)
+    kind = "P" if request.args.get("kind", "C").upper().startswith("P") else "C"
+    key = f"expiry_matrix:{und.upper()}:{strike}:{kind}"
+    return jsonify(cached(key, lambda: em.matrix(und.upper(), strike, kind), 45))
+
+@app.route("/api/opt_paper")
+def api_opt_paper():
+    """The manual single-leg option PAPER book — live-marked. (No real orders ever.)"""
+    import marleg_opt_paper as op
+    return jsonify(cached("opt_paper:book", lambda: op.book(), 15))
+
+@app.route("/api/opt_paper/open")
+def api_opt_paper_open():
+    """PAPER-open a contract you picked. Query: ?symbol= &qty= &hold= &note= . Read-only on the real account."""
+    import marleg_opt_paper as op
+    sym = (request.args.get("symbol") or "").upper()
+    qty = request.args.get("qty", type=float) or 1
+    hold = request.args.get("hold", type=int) or 10
+    note = request.args.get("note") or ""
+    r = op.open_trade(sym, qty, hold_days=hold, note=note)
+    _CACHE.pop("opt_paper:book", None)
+    return jsonify(r)
+
+@app.route("/api/opt_paper/close")
+def api_opt_paper_close():
+    """PAPER-close a trade by id. Query: ?id= ."""
+    import marleg_opt_paper as op
+    r = op.close_trade(request.args.get("id"))
+    _CACHE.pop("opt_paper:book", None)
+    return jsonify(r)
 
 @app.route("/api/greeks_book")
 def api_greeks_book():
@@ -1267,6 +1393,21 @@ def api_debugger(sym):
     side = (request.args.get("side") or "LONG").upper()
     return jsonify(db.review(sym, side, entry=_f("entry"), qty=_f("qty"), capital=_f("capital"),
                              stop=_f("stop"), outcome_pct=_f("outcome")))
+
+@app.route("/api/predict")
+def api_predict():
+    """Honest index forecaster: regime-conditioned P(up) + expected close + 1σ/2σ cone, next-day + next-week."""
+    import marleg_predict as pr
+    names = request.args.get("idx") or request.args.get("names")
+    idxs = [n.strip().upper() for n in names.split(",") if n.strip()][:6] if names else None
+    return jsonify(cached("predict:" + (",".join(sorted(idxs)) if idxs else "default"),
+                          lambda: pr.multi(idxs), 300))
+
+@app.route("/api/events/<tk>")
+def api_events(tk):
+    """Dated event bubbles (earnings/gaps/dividends/52w/volume/expiry) + recent news, for the chart."""
+    import marleg_events as ev
+    return jsonify(cached("events:" + tk.upper(), lambda: ev.events(tk), 3600))
 
 @app.route("/api/smartflow/<tk>")
 def api_smartflow(tk):

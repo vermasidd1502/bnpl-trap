@@ -6,6 +6,7 @@
 <title>Patterns · Marle-G</title>
 <link rel="stylesheet" href="marle_g.css">
 <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
+<script src="marle_g_events.js"></script>
 <style>
   .psearch{width:100%;max-width:420px;background:#0b0d12;border:1px solid var(--border);color:var(--ink);
     border-radius:10px;padding:12px 14px;font-family:var(--mono);font-size:13px;text-transform:uppercase;margin-bottom:14px}
@@ -60,7 +61,7 @@ function clocks(){const now=new Date(),o={weekday:'short',hour:'2-digit',minute:
 setInterval(clocks,1000);clocks();
 
 let CHART=null,CANDLE=null;
-function drawChart(d){
+function drawChart(d,sym){
   const el=$('pchart'); if(!el||!window.LightweightCharts)return;
   if(!CHART){
     CHART=LightweightCharts.createChart(el,{width:el.clientWidth,height:320,
@@ -72,6 +73,7 @@ function drawChart(d){
     new ResizeObserver(()=>{try{CHART.applyOptions({width:el.clientWidth});}catch(e){}}).observe(el);
   }
   CANDLE.setData((d.bars||[]).map(b=>({time:b.time+19800,open:b.open,high:b.high,low:b.low,close:b.close})));
+  try{ if(window.MGEvents){MGEvents.attach(CANDLE,sym);} }catch(e){}
   const mk=(d.markers||[]).map(m=>({time:m.time+19800,
     position:m.bias==='short'?'aboveBar':'belowBar',
     color:m.grade==='edge'?'#22c55e':m.grade==='anti'?'#ef4444':m.bias==='short'?'#ef4444':'#fbbf24',
@@ -89,7 +91,7 @@ async function loadStock(tk){
   try{
     const d=await (await fetch('/api/patterns/'+encodeURIComponent(tk))).json();
     if(d.error){ $('detected').innerHTML='<span class="neg">'+esc(d.error)+'</span>'; return; }
-    drawChart(d);
+    drawChart(d,tk);
     const dets=d.detected||[];
     $('detected').innerHTML = dets.length ? dets.map(p=>{
       const v=p.verdict||{}; const ago=p.bars_ago===0?'today':p.bars_ago+'d ago';

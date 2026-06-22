@@ -59,19 +59,26 @@ def _squeeze_industries():
         return set(), set(), None
 
 
-def scan(oi_top=14):
-    import marleg_data as md
+def scan(oi_top=14, full=True):
     import marleg_options_monitor as mom
     import marleg_eventfilter as ef
     NAMES = {r["s"]: r["n"] for r in json.load(open(os.path.join(HERE, "marleg_symbols.json"), encoding="utf-8"))}
     SECT = json.load(open(os.path.join(HERE, "marleg_sectors.json"), encoding="utf-8"))
     FOCUS, TRAPS, SQ = _squeeze_industries()
-    U = sorted(mom.FNO_UNDERLYINGS)
-    print(f"scanning {len(U)} F&O underlyings for high-movers (move-potential + abnormal-up + squeeze)...")
-    panel = md.daily_panel(U, period="1y")
-    close, volume, high, low = panel["close"], panel["volume"], panel["high"], panel["low"]
+    if full:                                    # FULL classified universe — the canonical panel (in-memory, fast)
+        import marleg_panel_build as pb
+        P = pb.load()
+        close, volume, high, low = P["close"], P["volume"], P["high"], P["low"]
+        print(f"scanning FULL universe: {close.shape[1]} names for high-movers (move-potential + abnormal-up + squeeze)...")
+    else:
+        import marleg_data as md
+        U = sorted(mom.FNO_UNDERLYINGS)
+        panel = md.daily_panel(U, period="1y")
+        close, volume, high, low = panel["close"], panel["volume"], panel["high"], panel["low"]
+        print(f"scanning {close.shape[1]} F&O underlyings for high-movers...")
     if close.shape[1] < 30:
         print(f"[thin] only {close.shape[1]} names — keeping prior radar."); return None
+    _FNO = set(mom.FNO_UNDERLYINGS) | set(mom.INDEX_STEP)
     rows = []
     for s in close.columns:
         c = close[s].dropna()
@@ -97,14 +104,15 @@ def scan(oi_top=14):
         elif bounce and sq_class == "trap":              # squeezy but the snap fades — demote, don't chase
             heat *= 0.5
         rows.append({"s": s, "n": NAMES.get(s, s), "price": round(px, 2), "industry": ind, "sq_class": sq_class,
+                     "fno": bool(s in _FNO),
                      "ret1": round(ret1, 1), "ret5": round(ret5, 1), "trend20": round(trend20, 1),
                      "rvol": round(rvol, 1), **{k: mp[k] for k in ("atrp", "p5", "tag", "exp_lo", "exp_hi")},
                      "abnormal_up": bool(abnormal_up), "bounce_shape": bool(bounce),
                      "clean": fp["clean"], "event_flags": list(fp["flags"]), "heat": round(heat, 1)})
     rows.sort(key=lambda x: x["heat"], reverse=True)
 
-    # enrich the hottest names with live F&O OI -> short-covering (the India squeeze tell). Best-effort.
-    for r in rows[:oi_top]:
+    # enrich the hottest F&O names with live OI -> short-covering (the India squeeze tell). Best-effort.
+    for r in [x for x in rows if x.get("fno")][:oi_top]:
         try:
             q = mom.option_quote(r["s"])
             if isinstance(q, dict) and "error" not in q:
@@ -141,7 +149,8 @@ def scan(oi_top=14):
                       "top": [{k: x.get(k) for k in ("industry", "n_events", "freq_per_kday", "win5", "net5", "edge5", "verdict")}
                               for x in (SQ.get("industries") or [])[:14]]}
     out = {"asof": ist, "n": len(rows), "n_high": len(hi), "universe": close.shape[1],
-           "n_focus_squeeze": n_focus_sq, "squeeze_study": sq_summary, "movers": rows[:60],
+           "n_fno": len([r for r in rows if r.get("fno")]), "n_cash_only": len([r for r in rows if not r.get("fno")]),
+           "n_focus_squeeze": n_focus_sq, "squeeze_study": sq_summary, "movers": rows[:90],
            "note": "Move-potential = amplitude (can it do 3-8%?), NOT a direction call. India has no equity "
                    "short-interest; short_covering is an F&O OI proxy. High amplitude = high RISK — size to "
                    "the daily loss-limit. F&O leverage turns a 2-3% underlying move into 6-8%. Squeezes are now "

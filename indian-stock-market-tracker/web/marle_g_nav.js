@@ -13,10 +13,12 @@
       ["marle_g_patterns.html", "patterns"], ["marle_g_volume.html", "volume"], ["marle_g_industry.html", "rotation"],
       ["marle_g_movers.html", "⚡ movers"], ["marle_g_live.html", "live"], ["marle_g_macro_preview.html", "macro"]] },
     { label: "strategies", icon: "🎯", items: [
-      ["marle_g_strategies.html", "strategies"], ["marle_g_weekend.html", "weekend"], ["marle_g_builder.html", "builder"],
+      ["marle_g_factors.html", "🔬 factor-lab"], ["marle_g_strategies.html", "strategies"], ["marle_g_weekend.html", "weekend"], ["marle_g_builder.html", "builder"],
       ["marle_g_volbook.html", "day-book"], ["marle_g_autotrader.html", "auto-trader"], ["marle_g_quality.html", "quality"],
       ["marle_g_robust.html", "robust"], ["marle_g_bearish.html", "🛡 bearish/hedge"], ["marle_g_niftysim.html", "nifty-sim"], ["marle_g_sectoral.html", "sectoral"],
       ["marle_g_vol.html", "vol-lab"], ["marle_g_paper.html", "paper"]] },
+    { label: "desk", icon: "🖥", items: [
+      ["marle_g_watch.html", "👀 watch desk"], ["marle_g_position.html", "📊 position desk"], ["marle_g_router.html", "router"], ["marle_g_stock.html", "stock page"]] },
     { label: "scenarios", icon: "🌐", items: [
       ["marle_g_cascade.html", "cascade"], ["marle_g_regime.html", "regime"], ["marle_g_thesis.html", "thesis"],
       ["marle_g_smartmoney.html", "smart-money"], ["marle_g_mindhive.html", "mindhive"]] },

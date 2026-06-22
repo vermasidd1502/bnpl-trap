@@ -51,14 +51,30 @@ FNO_UNDERLYINGS = {
 }
 
 
+# Index option underlyings + their NSE strike intervals (the price-band heuristic gets these wrong:
+# NIFTY strikes are every 50, not the 100 a >2500 price implies). These are "the main" options.
+INDEX_STEP = {"NIFTY": 50, "BANKNIFTY": 100, "FINNIFTY": 50, "MIDCPNIFTY": 25, "NIFTYNXT50": 100,
+              "SENSEX": 100, "BANKEX": 100, "SENSEX50": 100}     # SENSEX/BANKEX are BSE (Thursday weeklies)
+
+
 def has_options(tk):
-    return (tk or "").upper().strip() in FNO_UNDERLYINGS
+    t = (tk or "").upper().strip()
+    return t in FNO_UNDERLYINGS or t in INDEX_STEP
+
+
+_GCLIENT = None
 
 
 def _g():
+    """Memoized Groww client — constructing + token() on every option_quote (42×/chain) was the
+    bottleneck. The client self-renews its token internally, so one instance is reused."""
+    global _GCLIENT
+    if _GCLIENT is not None:
+        return _GCLIENT
     try:
         import groww_client
         g = groww_client.GrowwClient(); g.token()
+        _GCLIENT = g
         return g
     except Exception:
         return None
@@ -83,10 +99,10 @@ def _strike_step(spot):
 
 def nearest_monthly_expiry(today=None):
     today = today or dt.date.today()
-    e = mv.last_thursday(today.year, today.month)
+    e = mv.monthly_expiry(today.year, today.month)
     if today > e:                                   # this month's expiry passed -> next month
         y, m = (today.year + (today.month == 12)), (1 if today.month == 12 else today.month + 1)
-        e = mv.last_thursday(y, m)
+        e = mv.monthly_expiry(y, m)
     return e
 
 
@@ -120,13 +136,13 @@ def _depth_summary(depth):
             "top_bid": top_bid, "top_ask": top_ask}
 
 
-def option_quote(sym):
-    """Live parsed quote for one option symbol via Groww FNO. None on failure."""
+def option_quote(sym, exchange="NSE"):
+    """Live parsed quote for one option symbol via Groww FNO (exchange NSE or BSE). None on failure."""
     g = _g()
     if not g:
         return {"error": "groww unavailable"}
     try:
-        r = g.quote(sym, segment="FNO")
+        r = g.quote(sym, segment="FNO", exchange=exchange)
         if r.status_code != 200:
             return {"error": f"quote HTTP {r.status_code}"}
         p = (r.json() or {}).get("payload") or {}
@@ -211,46 +227,120 @@ def analyze(sym, side="long", qty=0):
     }
 
 
-def chain(underlying, n=5, expiry=None):
-    """Constructed ATM±n strikes for the nearest monthly expiry. Best-effort — strikes that
-    aren't listed simply return empty and are skipped. Returns spot + per-strike CE/PE rows."""
+def chain(underlying, n=8, expiry=None):
+    """ATM±n option chain. Built from BLACK-SCHOLES (real spot + 20d realized-vol IV → premiums + Greeks +
+    breakevens) so it ALWAYS works; overlays live Groww option data per strike IF that feed responds (it
+    currently returns GA001 for constructed F&O symbols, so the chain is model-only until that's fixed)."""
     und = (underlying or "").upper().strip()
     if not has_options(und):
         return {"error": f"{und} is not in the NSE F&O universe — no options to chain"}
     g = _g()
     spot = mv.underlying_ltp(und, g)
     if not spot:
+        try:
+            import yfinance as yf
+            h = yf.Ticker(und + ".NS").history(period="1d")["Close"].dropna()
+            spot = float(h.iloc[-1]) if len(h) else None
+        except Exception:
+            pass
+    if not spot:
         return {"error": f"no spot price for {und}"}
     exp = expiry or nearest_monthly_expiry()
-    T = max((exp - dt.date.today()).days, 0) / 365.0
-    step = _strike_step(spot)
+    if isinstance(exp, str):
+        exp = dt.date.fromisoformat(exp)
+    days = max((exp - dt.date.today()).days, 0)
+    T = max(days, 1) / 365.0
+    exp_iso = exp.isoformat()
+    try:
+        import marleg_instruments as _inst
+    except Exception:
+        _inst = None
+
+    def _sym(k, kd):                                # exact contract from the master (weeklies/BSE), else built
+        if _inst:
+            c = _inst.contract(und, exp_iso, k, kd)
+            if c and c.get("symbol"):
+                return c["symbol"], (c.get("exchange") or "NSE")
+        return build_symbol(und, k, kd, exp), "NSE"
+    sigma = mv.realized_vol(und, 20); iv_src = "20d realized vol"
+    if not sigma or sigma <= 0:
+        vix = mv.india_vix(); sigma = (vix / 100.0 if vix else 0.30); iv_src = "India VIX proxy"
+    step = INDEX_STEP.get(und) or _strike_step(spot)
     atm = round(spot / step) * step
     strikes = [atm + i * step for i in range(-n, n + 1)]
-    rows = []
-    for k in strikes:
-        ce_sym, pe_sym = build_symbol(und, k, "C", exp), build_symbol(und, k, "P", exp)
-        ce, pe = option_quote(ce_sym), option_quote(pe_sym)
-        row = {"strike": k, "is_atm": abs(k - atm) < step / 2}
-        for tag, oq, kind, osym in (("ce", ce, "C", ce_sym), ("pe", pe, "P", pe_sym)):
-            if "error" not in oq and (oq.get("ltp") or oq.get("oi")):
-                iv = oq.get("iv")
-                if iv is None and oq.get("ltp") and spot and T > 0:   # Groww IV null (e.g. closed) -> invert BS
-                    try:
-                        iv = mv.implied_vol(oq["ltp"], spot, k, T, mv.R_FREE, kind)
-                    except Exception:
-                        iv = None
-                row[tag] = {"sym": osym, "ltp": oq.get("ltp"), "iv": round(iv, 4) if iv else None,
-                            "oi": oq.get("oi"), "oi_change": oq.get("oi_change"),
-                            "volume": oq.get("volume"), "spread_pct": oq.get("spread_pct")}
-        if "ce" in row or "pe" in row:
-            rows.append(row)
-    # crude PCR from listed OI
-    coi = sum((r.get("ce") or {}).get("oi") or 0 for r in rows)
-    poi = sum((r.get("pe") or {}).get("oi") or 0 for r in rows)
-    return {"underlying": und, "spot": spot, "atm": atm, "expiry": exp.isoformat(),
-            "days_to_expiry": (exp - dt.date.today()).days, "step": step,
-            "pcr_oi": round(poi / coi, 2) if coi else None,
-            "india_vix": mv.india_vix(), "rv20": mv.realized_vol(und, 20), "rows": rows}
+    # single live-probe: only attempt the Groww overlay if the ATM call actually quotes
+    live_ok = False
+    try:
+        _ps, _pe = _sym(atm, "C"); pr = option_quote(_ps, exchange=_pe)
+        live_ok = isinstance(pr, dict) and "error" not in pr and bool(pr.get("ltp"))
+    except Exception:
+        pass
+
+    # if live, fetch all 2n+1 strikes × {C,P} IN PARALLEL (sequential was 42 HTTP calls -> >60s timeout).
+    # Groww throttles a 42-call burst, so keep concurrency modest and do one retry pass for the strikes
+    # that got rate-limited (otherwise ~1/3 of rows silently drop to the model).
+    live_map = {}
+    if live_ok:
+        from concurrent.futures import ThreadPoolExecutor
+
+        def _fetch(job):
+            k, kd = job
+            try:
+                _s, _e = _sym(k, kd); return job, option_quote(_s, exchange=_e)
+            except Exception:
+                return job, None
+
+        def _run(jobs, workers):
+            with ThreadPoolExecutor(max_workers=workers) as ex:
+                for job, q in ex.map(_fetch, jobs):
+                    if isinstance(q, dict) and "error" not in q and q.get("ltp"):
+                        live_map[job] = q
+
+        all_jobs = [(k, kd) for k in strikes for kd in ("C", "P")]
+        _run(all_jobs, 6)
+        missing = [j for j in all_jobs if j not in live_map]   # recover throttled strikes
+        if missing:
+            _run(missing, 4)
+
+    def mk(k, kind):
+        price = mv.bs_price(spot, k, T, mv.R_FREE, sigma, kind)
+        gk = mv.greeks(spot, k, T, mv.R_FREE, sigma, kind)
+        be = (k + price) if kind == "C" else (k - price)
+        row = {"ltp": round(price, 2), "iv": round(sigma * 100, 1), "delta": round(gk["delta"], 3),
+               "gamma": round(gk["gamma"], 5), "theta": round(gk["theta"], 2), "vega": round(gk["vega"], 3),
+               "be": round(be, 1), "be_pct": round((be / spot - 1) * 100, 1), "oi": None, "src": "model"}
+        lq = live_map.get((k, kind))
+        if lq:
+            iv = lq.get("iv") or mv.implied_vol(lq["ltp"], spot, k, T, mv.R_FREE, kind)
+            row.update({"ltp": lq["ltp"], "iv": round((iv or sigma) * 100, 1), "oi": lq.get("oi"),
+                        "oi_change": lq.get("oi_change"), "volume": lq.get("volume"),
+                        "bid": lq.get("bid"), "ask": lq.get("ask"), "spread_pct": lq.get("spread_pct"),
+                        "src": "live"})
+        return row
+
+    rows = [{"strike": k, "is_atm": abs(k - atm) < step / 2, "ce": mk(k, "C"), "pe": mk(k, "P")} for k in strikes]
+    ce_oi = sum((r["ce"].get("oi") or 0) for r in rows); pe_oi = sum((r["pe"].get("oi") or 0) for r in rows)
+    pcr = round(pe_oi / ce_oi, 2) if ce_oi else None        # local PCR across the shown strikes (live OI only)
+    vix = mv.india_vix()
+    today = dt.date.today()
+    exps = (_inst.expiries(und, within_days=160) if _inst else None) or []   # ALL real expiries (weeklies+monthlies)
+    if not exps:                                                              # fallback: monthlies only
+        yy, mm = today.year, today.month
+        while len(exps) < 4:
+            lt = mv.monthly_expiry(yy, mm)
+            if lt >= today:
+                exps.append(lt.isoformat())
+            yy, mm = (yy + (mm == 12)), (1 if mm == 12 else mm + 1)
+    return {"underlying": und, "spot": round(spot, 2), "atm": atm, "expiry": exp.isoformat(), "expiries": exps,
+            "days_to_expiry": days, "step": step, "iv_used": round(sigma * 100, 1), "iv_source": iv_src,
+            "pcr": pcr, "pcr_basis": f"ATM±{n} strikes (local)",
+            "india_vix": vix, "source": ("live" if live_ok else "model"),
+            "note": ("BLACK-SCHOLES modelled — Groww didn't quote this name/expiry (likely off-hours or thin "
+                     "strikes). Premiums, Greeks (Δ/Θ/Vega) and breakevens are theoretical, from spot + 20d "
+                     "realized vol. OI / PCR are omitted (no fabricated numbers). Verify premiums on your broker."
+                     if not live_ok else "LIVE Groww option data (premiums · IV · OI · volume) where it quotes; "
+                     "Black-Scholes fallback per strike that doesn't."),
+            "rows": rows}
 
 
 if __name__ == "__main__":

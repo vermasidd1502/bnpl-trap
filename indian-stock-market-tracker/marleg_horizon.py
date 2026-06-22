@@ -41,9 +41,47 @@ def _rsi(c, n=14):
     return float((100 - 100 / (1 + up / dn)).iloc[-1])
 
 
+def _index_rate(tk):
+    """Indices aren't in the equity panel and aren't a buy-&-hold equity — for an index OPTION the real
+    decision is WHICH EXPIRY (theta/time structure). Give a clean Groww-based trend read that routes to
+    the Expiry Matrix, instead of the panel error."""
+    try:
+        import groww_client as gc
+        g = gc.GrowwClient(); g.token()
+        df = g.candles(tk, interval_min=1440, days=400, segment="CASH")
+        c = df["close"].dropna()
+        price = float(c.iloc[-1])
+        s50 = float(c.rolling(50).mean().iloc[-1])
+        s200 = float(c.rolling(200).mean().iloc[-1]) if len(c) >= 200 else None
+        rsi = _rsi(c)
+        ret20 = float(c.iloc[-1] / c.iloc[-21] - 1) * 100 if len(c) > 21 else None
+        a50 = price > s50
+        a200 = (s200 is not None and price > s200)
+        trend = f"{'>50DMA' if a50 else '<50DMA'}" + (f" · {'>200DMA' if a200 else '<200DMA'}" if s200 else "")
+        rating = 62 if (a50 and a200) else 48 if a50 else 34
+        return {"ok": True, "tk": tk, "name": tk, "is_index": True, "industry": "Index",
+                "price": round(price, 2), "horizon": "INDEX-OPTION", "rating": rating,
+                "signals": {"trend": trend, "rsi": round(rsi, 0), "ret20": round(ret20, 1) if ret20 else None},
+                "route": "marle_g_options.html?u=" + tk,
+                "rationale": [
+                    "Index — not a buy-&-hold equity. For an index OPTION the P&L is dominated by THETA, so the "
+                    "real call is which EXPIRY to hold, not just direction.",
+                    f"Trend {trend}, RSI {rsi:.0f}" + (f", 20d {ret20:+.1f}%" if ret20 else ""),
+                    "➤ Use the Expiry Matrix to compare every live expiry for a 1–2 week hold (theta-aware)."],
+                "note": "Index options: time structure (theta) drives it — compare expiries in the matrix."}
+    except Exception as e:
+        return {"ok": False, "error": f"{tk}: index read failed ({str(e)[:70]})", "tk": tk}
+
+
 def rate(tk):
     import marleg_panel_build as pb
     tk = tk.upper()
+    try:
+        import marleg_options_monitor as _mom
+        if tk in _mom.INDEX_STEP:
+            return _index_rate(tk)
+    except Exception:
+        pass
     P = pb.load()
     if not P or tk not in P["close"].columns:
         return {"ok": False, "error": f"{tk} not in the panel", "tk": tk}

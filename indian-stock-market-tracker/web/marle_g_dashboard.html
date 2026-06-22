@@ -78,6 +78,8 @@
     </div>
   </section>
 
+  <div id="predictor"></div>
+
   <div id="dash"></div>
 
   <div class="footer">Marle·G · Dashboard · watchlists persist in your browser (localStorage) · real pod → SQLite per-user
@@ -162,7 +164,28 @@ function seedDemo(){
   wl['Demo · Large-cap watch']=[{sym:'RELIANCE',name:'Reliance'},{sym:'HDFCBANK',name:'HDFC Bank'},{sym:'TCS',name:'Tata Consultancy'},{sym:'INFY',name:'Infosys'},{sym:'TMPV',name:'Tata Motors PV'},{sym:'SBIN',name:'State Bank of India'}];
   setWL(wl);
 }
+async function loadPredictor(){
+  const el=$('predictor'); if(!el) return;
+  el.innerHTML='<div class="card"><div class="sh">📈 Index Forecast</div><div style="padding:10px;color:var(--muted,#888);font-family:var(--mono,monospace);font-size:12px">loading…</div></div>';
+  try{
+    const d=await (await fetch('/api/predict')).json();
+    if(!d.ok||!d.indices||!d.indices.length){ el.innerHTML=''; return; }
+    const RC={BULL:'var(--green,#22c55e)',BEAR:'var(--red,#ef4444)',NEUTRAL:'var(--amber,#fbbf24)'};
+    const cards=d.indices.map(p=>{const nd=p.next_day,nw=p.next_week,
+      pc=nd.p_up>=56?'var(--green,#22c55e)':nd.p_up<=51?'var(--red,#ef4444)':'var(--amber,#fbbf24)';
+      return '<div style="border:1px solid var(--border,#222);border-radius:10px;padding:11px 13px;min-width:228px;flex:1">'+
+        '<div style="display:flex;justify-content:space-between;align-items:baseline"><b style="font-family:var(--mono,monospace);font-size:14px">'+p.idx+'</b>'+
+        '<span style="font-family:var(--mono,monospace);font-size:11px;font-weight:800;color:'+(RC[p.regime]||'#888')+'">'+p.regime+'</span></div>'+
+        '<div style="font-family:var(--mono,monospace);font-size:13px;margin:4px 0">'+p.spot+' <span style="color:var(--muted,#888);font-size:11px">· vol '+p.vol_1d_pct+'%/d</span></div>'+
+        '<div style="font-family:var(--mono,monospace);font-size:11.5px">tomorrow <b style="color:'+pc+'">'+nd.p_up+'% up</b> · exp '+nd.expected_close+'</div>'+
+        '<div style="font-family:var(--mono,monospace);font-size:10.5px;color:var(--muted,#888)">1σ '+nd.lo_1sigma+'–'+nd.hi_1sigma+' · 2σ '+nd.lo_2sigma+'–'+nd.hi_2sigma+'</div>'+
+        '<div style="font-family:var(--mono,monospace);font-size:10.5px;color:var(--muted,#888);margin-top:3px">week '+nw.p_up+'% up · '+nw.lo_1sigma+'–'+nw.hi_1sigma+'</div></div>';}).join('');
+    el.innerHTML='<div class="card"><div class="sh">📈 Index Forecast · regime-conditioned P(up) + vol cone <span style="color:var(--muted,#888);font-weight:400">— honest: the cone is the signal, the directional tilt is small (not a point call)</span></div>'+
+      '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">'+cards+'</div></div>';
+  }catch(e){ el.innerHTML=''; }
+}
 render();
+loadPredictor();
 </script>
   <script src="marle_g_nav.js"></script>
 </body>

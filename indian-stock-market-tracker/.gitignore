@@ -30,6 +30,9 @@ TOTP_SETUP_GUIDE.txt
 marleg_paper_book.json
 my_positions.json
 marleg_paper_*.json
+marleg_opt_paper_book.json
+instruments_cache.csv
+marleg_portfolio_bt.json
 marleg_stop_check.json
 
 # gated-list daily history (runtime-accumulated snapshots)

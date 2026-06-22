@@ -78,10 +78,110 @@ def greeks(S, K, T, r, sigma, kind):
     return {"delta": delta, "gamma": gamma, "vega": vega, "theta": theta}  # per share
 
 
+def _vega_raw(S, K, T, r, sigma):
+    """dPrice/dσ per 1.0 of vol (NOT per 1%) — the derivative Newton needs to invert the price."""
+    if T <= 0 or sigma <= 0:
+        return 0.0
+    d1 = (math.log(S / K) + (r + 0.5 * sigma * sigma) * T) / (sigma * math.sqrt(T))
+    return S * _npdf(d1) * math.sqrt(T)
+
+
+def implied_vol_newton(price, S, K, T, r, kind, tol=1e-6, max_iter=60):
+    """
+    THE implied vol: the σ that makes Black-Scholes reproduce the option's market price. You can't
+    observe IV — you invert the pricing formula on the traded price (the mid of bid/ask, ideally).
+
+    Optimisation ladder, fast → robust:
+      1. NEWTON-RAPHSON on f(σ)=BS(σ)−price with f'(σ)=vega (analytic). Quadratic convergence, ~3-5
+         iters — but vega→0 for deep OTM/ITM, so Newton can diverge there.
+      2. SECANT (finite-difference Newton): same root-find but the derivative is approximated from two
+         price points — no vega needed. This is the finite-difference fallback.
+      3. BISECTION backstop (bracketed, guaranteed to converge).
+
+    Returns (iv, diag) where iv is a decimal (0.31 = 31%) or None, and diag records which method
+    converged + iteration count (so the page can show the numerics).
+    """
+    if price is None or price <= 0:
+        return None, {"ok": False, "why": "no price"}
+    intrinsic = max(0.0, (S - K) if kind == "C" else (K - S)) * math.exp(-r * T)
+    if price < intrinsic - 1e-6:
+        return None, {"ok": False, "why": "price below discounted intrinsic — no real IV"}
+    ceiling = S if kind == "C" else K * math.exp(-r * T)             # no-arb upper bound on the premium
+    if price >= ceiling - 1e-9:
+        return None, {"ok": False, "why": "price at/above the no-arbitrage ceiling"}
+    # 1) Newton with analytic vega
+    sigma = 0.30
+    for i in range(max_iter):
+        diff = bs_price(S, K, T, r, sigma, kind) - price
+        if abs(diff) < tol:
+            return sigma, {"ok": True, "method": "newton", "iters": i + 1}
+        v = _vega_raw(S, K, T, r, sigma)
+        if v < 1e-8:
+            break                                                   # vega collapsed → Newton unstable
+        sigma -= diff / v
+        if sigma <= 0 or sigma > 9.99:
+            break
+    # 2) secant (FD-derivative Newton)
+    a, b = 0.01, 3.0
+    fa = bs_price(S, K, T, r, a, kind) - price
+    fb = bs_price(S, K, T, r, b, kind) - price
+    for i in range(max_iter):
+        if abs(fb - fa) < 1e-12:
+            break
+        c = b - fb * (b - a) / (fb - fa)                            # FD slope = (fb−fa)/(b−a)
+        if not (0 < c < 10):
+            break
+        fc = bs_price(S, K, T, r, c, kind) - price
+        if abs(fc) < tol:
+            return c, {"ok": True, "method": "secant(FD)", "iters": i + 1}
+        a, fa, b, fb = b, fb, c, fc
+    # 3) bisection backstop
+    iv = implied_vol(price, S, K, T, r, kind)
+    if iv:
+        return iv, {"ok": True, "method": "bisection"}
+    return None, {"ok": False, "why": "no convergence"}
+
+
+def fd_greeks(S, K, T, r, sigma, kind, pricer=None, h_rel=1e-4):
+    """
+    Greeks by FINITE DIFFERENCE (central differences) on a pricer function — model-agnostic, so the
+    SAME machinery gives Greeks for Black-Scholes today and a binomial/Heston pricer tomorrow. Also a
+    clean numerical cross-check of the closed-form greeks().
+
+        delta = [V(S+h) − V(S−h)] / 2h
+        gamma = [V(S+h) − 2V(S) + V(S−h)] / h²
+        vega  = [V(σ+dσ) − V(σ−dσ)] / 2dσ      (reported per 1 vol-point, i.e. /100)
+        theta = [V(T−dt) − V(T)]               (one calendar day of decay; sign is naturally negative)
+        rho   = [V(r+dr) − V(r−dr)] / 2dr       (per 1% rate, /100)
+    """
+    P = pricer or bs_price
+    hS = max(S * h_rel, 1e-6)
+    v0 = P(S, K, T, r, sigma, kind)
+    vSp, vSm = P(S + hS, K, T, r, sigma, kind), P(S - hS, K, T, r, sigma, kind)
+    delta = (vSp - vSm) / (2 * hS)
+    gamma = (vSp - 2 * v0 + vSm) / (hS * hS)
+    dsig = 1e-4
+    vega = (P(S, K, T, r, sigma + dsig, kind) - P(S, K, T, r, sigma - dsig, kind)) / (2 * dsig) / 100.0
+    dt_ = 1.0 / 365.0
+    theta = P(S, K, max(T - dt_, 1e-9), r, sigma, kind) - v0
+    dr = 1e-4
+    rho = (P(S, K, T, r + dr, sigma, kind) - P(S, K, T, r - dr, sigma, kind)) / (2 * dr) / 100.0
+    return {"delta": delta, "gamma": gamma, "vega": vega, "theta": theta, "rho": rho}
+
+
 # ------------------------------------------------------------------ realized vol
+# Indices resolve to Yahoo's ^-tickers, NOT "<sym>.NS" (which 404s for NIFTY/BANKNIFTY).
+INDEX_YAHOO = {"NIFTY": "^NSEI", "BANKNIFTY": "^NSEBANK", "FINNIFTY": "NIFTY_FIN_SERVICE.NS",
+               "MIDCPNIFTY": "^NSEMDCP50", "NIFTYNXT50": "^NSEI"}
+
+
+def _yf_symbol(sym):
+    return INDEX_YAHOO.get((sym or "").upper(), (sym or "") + ".NS")
+
+
 def realized_vol(symbol, window=20):
     try:
-        h = yf.Ticker(symbol + ".NS").history(period="4mo", interval="1d")["Close"].dropna()
+        h = yf.Ticker(_yf_symbol(symbol)).history(period="4mo", interval="1d")["Close"].dropna()
         rets = (h / h.shift(1)).apply(lambda x: math.log(x) if x > 0 else 0).dropna()
         if len(rets) < window + 1:
             return None
@@ -105,11 +205,42 @@ MONTHS = {m: i for i, m in enumerate(
     ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"], 1)}
 
 
+# NSE trading holidays — roll a monthly expiry BACK to the prior session if it lands on one.
+# Update yearly from the official NSE circular. (2026 list verified vs NSE/Groww calendar.)
+NSE_HOLIDAYS = {
+    "2026-01-15", "2026-01-26", "2026-03-03", "2026-03-26", "2026-03-31", "2026-04-03",
+    "2026-04-14", "2026-05-01", "2026-05-28", "2026-06-26", "2026-09-14", "2026-10-02",
+    "2026-10-20", "2026-11-10", "2026-11-24", "2026-12-25",
+}
+
+
+def _is_trading_day(d):
+    return d.weekday() < 5 and d.isoformat() not in NSE_HOLIDAYS
+
+
 def last_thursday(year, month):
+    """Kept for back-compat (pre-Sep-2025 expiry rule). Use monthly_expiry() for current contracts."""
     d = dt.date(year, 12, 31) if month == 12 else dt.date(year, month + 1, 1) - dt.timedelta(days=1)
     while d.weekday() != 3:        # 3 = Thursday
         d -= dt.timedelta(days=1)
     return d
+
+
+def last_weekday(year, month, weekday):
+    d = dt.date(year, 12, 31) if month == 12 else dt.date(year, month + 1, 1) - dt.timedelta(days=1)
+    while d.weekday() != weekday:
+        d -= dt.timedelta(days=1)
+    return d
+
+
+def monthly_expiry(year, month):
+    """NSE monthly F&O expiry = the LAST TUESDAY of the month (SEBI single-expiry-day rule, effective
+    Sep-2025 — replaced the old last-Thursday), rolled back to the prior trading day if that Tuesday is
+    an NSE holiday. (e.g. Jun-2026 → Tue Jun 30; the old rule wrongly gave Thu Jun 25.)"""
+    e = last_weekday(year, month, 1)          # 1 = Tuesday
+    while not _is_trading_day(e):
+        e -= dt.timedelta(days=1)
+    return e
 
 
 def parse_option(sym):
@@ -120,9 +251,30 @@ def parse_option(sym):
     und, yy, mon, strike, cp = m.groups()
     if mon not in MONTHS:
         return None
-    expiry = last_thursday(2000 + int(yy), MONTHS[mon])
+    expiry = monthly_expiry(2000 + int(yy), MONTHS[mon])
     return {"underlying": und, "strike": float(strike), "kind": "C" if cp == "CE" else "P",
             "expiry": expiry, "right": cp}
+
+
+def parse_option_any(sym):
+    """Parse MONTHLY (UND+YY+MMM+STRIKE+CE/PE) OR WEEKLY (UND+YY+M+DD+STRIKE+CE/PE, M = 1-9 or O/N/D for
+    Oct/Nov/Dec) NSE option symbols. Returns the same dict shape as parse_option (+ weekly flag)."""
+    info = parse_option(sym)
+    if info:
+        return info
+    m = re.match(r"^([A-Z&\-]+?)(\d{2})([1-9OND])(\d{2})(\d+)(CE|PE)$", (sym or "").upper().strip())
+    if not m:
+        return None
+    und, yy, mc, dd, strike, cp = m.groups()
+    month = {"O": 10, "N": 11, "D": 12}.get(mc, int(mc) if mc.isdigit() else 0)
+    if not (1 <= month <= 12):
+        return None
+    try:
+        expiry = dt.date(2000 + int(yy), month, int(dd))
+    except ValueError:
+        return None
+    return {"underlying": und, "strike": float(strike), "kind": "C" if cp == "CE" else "P",
+            "expiry": expiry, "right": cp, "weekly": True}
 
 
 # ------------------------------------------------------------------ live prices
@@ -136,15 +288,19 @@ def _groww():
 
 def underlying_ltp(und, g):
     if g:
-        try:
-            r = g.ltp(und); p = (r.json().get("payload") or {})
-            v = p.get(g.sym(und))
-            if v:
-                return float(v)
-        except Exception:
-            pass
+        for ex in ("NSE", "BSE"):                      # BSE so indices like SENSEX/BANKEX resolve too
+            try:
+                r = g.ltp(und, exchange=ex); p = (r.json().get("payload") or {})
+                v = p.get(g.sym(und, ex)) if hasattr(g, "sym") else None
+                if v:
+                    return float(v)
+                for vv in p.values():                  # payload key is EXCH_SYMBOL (e.g. BSE_SENSEX)
+                    if vv:
+                        return float(vv)
+            except Exception:
+                pass
     try:
-        c = yf.Ticker(und + ".NS").history(period="1d")["Close"].dropna()
+        c = yf.Ticker(_yf_symbol(und)).history(period="1d")["Close"].dropna()
         return float(c.iloc[-1]) if len(c) else None
     except Exception:
         return None

@@ -112,7 +112,7 @@ function renderStrip(){
   const cells=[
     ['India VIX', v?v.vix:'—', v?(v.regime+' · '+pct(v.chg5d||0)+'/5d'):'', v?rmap[v.regime]:'var(--ink)'],
     ['Macro gate', sh.badge||'—', (sh.verdict||'').slice(0,42), sh.badge&&sh.badge.includes('BULL')?'var(--green)':sh.badge&&(sh.badge.includes('BEAR')||sh.badge.includes('SHOCK'))?'var(--red)':'var(--amber)'],
-    ['HIGH-amplitude', mov.n_high!=null?mov.n_high:'—', 'of '+(mov.n||'—')+' F&O — can do 3–8%','var(--saffron)'],
+    ['HIGH-amplitude', mov.n_high!=null?mov.n_high:'—', 'of '+(mov.universe||mov.n||'—')+' scanned ('+(mov.n_fno||'—')+' F&O) — can do 3–8%','var(--saffron)'],
     ['Squeeze (covering)', sq||'0', 'price↑ + OI↓ in top movers','var(--blue)'],
   ];
   $('strip').innerHTML=cells.map(c=>'<div class="kpi"><div class="l">'+c[0]+'</div><div class="v" style="color:'+c[3]+'">'+c[1]+'</div><div class="d">'+c[2]+'</div></div>').join('');
@@ -164,9 +164,11 @@ function movTable(filter){
   else if(filter==='sq') rows=rows.filter(x=>x.short_covering||x.abnormal_up||x.bounce_shape);
   else if(filter==='focus') rows=rows.filter(x=>(x.short_covering||x.abnormal_up||x.bounce_shape)&&x.sq_class==='focus');
   else if(filter==='clean') rows=rows.filter(x=>x.tag==='HIGH'&&x.clean!==false);
+  else if(filter==='fno') rows=rows.filter(x=>x.fno);
   if(!rows.length) return '<div class="empty">no '+(filter==='focus'?'squeezes in the backtest-blessed industries':'matches')+' right now — squeezes are episodic (they appear after selloffs, not in a broad rally).</div>';
   let h='<table><thead><tr><th>name</th><th>amp</th><th>ATR%</th><th>P≥5%</th><th>ret5</th><th>RVOL</th><th>price</th><th>exp range</th></tr></thead><tbody>';
   rows.slice(0,40).forEach(r=>{let fl='';
+    if(r.fno)fl+=' <span class="fl" title="F&O — tradeable with leverage (options/futures)">Ⓕ</span>';
     if(r.short_covering)fl+=' <span class="fl" title="'+(r.oi_signal||'short covering')+'">🔥</span>';
     if(r.bounce_shape)fl+=' <span class="fl" title="sharp up after a downtrend — squeeze shape">↩</span>';else if(r.abnormal_up)fl+=' <span class="fl" title="abnormal up-move on volume">⚡</span>';
     if((r.short_covering||r.bounce_shape||r.abnormal_up)&&r.sq_class==='focus')fl+=' <span class="fl" title="'+(r.industry||'')+' — backtest-blessed: this industry’s squeezes PAY (~52-71% win)">🎯</span>';
@@ -198,7 +200,7 @@ const ANALYSIS={
     if(p){hdr+='<div class="theory" style="margin-bottom:10px"><b>Backtest reality (5y, by industry):</b> pooled across every industry a squeeze is a <b style="color:var(--red)">'+p.win+'%-win lottery</b> — you lose more often than you win; the +'+p.net+'%/5d mean is carried by a few big snaps. The <b style="color:var(--green)">industry filter is the whole edge</b>: in blessed industries the snap pays, in traps it fades.</div>';}
     if(ss.whitelist&&ss.whitelist.length){hdr+='<div class="chips" style="margin-bottom:7px"><span class="note" style="align-self:center;margin:0">🎯 FOCUS — squeezes PAY →</span>'+ss.whitelist.map(i=>{const t=tmap[i];return '<span class="sc" style="border-color:rgba(34,197,94,.45);color:var(--green)" title="'+(t?('win5 '+t.win5+'% · net5 +'+t.net5+'% · edge +'+t.edge5+'% · n'+t.n_events):'backtest-blessed')+'">'+i.slice(0,22)+(t?' '+t.win5+'%':'')+'</span>';}).join('')+'</div>';}
     if(ss.traps&&ss.traps.length){hdr+='<div class="chips" style="margin-bottom:9px"><span class="note" style="align-self:center;margin:0">⛔ TRAPS — squeezes FADE →</span>'+ss.traps.slice(0,9).map(i=>{const t=tmap[i];return '<span class="sc" style="border-color:rgba(239,68,68,.4);color:var(--red)" title="'+(t?('win5 '+t.win5+'% · net5 '+t.net5+'% · n'+t.n_events):'squeezy but fades')+'">'+i.slice(0,20)+(t?' '+t.win5+'%':'')+'</span>';}).join('')+'</div>';}
-    const ctrl='<div class="ctrl"><button class="'+(MFILT==="focus"?"on":"")+'" onclick="MFILT=\'focus\';renderDetail()">🎯 focus-industry squeezes</button><button class="'+(MFILT==="sq"?"on":"")+'" onclick="MFILT=\'sq\';renderDetail()">all squeeze/abnormal</button><button class="'+(MFILT==="HIGH"?"on":"")+'" onclick="MFILT=\'HIGH\';renderDetail()">⚡ HIGH amp</button><button class="'+(MFILT==="clean"?"on":"")+'" onclick="MFILT=\'clean\';renderDetail()">🔒 news-clean</button><button class="'+(MFILT==="all"?"on":"")+'" onclick="MFILT=\'all\';renderDetail()">all</button></div>';
+    const ctrl='<div class="ctrl"><button class="'+(MFILT==="focus"?"on":"")+'" onclick="MFILT=\'focus\';renderDetail()">🎯 focus-industry squeezes</button><button class="'+(MFILT==="sq"?"on":"")+'" onclick="MFILT=\'sq\';renderDetail()">all squeeze/abnormal</button><button class="'+(MFILT==="HIGH"?"on":"")+'" onclick="MFILT=\'HIGH\';renderDetail()">⚡ HIGH amp</button><button class="'+(MFILT==="clean"?"on":"")+'" onclick="MFILT=\'clean\';renderDetail()">🔒 news-clean</button><button class="'+(MFILT==="fno"?"on":"")+'" onclick="MFILT=\'fno\';renderDetail()">Ⓕ F&O only</button><button class="'+(MFILT==="all"?"on":"")+'" onclick="MFILT=\'all\';renderDetail()">all</button></div>';
     const html=hdr+ctrl+movTable(MFILT)+'<div class="note">🎯 backtest-blessed industry (squeezes pay) · ⛔ trap industry (squeezes fade) · 🔥 short-covering (F&O OI) · ↩ bounce shape · ⚡ abnormal up · ⚠ earnings/news. India has no equity short-interest — these are covering/abnormal proxies, now industry-gated.</div>'; bindStk(); return html;},
   amp:()=>{const html=movTable('HIGH')+'<div class="note">HIGH = ATR% ≥ 3 (can do 3–8% routinely). P≥5% = how often it has actually printed a ≥5% day. Amplitude, not a promise — pair with the War Room daily loss-limit.</div>'; bindStk(); return html;},
   vix:()=>{const S=(D.vix&&D.vix.sectors||[]).filter(x=>x.STRESS!=null); if(!S.length)return '<div class="empty">VIX study not built.</div>';

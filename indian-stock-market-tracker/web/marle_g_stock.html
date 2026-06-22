@@ -6,6 +6,7 @@
 <title>Stock · Marle-G</title>
 <link rel="stylesheet" href="marle_g.css">
 <script src="lightweight-charts.js"></script>
+<script src="marle_g_events.js"></script>
 <style>
   .selrow{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
   .selrow input{background:var(--bg2,#11151c);border:1px solid var(--border,#222);border-radius:9px;padding:9px 13px;color:var(--ink,#e8eef7);font-family:var(--mono,monospace);font-size:14px;width:230px}
@@ -43,8 +44,13 @@
   <div class="cards" id="cards"><div class="skel"></div><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
 
   <div class="card">
-    <div class="sh">price + key levels + time-coded milestones (S/R breaks, Ichimoku cloud, Bollinger)</div>
+    <div class="sh">price + key levels + time-coded milestones (S/R breaks, Ichimoku cloud, Bollinger) · event bubbles ⊕ earnings $ dividend ⇅ gap ▲▼ 52w ≣ volume ⌛ expiry</div>
     <div id="chartwrap"><div class="skel" style="height:320px"></div></div>
+  </div>
+
+  <div class="card">
+    <div class="sh">📰 events &amp; news — dated bubbles (also on the chart) + latest headlines</div>
+    <div id="events"><div class="skel" style="height:60px"></div></div>
   </div>
 
   <div class="grid2">
@@ -88,15 +94,16 @@ async function load(){
   if(!u){ $('sub').textContent='enter a stock or index above'; return; }
   $('q').value=u; $('title').textContent=u; $('sub').textContent='loading the full picture…'; document.title=u+' · Marle-G';
   // fire every engine in parallel — assemble the one-stock command centre
-  const [chart,target,day,dec,dos]=await Promise.all([
+  const [chart,target,day,dec,dos,events]=await Promise.all([
     jget('/api/levels_chart/'+encodeURIComponent(u)),
     jget('/api/target/'+encodeURIComponent(u)),
     jget('/api/daymap/'+encodeURIComponent(u)),
     jget('/api/decomp/'+encodeURIComponent(u)),
     jget('/api/dossier/'+encodeURIComponent(u)),
+    jget('/api/events/'+encodeURIComponent(u)),
   ]);
   renderHeader(u,target,day,dec,dos);
-  renderChart(chart); renderMilestones(chart,dos);
+  renderChart(chart,u,events); renderMilestones(chart,dos); renderEvents(events);
   renderNumbers(target); renderDay(day); renderDecomp(dec); renderDossier(dos);
 }
 window.podRefresh=load;
@@ -118,7 +125,7 @@ function renderHeader(u,t,day,dec,dos){
 }
 function statCard(n,v,s,color,hero){return `<div class="mc ${hero?'hero':''}"><div class="n">${esc(n)}</div><div class="v" ${color?`style="color:${color}"`:''}>${v}</div><div class="s">${esc(s||'')}</div></div>`;}
 
-function renderChart(d){
+function renderChart(d,sym,ev){
   const wrap=$('chartwrap'); if(!d||!d.ok||!d.candles||!d.candles.length){ wrap.innerHTML='<span style="color:var(--dim);font-family:var(--mono);font-size:12px">no chart data</span>'; return; }
   wrap.innerHTML='<div id="lvchart" style="height:340px;width:100%"></div>';
   const LC=window.LightweightCharts, el=$('lvchart'); if(!LC){ el.innerHTML='chart lib missing'; return; }
@@ -131,9 +138,25 @@ function renderChart(d){
   const cs=ch.addCandlestickSeries({upColor:'#22c55e',downColor:'#ef4444',borderVisible:false,wickUpColor:'#22c55e',wickDownColor:'#ef4444'});
   cs.setData(d.candles.map(c=>({time:c.time,open:c.open,high:c.high,low:c.low,close:c.close})));
   (d.levels||[]).forEach(x=>{if(x.strength>=30){try{cs.createPriceLine({price:x.price,color:x.type==='resistance'?'rgba(239,68,68,.6)':'rgba(34,197,94,.6)',lineWidth:x.strength>=70?2:1,lineStyle:2,axisLabelVisible:true,title:''+Math.round(x.price)})}catch(e){}}});
-  try{cs.setMarkers((d.events||[]).map(e=>({time:e.time,position:e.dir==='up'?'belowBar':'aboveBar',color:e.dir==='up'?'#22c55e':'#ef4444',shape:e.dir==='up'?'arrowUp':'arrowDown',text:''+Math.round(e.price)})))}catch(e){}
+  const brkMk=(d.events||[]).map(e=>({time:e.time,position:e.dir==='up'?'belowBar':'aboveBar',color:e.dir==='up'?'#22c55e':'#ef4444',shape:e.dir==='up'?'arrowUp':'arrowDown',text:''+Math.round(e.price)}));
+  try{ if(window.MGEvents){MGEvents.attach(cs,sym,{events:ev});} cs.setMarkers(brkMk); }catch(e){}
   ch.timeScale().fitContent();
   try{new ResizeObserver(()=>{try{ch.applyOptions({width:el.clientWidth})}catch(e){}}).observe(el)}catch(e){}
+}
+function renderEvents(ev){
+  const box=$('events'); if(!box) return;
+  if(!ev||!ev.ok){ box.innerHTML='<span style="color:var(--dim);font-family:var(--mono);font-size:11px">no events</span>'; return; }
+  const ICO={earn:'⊕',div:'$',split:'⤬',gap:'⇅','52wH':'▲','52wL':'▼',vol:'≣',expiry:'⌛'};
+  const evs=(ev.events||[]).slice().reverse().slice(0,14);
+  let h='<div style="font-family:var(--mono);font-size:9.5px;color:var(--saffron);font-weight:700;margin-bottom:5px">▸ EVENT BUBBLES (latest first) — also marked on the chart</div>';
+  h+=evs.map(e=>'<div style="font-family:var(--mono);font-size:11px;padding:2px 0"><span style="color:'+(e.color||'#888')+'">'+(ICO[e.type]||'•')+'</span> <span style="color:var(--dim)">'+e.time+'</span> '+esc(e.label)+' <span style="color:var(--dim)">· '+esc(e.detail)+'</span></div>').join('')||'<span style="color:var(--dim);font-family:var(--mono);font-size:11px">no dated events</span>';
+  const news=(ev.news||[]);
+  if(news.length){
+    h+='<div style="font-family:var(--mono);font-size:9.5px;color:var(--saffron);font-weight:700;margin:10px 0 5px">⚡ LATEST UPDATES</div>';
+    h+=news.slice(0,6).map(n=>'<div style="font-size:11.5px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04)">'+(n.link?('<a href="'+esc(n.link)+'" target="_blank" rel="noopener" style="color:var(--ink);text-decoration:none">'+esc(n.title)+'</a>'):esc(n.title))+' <span style="color:var(--dim);font-size:10px">· '+esc(n.source||'')+'</span></div>').join('');
+  }
+  h+='<div class="legend" style="margin-top:7px">'+esc(ev.note||'')+'</div>';
+  box.innerHTML=h;
 }
 function renderMilestones(d,dos){
   let h='';

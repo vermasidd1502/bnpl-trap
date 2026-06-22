@@ -28,10 +28,11 @@
   </div>
   <div class="selrow">
     <span style="font-family:var(--mono);font-size:11px;color:var(--dim)">watch</span>
-    <input id="wl" style="width:300px" placeholder="RELIANCE,SBIN,BHEL,GAIL…">
+    <input id="wl" style="width:300px" placeholder="RELIANCE,SBIN,BHEL,GAIL…" title="Names to scan, comma-separated (e.g. RELIANCE,SBIN,BHEL). Saved in this browser.">
     <span style="font-family:var(--mono);font-size:11px;color:var(--dim)">held</span>
-    <input id="hl" style="width:230px" placeholder="TEJASNET:100:560,…">
-    <button class="quick" style="padding:7px 13px;cursor:pointer" onclick="saveAndLoad()">scan ↻</button>
+    <input id="hl" style="width:230px" placeholder="TEJASNET:100:560,…" title="Your held positions as SYMBOL:qty:avg, comma-separated (e.g. TEJASNET:100:560). Saved in this browser.">
+    <button class="quick" style="padding:7px 13px;cursor:pointer" onclick="saveAndLoad()" title="Re-scan your watchlist + held book now (and save them to this browser)">scan ↻</button>
+    <label style="font-family:var(--mono);font-size:11px;color:var(--dim);cursor:pointer;display:inline-flex;align-items:center;gap:5px" title="Hide WATCH / aside rows — show only the names that need an action now (FIRE / MANAGE)"><input type="checkbox" id="onlyact" onchange="load()"> only actionable</label>
     <span id="counts" style="margin-left:auto;font-family:var(--mono);font-size:12px"></span>
   </div>
   <div class="card"><div id="board"><div class="skel" style="height:42px;margin-bottom:6px"></div><div class="skel" style="height:42px;margin-bottom:6px"></div><div class="skel" style="height:42px"></div></div></div>
@@ -57,11 +58,14 @@ async function load(){
     if(!d.ok){ $('board').innerHTML='<span style="color:var(--dim);font-family:var(--mono);font-size:12px">scan failed</span>'; return; }
     $('sub').innerHTML='regime <b style="color:'+(d.regime_bull?'var(--green)':'var(--red)')+'">'+(d.regime_bull?'BULL':'BEAR/▼')+'</b> · validated dip-in-uptrend, live · read-only — you place the order';
     $('counts').innerHTML='<b style="color:var(--green)">'+(d.n_fire||0)+' FIRE</b> &nbsp;·&nbsp; <b style="color:var(--amber,#fbbf24)">'+(d.n_manage||0)+' MANAGE</b>';
-    $('board').innerHTML=(d.rows||[]).map(r=>
-      '<div class="lane L-'+r.lane+'"><span class="ic" style="color:'+laneColor(r.lane)+'">'+(ICON[r.lane]||r.lane)+'</span>'+
-      '<span class="sym" onclick="go(\''+r.sym+'\')">'+r.sym+'</span>'+
+    const LANEHELP={FIRE:'A validated DIP-BUY is live — place the order',MANAGE:'A held position needs a stop/target action',WATCH:'In an uptrend, waiting for the dip (buy-zone is in the text)',HOLD:'Held — no action needed',ASIDE:'No trade: extended / not an uptrend / bear regime'};
+    let rows=d.rows||[];
+    if($('onlyact')&&$('onlyact').checked) rows=rows.filter(r=>r.lane==='FIRE'||r.lane==='MANAGE');
+    $('board').innerHTML=rows.map(r=>
+      '<div class="lane L-'+r.lane+'"><span class="ic" title="'+(LANEHELP[r.lane]||'').replace(/"/g,'&quot;')+'" style="color:'+laneColor(r.lane)+'">'+(ICON[r.lane]||r.lane)+'</span>'+
+      '<span class="sym" title="Open '+r.sym+'’s full stock page" onclick="go(\''+r.sym+'\')">'+r.sym+'</span>'+
       '<span class="hl">₹'+(r.price!=null?r.price:'—')+' · '+esc(r.headline)+'</span></div>').join('')
-      || '<span style="color:var(--dim);font-family:var(--mono);font-size:12px">add names above and hit scan</span>';
+      || '<span style="color:var(--dim);font-family:var(--mono);font-size:12px">'+(($('onlyact')&&$('onlyact').checked)?'✅ nothing actionable right now — all clear':'add names above and hit scan')+'</span>';
   }catch(e){ $('board').innerHTML='<span style="color:var(--dim);font-family:var(--mono);font-size:12px">backend offline?</span>'; }
 }
 $('wl').value=localStorage.getItem('mg_watchlist')||'';

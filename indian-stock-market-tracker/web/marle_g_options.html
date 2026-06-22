@@ -61,6 +61,26 @@
   <div class="tabs"></div>
 </div>
 <main class="wrap">
+<style>
+  .mxon{background:var(--saffron)!important;color:#160f02!important}
+  .mxlbl{font-family:var(--mono);font-size:11px;color:var(--muted,#8a93a6)}
+  .stance{font-family:var(--mono);font-size:10px;font-weight:800;padding:2px 7px;border-radius:5px;white-space:nowrap}
+  .S-BUY{background:rgba(34,197,94,.18);color:#22c55e} .S-OK{background:rgba(96,165,250,.18);color:#60a5fa}
+  .S-CAUTION{background:rgba(251,191,36,.16);color:#fbbf24} .S-AVOID{background:rgba(239,68,68,.18);color:#ef4444}
+  table.mxt{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px}
+  table.mxt th{font-size:10px;text-transform:uppercase;color:var(--dim);padding:6px 5px;text-align:center;border-bottom:1px solid var(--border)}
+  table.mxt td{padding:0;text-align:center;border-bottom:1px solid rgba(255,255,255,.04)}
+  table.mxt td.l{text-align:left;padding:7px 8px;white-space:nowrap}
+  .mxcell{padding:8px 5px;font-weight:700}
+  .mxrecrow{outline:2px solid #22c55e;outline-offset:-2px}
+  .fnrow2{font-family:var(--mono);font-size:11.5px;padding:4px 0;line-height:1.5;display:flex;gap:8px;align-items:baseline}
+  .obrow{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;margin:2px 0}
+  .obbar{height:12px;border-radius:3px}
+  .pbtn2{background:transparent;border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:11px;padding:1px 7px;margin-left:5px;color:var(--ink,#e8eef7)}
+  .pbtn2:hover{border-color:var(--saffron)}
+  .ptrade2{display:flex;gap:11px;align-items:center;font-family:var(--mono);font-size:12px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.05);flex-wrap:wrap}
+  .pos2{color:#22c55e}.neg2{color:#ef4444}.dim2{color:var(--dim,#8a93a6)}
+</style>
   <div class="selrow">
     <input id="und" list="fnolist" placeholder="F&O stock…" value="MANAPPURAM" spellcheck="false">
     <datalist id="fnolist"></datalist>
@@ -83,9 +103,25 @@
     <div class="sh">trade verdict · is a long plausible? — timeline · targets · buy/sell calendar</div>
     <div id="deck"><span style="color:var(--dim);font-family:var(--mono);font-size:12px">load a stock to see the verdict…</span></div>
   </div>
+  <div class="card" id="newscard" style="display:none;border-color:rgba(96,165,250,.22)">
+    <div class="sh">📰 news · latest headlines for the loaded name (Google News — Groww's API exposes no news feed)</div>
+    <div id="newswrap"></div>
+  </div>
   <div class="card" id="levelscard" style="display:none;border-color:rgba(96,165,250,.22)">
     <div class="sh">key levels · support / resistance (volume-profile + swing pivots + structure)</div>
     <div id="levels"></div>
+  </div>
+  <div class="card" id="obcard" style="display:none;border-color:rgba(168,85,247,.28)">
+    <div class="sh">live order ladder · L1/L2 depth for the loaded asset — resting bid/ask walls (index uses its future)</div>
+    <div id="obwrap"></div>
+  </div>
+  <div class="card" id="biascard" style="display:none;border-color:rgba(251,191,36,.22)">
+    <div class="sh">bull/bear gauge · how long it holds above pivot / R1 / S1 (acceptance over time, not a signal)</div>
+    <div id="biaswrap"></div>
+  </div>
+  <div class="card" id="seccard" style="border-color:rgba(96,165,250,.18)">
+    <div class="sh">🏭 sectoral bias · bull/bear by pivot acceptance (most-bearish first) — click a sector to expand · ⚑ = persistent put candidate</div>
+    <div id="secwrap"><div class="skel" style="height:60px"></div></div>
   </div>
   <div class="banner" id="banner">Pick a suggestion above, or search an F&amp;O stock / index and hit <b>load ↗</b> to see its chain + levels + verdict.</div>
   <div class="tiles" id="tiles"></div>
@@ -97,6 +133,24 @@
   <div class="card" id="laddercard" style="display:none;border-color:rgba(168,85,247,.25)">
     <div class="sh">short vs long expiry · same strike, only time changes — which tenor actually pays</div>
     <div id="ladder"></div>
+  </div>
+  <div class="card" id="mxcard" style="display:none;border-color:rgba(34,197,94,.28)">
+    <div class="sh">expiry matrix · same strike, EVERY live expiry · P&amp;L over a 1–2 wk hold + best stop + buy/avoid by theta</div>
+    <div class="selrow" style="margin-bottom:10px;flex-wrap:wrap">
+      <span class="mxlbl">hold</span>
+      <span id="mxh5" class="quick mxon" onclick="mxSetHold('5')">1 WEEK</span><span id="mxh10" class="quick" onclick="mxSetHold('10')">2 WEEKS</span>
+      <span class="mxlbl" style="margin-left:8px">strike</span><input id="mxstrike" placeholder="ATM" style="width:84px">
+      <span id="mxkC" class="quick mxon" onclick="mxSetKind('C')">CE</span><span id="mxkP" class="quick" onclick="mxSetKind('P')">PE</span>
+      <button onclick="mxReload()">matrix ↗</button>
+      <span id="mxmeta" style="margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--dim)"></span>
+    </div>
+    <div id="mxrec"></div>
+    <div id="mxtbl" style="overflow-x:auto"></div>
+    <div id="mxnotes" style="margin-top:10px"></div>
+    <div style="margin-top:11px;border-top:1px solid var(--border,rgba(255,255,255,.08));padding-top:10px">
+      <div style="font-family:var(--mono);font-size:11px;color:var(--saffron);font-weight:700;margin-bottom:6px">📝 paper trades — live-marked, no real orders ever &nbsp;<span style="font-weight:400;color:var(--dim)">qty</span> <input id="mxpqty" value="75" style="width:54px"></div>
+      <div id="mxpaper"></div>
+    </div>
   </div>
   <div class="card">
     <div class="sh">value lab · OTM-call optimizer — "buy OTM, ride it into ATM"</div>
@@ -114,6 +168,7 @@
   </div>
 </main>
 <script src="lightweight-charts.js"></script>
+<script src="marle_g_events.js"></script>
 <script>
 const $=id=>document.getElementById(id);
 let LVCHART=null;
@@ -150,7 +205,7 @@ function riskMeter(rk){
     '<span style="font-family:var(--mono);font-size:10.5px;font-weight:700;color:'+col+'">'+rk.score+' '+rk.level+'</span>'+
     '<span style="font-family:var(--mono);font-size:10px;color:var(--dim)">· '+rk.main+'</span></div>';
 }
-const FNO=["NIFTY","BANKNIFTY","FINNIFTY","AARTIIND","ABB","ADANIENT","ADANIPORTS","ASIANPAINT","AXISBANK","BAJFINANCE","BANKBARODA","BEL","BHARTIARTL","BHEL","BPCL","CIPLA","COALINDIA","DIXON","DLF","DRREDDY","EICHERMOT","GAIL","GRASIM","HAL","HCLTECH","HDFCBANK","HINDALCO","ICICIBANK","INFY","ITC","JSWSTEEL","KOTAKBANK","LT","M&M","MANAPPURAM","MARUTI","MUTHOOTFIN","NTPC","ONGC","PFC","POWERGRID","RELIANCE","SBIN","SUNPHARMA","TATAMOTORS","TATAPOWER","TATASTEEL","TCS","TECHM","TITAN","TRENT","ULTRACEMCO","VEDL","WIPRO"];
+const FNO=["NIFTY","BANKNIFTY","FINNIFTY","SENSEX","BANKEX","MIDCPNIFTY","AARTIIND","ABB","ADANIENT","ADANIPORTS","ASIANPAINT","AXISBANK","BAJFINANCE","BANKBARODA","BEL","BHARTIARTL","BHEL","BPCL","CIPLA","COALINDIA","DIXON","DLF","DRREDDY","EICHERMOT","GAIL","GRASIM","HAL","HCLTECH","HDFCBANK","HINDALCO","ICICIBANK","INFY","ITC","JSWSTEEL","KOTAKBANK","LT","M&M","MANAPPURAM","MARUTI","MUTHOOTFIN","NTPC","ONGC","PFC","POWERGRID","RELIANCE","SBIN","SUNPHARMA","TATAMOTORS","TATAPOWER","TATASTEEL","TCS","TECHM","TITAN","TRENT","ULTRACEMCO","VEDL","WIPRO"];
 $('fnolist').innerHTML=FNO.map(s=>'<option value="'+s+'">').join('');
 function setU(s){ $('und').value=s; load(true); }
 // open a suggestion as its OWN page in a new window — deep-linked URL, so it's a real page (back/forward works), not a pop-up
@@ -162,6 +217,7 @@ let EXP_INITED=false, PENDING_EXP=null;
 async function load(resetExp){
   const u=($('und').value||'').trim().toUpperCase(); if(!u) return;
   loadLevels(u);                       // levels work for ANY symbol (incl. indices + non-F&O), so fire first
+  obLoad(u); mxAuto(u); loadNews(u); loadBias(u);   // ladder + matrix + news + bull/bear gauge (consolidated)
   if(resetExp) EXP_INITED=false;
   const exp=(EXP_INITED && $('expiry').value)?('?expiry='+$('expiry').value):(PENDING_EXP?('?expiry='+encodeURIComponent(PENDING_EXP)):'');
   $('banner').textContent='loading '+u+' chain…'; $('tiles').innerHTML=skelTiles(4); $('chain').innerHTML='<tbody>'+Array(7).fill('<tr><td colspan="13" style="padding:4px 7px"><div class="skel" style="height:15px"></div></td></tr>').join('')+'</tbody>';
@@ -312,6 +368,7 @@ async function loadLevels(u){
       }
       const cs=ch.addCandlestickSeries({upColor:'#22c55e',downColor:'#ef4444',borderVisible:false,wickUpColor:'#22c55e',wickDownColor:'#ef4444'});
       cs.setData(d.candles.map(c=>({time:c.time,open:c.open,high:c.high,low:c.low,close:c.close})));
+      try{ if(window.MGEvents){MGEvents.attach(cs,u);} }catch(e){}
       (d.levels||[]).forEach(x=>{ if(x.strength>=30){ try{ cs.createPriceLine({price:x.price,color:x.type==='resistance'?'rgba(239,68,68,.65)':'rgba(34,197,94,.65)',lineWidth:x.strength>=70?2:1,lineStyle:2,axisLabelVisible:true,title:''+Math.round(x.price)}); }catch(e){} } });
       try{ cs.setMarkers((d.events||[]).map(e=>({time:e.time,position:e.dir==='up'?'belowBar':'aboveBar',color:e.dir==='up'?'#22c55e':'#ef4444',shape:e.dir==='up'?'arrowUp':'arrowDown',text:''+Math.round(e.price)}))); }catch(e){}
       const wire=(id,arr)=>{ const cb=$(id); if(cb) cb.onchange=()=>arr.forEach(s=>{try{s.applyOptions({visible:cb.checked})}catch(e){}}); };
@@ -506,6 +563,129 @@ window.podRefresh = function(){
 scanSuggest();
 // deep-link: ?u=SYMBOL&expiry=DATE → land straight on that option (lets a suggestion open here in a new window)
 (function(){ try{ var q=new URLSearchParams(location.search), u=q.get('u'); if(u){ $('und').value=u.toUpperCase(); PENDING_EXP=q.get('expiry')||null; load(true); } }catch(e){} })();
+
+// ===== consolidated into the options page: live order ladder + expiry matrix + paper (logic lives in marleg_* modules) =====
+const MXesc=s=>(''+(s==null?'':s)).replace(/[<>]/g,'');
+const MXj=async u=>{try{return await (await fetch(u)).json()}catch(e){return{ok:false,error:'offline'}}};
+const MXrs=v=>v==null?'—':'₹'+(+v).toLocaleString('en-IN',{maximumFractionDigits:1});
+const MXsg=v=>v==null?'—':(v>=0?'+':'')+v;
+
+async function loadNews(sym){
+  const card=$('newscard'); if(!card) return;
+  const items=await MXj('/api/news?q='+encodeURIComponent(sym+' stock NSE India share'));
+  const list=Array.isArray(items)?items:(items&&items.news)||[];
+  if(!list.length){ card.style.display='none'; return; }
+  card.style.display='';
+  $('newswrap').innerHTML=list.slice(0,8).map(n=>'<div style="font-size:12px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04)">'+MXesc(n.title||'')+' <span class="dim2" style="font-size:10.5px">· '+MXesc(n.source||'')+(n.ago?' · '+MXesc(n.ago):'')+'</span></div>').join('')+
+    '<div class="legend" style="margin-top:6px">Headlines aggregated via Google News (Groww’s trading API has no news endpoint). Mixed coverage is normal — read the bull and bear takes, don’t cherry-pick.</div>';
+}
+async function loadBias(sym){
+  const card=$('biascard'); if(!card) return;
+  const d=await MXj('/api/pivot_bias/'+encodeURIComponent(sym));
+  if(!d||!d.ok){ card.style.display='none'; return; }
+  card.style.display='';
+  const col=d.verdict.indexOf('BULL')===0?'#22c55e':d.verdict.indexOf('BEAR')===0?'#ef4444':'#fbbf24';
+  const pa=d.pct_above_pivot,c=d.current,p=d.persistence,zd=d.zone_dist||{};
+  const zl=['<S2','S2–S1','S1–P','P–R1','R1–R2','>R2'], zc={'<S2':'#ef4444','S2–S1':'#f97316','S1–P':'#fbbf24','P–R1':'#a3e635','R1–R2':'#22c55e','>R2':'#16a34a'};
+  const bar='<div style="display:flex;height:16px;border-radius:5px;overflow:hidden;max-width:430px;font-size:8px;font-family:var(--mono);line-height:16px">'+
+    zl.map(z=>{const w=zd[z]||0;return w>0?'<span style="width:'+w+'%;background:'+zc[z]+';text-align:center;color:#0b0d12;font-weight:700" title="'+z+': '+w+'% of days">'+(w>=9?z:'')+'</span>':'';}).join('')+'</div>';
+  $('biaswrap').innerHTML='<div style="font-family:var(--mono);font-size:13px;font-weight:800;color:'+col+';margin-bottom:6px">'+MXesc(d.verdict)+'</div>'+
+    '<div class="dim2" style="font-family:var(--mono);font-size:11.5px;line-height:1.75">'+
+    'time above pivot: <b style="color:var(--ink)">'+pa.d20+'%</b> (20d) · '+pa.d60+'% (60d) · '+pa.dL+'% ('+d.lookback+'d)<br>'+
+    'right now: <b class="'+(c.side==='ABOVE'?'pos2':'neg2')+'">'+c.side+'</b> the pivot for <b>'+c.streak_sessions+'</b> sessions · typically holds ↑'+p.avg_run_above+' / ↓'+p.avg_run_below+' sessions before flipping<br>'+
+    'above R1 (strong-bull) '+d.pct_above_R1+'% of days · below S1 (strong-bear) '+d.pct_below_S1+'%</div>'+
+    '<div style="margin-top:8px">'+bar+'<div class="dim2" style="font-size:10px;font-family:var(--mono);margin-top:3px">share of last '+d.lookback+' sessions in each pivot band (bearish ← → bullish)</div></div>';
+}
+function SBtog(id){const e=$(id); if(e) e.style.display=(e.style.display==='none')?'':'none';}
+async function loadSectors(){
+  const card=$('seccard'); if(!card) return;
+  const [d,ss]=await Promise.all([MXj('/api/sector_bias'), MXj('/api/session_split')]);
+  if(!d||!d.ok){ card.style.display='none'; return; }
+  const vcol=v=>v==='BULL'?'#22c55e':v==='BEAR'?'#ef4444':'#fbbf24';
+  let h='';
+  if(ss&&ss.ok&&ss.all){ const a=ss.all;
+    h+='<div style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.25);border-radius:9px;padding:9px 12px;margin-bottom:9px;font-family:var(--mono);font-size:11.5px">⏱ <b>shorting: intraday vs overnight</b> — India\'s drift is OVERNIGHT (<b>'+a.overnight.mean+'%/night</b>, up '+a.overnight.win_up+'%); intraday drifts '+a.intraday.mean+'%. So a short makes <b class="'+(a.short_intraday>=0?'pos2':'neg2')+'">'+(a.short_intraday>=0?'+':'')+a.short_intraday+'%/day INTRADAY</b> vs <b class="neg2">'+a.short_overnight+'% overnight</b>. <b>⇒ if bearish, intraday-short and flat by close — never hold a put overnight.</b></div>'; }
+  h+='<div class="legend" style="margin-bottom:8px">'+MXesc(d.caveat)+'</div>';
+  h+=(d.sectors||[]).map((x,i)=>{
+    const id='secx'+i;
+    const bn=x.bearish_now?' <span class="stance S-AVOID" title="most constituents below the pivot today">⚡ bearish now</span>':'';
+    const hdr='<div onclick="SBtog(\''+id+'\')" style="cursor:pointer;display:flex;gap:10px;align-items:center;font-family:var(--mono);font-size:12px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)">'+
+      '<span style="width:12px;color:var(--dim)">▸</span><span style="font-weight:800;color:'+vcol(x.verdict)+';width:42px">'+x.verdict+'</span>'+
+      '<span style="flex:1">'+MXesc(x.sector)+bn+'</span>'+
+      '<span class="dim2"><b class="'+(x.frac_below_now>=0.6?'neg2':'')+'">'+x.n_below_now+'/'+x.n+'</b> below · %&gt;piv '+x.mean_above60+'/'+x.mean_above120+(x.n_persistent_bear?' · <span style="color:#ef4444">⚑'+x.n_persistent_bear+'</span>':'')+'</span></div>';
+    const strat='<div class="legend" style="margin:5px 0 5px 24px">'+MXesc(x.strategy||'')+'</div>';
+    const names=(x.names||[]).map(nm=>'<div style="font-family:var(--mono);font-size:11px;padding:2px 0 2px 24px;display:flex;gap:9px;align-items:center"><span style="width:92px;cursor:pointer;color:var(--saffron)" onclick="setU(\''+nm.s+'\')" title="load '+nm.s+'">'+nm.s+'</span>'+
+      '<span class="'+(nm.side==='BELOW'?'neg2':'pos2')+'" style="width:74px">'+nm.side+' '+nm.streak+'s</span>'+
+      '<span class="dim2">%&gt;piv '+nm.pct_above60+'/'+nm.pct_above120+'</span>'+
+      (nm.persistent_bear?'<span style="color:#ef4444" title="persistently below the pivot — intraday-short candidate (not an overnight put)">⚑ intraday-short</span>':'')+'</div>').join('');
+    return hdr+'<div id="'+id+'" style="display:none">'+strat+names+'</div>';
+  }).join('');
+  $('secwrap').innerHTML=h;
+}
+async function obLoad(sym){
+  const card=$('obcard'); if(!card) return;
+  const d=await MXj('/api/orderbook/'+encodeURIComponent(sym));
+  if(!d||!d.ok){ card.style.display='none'; return; }
+  card.style.display='';
+  const mx=d.maxq||1;
+  const lv=(arr,c)=>(arr||[]).slice(0,5).map(x=>'<div class="obrow"><span style="width:74px;text-align:right">'+MXrs(x.price)+'</span><div class="obbar" style="width:'+Math.max(4,(x.quantity/mx*150))+'px;background:'+c+'"></div><span class="dim2">'+(x.quantity||0).toLocaleString('en-IN')+'</span></div>').join('');
+  let h='<div class="dim2" style="font-family:var(--mono);font-size:11px;margin-bottom:6px">'+MXesc(d.kind)+' '+MXesc(d.instrument||sym)+' · LTP '+MXrs(d.ltp)+' · buy '+(d.buy_pct!=null?d.buy_pct:'—')+'% / sell '+(d.sell_pct!=null?d.sell_pct:'—')+'% · spread '+(d.spread_pct!=null?d.spread_pct+'%':'—')+
+    (d.bid_wall?' · 🟢 bid wall '+(d.bid_wall.quantity||'').toLocaleString('en-IN')+'@'+MXrs(d.bid_wall.price):'')+(d.ask_wall?' · 🔴 ask wall '+(d.ask_wall.quantity||'').toLocaleString('en-IN')+'@'+MXrs(d.ask_wall.price):'')+'</div>';
+  h+='<div style="font-size:9px;color:#ef9a9a;font-family:var(--mono)">ASKS (overhead supply)</div>'+lv((d.sell||[]).slice().reverse(),'rgba(239,68,68,.5)');
+  h+='<div style="font-size:9px;color:#86efac;font-family:var(--mono);margin-top:4px">BIDS (support)</div>'+lv(d.buy,'rgba(34,197,94,.5)');
+  if(d.note) h+='<div class="legend" style="margin-top:6px">'+MXesc(d.note)+'</div>';
+  $('obwrap').innerHTML=h;
+}
+
+let MX={u:null,hold:'5',kind:'C',data:null};
+function mxSetHold(h){MX.hold=h;$('mxh5').classList.toggle('mxon',h==='5');$('mxh10').classList.toggle('mxon',h==='10');if(MX.data)mxRender();}
+function mxSetKind(k){MX.kind=k;$('mxkC').classList.toggle('mxon',k==='C');$('mxkP').classList.toggle('mxon',k==='P');mxReload();}
+function mxAuto(sym){MX.u=sym;mxReload();}
+function mxCellColor(p){if(p==null)return 'transparent';if(p>=0){const a=Math.min(0.85,0.12+p/220);return 'rgba(34,197,94,'+a.toFixed(2)+')';}const a=Math.min(0.85,0.12+(-p)/110);return 'rgba(239,68,68,'+a.toFixed(2)+')';}
+async function mxReload(){
+  const card=$('mxcard'); if(!card||!MX.u) return;
+  const strike=($('mxstrike').value||'').trim();
+  const d=await MXj('/api/expiry_matrix/'+encodeURIComponent(MX.u)+'?kind='+MX.kind+(strike?'&strike='+encodeURIComponent(strike):''));
+  if(!d||!d.ok){ card.style.display='none'; return; }
+  card.style.display=''; MX.data=d; if(d.lot&&$('mxpqty'))$('mxpqty').value=d.lot; mxRender(); mxPaper();
+}
+function mxRender(){
+  const d=MX.data, h=MX.hold; if(!d) return;
+  $('mxmeta').textContent=d.underlying+' '+Math.round(d.strike)+d.right+' · spot '+MXrs(d.spot)+' · RV '+d.realized_vol_pct+'% · ±1σ '+(d.sigma_by_hold[h])+'pts';
+  const rc=(d.recommendation||{})[h];
+  $('mxrec').innerHTML = rc ? '<div style="border:1px solid rgba(34,197,94,.45);background:rgba(34,197,94,.08);border-radius:10px;padding:11px 13px;margin-bottom:11px;font-family:var(--mono);font-size:12px">➤ for a <b>'+(h==='5'?'1-week':'2-week')+'</b> hold: <b style="color:#22c55e">'+MXesc(rc.symbol)+'</b> ('+rc.dte+'d) — +1σ <b>'+MXsg(rc["pnl_at_+1sigma_pct"])+'%</b>, flat <span class="neg2">'+MXsg(rc.theta_if_flat_pct)+'%</span>, stop <span class="neg2">'+MXsg(rc.stop_loss_pct)+'%</span>, R:R '+(rc.rr!=null?rc.rr:'—')+'<button class="pbtn2" onclick="mxPaperPick(\''+rc.symbol+'\')">📝 paper this</button><div style="color:var(--dim);margin-top:4px">'+MXesc(rc.why||'')+'</div></div>' : '';
+  const labels=['-2σ','-1σ','flat','+1σ','+2σ'];
+  let t='<table class="mxt"><tr><th class="l">expiry</th><th>dte</th><th>prem</th><th>θflat</th>'+labels.map(l=>'<th>'+l+'</th>').join('')+'<th>stop</th><th>R:R</th><th>stance·paper</th></tr>';
+  d.matrix.forEach(row=>{const hh=row.holds[h]; if(!hh)return; const isRec=rc&&rc.symbol===row.symbol;
+    const cells=hh.scenarios.map(s=>'<td class="mxcell" style="background:'+mxCellColor(s.pnl_pct)+'">'+MXsg(s.pnl_pct)+'%</td>').join('');
+    t+='<tr class="'+(isRec?'mxrecrow':'')+'"><td class="l"><b>'+MXesc(row.expiry.slice(5))+'</b> <span class="dim2" style="font-size:9px">'+(row.is_monthly?'M':'wk')+'</span>'+(hh.expired_in_hold?' <span class="stance S-AVOID">cliff</span>':'')+'</td>'+
+      '<td class="dim2">'+row.dte+'</td><td>'+MXrs(row.premium)+'</td><td class="'+(hh.theta_cost_flat_pct>=0?'pos2':'neg2')+'">'+MXsg(hh.theta_cost_flat_pct)+'%</td>'+cells+
+      '<td class="neg2">'+MXsg(hh.stop&&hh.stop.loss_pct)+'%</td><td>'+(hh.rr!=null?hh.rr:'—')+'</td>'+
+      '<td style="white-space:nowrap"><span class="stance S-'+hh.stance+'">'+hh.stance+'</span><button class="pbtn2" title="paper-trade this expiry (no real order)" onclick="mxPaperPick(\''+row.symbol+'\')">📝</button></td></tr>';
+  });
+  t+='</table>'; $('mxtbl').innerHTML=t;
+  $('mxnotes').innerHTML='<div style="font-family:var(--mono);font-size:10px;color:var(--saffron);font-weight:700;margin-bottom:4px">▸ WHY EACH EXPIRY (time-complexity stance)</div>'+
+    d.matrix.map(row=>{const hh=row.holds[h];return hh?'<div class="fnrow2"><span class="stance S-'+hh.stance+'">'+hh.stance+'</span><span><b>'+MXesc(row.expiry.slice(5))+'</b> ('+row.dte+'d) — '+MXesc(hh.footnote)+'</span></div>':'';}).join('')+
+    '<div class="legend" style="margin-top:6px">'+MXesc(d.horizon_verdict||'')+' · '+MXesc(d.asof||'')+'</div>';
+}
+async function mxPaperPick(symbol){
+  const qty=($('mxpqty')&&$('mxpqty').value||'75').trim();
+  const r=await MXj('/api/opt_paper/open?symbol='+encodeURIComponent(symbol)+'&qty='+encodeURIComponent(qty)+'&hold='+MX.hold+'&note='+encodeURIComponent('matrix '+(MX.hold==='5'?'1wk':'2wk')));
+  if(!r||!r.ok){ alert('paper open failed: '+((r&&r.error)||'?')); return; }
+  mxPaper();
+}
+async function mxPaperClose(id){ await MXj('/api/opt_paper/close?id='+id); mxPaper(); }
+async function mxPaper(){
+  const box=$('mxpaper'); if(!box) return;
+  const b=await MXj('/api/opt_paper');
+  if(!b||!b.ok){ box.innerHTML='<span class="dim2" style="font-family:var(--mono);font-size:11px">paper book offline</span>'; return; }
+  if(!b.open.length && !b.closed.length){ box.innerHTML='<span class="dim2" style="font-family:var(--mono);font-size:11px">no paper trades yet — hit 📝 on any expiry above (no real order is placed)</span>'; return; }
+  let h='<div class="dim2" style="font-family:var(--mono);font-size:11px;margin-bottom:5px">open '+b.n_open+' · unrealized <b class="'+(b.unrealized>=0?'pos2':'neg2')+'">'+MXrs(b.unrealized)+'</b> · realized '+MXrs(b.realized)+' · '+MXesc(b.asof)+'</div>';
+  h+=b.open.map(t=>'<div class="ptrade2"><b>#'+t.id+' '+MXesc(t.symbol)+'</b> x'+t.qty+' · '+MXrs(t.entry_prem)+'→'+MXrs(t.now_prem)+' <b class="'+(t.pnl_pct>=0?'pos2':'neg2')+'">'+MXsg(t.pnl_pct)+'% ('+MXrs(t.pnl_abs)+')</b> <span class="dim2">· '+t.sessions_to_target+'→target · '+t.dte+'DTE'+(t.due?' ⏰DUE':'')+'</span><button class="pbtn2" onclick="mxPaperClose('+t.id+')">close</button></div>').join('');
+  if(b.closed.length) h+='<div class="dim2" style="font-family:var(--mono);font-size:11px;margin-top:6px">closed: '+b.closed.map(t=>MXesc(t.symbol)+' '+(t.exit_pnl>=0?'+':'')+MXrs(t.exit_pnl)).join(' · ')+'</div>';
+  box.innerHTML=h;
+}
+mxPaper(); loadSectors();
 </script>
 <script src="marle_g_nav.js"></script>
 </body>

@@ -20,11 +20,27 @@ import pandas as pd
 
 
 def _hist(tk, period="1y"):
-    import marleg_vol as mv
-    import yfinance as yf
-    yfsym = mv._yf_symbol(tk.upper())
-    h = yf.Ticker(yfsym).history(period=period)
-    return h[["Open", "High", "Low", "Close", "Volume"]].dropna() if len(h) else None
+    """Daily OHLCV — GROWW candles first (no yfinance rate-limit; works for indices like NIFTY), yf fallback."""
+    days = {"6mo": 190, "1y": 380, "2y": 760, "5y": 1850}.get(period, 380)
+    try:
+        import groww_client as gc
+        g = gc.GrowwClient(); g.token()
+        df = g.candles(tk.upper(), interval_min=1440, days=days, segment="CASH")
+        if df is not None and len(df) >= 60:
+            df = df.rename(columns={"open": "Open", "high": "High", "low": "Low", "close": "Close", "volume": "Volume"})
+            df["Volume"] = pd.to_numeric(df.get("Volume"), errors="coerce").fillna(0.0)
+            if (df["Volume"] <= 0).all():     # indices report no volume → 1.0 degrades the profile to time-at-price
+                df["Volume"] = 1.0
+            return df[["Open", "High", "Low", "Close", "Volume"]].dropna(subset=["Open", "High", "Low", "Close"])
+    except Exception:
+        pass
+    try:
+        import marleg_vol as mv
+        import yfinance as yf
+        h = yf.Ticker(mv._yf_symbol(tk.upper())).history(period=period)
+        return h[["Open", "High", "Low", "Close", "Volume"]].dropna() if len(h) else None
+    except Exception:
+        return None
 
 
 def levels(tk, period="1y", bins=48, pivot_k=5, top=8):
