@@ -181,23 +181,29 @@ def _yf_symbol(sym):
 
 def realized_vol(symbol, window=20):
     try:
-        h = yf.Ticker(_yf_symbol(symbol)).history(period="4mo", interval="1d")["Close"].dropna()
-        rets = (h / h.shift(1)).apply(lambda x: math.log(x) if x > 0 else 0).dropna()
-        if len(rets) < window + 1:
-            return None
+        import marleg_data as md
         import statistics
-        sd = statistics.pstdev(list(rets.iloc[-window:]))
-        return sd * math.sqrt(TRADING_DAYS)
+        df = md.candles(symbol, 1440, max(window + 25, 120))     # Groww-only
+        c = df["close"].dropna() if df is not None and "close" in df.columns else None
+        if c is None or len(c) < window + 1:
+            return None
+        rets = [math.log(c.iloc[i] / c.iloc[i - 1]) for i in range(1, len(c)) if c.iloc[i - 1] > 0]
+        return statistics.pstdev(rets[-window:]) * math.sqrt(TRADING_DAYS) if len(rets) >= window else None
     except Exception:
         return None
 
 
 def india_vix():
-    try:
-        v = yf.Ticker("^INDIAVIX").history(period="5d")["Close"].dropna()
-        return float(v.iloc[-1]) if len(v) else None
+    try:                                                         # Groww INDIAVIX quote (no yfinance)
+        import groww_client as gc
+        g = gc.GrowwClient(); g.token()
+        p = (g.ltp("INDIAVIX", exchange="NSE").json().get("payload") or {})
+        for v in p.values():
+            if v:
+                return float(v)
     except Exception:
-        return None
+        pass
+    return None
 
 
 # ------------------------------------------------------------------ symbol parsing
@@ -300,8 +306,9 @@ def underlying_ltp(und, g):
             except Exception:
                 pass
     try:
-        c = yf.Ticker(_yf_symbol(und)).history(period="1d")["Close"].dropna()
-        return float(c.iloc[-1]) if len(c) else None
+        import marleg_data as md
+        df = md.candles(und, 1440, 6)
+        return float(df["close"].iloc[-1]) if df is not None and len(df) else None
     except Exception:
         return None
 

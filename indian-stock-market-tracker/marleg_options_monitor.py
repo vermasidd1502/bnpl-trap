@@ -323,7 +323,7 @@ def chain(underlying, n=8, expiry=None):
     pcr = round(pe_oi / ce_oi, 2) if ce_oi else None        # local PCR across the shown strikes (live OI only)
     vix = mv.india_vix()
     today = dt.date.today()
-    exps = (_inst.expiries(und, within_days=160) if _inst else None) or []   # ALL real expiries (weeklies+monthlies)
+    exps = (_inst.expiries(und) if _inst else None) or []   # ALL listed expiries (weeklies+monthlies+quarterlies)
     if not exps:                                                              # fallback: monthlies only
         yy, mm = today.year, today.month
         while len(exps) < 4:

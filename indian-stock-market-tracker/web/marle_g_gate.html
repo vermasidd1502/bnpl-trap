@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Session Gate · Marle-G</title>
+<style>
+  :root{--bg:#080a0e;--card:#14171e;--bg2:#0e1116;--border:rgba(255,255,255,.08);--ink:#eef1f6;--muted:#9aa3b4;--dim:#646c7a;
+    --mono:'SF Mono',ui-monospace,Consolas,monospace;--saffron:#ff9933;--green:#22c55e;--red:#ef4444;--amber:#fbbf24;--india-green:#138808;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif;transition:background .6s ease}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--border);background:rgba(8,10,14,.8);position:sticky;top:0;z-index:10}
+  .brand{font-family:var(--mono);font-weight:800;letter-spacing:.18em;font-size:13px;display:flex;align-items:center;gap:9px}
+  .brand .mark{width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,var(--saffron),var(--india-green))}
+  .brand .w{background:linear-gradient(90deg,var(--saffron),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tabs{display:flex;gap:14px;font-family:var(--mono);font-size:11px;flex-wrap:wrap}
+  .wrap{max-width:1100px;margin:0 auto;padding:20px 22px 80px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:15px 17px;margin-bottom:13px}
+  .sh{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-bottom:9px;display:flex;justify-content:space-between;align-items:center}
+  .stamp{font-family:var(--mono);font-size:9.5px;color:var(--dim);font-weight:600}
+  .stamp.stale{color:var(--red)}
+  /* hero */
+  .hero{border-radius:18px;padding:22px 26px;margin-bottom:14px;border:1px solid var(--border);position:relative;overflow:hidden;transition:background .6s,border-color .6s}
+  .clockrow{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:14px}
+  .clk{font-family:var(--mono);font-weight:800;font-size:58px;line-height:1;letter-spacing:.02em;color:#fff;text-shadow:0 2px 18px rgba(0,0,0,.4)}
+  .clk .sec{font-size:30px;opacity:.6}
+  .clksub{font-family:var(--mono);font-size:12.5px;color:rgba(255,255,255,.82);margin-top:7px;line-height:1.6}
+  .ct{font-family:var(--mono);font-size:20px;font-weight:700;color:rgba(255,255,255,.9);text-align:right}
+  .ctsub{font-family:var(--mono);font-size:11px;color:rgba(255,255,255,.62);text-align:right;margin-top:3px}
+  .gatebadge{display:inline-flex;align-items:center;gap:10px;margin-top:16px;padding:10px 18px;border-radius:12px;font-family:var(--mono);font-weight:800;font-size:17px;letter-spacing:.04em;background:rgba(0,0,0,.28)}
+  .dot{width:13px;height:13px;border-radius:50%;box-shadow:0 0 14px currentColor}
+  .gatelabel{font-family:var(--mono);font-size:13px;color:rgba(255,255,255,.92);margin-top:11px;line-height:1.5}
+  .count{font-family:var(--mono);font-weight:800;font-size:15px;color:#fff}
+  .toggle{display:inline-flex;gap:0;border:1px solid rgba(255,255,255,.22);border-radius:8px;overflow:hidden;margin-left:10px}
+  .toggle button{font-family:var(--mono);font-size:10px;font-weight:700;padding:3px 9px;background:transparent;border:0;color:rgba(255,255,255,.6);cursor:pointer}
+  .toggle button.on{background:rgba(255,255,255,.92);color:#111}
+  /* tiles */
+  .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(232px,1fr));gap:13px;margin-bottom:13px}
+  .big{font-family:var(--mono);font-size:23px;font-weight:800;line-height:1.05}
+  .lab{font-family:var(--mono);font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;font-weight:700}
+  .stat{font-size:12px;color:var(--muted);line-height:1.55;margin-top:8px}
+  .kv{display:flex;justify-content:space-between;font-family:var(--mono);font-size:12px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+  .kv .k{color:var(--dim)} .kv .v{color:var(--ink);font-weight:600}
+  .pos{color:var(--green)} .neg{color:var(--red)} .neu{color:var(--amber)} .mut{color:var(--muted)}
+  .futgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:8px}
+  .fut{background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:8px 10px;text-align:center}
+  .fut .n{font-family:var(--mono);font-size:9.5px;color:var(--dim)} .fut .c{font-family:var(--mono);font-size:16px;font-weight:800;margin-top:3px}
+  /* checklist */
+  .checkwrap{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+  @media(max-width:720px){.checkwrap{grid-template-columns:1fr}.clk{font-size:44px}}
+  .ci{display:flex;gap:9px;align-items:flex-start;padding:8px 9px;border-radius:9px;border:1px solid transparent}
+  .ci .mk{font-family:var(--mono);font-weight:800;font-size:13px;flex:0 0 auto;width:18px;text-align:center;margin-top:1px}
+  .ci .cl{font-size:12.5px;color:var(--ink);font-weight:500} .ci .cd{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:2px;line-height:1.45}
+  .ci.pass .mk{color:var(--green)} .ci.warn .mk{color:var(--amber)} .ci.fail .mk{color:var(--red)} .ci.na .mk{color:var(--dim)}
+  .uitem{cursor:pointer;background:var(--bg2);border:1px solid var(--border);margin-bottom:7px}
+  .uitem:hover{border-color:var(--saffron)}
+  .uitem.ck{background:rgba(34,197,94,.07);border-color:rgba(34,197,94,.3)}
+  .uitem .box{width:18px;height:18px;border:1.6px solid var(--dim);border-radius:5px;flex:0 0 auto;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--green)}
+  .uitem.ck .box{border-color:var(--green)}
+  .verdict{border-radius:12px;padding:13px 16px;font-family:var(--mono);font-weight:800;font-size:15px;text-align:center;margin-top:11px;border:1px solid var(--border)}
+  .sug{background:var(--bg2);border:1px solid var(--border);border-radius:11px;padding:12px 14px}
+  .btn{display:inline-block;font-family:var(--mono);font-size:11px;font-weight:700;color:var(--saffron);text-decoration:none;border:1px solid rgba(255,153,51,.4);border-radius:8px;padding:6px 12px;margin-top:9px}
+  .btn:hover{background:rgba(255,153,51,.1)}
+  .cav{font-family:var(--mono);font-size:10.5px;color:var(--dim);line-height:1.6;margin-top:6px}
+  .skel{background:linear-gradient(90deg,var(--bg2),#171b22,var(--bg2));border-radius:10px;animation:sh 1.3s infinite}@keyframes sh{0%{opacity:.5}50%{opacity:1}100%{opacity:.5}}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span></span></div>
+  <div class="tabs"></div>
+</div>
+<main class="wrap">
+  <!-- HERO: clock + gate -->
+  <div class="hero" id="hero">
+    <div class="clockrow">
+      <div>
+        <div class="clk" id="clk">--:--<span class="sec">:--</span></div>
+        <div class="clksub" id="clksub">India Standard Time · loading…</div>
+      </div>
+      <div>
+        <div class="ct" id="ct">--:--</div>
+        <div class="ctsub" id="ctsub">US Central</div>
+      </div>
+    </div>
+    <div class="gatebadge"><span class="dot" id="gdot"></span><span id="gtext">CHECKING…</span>
+      <span class="toggle" id="cwToggle" title="data-collection window length">
+        <button data-cw="15">15m</button><button data-cw="30" class="on">30m</button></span>
+    </div>
+    <div class="gatelabel" id="glabel">—</div>
+  </div>
+
+  <!-- KEY READS -->
+  <div class="row">
+    <div class="card" id="regimeCard"><div class="sh">overnight regime <span class="stamp" id="rgstamp"></span></div><div class="skel" style="height:64px"></div></div>
+    <div class="card" id="srCard"><div class="sh">S/R sentiment · intraday <span class="stamp" id="srstamp"></span></div><div class="skel" style="height:64px"></div></div>
+    <div class="card" id="ndCard"><div class="sh">next-day bias <span class="stamp" id="ndstamp"></span></div><div class="skel" style="height:64px"></div></div>
+  </div>
+
+  <!-- S&P FUTURES LIVE -->
+  <div class="card" id="futCard"><div class="sh">🇺🇸 US futures · LIVE through India's session <span class="stamp" id="futstamp"></span></div><div class="skel" style="height:54px"></div></div>
+
+  <!-- LEVELS + LIVE TAPE -->
+  <div class="row">
+    <div class="card" id="tapeCard"><div class="sh">live tape <span class="stamp" id="tapestamp"></span></div><div class="skel" style="height:60px"></div></div>
+    <div class="card" id="levelsCard"><div class="sh">today's pivots (NIFTY) <span class="stamp"></span></div><div class="skel" style="height:60px"></div></div>
+  </div>
+
+  <!-- CHECKLIST -->
+  <div class="card">
+    <div class="sh">pre-trade checklist <span class="stamp" id="ckstamp"></span></div>
+    <div class="checkwrap">
+      <div>
+        <div class="lab" style="margin-bottom:7px">🤖 pod-verified (auto)</div>
+        <div id="autoList"></div>
+      </div>
+      <div>
+        <div class="lab" style="margin-bottom:7px">✅ you confirm (tap each)</div>
+        <div id="userList"></div>
+      </div>
+    </div>
+    <div class="verdict" id="verdict">—</div>
+    <div class="cav" id="cav"></div>
+  </div>
+
+  <!-- OPTION SUGGESTION -->
+  <div class="card" id="sugCard"><div class="sh">regime-driven option idea <span class="stamp" id="sugstamp"></span></div><div class="skel" style="height:50px"></div></div>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>(s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const WD=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+let DATA=null, lastOk=0, COLLECT=+(localStorage.getItem('mg_gate_cw')||30);
+
+/* ---------- clock + client-side gate (1s, DST-safe via Intl) ---------- */
+function parts(tz){
+  const f=new Intl.DateTimeFormat('en-GB',{timeZone:tz,hour12:false,weekday:'short',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const p={}; f.formatToParts(new Date()).forEach(x=>p[x.type]=x.value);
+  return {iso:`${p.year}-${p.month}-${p.day}`,hh:p.hour,mm:p.minute,ss:p.second,wd:p.weekday,
+    mins:(+p.hour)*60+(+p.minute),sec:+p.second,
+    dstr:`${WD2(p.weekday)} ${p.day} ${MON(p.month)} ${p.year}`};
+}
+function WD2(w){return {Mon:'Monday',Tue:'Tuesday',Wed:'Wednesday',Thu:'Thursday',Fri:'Friday',Sat:'Saturday',Sun:'Sunday'}[w]||w;}
+function MON(m){return ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m];}
+function fmtDur(totSec){
+  if(totSec<0)totSec=0; const h=Math.floor(totSec/3600),m=Math.floor((totSec%3600)/60),s=totSec%60;
+  return (h>0?h+':':'')+(h>0?String(m).padStart(2,'0'):m)+':'+String(s).padStart(2,'0');
+}
+const GATECOL={RED:'#ef4444',AMBER:'#fbbf24',GREEN:'#22c55e'};
+function phaseOf(p){
+  const holidays=(DATA&&DATA.holidays)||[];
+  const weekend=(p.wd==='Sat'||p.wd==='Sun'), holiday=holidays.includes(p.iso);
+  if(weekend||holiday) return {gate:'RED',phase:'CLOSED',label:(holiday?'NSE holiday':'weekend')+' — market closed',sub:'next session: Mon 09:15 IST'};
+  const m=p.mins, OPEN=555,CLOSE=930,PRE=540,CLOSEHR=900, cEnd=OPEN+COLLECT;
+  const toSec=tgt=>(tgt-m)*60 - p.sec;
+  if(m<PRE)     return {gate:'RED',phase:'PRE',label:'pre-market — NSE opens 09:15 IST',sub:'opens in '+fmtDur(toSec(OPEN))};
+  if(m<OPEN)    return {gate:'AMBER',phase:'PREOPEN',label:'pre-open auction (09:00–09:15) — no live trades yet',sub:'session in '+fmtDur(toSec(OPEN))};
+  if(m<cEnd)    return {gate:'AMBER',phase:'COLLECT',label:'⏳ data-collection window — pod calibrating, NO fresh entries',sub:'GO in '+fmtDur(toSec(cEnd))};
+  if(m<CLOSEHR) return {gate:'GREEN',phase:'GO',label:'✓ session live — GO (trade per the checklist)',sub:'closes in '+fmtDur(toSec(CLOSE))};
+  if(m<CLOSE)   return {gate:'AMBER',phase:'CLOSING',label:'closing hour (15:00–15:30) — manage/exit, no fresh lottery',sub:'closes in '+fmtDur(toSec(CLOSE))};
+  return {gate:'RED',phase:'POST',label:'after-hours — market closed (15:30)',sub:'next session 09:15 IST'};
+}
+function tickClock(){
+  const ist=parts('Asia/Kolkata'), ct=parts('America/Chicago');
+  $('clk').innerHTML=`${ist.hh}:${ist.mm}<span class="sec">:${ist.ss}</span>`;
+  $('clksub').textContent=`India Standard Time · ${ist.dstr}`;
+  $('ct').textContent=`${ct.hh}:${ct.mm}`;
+  $('ctsub').textContent=`US Central · ${ct.dstr}`;
+  const g=phaseOf(ist), col=GATECOL[g.gate];
+  $('gdot').style.color=col;
+  $('gtext').textContent=g.gate+' · '+g.phase;
+  $('gtext').style.color=col;
+  $('glabel').innerHTML=esc(g.label)+'  <span class="count">· '+esc(g.sub||'')+'</span>';
+  // gate-coloured hero wash + body tint
+  $('hero').style.background=`linear-gradient(135deg,${hexA(col,.22)},${hexA(col,.05)} 70%),var(--card)`;
+  $('hero').style.borderColor=hexA(col,.5);
+  document.body.style.background=`radial-gradient(1200px 480px at 50% -8%,${hexA(col,.10)},transparent 62%),var(--bg)`;
+}
+function hexA(hex,a){const n=parseInt(hex.slice(1),16);return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;}
+
+/* ---------- staleness stamps ---------- */
+function stampAll(){
+  if(!DATA){return;}
+  const ageSec=Math.round((Date.now()-lastOk)/1000);
+  const txt=`server ${DATA.asof_ist} IST · ${ageSec<90?ageSec+'s ago':'⚠ '+ageSec+'s ago'}`;
+  document.querySelectorAll('.stamp').forEach(el=>{el.textContent=txt; el.classList.toggle('stale',ageSec>=90);});
+}
+
+/* ---------- render polled data ---------- */
+function chgCls(v){return v==null?'mut':(v>0?'pos':(v<0?'neg':'neu'));}
+function sgn(v,suf){return (v==null?'—':(v>0?'+':'')+v+(suf||''));}
+function toneCls(t){return t==='good'?'pos':(t==='bad'?'neg':(t==='warn'?'neu':'mut'));}
+
+function render(d){
+  // regime
+  const r=d.regime||{};
+  const sigcol = r.signal&&r.signal.indexOf('PUT')>=0?'neg':(r.signal&&r.signal.indexOf('CALL')>=0?'pos':'neu');
+  $('regimeCard').innerHTML=`<div class="sh">overnight regime <span class="stamp"></span></div>
+    <div class="big ${sigcol}">${esc(r.signal||'—')}${r.strength&&r.strength!=='—'?' <span class="mut" style="font-size:13px">·'+esc(r.strength)+'</span>':''}</div>
+    <div class="kv"><span class="k">US last night</span><span class="v"><span class="${chgCls(r.us_spx_pct)}">S&P ${sgn(r.us_spx_pct,'%')}</span> · <span class="${chgCls(r.us_ixic_pct)}">Nasdaq ${sgn(r.us_ixic_pct,'%')}</span></span></div>
+    <div class="kv"><span class="k">India VIX</span><span class="v">${r.vix??'—'} <span class="${chgCls(r.vix_chg_pct)}">(${sgn(r.vix_chg_pct,'%')})</span></span></div>
+    <div class="stat">${esc(r.stat||'')}</div>
+    <div class="cav">src: ${esc(r.us_src||'')}${r.us_stale?' ⚠STALE':''}</div>`;
+  // sr sentiment
+  const s=d.sr_sentiment;
+  if(s){
+    $('srCard').innerHTML=`<div class="sh">S/R sentiment · intraday <span class="stamp"></span></div>
+      <div class="big ${toneCls(s.tone)}">${esc(s.sentiment)} <span class="mut" style="font-size:13px">(${sgn(s.score)})</span></div>
+      <div class="kv"><span class="k">zone</span><span class="v">${esc(s.zone)}</span></div>
+      <div class="kv"><span class="k">vs pivot PP</span><span class="v">${esc(s.read)}</span></div>
+      <div class="stat">${s.broke_pdl?'broke prior-day low — sellers in control. ':''}${s.broke_pdh?'broke prior-day high — buyers in control. ':''}price ${s.pos_in_range_pct}% up the day range (100=high, 0=low).</div>`;
+  } else $('srCard').innerHTML=`<div class="sh">S/R sentiment · intraday <span class="stamp"></span></div><div class="mut" style="font-family:var(--mono);font-size:12px">awaiting live range (market closed?)</div>`;
+  // next day
+  const n=d.next_day;
+  if(n){$('ndCard').innerHTML=`<div class="sh">next-day bias <span class="stamp"></span></div>
+      <div class="big ${toneCls(n.tone)}">${esc(n.bias)}</div><div class="stat">${esc(n.stat)}</div>`;}
+  else $('ndCard').innerHTML=`<div class="sh">next-day bias <span class="stamp"></span></div><div class="mut" style="font-family:var(--mono);font-size:12px">needs live NIFTY + S&P-fut</div>`;
+  // futures
+  const f=d.us_futures||{};
+  if(f.items&&f.items.length){
+    $('futCard').innerHTML=`<div class="sh">🇺🇸 US futures · LIVE through India's session <span class="stamp"></span></div>
+      <div class="futgrid">`+f.items.map(x=>`<div class="fut"><div class="n">${esc(x.name)}</div><div class="c ${chgCls(x.chg_pct)}">${sgn(x.chg_pct,'%')}</div></div>`).join('')+`</div>
+      <div class="cav">${esc(f.note||'')}</div>`;
+  } else $('futCard').innerHTML=`<div class="sh">🇺🇸 US futures · LIVE <span class="stamp"></span></div><div class="mut" style="font-family:var(--mono);font-size:12px">futures unavailable</div>`;
+  // live tape
+  const L=d.live||{};
+  let tape='';
+  for(const k of ['NIFTY','BANKNIFTY']){ if(L[k]) tape+=`<div class="kv"><span class="k">${k}</span><span class="v">${L[k].last} <span class="${chgCls(L[k].chg_pct)}">(${sgn(L[k].chg_pct,'%')})</span></span></div>`; }
+  if(d.opening) tape+=`<div class="kv"><span class="k">since open</span><span class="v ${chgCls(d.opening.since_open_pct)}">${sgn(d.opening.since_open_pct,'%')} · range ${d.opening.range_pct}%</span></div><div class="stat">${esc(d.opening.read)}</div>`;
+  $('tapeCard').innerHTML=`<div class="sh">live tape <span class="stamp"></span></div>`+(tape||'<div class="mut" style="font-family:var(--mono);font-size:12px">—</div>');
+  // levels
+  if(s&&s.levels){const lv=s.levels;
+    $('levelsCard').innerHTML=`<div class="sh">today's pivots (NIFTY) <span class="stamp"></span></div>`+
+      [['R2',lv.R2,'neg'],['R1',lv.R1,'neg'],['PP',lv.PP,'mut'],['S1',lv.S1,'pos'],['S2',lv.S2,'pos']]
+        .map(x=>`<div class="kv"><span class="k">${x[0]}</span><span class="v ${x[2]}">₹${x[1].toLocaleString('en-IN')}</span></div>`).join('')+
+      `<div class="kv"><span class="k">prior H / L</span><span class="v">₹${lv.PDH.toLocaleString('en-IN')} / ₹${lv.PDL.toLocaleString('en-IN')}</span></div>`;
+  } else $('levelsCard').innerHTML=`<div class="sh">today's pivots <span class="stamp"></span></div><div class="mut" style="font-family:var(--mono);font-size:12px">—</div>`;
+  // checklist auto
+  const MK={pass:'✓',warn:'!',fail:'✗',na:'·'};
+  $('autoList').innerHTML=(d.checklist_auto||[]).map(i=>`<div class="ci ${i.state}"><div class="mk">${MK[i.state]||'·'}</div><div><div class="cl">${esc(i.label)}</div><div class="cd">${esc(i.detail||'')}</div></div></div>`).join('');
+  renderUser(d);
+  // option suggestion
+  renderSuggestion(d);
+  $('cav').textContent=d.caveat||'';
+  stampAll();
+}
+
+/* ---------- user checklist (localStorage, resets daily) ---------- */
+function ckKey(){return 'mg_gate_user_'+((DATA&&DATA.date_ist)||'x');}
+function getChecks(){try{return JSON.parse(localStorage.getItem(ckKey())||'{}');}catch(e){return {};}}
+function setCheck(k,v){const c=getChecks();c[k]=v;localStorage.setItem(ckKey(),JSON.stringify(c));}
+function renderUser(d){
+  const c=getChecks();
+  $('userList').innerHTML=(d.checklist_user||[]).map(i=>{const on=!!c[i.key];
+    return `<div class="ci uitem ${on?'ck':''}" data-k="${i.key}"><div class="box">${on?'✓':''}</div><div><div class="cl">${esc(i.label)}</div><div class="cd">${esc(i.hint||'')}</div></div></div>`;}).join('');
+  document.querySelectorAll('.uitem').forEach(el=>el.onclick=()=>{const k=el.dataset.k;setCheck(k,!getChecks()[k]);renderUser(d);updateVerdict(d);});
+  updateVerdict(d);
+}
+function updateVerdict(d){
+  const c=getChecks(), need=(d.checklist_user||[]).length, have=(d.checklist_user||[]).filter(i=>c[i.key]).length;
+  const ist=parts('Asia/Kolkata'), g=phaseOf(ist);
+  const autoFail=(d.checklist_auto||[]).some(i=>i.state==='fail');
+  let txt,col;
+  if(g.gate!=='GREEN'){txt=`⛔ NO-GO — ${g.phase==='COLLECT'?'wait for data-collection to finish':'session not open'} (${have}/${need} confirmed)`;col='#ef4444';}
+  else if(autoFail){txt=`✗ BLOCKED — a pod check failed (${have}/${need} confirmed)`;col='#ef4444';}
+  else if(have<need){txt=`◔ ALMOST — confirm all ${need} items (${have}/${need})`;col='#fbbf24';}
+  else {txt=`✓ TRADE-READY — gate GREEN · all ${need} confirmed · size it as a lottery`;col='#22c55e';}
+  const v=$('verdict'); v.textContent=txt; v.style.color=col; v.style.borderColor=hexA(col,.5); v.style.background=hexA(col,.08);
+}
+
+/* ---------- option idea from the regime (refreshes with the gate) ---------- */
+function renderSuggestion(d){
+  const r=d.regime||{}, L=(d.live||{}).NIFTY||{}, spot=L.last, pa=d.put_analysis;
+  let html=`<div class="sh">regime-driven option idea <span class="stamp"></span></div>`;
+  if(pa && pa.bearish){
+    // BEAR: full put analysis (directional lottery put + targets + hedge for long calls)
+    const lo=pa.lottery||{};
+    let tgs=(pa.targets||[]).map(t=>`<div class="kv"><span class="k">${t.level} ₹${t.px.toLocaleString('en-IN')}</span><span class="v neg">${t.move_pct}% · put ITM by ₹${t.put_itm}</span></div>`).join('');
+    const h=pa.hedge_long_calls||{};
+    html+=`<div class="sug"><div class="big neg">NIFTY ${lo.strike} PE <span class="mut" style="font-size:12px">· ${lo.otm_pct}% OTM · lottery</span></div>
+      <div class="stat">${esc(lo.stat||'')}</div>
+      ${tgs?`<div class="lab" style="margin:10px 0 4px">put targets (supports it profits to)</div>${tgs}`:''}
+      <div class="lab" style="margin:11px 0 4px">🛡 hedge your long calls</div>
+      <div class="stat"><b style="color:var(--ink)">${esc(h.structure||'')}</b><br>${esc(h.pays||'')}<br><span class="neu">cost:</span> ${esc(h.cost||'')}<br><span class="${pa.signal&&pa.signal.indexOf('strong')>=0?'pos':'neu'}">verdict:</span> ${esc(h.verdict||'')}<br><span class="mut">cheaper:</span> ${esc(h.cheaper||'')}</div>
+      <div class="cav">${esc(pa.caveat||'')}</div>
+      <a class="btn" href="marle_g_options.html?u=NIFTY" target="_blank">→ live premium &amp; put chain in options monitor</a></div>`;
+  } else if(r.signal&&r.signal.indexOf('CALL')>=0 && spot){
+    const k=Math.round(spot*1.005/50)*50;
+    html+=`<div class="sug"><div class="big pos">NIFTY ${k} CE <span class="mut" style="font-size:12px">· slightly-OTM lottery</span></div>
+      <div class="stat">${esc(r.stat||'')}</div>
+      <div class="cav">⚠ size SMALL · most of the move is the overnight gap · check live premium &amp; the ranked surface before entry.</div>
+      <a class="btn" href="marle_g_options.html?u=NIFTY" target="_blank">→ ranked picks in options monitor</a></div>`;
+  } else {
+    html+=`<div class="sug"><div class="big mut">no regime edge</div><div class="stat">${esc(r.stat||'Overnight is mixed — only trade a validated setup (20d-high break in low vol for calls). Don\\'t force a lottery without the signal.')}</div>
+      <a class="btn" href="marle_g_options.html?u=NIFTY" target="_blank">→ options monitor</a></div>`;
+  }
+  $('sugCard').innerHTML=html;
+}
+
+/* ---------- poll ---------- */
+async function poll(){
+  try{
+    const r=await fetch('/api/session_gate'); const d=await r.json();
+    if(d&&d.ok){DATA=d;lastOk=Date.now();render(d);}
+  }catch(e){}
+  stampAll();
+}
+window.podRefresh=poll;
+/* collection-window toggle */
+document.querySelectorAll('#cwToggle button').forEach(b=>b.onclick=()=>{
+  COLLECT=+b.dataset.cw; localStorage.setItem('mg_gate_cw',COLLECT);
+  document.querySelectorAll('#cwToggle button').forEach(x=>x.classList.toggle('on',x===b));
+  tickClock();
+});
+document.querySelectorAll('#cwToggle button').forEach(b=>b.classList.toggle('on',+b.dataset.cw===COLLECT));
+
+tickClock(); setInterval(tickClock,1000);
+poll(); setInterval(poll,30000);
+</script>
+<script src="marle_g_nav.js"></script>
+</body>
+</html>

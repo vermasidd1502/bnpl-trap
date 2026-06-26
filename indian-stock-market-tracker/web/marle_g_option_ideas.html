@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Option Ideas · Marle-G</title>
+<style>
+  :root{--bg:#080a0e;--card:#14171e;--bg2:#0e1116;--border:rgba(255,255,255,.08);--ink:#eef1f6;--muted:#9aa3b4;--dim:#646c7a;
+    --mono:'SF Mono',ui-monospace,Consolas,monospace;--saffron:#ff9933;--green:#22c55e;--red:#ef4444;--amber:#fbbf24;--india-green:#138808;--blue:#60a5fa;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(1100px 520px at 50% -10%,rgba(255,153,51,.05),transparent 60%),var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--border);background:rgba(8,10,14,.8);position:sticky;top:0;z-index:10}
+  .brand{font-family:var(--mono);font-weight:800;letter-spacing:.18em;font-size:13px;display:flex;align-items:center;gap:9px}
+  .brand .mark{width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,var(--saffron),var(--india-green))}
+  .brand .w{background:linear-gradient(90deg,var(--saffron),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tabs{display:flex;gap:14px;font-family:var(--mono);font-size:11px;flex-wrap:wrap}
+  .wrap{max-width:1180px;margin:0 auto;padding:18px 20px 70px}
+  h1{font-size:20px;margin-bottom:2px}
+  .sub{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.6}
+  .ro{display:inline-block;font-family:var(--mono);font-size:10px;font-weight:700;color:var(--amber);border:1px solid rgba(251,191,36,.35);background:rgba(251,191,36,.08);border-radius:7px;padding:3px 9px;margin-left:8px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:13px}
+  .sh{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-bottom:10px}
+  .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  input,select{background:var(--bg2);border:1px solid var(--border);border-radius:9px;color:var(--ink);font-family:var(--mono);font-size:13px;padding:8px 11px}
+  .go{font-family:var(--mono);font-size:12px;font-weight:700;color:#06210f;background:var(--saffron);border:0;border-radius:9px;padding:9px 15px;cursor:pointer;transition:transform .08s}
+  .go:active{transform:scale(.93)}
+  .go2{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--ink);background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:9px 13px;cursor:pointer}
+  .go2:hover{border-color:var(--saffron);color:var(--saffron)}
+  .chk{font-family:var(--mono);font-size:11px;color:var(--muted);display:inline-flex;align-items:center;gap:5px;cursor:pointer}
+  .pos{color:var(--green)} .neg{color:var(--red)} .amb{color:var(--amber)} .mut{color:var(--dim)} .blue{color:var(--blue)}
+  .stamp{font-family:var(--mono);font-size:10px;color:var(--dim)}
+  /* index strip */
+  .idxstrip{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  @media(max-width:760px){.idxstrip{grid-template-columns:1fr}}
+  .idxc{background:var(--bg2);border:1px solid var(--border);border-radius:11px;padding:11px 13px;font-family:var(--mono);font-size:12px;line-height:1.6}
+  .idxc b{color:var(--ink)} .idxc .big{font-size:14px;font-weight:800}
+  /* idea rows */
+  .row{background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--saffron);border-radius:11px;padding:11px 13px;margin-bottom:9px;font-family:var(--mono);font-size:12px;line-height:1.55}
+  .row.surging{border-left-color:var(--green)} .row.flat{border-left-color:var(--dim)}
+  .rowhd{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:5px}
+  .tkr{font-weight:800;font-size:14px;color:var(--ink)}
+  .pill{font-size:10px;font-weight:700;border-radius:20px;padding:2px 9px;border:1px solid var(--border)}
+  .pill.ride{background:rgba(255,153,51,.12);color:var(--saffron);border-color:rgba(255,153,51,.4)}
+  .pill.wave{background:rgba(34,197,94,.1);color:var(--green);border-color:rgba(34,197,94,.35)}
+  .pill.new{background:rgba(96,165,250,.12);color:var(--blue);border-color:rgba(96,165,250,.4)}
+  .pill.cat{background:rgba(34,197,94,.1);color:var(--green);border-color:rgba(34,197,94,.35)}
+  .pill.risk-LOW{color:var(--green)} .pill.risk-MODERATE{color:var(--amber)} .pill.risk-HIGH{color:var(--red)} .pill.risk-EXTREME{color:var(--red)}
+  .buy{font-weight:800;color:var(--ink)}
+  .metrics{display:flex;gap:16px;flex-wrap:wrap;color:var(--muted);margin-top:3px}
+  .metrics b{color:var(--ink)}
+  .skel{background:linear-gradient(90deg,var(--bg2),#1a1f29,var(--bg2));background-size:200% 100%;animation:sh 1.3s infinite;border-radius:10px}
+  @keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+  .loadmsg{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:center;padding:18px}
+  .blocked{opacity:.7;border-left-color:var(--red)}
+</style>
+</head>
+<body>
+<div class="nav"><div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span></span></div><div class="tabs"></div></div>
+<main class="wrap">
+  <h1>🌊 Option Ideas · ride the wave <span class="ro">READ-ONLY · you place the order on Groww</span></h1>
+  <div class="sub">A fresh list each trading day. Each idea is a <b>reachable, liquid</b> strike past the <b>corp-events gate</b> (no ASM/GSM/distress), ranked by <b style="color:var(--saffron)">ride score</b> = conviction × volume-surge × ride-EV. Same gate-stack as the volume pod — only here we go for the option. Honest: options are ride-or-bust (theta bleeds); the risk meter + P→ATM show the bet.</div>
+  <div class="card">
+    <div class="controls">
+      <button class="go" onclick="load(false)">↻ load list</button>
+      <button class="go2" onclick="load(true)">⟳ rebuild now (~1 min)</button>
+      <label class="chk"><input type="checkbox" id="strict" onchange="render()"> hide quiet-wave</label>
+      <span class="stamp" id="stamp" style="margin-left:auto"></span>
+    </div>
+  </div>
+  <div class="card"><div class="sh">the main ones · index options</div><div class="idxstrip" id="idx"><div class="skel" style="height:70px"></div></div></div>
+  <div class="card"><div class="sh">today's option ideas <span id="cnt" class="mut"></span></div><div id="list"><div class="skel" style="height:130px"></div></div></div>
+  <div class="card" id="blockedcard" style="display:none"><div class="sh">⛔ blocked by the gate (shown for transparency)</div><div id="blocked"></div></div>
+  <div class="sub" id="note"></div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>(s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let DATA=null;
+function pct(x){return x==null?'—':(x>=0?'+':'')+(+x).toFixed(0)+'%';}
+function idxCard(ix){
+  const p=ix.pick, dc=ix.direction==='BULLISH'?'pos':ix.direction==='BEARISH'?'neg':'mut';
+  let buy='<span class="mut">no directional edge — skip (don\'t pay theta for a flat view)</span>';
+  if(p) buy=`<span class="pos">✅ BUY ${Math.round(p.strike)} ${esc(p.kind)}</span> @ <b>₹${p.premium}</b> · OI ${p.oi||'—'} · IV ${p.iv}% · BE ${p.be_move_pct>=0?'+':''}${p.be_move_pct}%`;
+  return `<div class="idxc"><div><b class="big">${esc(ix.label||ix.idx)}</b> <span class="${dc}">${esc(ix.direction)}</span> · ₹${ix.spot}</div>
+    <div class="mut">~1σ ±${ix.sigma_move_pct}% by ${esc(ix.expiry)} (${ix.days}d)</div>
+    <div style="margin-top:5px">${buy}</div></div>`;
+}
+function ideaRow(x){
+  const p=x.pick, w=x.wave||{}, ce=x.corp;
+  const cls=w.label==='surging'?'surging':(w.label==='flat'?'flat':'');
+  const ten=x.new_today?`<span class="pill new">🆕 new today</span>`:`<span class="pill">🔥 day ${x.days_on_list} · since ${esc(x.on_since)}</span>`;
+  const cat=(ce&&ce.score>0)?`<span class="pill cat" title="${esc(ce.why)}">📣 ${esc(ce.verdict)}</span>`:'';
+  const rk=(p.risk&&p.risk.level)||'—';
+  return `<div class="row ${cls}">
+    <div class="rowhd">
+      <span class="tkr">${esc(x.tk)}</span>
+      <span class="pill ride">ride ${x.ride_score}</span>
+      <span class="pill wave">🌊 ${esc(w.label)} ${w.rvol?('· '+w.rvol+'× vol'):''}</span>
+      ${ten}${cat}
+      <span class="mut" style="margin-left:auto">${esc(x.horizon)} · conv ${x.rating}/100</span>
+    </div>
+    <div class="buy">✅ BUY ${Math.round(p.strike)} CE @ ₹${p.cost} <span class="mut">· exp ${esc(x.expiry)} (${x.days_to_expiry}d) · ₹${x.price}→target ₹${x.target}</span></div>
+    <div class="metrics">
+      <span>P→ATM <b class="${p.p_touch>=60?'pos':'amb'}">${p.p_touch}%</b></span>
+      <span>ret@ATM <b class="pos">${pct(p.ret_at_touch)}</b></span>
+      <span>ride-EV <b class="${p.ev_ride>=0?'pos':'neg'}">${pct(p.ev_ride)}</b></span>
+      <span>BE move <b>${p.be_move_pct>=0?'+':''}${p.be_move_pct}%</b></span>
+      <span>Δ <b>${p.delta}</b> · lev <b>${p.leverage}×</b></span>
+      <span>OI <b>${p.oi}</b> · IV <b>${p.mkt_iv}%</b></span>
+      <span>risk <b class="pill risk-${esc(rk)}">${esc(rk)}</b> <span class="mut">${esc(p.risk&&p.risk.main||'')}</span></span>
+    </div></div>`;
+}
+function render(){
+  if(!DATA){return;}
+  $('idx').innerHTML=(DATA.indices||[]).map(idxCard).join('')||'<div class="mut" style="font-family:var(--mono);font-size:12px">indices unavailable</div>';
+  let ideas=(DATA.ideas||[]).slice();
+  if($('strict').checked) ideas=ideas.filter(x=>(x.wave&&x.wave.score>=45));
+  $('cnt').textContent=`· ${ideas.length} shown / ${DATA.n} actionable`;
+  $('list').innerHTML=ideas.length?ideas.map(ideaRow).join(''):'<div class="loadmsg">no liquid name is a worth-it option buy right now — stand down (some days there\'s no wave to ride).</div>';
+  const bl=DATA.blocked||[];
+  if(bl.length){$('blockedcard').style.display='block';
+    $('blocked').innerHTML=bl.map(x=>`<div class="row blocked"><span class="tkr">${esc(x.tk)}</span> <span class="neg">⛔ ${esc(x.block_reason||'')}</span> <span class="mut">— ${esc((x.corp&&x.corp.why)||'')}</span></div>`).join('');}
+  else $('blockedcard').style.display='none';
+  $('stamp').textContent=`${esc(DATA.date||'')} · ${esc(DATA.asof||'')}`;
+  $('note').textContent=DATA.note||'';
+}
+async function load(refresh){
+  $('list').innerHTML=`<div class="loadmsg">${refresh?'rebuilding today\'s list — scanning the liquid F&O universe + pricing reachable strikes (~1 min)…':'loading…'}</div>`;
+  if(refresh)$('idx').innerHTML='<div class="skel" style="height:70px"></div>';
+  try{
+    const r=await fetch('/api/option_ideas?top=8'+(refresh?'&refresh=1':''));
+    DATA=await r.json();
+    if(!DATA||!DATA.ok){$('list').innerHTML='<div class="loadmsg neg">'+esc((DATA&&DATA.error)||'unavailable — is the pod running?')+'</div>';return;}
+    render();
+  }catch(e){$('list').innerHTML='<div class="loadmsg neg">could not reach the pod ('+esc(e.message)+')</div>';}
+}
+window.podRefresh=()=>load(false);
+load(false);
+</script>
+<script src="marle_g_nav.js"></script>
+</body>
+</html>

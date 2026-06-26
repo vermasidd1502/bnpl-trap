@@ -60,9 +60,12 @@
   <div class="brand"><span class="mark"></span><span>MARLE·G <span style="color:var(--dim);font-weight:500;letter-spacing:0">/ options</span></span></div>
   <div class="tabs"></div>
 </div>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
 <main class="wrap">
 <style>
   .mxon{background:var(--saffron)!important;color:#160f02!important}
+  .thtile{background:var(--bg2,#0e1116);border:1px solid var(--border);border-radius:9px;padding:7px 11px;font-family:var(--mono);min-width:96px}
+  .thtile .l{font-size:9px;text-transform:uppercase;color:var(--dim,#8a93a6)} .thtile .v{font-size:13px;font-weight:800;margin-top:2px}
   .mxlbl{font-family:var(--mono);font-size:11px;color:var(--muted,#8a93a6)}
   .stance{font-family:var(--mono);font-size:10px;font-weight:800;padding:2px 7px;border-radius:5px;white-space:nowrap}
   .S-BUY{background:rgba(34,197,94,.18);color:#22c55e} .S-OK{background:rgba(96,165,250,.18);color:#60a5fa}
@@ -85,12 +88,44 @@
     <input id="und" list="fnolist" placeholder="F&O stock…" value="MANAPPURAM" spellcheck="false">
     <datalist id="fnolist"></datalist>
     <select id="expiry"></select>
-    <button onclick="load()">load chain ↗</button>
+    <button onclick="load();loadTheta()">load chain ↗</button>
     <span id="src"></span>
-    <span style="margin-left:auto;display:flex;gap:6px">
-      <span class="quick" onclick="setU('RELIANCE')">RELIANCE</span><span class="quick" onclick="setU('HDFCBANK')">HDFCBANK</span>
-      <span class="quick" onclick="setU('TATASTEEL')">TATASTEEL</span><span class="quick" onclick="setU('BHEL')">BHEL</span><span class="quick" onclick="setU('DIXON')">DIXON</span>
+    <span style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+      <span style="color:var(--dim);font-family:var(--mono);font-size:10px">indices</span>
+      <span class="quick" onclick="setU('NIFTY')">NIFTY</span><span class="quick" onclick="setU('BANKNIFTY')">BANKNIFTY</span><span class="quick" onclick="setU('MIDCPNIFTY')">MIDCPNIFTY</span><span class="quick" onclick="setU('FINNIFTY')">FINNIFTY</span><span class="quick" onclick="setU('SENSEX')">SENSEX</span>
+      <span style="color:var(--dim);font-family:var(--mono);font-size:10px;margin-left:4px">stocks</span>
+      <span class="quick" onclick="setU('RELIANCE')">RELIANCE</span><span class="quick" onclick="setU('TATASTEEL')">TATASTEEL</span><span class="quick" onclick="setU('DIXON')">DIXON</span>
     </span>
+  </div>
+  <div class="card" id="ideacard" style="border-color:rgba(255,153,51,.35);background:rgba(255,153,51,.04)">
+    <div class="sh" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+      <span>🌊 daily option ideas · ride the wave — gate-passed liquid buys (click a name to load its chain)</span>
+      <span style="display:flex;gap:6px"><button onclick="loadIdeas(false)" style="background:var(--bg2);border:1px solid var(--saffron);color:var(--saffron);border-radius:8px;padding:5px 12px;cursor:pointer;font-family:var(--mono);font-size:11px;font-weight:700">↻ load</button><button onclick="loadIdeas(true)" style="background:var(--bg2);border:1px solid var(--border);color:var(--ink);border-radius:8px;padding:5px 12px;cursor:pointer;font-family:var(--mono);font-size:11px;font-weight:700">⟳ rebuild ~1m</button></span>
+    </div>
+    <div id="ideawrap"><div class="skel" style="height:64px"></div></div>
+  </div>
+  <div class="card" id="thcard" style="border-color:rgba(96,165,250,.35)">
+    <div class="sh" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+      <span>🧊 ATM theta surface · what the ATM "usually" costs by time-to-expiry — <b style="color:var(--blue,#60a5fa)">when to initiate</b></span>
+      <a href="marle_g_theta.html" target="_blank" style="font-family:var(--mono);font-size:10.5px;color:var(--blue,#60a5fa);text-decoration:none;border:1px solid rgba(96,165,250,.4);border-radius:7px;padding:4px 9px">full 3D ↗</a>
+    </div>
+    <div id="thtiles" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px"></div>
+    <div id="thcurve" style="width:100%;height:260px"></div>
+    <div id="thguide" class="mxlbl" style="margin-top:6px;line-height:1.55"></div>
+  </div>
+  <div class="card" id="nfcard" style="border-color:rgba(255,153,51,.30)">
+    <div class="sh" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+      <span>🇮🇳 nifty pod · index option flavours — click one to load its options (live price · day change)</span>
+      <button onclick="NF.load()" style="background:var(--bg2);border:1px solid var(--saffron);color:var(--saffron);border-radius:8px;padding:5px 12px;cursor:pointer;font-family:var(--mono);font-size:11px;font-weight:700">refresh ↗</button>
+    </div>
+    <div id="nfwrap"><div class="skel" style="height:64px"></div></div>
+  </div>
+  <div class="card" id="expcard" style="display:none;border-color:rgba(34,197,94,.45);background:rgba(34,197,94,.05)">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <span style="font-family:var(--mono);font-size:14px;color:#34c759;font-weight:800">② choose expiry →</span>
+      <span id="expbar" style="display:flex;gap:7px;flex-wrap:wrap"></span>
+      <span id="expmeta" style="margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--dim)"></span>
+    </div>
   </div>
   <div class="card" id="sugcard">
     <div class="sh" style="display:flex;justify-content:space-between;align-items:center;gap:10px">
@@ -98,6 +133,20 @@
       <button onclick="scanSuggest()" style="background:var(--bg2);border:1px solid var(--saffron);color:var(--saffron);border-radius:8px;padding:5px 12px;cursor:pointer;font-family:var(--mono);font-size:11px;font-weight:700">scan ↗</button>
     </div>
     <div id="sug"><span style="color:var(--dim);font-family:var(--mono);font-size:12px">click <b>scan</b> — finds long-plausible setups in the most liquid F&amp;O and a reachable strike with real OI (~45s, then cached).</span></div>
+  </div>
+  <div class="card" id="pfcard" style="border-color:rgba(96,165,250,.32)">
+    <div class="sh" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+      <span>💼 my option portfolio · your live Groww book — net greeks + DROP / target / stop per leg (read-only, never trades)</span>
+      <button onclick="PF.load()" style="background:var(--bg2);border:1px solid var(--saffron);color:var(--saffron);border-radius:8px;padding:5px 12px;cursor:pointer;font-family:var(--mono);font-size:11px;font-weight:700">refresh ↗</button>
+    </div>
+    <div id="pfwrap"><div class="skel" style="height:84px"></div></div>
+  </div>
+  <div class="card" id="timingcard" style="border-color:rgba(255,153,51,.30)">
+    <div class="sh" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+      <span>⏰ when to buy · expiry-cycle timing — is now the right entry, or wait for the contract to roll?</span>
+      <span style="display:flex;gap:6px;align-items:center"><span class="mxlbl">hold</span><span id="tmh5" class="quick" onclick="TM.setHold(5)">1WK</span><span id="tmh10" class="quick mxon" onclick="TM.setHold(10)">2WK</span></span>
+    </div>
+    <div id="tmwrap"><div class="skel" style="height:64px"></div></div>
   </div>
   <div class="card" id="deckcard" style="border-color:rgba(255,153,51,.25)">
     <div class="sh">trade verdict · is a long plausible? — timeline · targets · buy/sell calendar</div>
@@ -119,6 +168,13 @@
     <div class="sh">bull/bear gauge · how long it holds above pivot / R1 / S1 (acceptance over time, not a signal)</div>
     <div id="biaswrap"></div>
   </div>
+  <div class="card" id="vixcard" style="border-color:rgba(168,85,247,.30)">
+    <div class="sh" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+      <span>🌡️ VIX tracker · the option-buyer's weather — how rich/cheap premiums are, plus what's the story (which market is suffering &amp; why)</span>
+      <button onclick="VX.load()" style="background:var(--bg2);border:1px solid var(--saffron);color:var(--saffron);border-radius:8px;padding:5px 12px;cursor:pointer;font-family:var(--mono);font-size:11px;font-weight:700">refresh ↗</button>
+    </div>
+    <div id="vixwrap"><div class="skel" style="height:90px"></div></div>
+  </div>
   <div class="card" id="seccard" style="border-color:rgba(96,165,250,.18)">
     <div class="sh">🏭 sectoral bias · bull/bear by pivot acceptance (most-bearish first) — click a sector to expand · ⚑ = persistent put candidate</div>
     <div id="secwrap"><div class="skel" style="height:60px"></div></div>
@@ -129,6 +185,21 @@
     <div class="sh">option chain · premium · IV · Δ delta · Θ theta/day · breakeven (ATM±10)</div>
     <table class="oc" id="chain"></table>
     <div class="legend" id="legend"></div>
+  </div>
+  <div class="card" id="surfcard" style="border-color:rgba(34,197,94,.30)">
+    <div class="sh" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+      <span>🗺️ option surface · the WHOLE asset — every strike × every expiry as one decision map, then the ranked shortlist · click a cell or a pick to analyse</span>
+      <button onclick="SF.load()" style="background:var(--bg2);border:1px solid var(--saffron);color:var(--saffron);border-radius:8px;padding:5px 12px;cursor:pointer;font-family:var(--mono);font-size:11px;font-weight:700">surface ↗</button>
+    </div>
+    <div class="selrow" style="margin-bottom:10px;flex-wrap:wrap">
+      <span id="sfkC" class="quick mxon" onclick="SF.setKind('C')">CALLS</span><span id="sfkP" class="quick" onclick="SF.setKind('P')">PUTS</span>
+      <span class="mxlbl" style="margin-left:10px">rank by</span>
+      <span id="sfm_rr" class="quick mxon" onclick="SF.setMode('rr')">best R:R</span><span id="sfm_ride" class="quick" onclick="SF.setMode('ride')">cheap ride</span><span id="sfm_conv" class="quick" onclick="SF.setMode('conv')">conviction</span><span id="sfm_bleed" class="quick" onclick="SF.setMode('bleed')">low bleed</span>
+      <span id="sfmeta" style="margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--dim)"></span>
+    </div>
+    <div id="sfgrid" style="overflow-x:auto"><span style="color:var(--dim);font-family:var(--mono);font-size:12px">hit <b>surface ↗</b> — maps every strike × expiry for the loaded asset (~15s live, then cached). Colour = buy/avoid stance, number = % move to break even.</span></div>
+    <div id="sfrank" style="margin-top:14px"></div>
+    <div id="sfdetail" style="margin-top:14px"></div>
   </div>
   <div class="card" id="laddercard" style="display:none;border-color:rgba(168,85,247,.25)">
     <div class="sh">short vs long expiry · same strike, only time changes — which tenor actually pays</div>
@@ -207,7 +278,45 @@ function riskMeter(rk){
 }
 const FNO=["NIFTY","BANKNIFTY","FINNIFTY","SENSEX","BANKEX","MIDCPNIFTY","AARTIIND","ABB","ADANIENT","ADANIPORTS","ASIANPAINT","AXISBANK","BAJFINANCE","BANKBARODA","BEL","BHARTIARTL","BHEL","BPCL","CIPLA","COALINDIA","DIXON","DLF","DRREDDY","EICHERMOT","GAIL","GRASIM","HAL","HCLTECH","HDFCBANK","HINDALCO","ICICIBANK","INFY","ITC","JSWSTEEL","KOTAKBANK","LT","M&M","MANAPPURAM","MARUTI","MUTHOOTFIN","NTPC","ONGC","PFC","POWERGRID","RELIANCE","SBIN","SUNPHARMA","TATAMOTORS","TATAPOWER","TATASTEEL","TCS","TECHM","TITAN","TRENT","ULTRACEMCO","VEDL","WIPRO"];
 $('fnolist').innerHTML=FNO.map(s=>'<option value="'+s+'">').join('');
-function setU(s){ $('und').value=s; load(true); }
+function setU(s){ $('und').value=s; load(true); loadTheta(s); }
+async function loadTheta(sym){
+  sym=(sym||$('und').value||'').toUpperCase(); if(!sym)return;
+  const T=$('thtiles'), G=$('thguide');
+  if(!window.Plotly){ setTimeout(()=>loadTheta(sym),400); return; }
+  try{
+    const d=await(await fetch('/api/theta_surface/'+encodeURIComponent(sym))).json();
+    if(!d||!d.ok){ T.innerHTML='<span class="mxlbl">theta n/a for '+sym+'</span>'; Plotly.purge('thcurve'); return; }
+    const L=d.live, tm=d.timing||{}, tmc={pos:'#22c55e',neg:'#ef4444',amb:'#fbbf24',mut:'#8a93a6'}[tm.tone]||'#fbbf24';
+    T.innerHTML='<div class="thtile" style="border-color:'+tmc+'"><div class="l">buy now or wait?</div><div class="v" style="color:'+tmc+'">'+(tm.verdict||'—')+'</div></div>'
+      +'<div class="thtile"><div class="l">'+sym+' spot</div><div class="v">₹'+d.spot+'</div></div>'
+      +'<div class="thtile"><div class="l">realized vol</div><div class="v">'+d.rv+'%</div></div>'
+      +'<div class="thtile"><div class="l">theta cliff</div><div class="v" style="color:#fbbf24">~'+d.cliff_dte+' DTE</div></div>'
+      +(L?'<div class="thtile"><div class="l">live ATM</div><div class="v">'+L.strike+' @₹'+L.premium+'</div></div><div class="thtile"><div class="l">vs model</div><div class="v" style="color:'+(L.verdict==='RICH'?'#ef4444':L.verdict==='CHEAP'?'#22c55e':'#fbbf24')+'">'+L.verdict+'</div></div>':'');
+    const DK={paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#9aa3b4',family:'ui-monospace,monospace',size:10},margin:{l:42,r:42,t:8,b:32}};
+    Plotly.newPlot('thcurve',[
+      {x:d.dte,y:d.curve,name:'premium % of spot',mode:'lines+markers',line:{color:'#ff9933',width:2.4},marker:{size:4}},
+      {x:d.dte,y:d.cliff,name:'theta %/day',yaxis:'y2',mode:'lines',line:{color:'#ef4444',width:2,dash:'dot'}},
+      L?{x:[L.dte],y:[L.premium_pct],name:'live ATM',mode:'markers',marker:{size:11,color:L.verdict==='RICH'?'#ef4444':L.verdict==='CHEAP'?'#22c55e':'#fbbf24',symbol:'diamond',line:{color:'#fff',width:1}}}:{x:[],y:[]}
+    ],Object.assign({},DK,{showlegend:true,legend:{orientation:'h',y:1.16,font:{size:9}},
+      xaxis:{title:'days to expiry',gridcolor:'rgba(255,255,255,.05)'},
+      yaxis:{title:'prem %',color:'#ff9933',gridcolor:'rgba(255,255,255,.05)'},
+      yaxis2:{title:'θ %/day',color:'#ef4444',overlaying:'y',side:'right',showgrid:false}}),
+      {displayModeBar:false,responsive:true});
+    const g=d.guidance||{};
+    G.innerHTML='▸ <b style="color:'+tmc+'">'+(tm.verdict||'')+'</b> — '+(tm.why||'')+'<br>⛰ <b style="color:#e8eef7">'+(g.cliff||'')+'</b>'+(L?(' Today\'s live ATM is <b style="color:'+(L.verdict==='RICH'?'#ef4444':L.verdict==='CHEAP'?'#22c55e':'#fbbf24')+'">'+L.verdict+'</b> vs model.'):'');
+  }catch(e){ T.innerHTML='<span class="mxlbl">theta error</span>'; }
+}
+async function loadIdeas(refresh){
+  const w=$('ideawrap'); w.innerHTML='<div class="mxlbl">'+(refresh?'rebuilding today\'s list — scanning + pricing strikes (~1 min)…':'loading…')+'</div>';
+  try{
+    const d=await(await fetch('/api/option_ideas?top=8'+(refresh?'&refresh=1':''))).json();
+    if(!d||!d.ok){ w.innerHTML='<div class="mxlbl">unavailable — is the pod running?</div>'; return; }
+    const idx=(d.indices||[]).filter(x=>x.pick).map(x=>`<span class="quick" onclick="setU('${x.idx}')" title="${x.direction}">${x.idx} ${x.pick.kind==='CALL'?'▲':'▼'}${Math.round(x.pick.strike)} @₹${x.pick.premium}</span>`).join('');
+    const rows=(d.ideas||[]).map(x=>{ const p=x.pick, wv=x.wave||{};
+      return `<div class="ptrade2"><b style="cursor:pointer;color:var(--saffron)" onclick="setU('${x.tk}')">${x.tk}</b> <span class="dim2">ride ${x.ride_score} · 🌊${wv.label}${wv.rvol?(' '+wv.rvol+'×'):''}</span> <span>BUY ${Math.round(p.strike)}CE @₹${p.cost}</span> <span class="dim2">exp ${x.expiry}</span> <span>P→ATM <b class="${p.p_touch>=60?'pos2':''}">${p.p_touch}%</b></span> <span>ret <b class="pos2">+${p.ret_at_touch}%</b></span> <span class="dim2">risk ${(p.risk&&p.risk.level)||'—'}</span> ${x.new_today?'<span class="dim2">🆕</span>':'<span class="dim2">🔥d'+x.days_on_list+'</span>'}</div>`; }).join('');
+    w.innerHTML=`<div style="margin-bottom:7px;display:flex;gap:7px;flex-wrap:wrap;align-items:center"><span class="dim2">the main ones:</span>${idx||'<span class="dim2">—</span>'}</div>${rows||'<div class="mxlbl">no liquid name is a worth-it option buy right now — stand down (some days there\'s no wave).</div>'}<div class="mxlbl" style="margin-top:6px">${d.date} · ${d.n} actionable${d.n_blocked?(' · '+d.n_blocked+' blocked'):''} · gate-passed (corp-events + liquidity + ride-EV). Ride-or-bust; risk meter shows the bet. Read-only.</div>`;
+  }catch(e){ w.innerHTML='<div class="mxlbl">could not reach pod ('+e.message+')</div>'; }
+}
 // open a suggestion as its OWN page in a new window — deep-linked URL, so it's a real page (back/forward works), not a pop-up
 const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 function fmtExp(iso){ const p=(''+(iso||'')).split('-'); return p.length===3?(p[2].replace(/^0/,'')+' '+(MON[+p[1]-1]||p[1])):(iso||'—'); }
@@ -225,6 +334,8 @@ async function load(resetExp){
     const d=await (await fetch('/api/options/'+encodeURIComponent(u)+exp)).json();
     if(d.error){ $('banner').textContent=d.error; $('chain').innerHTML='<tr><td class="empty">'+d.error+'</td></tr>'; return; }
     if(!EXP_INITED && d.expiries){ $('expiry').innerHTML=d.expiries.map(e=>'<option value="'+e+'"'+(e===d.expiry?' selected':'')+'>'+e+'</option>').join(''); EXP_INITED=true; PENDING_EXP=null; }
+    if(d.expiry && $('expiry').value!==d.expiry){ $('expiry').value=d.expiry; }   // keep select synced to the served expiry
+    try{ renderExpBar(); }catch(_e){}                                            // refresh the prominent date bar every load (no observer dependency)
     const live=d.source==='live';
     $('src').innerHTML='<span class="srcbadge" style="color:'+(live?'var(--green)':'var(--amber)')+';border:1px solid '+(live?'var(--green)':'var(--amber)')+'">'+(live?'🟢 LIVE Groww':'🟡 MODEL · Black-Scholes')+'</span>';
     $('banner').innerHTML=(d.note||'')+' &nbsp;<span style="color:var(--dim)">IV source: '+d.iv_source+' ('+d.iv_used+'%) · India VIX '+(d.india_vix||'—')+'</span>';
@@ -483,7 +594,7 @@ async function loadDeck(u){
     if(!d.ok){ $('deck').innerHTML='<span style="color:var(--dim);font-family:var(--mono);font-size:12px">'+(d.error||('no read for '+u))+'</span>'; return; }
     const col=d.long_plausible?'var(--green)':'var(--red)', net=d.net||{};
     const chg=(d.chg!=null)?(' <span style="color:'+(d.chg>=0?'var(--green)':'var(--red)')+'">'+(d.chg>=0?'+':'')+d.chg+'%</span>'):'';
-    let h='<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px">'+
+    let h=h2+'<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px">'+
       '<span style="font-size:17px;font-weight:800;color:'+col+'">'+d.verdict+'</span>'+
       (net.label?'<span style="font-family:var(--mono);font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;border:1px solid var(--border);color:var(--muted)">'+net.label+'</span>':'')+
       '<span style="font-family:var(--mono);font-size:10px;color:var(--dim)">'+d.name+' · ₹'+d.price+chg+' · '+(d.industry||'')+' · '+d.asof+'</span></div>';
@@ -561,6 +672,8 @@ window.podRefresh = function(){
 };
 // Pure option analysis: land on the (cached) suggestion box; chain/deck/levels load on demand.
 scanSuggest();
+loadIdeas(false);
+loadTheta();
 // deep-link: ?u=SYMBOL&expiry=DATE → land straight on that option (lets a suggestion open here in a new window)
 (function(){ try{ var q=new URLSearchParams(location.search), u=q.get('u'); if(u){ $('und').value=u.toUpperCase(); PENDING_EXP=q.get('expiry')||null; load(true); } }catch(e){} })();
 
@@ -686,6 +799,242 @@ async function mxPaper(){
   box.innerHTML=h;
 }
 mxPaper(); loadSectors();
+</script>
+<script>
+const SF = (function(){
+  let kind='C', mode='rr', surf=null, busy=false, lastRank=null;
+  const U = ()=> (document.getElementById('und').value||'NIFTY').trim().toUpperCase();
+  const esc = s => (s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const STC = { BUY:['rgba(34,197,94,.18)','#34c759'], OK:['rgba(96,165,250,.16)','#60a5fa'], CAUTION:['rgba(251,191,36,.16)','#fbbf24'], AVOID:['rgba(239,68,68,.15)','#ef4444'] };
+  const col = s => STC[s]||STC.AVOID;
+  const sg = x => (Number(x)>=0?'+':'')+x;
+  const tile=(l,v,c)=>'<div class="tile" style="padding:8px 10px"><div class="n" style="font-size:9px">'+l+'</div><div class="v" style="font-size:13px;color:'+(c||'var(--ink)')+';font-family:var(--mono)">'+v+'</div></div>';
+  const setOn=(ids,onid)=>ids.forEach(i=>{const e=document.getElementById(i); if(e) e.classList.toggle('mxon', i===onid);});
+
+  function setKind(k){ kind=k; setOn(['sfkC','sfkP'], k==='C'?'sfkC':'sfkP'); load(); }
+  function setMode(m){ mode=m; setOn(['sfm_rr','sfm_ride','sfm_conv','sfm_bleed'],'sfm_'+m); if(surf) loadRank(); }
+
+  async function load(){
+    if(busy) return; busy=true;
+    const g=document.getElementById('sfgrid'); g.innerHTML='<div class="skel" style="height:130px"></div>';
+    document.getElementById('sfrank').innerHTML=''; document.getElementById('sfdetail').innerHTML='';
+    try{
+      const d=await (await fetch('/api/opt_surface/'+encodeURIComponent(U())+'?kind='+kind)).json();
+      if(!d.ok){ g.innerHTML='<span style="color:#ef4444;font-family:var(--mono);font-size:12px">'+esc(d.error||'no surface')+'</span>'; busy=false; return; }
+      surf=d; renderGrid(d); loadRank();
+    }catch(e){ g.innerHTML='<span style="color:#ef4444;font-family:var(--mono);font-size:12px">surface failed</span>'; }
+    busy=false;
+  }
+
+  function renderGrid(d){
+    document.getElementById('sfmeta').textContent=d.underlying+' ₹'+d.spot+' · RV '+d.realized_vol_pct+'% · 1σ('+d.hold_sessions+'d) ±'+d.sigma_hold+' · '+d.asof;
+    const exps=d.expiries, atm=d.strikes.reduce((a,b)=>Math.abs(b-d.spot)<Math.abs(a-d.spot)?b:a,d.strikes[0]);
+    let h='<table style="border-collapse:separate;border-spacing:4px;font-family:var(--mono);font-size:11px"><tr><td style="color:var(--dim);padding:2px 6px">strike</td>';
+    exps.forEach(e=>{ h+='<td style="text-align:center;color:var(--muted);padding:2px 4px">'+esc(e.expiry.slice(5))+'<div style="color:var(--dim);font-size:9px">'+e.dte+'d'+(e.monthly?' ·M':'')+'</div></td>'; });
+    h+='</tr>';
+    d.strikes.forEach(K=>{ const row=d.grid[String(K)]||{}, isATM=K===atm;
+      h+='<tr><td style="text-align:right;padding:2px 6px;color:'+(isATM?'var(--ink)':'var(--muted)')+';font-weight:'+(isATM?'700':'400')+'">'+K.toLocaleString('en-IN')+(isATM?'<div style="font-size:8px;color:var(--dim)">ATM</div>':'')+'</td>';
+      exps.forEach(e=>{ const c=row[e.expiry];
+        if(!c){ h+='<td style="text-align:center;color:var(--dim)">·</td>'; return; }
+        const cc=col(c.stance);
+        h+='<td onclick="SF.detailCell('+K+',\''+e.expiry+'\')" title="'+c.stance+' — '+esc(c.footnote||'')+'" style="cursor:pointer;text-align:center;background:'+cc[0]+';color:'+cc[1]+';border-radius:6px;padding:6px 4px;min-width:50px">'+sg(c.be_move_pct.toFixed(1))+'%</td>';
+      });
+      h+='</tr>';
+    });
+    h+='</table><div style="margin-top:8px;font-family:var(--mono);font-size:10px;color:var(--dim)"><span style="color:#34c759">■</span> buy <span style="color:#60a5fa">■</span> ok <span style="color:#fbbf24">■</span> caution <span style="color:#ef4444">■</span> avoid · number = % move to break even · click a cell to analyse</div>';
+    document.getElementById('sfgrid').innerHTML=h;
+  }
+
+  async function loadRank(){
+    const box=document.getElementById('sfrank'); box.innerHTML='<div class="skel" style="height:90px"></div>';
+    try{ const d=await (await fetch('/api/opt_rank/'+encodeURIComponent(U())+'?kind='+kind+'&mode='+mode)).json();
+      if(!d.ok){ box.innerHTML=''; return; } renderRank(d);
+    }catch(e){ box.innerHTML=''; }
+  }
+
+  function renderRank(d){
+    lastRank=d;
+    let h='<div style="font-family:var(--mono);font-size:11px;color:var(--saffron);font-weight:700;margin-bottom:8px">🏆 best '+d.right+' by '+esc(d.mode_label)+' → target ₹'+(d.target?d.target.toLocaleString('en-IN'):'—')+' ('+esc(d.target_kind)+')</div>';
+    const max=(d.picks.length?Math.abs(d.picks[0].score):1)||1;
+    d.picks.forEach((p,i)=>{ const cc=col(p.stance), rel=Math.max(0.12,Math.abs(p.score)/max);
+      h+='<div onclick="SF.detailRank('+i+')" style="cursor:pointer;border:'+(i===0?'1px solid var(--saffron)':'1px solid var(--border)')+';border-radius:10px;padding:9px 12px;margin-bottom:7px">'
+        +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-family:var(--mono);font-size:12px"><b style="color:var(--dim)">'+(i+1)+'</b><b style="color:var(--ink)">'+p.strike.toLocaleString('en-IN')+' '+d.right+'</b><span style="color:var(--muted)">'+esc(p.expiry.slice(5))+' · '+p.dte+'d</span><span style="background:'+cc[0]+';color:'+cc[1]+';border-radius:5px;padding:1px 7px;font-size:10px">'+p.stance+'</span>'+(i===0?'<span style="background:rgba(255,153,51,.15);color:var(--saffron);border-radius:5px;padding:1px 7px;font-size:10px">top pick</span>':'')+'<span style="margin-left:auto;color:var(--muted)">liq '+p.liquidity+'</span></div>'
+        +'<div style="height:5px;border-radius:3px;background:var(--bg2);margin:7px 0 6px;overflow:hidden"><div style="height:100%;width:'+Math.round(rel*100)+'%;background:var(--saffron)"></div></div>'
+        +'<div style="font-family:var(--mono);font-size:11px;color:var(--dim)">'+esc(p.reason)+'</div></div>';
+    });
+    h+='<div style="font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:4px">'+esc(d.caveat)+'</div>';
+    document.getElementById('sfrank').innerHTML=h;
+  }
+
+  function detailCell(K,e){ if(!surf) return; const c=(surf.grid[String(K)]||{})[e]; if(c) detail(c); }
+  function detailRank(i){ if(lastRank&&lastRank.picks[i]) detail(lastRank.picks[i]); }
+
+  function detail(c){
+    const box=document.getElementById('sfdetail'), cc=col(c.stance), und=U();
+    let h='<div style="border-top:1px solid var(--border);padding-top:12px">';
+    h+='<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px"><b style="font-size:14px;color:var(--ink)">'+und+' '+c.strike.toLocaleString('en-IN')+' '+surf.right+'</b><span style="color:var(--muted);font-family:var(--mono);font-size:12px">'+esc(c.expiry.slice(5))+' · '+c.dte+'d</span><span style="background:'+cc[0]+';color:'+cc[1]+';border-radius:6px;padding:2px 9px;font-size:11px;font-family:var(--mono)">'+c.stance+'</span></div>';
+    h+='<div class="tiles" style="margin-bottom:10px">'+tile('premium','₹'+c.premium)+tile('breakeven','₹'+c.breakeven+' '+sg(c.be_move_pct)+'%')+tile('P(beat BE)',Math.round(c.p_beat_be*100)+'%')+tile('theta','₹'+c.theta_day+'/d · '+c.theta_flat_pct+'%/hold',c.theta_flat_pct<=-35?'#ef4444':'var(--ink)')+tile('IV',c.iv_pct+'%')+tile('intrinsic','₹'+c.intrinsic)+tile('target → stop','₹'+c.target+' → ₹'+c.stop)+tile('R:R',c.rr||'—')+'</div>';
+    h+='<div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:12px">'+esc(c.footnote||'')+'</div>';
+    h+='<div id="sfsim"><div class="skel" style="height:80px"></div></div><div id="sfbt" style="margin-top:12px"><div class="skel" style="height:80px"></div></div></div>';
+    box.innerHTML=h; box.scrollIntoView({behavior:'smooth',block:'nearest'}); loadSim(c); loadBt(c);
+  }
+
+  async function loadSim(c){
+    const q='/api/opt_sim/'+encodeURIComponent(U())+'?strike='+c.strike+'&expiry='+c.expiry+'&kind='+surf.kind+'&premium='+c.premium+'&iv='+(c.iv_pct/100)+'&hold='+surf.hold_sessions+'&target='+c.target+'&stop='+c.stop;
+    try{ const d=await (await fetch(q)).json(); if(!d.ok){ document.getElementById('sfsim').innerHTML=''; return; }
+      const mx=Math.max.apply(null,d.hist.map(b=>b.n))||1;
+      const hb='<div style="display:flex;align-items:flex-end;gap:2px;height:42px;margin-top:6px">'+d.hist.map(b=>'<div title="'+b.lo+'..'+b.hi+'%: '+b.n+'" style="flex:1;height:'+Math.max(2,Math.round(b.n/mx*40))+'px;background:'+(b.lo>=0?'rgba(34,197,94,.6)':'rgba(239,68,68,.5)')+';border-radius:2px"></div>').join('')+'</div>';
+      let h='<div style="font-family:var(--mono);font-size:11px;color:#60a5fa;font-weight:700;margin-bottom:7px">🔮 forward Monte-Carlo · '+d.n_paths.toLocaleString()+' paths · zero-drift base case</div>';
+      h+='<div class="tiles">'+tile('P(profit)',Math.round(d.p_profit*100)+'%',d.p_profit>=0.5?'#34c759':'var(--ink)')+tile('expected ret',sg(d.exp_return_pct)+'%',d.exp_return_pct>=0?'#34c759':'#ef4444')+tile('median ret',sg(d.median_return_pct)+'%',d.median_return_pct>=0?'#34c759':'#ef4444')+tile('10th…90th',d.ret_p10_pct+'% … '+sg(d.ret_p90_pct)+'%')+(d.p_hit_target!=null?tile('P(hit target)',Math.round(d.p_hit_target*100)+'%','#34c759'):'')+(d.p_hit_stop!=null?tile('P(hit stop)',Math.round(d.p_hit_stop*100)+'%','#ef4444'):'')+tile('P(≈total loss)',Math.round(d.p_total_loss*100)+'%',d.p_total_loss>=0.3?'#ef4444':'var(--ink)')+'</div>';
+      h+='<div style="font-family:var(--mono);font-size:9px;color:var(--dim);margin-top:5px">terminal P&L distribution (green = profit)</div>'+hb+'<div style="font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:6px">'+esc(d.caveat)+'</div>';
+      document.getElementById('sfsim').innerHTML=h;
+    }catch(e){ document.getElementById('sfsim').innerHTML=''; }
+  }
+
+  async function loadBt(c){
+    try{ const d=await (await fetch('/api/opt_bt/'+encodeURIComponent(U())+'?kind='+surf.kind+'&mode='+mode+'&hold='+surf.hold_sessions)).json();
+      if(!d.ok){ document.getElementById('sfbt').innerHTML=''; return; }
+      const eqs=(d.curve||[]).map(p=>p.equity), mn=Math.min.apply(null,eqs), mx=Math.max.apply(null,eqs)||1, W=280,H=40;
+      const pts=eqs.map((e,i)=>(i/((eqs.length-1)||1)*W).toFixed(1)+','+(H-((e-mn)/((mx-mn)||1))*H).toFixed(1)).join(' ');
+      const spark=eqs.length>1?'<svg width="'+W+'" height="'+H+'" style="margin-top:6px"><polyline points="'+pts+'" fill="none" stroke="'+(d.final_equity>=1?'#34c759':'#ef4444')+'" stroke-width="1.5"/></svg>':'';
+      let h='<div style="font-family:var(--mono);font-size:11px;color:#fbbf24;font-weight:700;margin-bottom:7px">📈 historical style backtest · '+d.right+' · '+esc(mode)+' · synthetic</div>';
+      h+='<div class="tiles">'+tile('trades',d.n_trades)+tile('win rate',d.win_pct+'%',d.win_pct>=50?'#34c759':'var(--ink)')+tile('avg ret',sg(d.avg_return_pct)+'%',d.avg_return_pct>=0?'#34c759':'#ef4444')+tile('median',sg(d.median_return_pct)+'%')+tile('Sharpe',d.sharpe,d.sharpe>=1?'#34c759':'var(--ink)')+tile('max DD',d.max_drawdown_pct+'%','#ef4444')+tile('final eq','x'+d.final_equity,d.final_equity>=1?'#34c759':'#ef4444')+'</div>'+spark;
+      h+='<div style="font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:6px">'+esc(d.caveat)+'</div>';
+      document.getElementById('sfbt').innerHTML=h;
+    }catch(e){ document.getElementById('sfbt').innerHTML=''; }
+  }
+
+  return { load, setKind, setMode, detailCell, detailRank };
+})();
+</script>
+<script>
+const VX = (function(){
+  const TONE={calm:'#34c759',normal:'#60a5fa',warn:'#fbbf24',fear:'#ef4444',dim:'#646c7a'};
+  const esc = s => (s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  async function load(){
+    const box=document.getElementById('vixwrap'); box.innerHTML='<div class="skel" style="height:90px"></div>';
+    try{ const d=await (await fetch('/api/vix_tracker')).json(); if(!d.ok){ box.innerHTML='<span style="color:var(--dim);font-family:var(--mono);font-size:12px">VIX tracker unavailable</span>'; return; } render(d); }
+    catch(e){ box.innerHTML='<span style="color:#ef4444;font-family:var(--mono);font-size:12px">VIX tracker failed</span>'; }
+  }
+  function render(d){
+    const v=d.vix, tone=TONE[v.tone]||TONE.dim, pct=v.percentile_1y;
+    let h='<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:10px"><div><span style="font-size:30px;font-weight:800;color:'+tone+';font-family:var(--mono)">'+(v.level!=null?v.level:'—')+'</span> <span style="font-size:11px;color:var(--dim)">India VIX</span></div><span style="background:'+tone+'22;color:'+tone+';border:1px solid '+tone+'55;border-radius:7px;padding:3px 11px;font-family:var(--mono);font-size:12px;font-weight:700">'+esc(v.regime||'')+'</span><span style="font-family:var(--mono);font-size:11px;color:var(--muted)">'+(pct!=null?pct+'th pctile of '+v.lo_1y+'–'+v.hi_1y:'')+(v.chg5d_pct!=null?' · 5d '+(v.chg5d_pct>=0?'+':'')+v.chg5d_pct+'%'+(v.falling?' ↓':' ↑'):'')+'</span></div>';
+    if(pct!=null) h+='<div style="position:relative;height:8px;border-radius:4px;background:linear-gradient(90deg,#34c759,#60a5fa,#fbbf24,#ef4444);margin-bottom:4px"><div style="position:absolute;left:'+pct+'%;top:-3px;width:3px;height:14px;background:var(--ink);border-radius:2px"></div></div><div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--dim);margin-bottom:10px"><span>calm '+v.lo_1y+'</span><span>panic '+v.hi_1y+'</span></div>';
+    h+='<div style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:6px">'+esc(v.read||'')+'</div>';
+    h+='<div style="background:var(--bg2);border-radius:9px;padding:10px 12px;font-size:13px;color:var(--ink);margin-bottom:12px"><b style="color:'+tone+'">option-buyer\'s weather:</b> '+esc(d.weather)+'</div>';
+    if(d.suffering && d.suffering.length){
+      h+='<div style="font-family:var(--mono);font-size:11px;color:#ef4444;font-weight:700;margin-bottom:5px">🩸 which market is suffering · most names below pivot today (click a name to load it)</div>';
+      h+=d.suffering.map(s=>'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-family:var(--mono);font-size:12px;padding:5px 0;border-bottom:1px solid var(--border)"><b style="color:var(--ink);min-width:150px">'+esc(s.sector)+'</b><span style="color:#ef4444">'+s.frac_below_pct+'% below</span>'+(s.persistent_bears?'<span style="color:var(--dim)">'+s.persistent_bears+' persistent</span>':'')+'<span style="margin-left:auto">'+(s.weakest||[]).map(n=>'<span class="quick" style="margin-left:5px" onclick="setU(\''+esc(n)+'\')">'+esc(n)+'</span>').join('')+'</span></div>').join('');
+    }
+    h+='<div style="margin-top:12px;background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.25);border-radius:9px;padding:10px 12px"><div style="font-size:13px;color:var(--ink)">📖 <b>the story:</b> '+esc(d.story)+'</div>';
+    if(d.story_news && d.story_news.length){
+      h+='<div style="font-family:var(--mono);font-size:10px;color:var(--dim);margin:8px 0 4px">news · '+esc(d.story_news_for||'')+'</div>';
+      h+=d.story_news.slice(0,3).map(n=>'<div style="font-size:12px;margin:3px 0"><a href="'+esc(n.link||n.url||'#')+'" target="_blank" style="color:#60a5fa;text-decoration:none">'+esc(n.title||n.headline||'')+'</a> <span style="color:var(--dim);font-size:10px">'+esc(n.source||'')+'</span></div>').join('');
+    }
+    h+='</div><div style="font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:8px">'+esc(d.caveat)+'</div>';
+    document.getElementById('vixwrap').innerHTML=h;
+  }
+  return { load };
+})();
+VX.load();
+</script>
+<script>
+const TM = (function(){
+  let hold=10;
+  const TONE={good:'#34c759',normal:'#60a5fa',warn:'#fbbf24',fear:'#ef4444'};
+  const esc = s => (s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const U = ()=> (document.getElementById('und').value||'NIFTY').trim().toUpperCase();
+  function setHold(h){ hold=h; document.getElementById('tmh5').classList.toggle('mxon',h===5); document.getElementById('tmh10').classList.toggle('mxon',h===10); load(); }
+  async function load(){
+    const box=document.getElementById('tmwrap'); box.innerHTML='<div class="skel" style="height:64px"></div>';
+    try{ const [d,rg]=await Promise.all([fetch('/api/opt_timing/'+encodeURIComponent(U())+'?hold='+hold).then(r=>r.json()),fetch('/api/opt_regime/'+encodeURIComponent(U())).then(r=>r.json()).catch(()=>null)]); if(!d.ok){ box.innerHTML='<span style="color:var(--dim);font-family:var(--mono);font-size:12px">timing unavailable</span>'; return; } render(d,rg); }
+    catch(e){ box.innerHTML=''; }
+  }
+  function render(d,rg){
+    const tone=TONE[d.tone]||'#60a5fa';
+    let h2='';
+    if(rg&&rg.ok){ const rt=TONE[rg.tone]||'#60a5fa'; h2='<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:11px;background:'+rt+'14;border:1px solid '+rt+'44;border-radius:9px;padding:8px 11px"><span style="background:'+rt+'22;color:'+rt+';border-radius:6px;padding:3px 10px;font-family:var(--mono);font-size:12px;font-weight:800">⮞ '+esc(rg.regime)+'</span><span style="font-size:12px;color:var(--ink)">'+esc(rg.stat)+'</span></div>'; }
+    const chip=(l,v,c)=>'<div class="tile" style="padding:7px 10px"><div class="n" style="font-size:9px">'+l+'</div><div class="v" style="font-size:13px;color:'+(c||'var(--ink)')+';font-family:var(--mono)">'+v+'</div></div>';
+    let h='<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px"><span style="background:'+tone+'22;color:'+tone+';border:1px solid '+tone+'66;border-radius:8px;padding:4px 14px;font-family:var(--mono);font-size:14px;font-weight:800">'+esc(d.verdict)+'</span><span style="font-family:var(--mono);font-size:12px;color:var(--muted)">'+esc(d.underlying)+' · '+esc(d.today)+' ('+esc(d.weekday)+')</span></div>';
+    h+='<div style="font-size:13px;color:var(--ink);margin-bottom:10px">'+esc(d.why)+'</div>';
+    if(d.holding_note) h+='<div style="background:rgba(251,191,36,.10);border:1px solid rgba(251,191,36,.3);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--ink);margin-bottom:10px">📦 '+esc(d.holding_note)+'</div>';
+    const wkChip = d.monthly_only ? chip('cadence','monthly-only','#fbbf24') : chip('next weekly',d.next_weekly_expiry+' ('+d.dte_weekly+'d)',d.dte_weekly<hold?'#fbbf24':'var(--ink)');
+    h+='<div class="tiles" style="margin-bottom:8px">'+chip('monthly expiry',d.monthly_expiry+' ('+d.dte_monthly+'d)')+wkChip+chip('fresh entry ≈',d.next_fresh_entry,'#34c759')+chip('cycle day · '+esc(d.exchange||''),d.cycle_day)+'</div>';
+    h+='<div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:6px">'+esc(d.runway)+'</div>';
+    if(d.cycle_plan){ const stc={BUY:'#34c759',DUMP:'#fbbf24','RE-BUY':'#60a5fa'};
+      h+='<div style="font-family:var(--mono);font-size:11px;color:var(--saffron);font-weight:700;margin:8px 0 5px">🔄 the cyclical play — dump the option before the theta cliff, re-buy fresh</div>';
+      h+='<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:7px">'+d.cycle_plan.map((s,i)=>(i?'<span style="color:var(--dim)">→</span>':'')+'<div style="flex:1;min-width:118px;background:var(--bg2);border:1px solid '+((stc[s.step]||"#888")+"44")+';border-radius:9px;padding:7px 10px"><div style="font-size:11px;font-weight:800;color:'+(stc[s.step]||"#888")+'">'+esc(s.step)+'</div><div style="font-size:12px;color:var(--ink)">'+esc(s.when||"—")+'</div><div style="font-size:10px;color:var(--dim);margin-top:2px">'+esc(s.what)+'</div></div>').join('')+'</div>'; }
+    if(d.exit_rule) h+='<div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:5px">'+esc(d.exit_rule)+'</div>';
+    if(d.underlying_warning) h+='<div style="font-family:var(--mono);font-size:10px;color:#fbbf24;margin-bottom:5px">⚠ '+esc(d.underlying_warning)+'</div>';
+    h+='<div style="font-family:var(--mono);font-size:10px;color:var(--dim)">'+esc(d.caveat)+'</div>';
+    document.getElementById('tmwrap').innerHTML=h;
+  }
+  return { load, setHold };
+})();
+TM.load();
+</script>
+<script>
+const PF=(function(){
+  const TONE={good:'#34c759',normal:'#60a5fa',warn:'#fbbf24',fear:'#ef4444'};
+  const esc=s=>(s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const tile=(l,v,c)=>'<div class="tile" style="padding:8px 10px"><div class="n" style="font-size:9px">'+l+'</div><div class="v" style="font-size:13px;color:'+(c||'var(--ink)')+';font-family:var(--mono)">'+v+'</div></div>';
+  async function load(){
+    const box=document.getElementById('pfwrap'); box.innerHTML='<div class="skel" style="height:84px"></div>';
+    try{ const d=await (await fetch('/api/opt_portfolio')).json();
+      if(!d.ok){ box.innerHTML='<span style="color:var(--dim);font-family:var(--mono);font-size:12px">'+esc(d.error||'book unavailable')+'</span>'; return; }
+      render(d);
+    }catch(e){ box.innerHTML='<span style="color:#ef4444;font-family:var(--mono);font-size:12px">portfolio failed</span>'; }
+  }
+  function render(d){
+    const box=document.getElementById('pfwrap');
+    if(!d.n){ box.innerHTML='<span style="color:var(--dim);font-family:var(--mono);font-size:12px">no open option positions in the live book.</span>'; return; }
+    let h='<div class="tiles" style="margin-bottom:8px">'+tile('positions',d.n)+tile('net P&L','₹'+d.net_pnl.toLocaleString('en-IN'),d.net_pnl>=0?'#34c759':'#ef4444')+tile('theta / day','−₹'+Math.abs(d.theta_day).toLocaleString('en-IN'),'#ef4444')+tile('net delta',d.pos_delta)+tile('capital','₹'+d.capital_at_risk.toLocaleString('en-IN'))+'</div>';
+    h+='<div style="font-size:13px;color:var(--ink);margin-bottom:12px">'+esc(d.read)+'</div>';
+    d.positions.forEach(p=>{ const g=p.guidance||{}, tone=TONE[g.tone]||'#60a5fa', t=g.target||{}, s=g.stop||{}, pnl=p.pnl.pct;
+      h+='<div style="border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:7px"><b style="font-family:var(--mono);font-size:13px;color:var(--ink)">'+esc(p.symbol)+'</b><span style="font-size:10px;font-family:var(--mono);color:var(--muted)">'+esc(p.viability.band)+'</span><span style="font-family:var(--mono);font-size:12px;color:'+(pnl>=0?'#34c759':'#ef4444')+'">'+(pnl>=0?'+':'')+pnl+'%</span><span style="font-family:var(--mono);font-size:11px;color:var(--dim)">'+p.trading_days_left+' sess</span><span style="margin-left:auto;background:'+tone+'22;color:'+tone+';border:1px solid '+tone+'66;border-radius:7px;padding:3px 11px;font-family:var(--mono);font-size:12px;font-weight:800">'+esc(g.action||'')+'</span></div><div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:7px">'+esc(g.why||'')+'</div><div class="tiles">'+tile('target','₹'+(t.opt!=null?t.opt:'—')+(t.ret_pct!=null?' ('+(t.ret_pct>=0?'+':'')+t.ret_pct+'%)':''),'#34c759')+tile('stop','₹'+(s.opt!=null?s.opt:'—')+(s.ret_pct!=null?' ('+s.ret_pct+'%)':''),'#ef4444')+tile('drop by',g.drop_by||'—','#fbbf24')+tile('decay floor','₹'+(s.decay_floor!=null?s.decay_floor:'—'))+'</div></div>';
+    });
+    h+='<div style="font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:6px">'+esc(d.caveat)+'</div>';
+    box.innerHTML=h;
+  }
+  return { load };
+})();
+PF.load();
+</script>
+<script>
+const NF=(function(){
+  const esc=s=>(s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  async function load(){
+    const box=document.getElementById('nfwrap'); box.innerHTML='<div class="skel" style="height:64px"></div>';
+    try{ const d=await (await fetch('/api/nifty_family')).json(); if(!d.ok){ box.innerHTML='<span style="color:var(--dim);font-family:var(--mono);font-size:12px">nifty pod unavailable</span>'; return; } render(d); }
+    catch(e){ box.innerHTML=''; }
+  }
+  function render(d){
+    let h='<div style="display:flex;gap:8px;flex-wrap:wrap">';
+    d.family.forEach(x=>{ const up=(x.chg_pct||0)>=0, e=x.etf, eup=e&&(e.chg_pct||0)>=0;
+      h+='<div style="flex:1;min-width:164px;background:var(--bg2);border:1px solid var(--border);border-radius:11px;padding:10px 12px">'
+        +'<div onclick="setU(\''+x.symbol+'\')" title="load '+esc(x.name)+' options" style="cursor:pointer">'
+        +'<div style="display:flex;justify-content:space-between;align-items:baseline"><b style="font-size:13px;color:var(--ink)">'+esc(x.name)+'</b><span style="font-size:9px;color:var(--dim)">'+esc(x.exchange)+'</span></div>'
+        +'<div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:4px"><span style="font-family:var(--mono);font-size:15px;color:var(--ink)">₹'+Number(x.price).toLocaleString("en-IN")+'</span><span style="font-family:var(--mono);font-size:12px;color:'+(up?'#34c759':'#ef4444')+'">'+(up?'+':'')+x.chg_pct+'%</span></div>'
+        +'<div style="margin-top:5px;font-family:var(--mono);font-size:10px;color:var(--saffron)">'+esc(x.cadence)+' · option ↗</div></div>'
+        +(e?'<div onclick="window.open(\'marle_g_intraday.html?q='+e.symbol+'\',\'_blank\')" title="track '+e.symbol+' ETF — no decay, no expiry" style="cursor:pointer;margin-top:7px;border-top:1px solid var(--border);padding-top:6px;display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:10px;color:#60a5fa">▦ '+esc(e.symbol)+(e.proxy?'*':'')+'</span><span style="font-family:var(--mono);font-size:11px;color:var(--ink)">₹'+e.price+' <span style="color:'+(eup?'#34c759':'#ef4444')+'">'+(eup?'+':'')+e.chg_pct+'%</span> ↗</span></div>':'')
+        +'</div>';
+    });
+    h+='</div><div style="font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:8px">▦ ETF = buy the basket, no decay / no expiry (the clean lane vs the leveraged option) · click → track intraday · * = proxy index</div>';
+    document.getElementById('nfwrap').innerHTML=h;
+  }
+  return { load };
+})();
+function pickExp(e){ const sel=document.getElementById('expiry'); if(!sel) return; sel.value=e; sel.dispatchEvent(new Event('change')); renderExpBar(); }
+function renderExpBar(){
+  const sel=document.getElementById('expiry'), card=document.getElementById('expcard'); if(!sel||!card) return;
+  const opts=[...sel.options].map(o=>o.value).filter(Boolean);
+  if(!opts.length){ card.style.display=''; document.getElementById('expbar').innerHTML='<span style="font-family:var(--mono);font-size:11px;color:var(--dim)">load a stock / index above (or tap a nifty-pod flavour) — its expiries appear here</span>'; const m0=document.getElementById('expmeta'); if(m0) m0.textContent=''; return; }
+  card.style.display=''; const cur=sel.value;
+  document.getElementById('expbar').innerHTML=opts.map(e=>'<span onclick="pickExp(\''+e+'\')" style="cursor:pointer;font-family:var(--mono);font-size:13px;padding:6px 13px;border-radius:8px;border:1px solid '+(e===cur?'#34c759':'var(--border)')+';background:'+(e===cur?'rgba(34,197,94,.18)':'var(--bg2)')+';color:'+(e===cur?'#34c759':'var(--ink)')+';font-weight:'+(e===cur?'700':'400')+'">'+esc2(e)+'</span>').join('');
+  document.getElementById('expmeta').textContent=((document.getElementById('und')||{}).value||'')+' · '+opts.length+' expiries';
+}
+function esc2(s){return (s==null?'':String(s)).replace(/[<>&]/g,'');}
+(function(){ const sel=document.getElementById('expiry'); if(sel){ new MutationObserver(renderExpBar).observe(sel,{childList:true}); sel.addEventListener('change',renderExpBar); } try{ renderExpBar(); }catch(_e){} NF.load(); })();
 </script>
 <script src="marle_g_nav.js"></script>
 </body>

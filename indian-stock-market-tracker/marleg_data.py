@@ -17,39 +17,78 @@ Read-only throughout — never places, modifies or cancels an order.
 """
 import os
 import time
+import threading
 
 import numpy as np
 import pandas as pd
 
-_SOURCE = (os.environ.get("MARLEG_DATA_SOURCE") or "auto").lower()
+_SOURCE = (os.environ.get("MARLEG_DATA_SOURCE") or "groww").lower()   # Groww-only by default (no yfinance)
 _YF_TF = {1: "1m", 5: "5m", 15: "15m", 30: "30m", 60: "60m", 1440: "1d"}
 
-_g = None
+# THREAD-LOCAL Groww client. requests.Session is NOT thread-safe, and groww_client mutates self._token on a
+# 401 — so a single shared client races when the chart page fires candles+levels+events+pivots at once (and
+# when a background bulk scan runs alongside chart loads). Giving each thread its own client+Session removes
+# the race AND the bottleneck a global lock would create (the background scan can't block a chart load). The
+# auth TOKEN is disk-cached, so a per-thread client is cheap — it never re-mints, just reads the cached token.
+_tls = threading.local()
 
 
 def _groww():
-    global _g
-    if _g is None:
+    c = getattr(_tls, "client", None)
+    if c is None:
         try:
             import groww_client as gc
-            _g = gc.GrowwClient(); _g.token()
+            c = gc.GrowwClient(); c.token()
         except Exception:
-            _g = False
-    return _g or None
+            c = False
+        _tls.client = c
+    return c or None
 
 
 # ---------------------------------------------------------------- per-symbol candles
+def _pull_candles(client, tk, interval_min, days):
+    for ex in ("NSE", "BSE"):                      # BSE so SENSEX/BANKEX (and BSE-only names) resolve
+        try:
+            df = client.candles(tk.upper(), interval_min=interval_min, days=days, exchange=ex)
+        except Exception:
+            df = None
+        if df is None or df.empty or len(df) < 2:
+            continue
+        if interval_min >= 1440 and days > 800 and len(df) < days / 4:        # index breaks on huge ranges
+            try:
+                d2 = client.candles(tk.upper(), interval_min=interval_min, days=750, exchange=ex)
+                if d2 is not None and len(d2) > len(df):
+                    df = d2
+            except Exception:
+                pass
+        out = df[["open", "high", "low", "close", "volume"]].copy()
+        out["volume"] = out["volume"].fillna(0.0)      # INDICES carry NaN volume — fill, don't let dropna nuke rows
+        return out.dropna(subset=["open", "high", "low", "close"])   # only a missing PRICE invalidates a bar
+    return None
+
+
+def _is_thin(df, interval_min, days):
+    if df is None or len(df) < 2:
+        return True
+    # Groww's INDEX daily-candle endpoint intermittently returns a 1-2 row blip (one row all-NaN -> 1 after
+    # dropna) for a few seconds, then recovers. Equities never do this. So treat a daily result far below the
+    # expected bar count as thin and worth a retry. (~0.65 trading days per calendar day.)
+    return interval_min >= 1440 and days >= 120 and len(df) < min(40, int(days * 0.4))
+
+
 def _groww_candles(tk, interval_min, days):
+    """Groww OHLCV. One cheap retry on the SAME memoized client if the first pull comes back empty/thin
+    (a genuine occasional transient). We deliberately do NOT mint fresh clients here: every GrowwClient()
+    spins up a new auth session, and doing that under load multiplies sessions and trips Groww's throttle."""
     g = _groww()
     if not g:
         return None
-    try:
-        df = g.candles(tk.upper(), interval_min=interval_min, days=days)
-        if df is not None and not df.empty:
-            return df[["open", "high", "low", "close", "volume"]].dropna()
-    except Exception:
-        pass
-    return None
+    best = _pull_candles(g, tk, interval_min, days)
+    if _is_thin(best, interval_min, days):
+        df = _pull_candles(g, tk, interval_min, days)
+        if df is not None and (best is None or len(df) > len(best)):
+            best = df
+    return best
 
 
 def _yf_candles(tk, interval_min, days):
@@ -152,6 +191,9 @@ def health():
     out = {"preference": _SOURCE}
     g = _groww()
     out["groww"] = bool(g)
+    if _SOURCE == "groww":
+        out["yfinance"] = "n/a (groww-only)"     # don't probe yfinance in Groww-only mode — we never call it
+        return out
     try:
         import yfinance as yf
         df = yf.Ticker("RELIANCE.NS").history(period="5d", interval="1d")

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Theta Surface · Marle-G</title>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<style>
+  :root{--bg:#080a0e;--card:#14171e;--bg2:#0e1116;--border:rgba(255,255,255,.08);--ink:#eef1f6;--muted:#9aa3b4;--dim:#646c7a;
+    --mono:'SF Mono',ui-monospace,Consolas,monospace;--saffron:#ff9933;--green:#22c55e;--red:#ef4444;--amber:#fbbf24;--india-green:#138808;--blue:#60a5fa;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(1100px 520px at 50% -10%,rgba(255,153,51,.05),transparent 60%),var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--border);background:rgba(8,10,14,.8);position:sticky;top:0;z-index:10}
+  .brand{font-family:var(--mono);font-weight:800;letter-spacing:.18em;font-size:13px;display:flex;align-items:center;gap:9px}
+  .brand .mark{width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,var(--saffron),var(--india-green))}
+  .brand .w{background:linear-gradient(90deg,var(--saffron),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tabs{display:flex;gap:14px;font-family:var(--mono);font-size:11px;flex-wrap:wrap}
+  .wrap{max-width:1180px;margin:0 auto;padding:18px 20px 70px}
+  h1{font-size:20px;margin-bottom:2px}
+  .sub{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.6}
+  .ro{display:inline-block;font-family:var(--mono);font-size:10px;font-weight:700;color:var(--amber);border:1px solid rgba(251,191,36,.35);background:rgba(251,191,36,.08);border-radius:7px;padding:3px 9px;margin-left:8px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:13px}
+  .sh{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-bottom:10px}
+  .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  input{background:var(--bg2);border:1px solid var(--border);border-radius:9px;color:var(--ink);font-family:var(--mono);font-size:13px;padding:8px 11px;width:150px;text-transform:uppercase}
+  .go{font-family:var(--mono);font-size:12px;font-weight:700;color:#06210f;background:var(--saffron);border:0;border-radius:9px;padding:9px 15px;cursor:pointer}
+  .quick{font-family:var(--mono);font-size:10.5px;color:var(--muted);border:1px solid var(--border);border-radius:7px;padding:4px 8px;cursor:pointer}
+  .quick:hover{border-color:var(--saffron);color:var(--saffron)}
+  .pos{color:var(--green)} .neg{color:var(--red)} .amb{color:var(--amber)} .mut{color:var(--dim)} .blue{color:var(--blue)}
+  .tiles{display:flex;gap:10px;flex-wrap:wrap}
+  .tile{background:var(--bg2);border:1px solid var(--border);border-radius:11px;padding:10px 13px;min-width:120px;font-family:var(--mono)}
+  .tl{font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--dim)}
+  .tv{font-size:17px;font-weight:800;margin-top:3px}
+  .grid2{display:grid;grid-template-columns:1.15fr .85fr;gap:13px}
+  @media(max-width:880px){.grid2{grid-template-columns:1fr}}
+  #surf{width:100%;height:430px} #curve{width:100%;height:430px}
+  .g{font-family:var(--mono);font-size:11.5px;color:var(--muted);line-height:1.6;margin:5px 0;padding-left:10px;border-left:2px solid var(--border)}
+  .g b{color:var(--ink)}
+  .skel{background:linear-gradient(90deg,var(--bg2),#1a1f29,var(--bg2));background-size:200% 100%;animation:sh 1.3s infinite;border-radius:10px}
+  @keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+  .load{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:center;padding:30px}
+</style>
+</head>
+<body>
+<div class="nav"><div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span></span></div><div class="tabs"></div></div>
+<main class="wrap">
+  <h1>🧊 ATM Theta Surface <span class="ro">READ-ONLY · model curve + live point</span></h1>
+  <div class="sub">What an <b>ATM option "usually" costs</b> by time-to-expiry (Black-Scholes at the stock's realized vol) — the 3D <b style="color:var(--saffron)">when-to-initiate</b> map. Premium scales with <b>√(time-left)</b>; theta (decay/day) <b>accelerates into the cliff</b>. The live ATM point shows today's market vs the model (RICH / CHEAP).</div>
+  <div class="card">
+    <div class="controls">
+      <input id="q" placeholder="SYMBOL" value="RELIANCE">
+      <button class="go" onclick="load()">build ▸</button>
+      <span style="color:var(--dim);font-family:var(--mono);font-size:10px;margin-left:4px">try</span>
+      <span class="quick" onclick="setS('NIFTY')">NIFTY</span><span class="quick" onclick="setS('RELIANCE')">RELIANCE</span><span class="quick" onclick="setS('LT')">LT</span><span class="quick" onclick="setS('AMBER')">AMBER</span><span class="quick" onclick="setS('TATASTEEL')">TATASTEEL</span>
+      <span id="stamp" class="mut" style="margin-left:auto;font-family:var(--mono);font-size:10.5px"></span>
+    </div>
+  </div>
+  <div class="card" id="tilecard"><div id="tiles" class="tiles"><div class="skel" style="height:50px;width:100%"></div></div></div>
+  <div class="grid2">
+    <div class="card"><div class="sh">premium surface · DTE × IV → ATM premium (% of spot)</div><div id="surf"><div class="load">build to render…</div></div></div>
+    <div class="card"><div class="sh">decay curve + theta cliff (at the stock's own vol)</div><div id="curve"><div class="load">build to render…</div></div></div>
+  </div>
+  <div class="card"><div class="sh">when to initiate — the read</div><div id="guide"></div></div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const DARK={paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#9aa3b4',family:'ui-monospace,monospace',size:10},margin:{l:45,r:15,t:10,b:35}};
+function setS(s){$('q').value=s;load();}
+function tile(l,v,c){return `<div class="tile"><div class="tl">${l}</div><div class="tv ${c||''}">${v}</div></div>`;}
+async function load(){
+  const sym=($('q').value||'').trim().toUpperCase(); if(!sym)return;
+  $('tiles').innerHTML='<div class="skel" style="height:50px;width:100%"></div>';
+  $('surf').innerHTML='<div class="load">pricing the surface…</div>'; $('curve').innerHTML='<div class="load">…</div>'; $('guide').innerHTML='';
+  let d;
+  try{ d=await(await fetch('/api/theta_surface/'+encodeURIComponent(sym))).json(); }catch(e){ $('surf').innerHTML='<div class="load neg">could not reach pod</div>'; return; }
+  if(!d||!d.ok){ $('tiles').innerHTML=''; $('surf').innerHTML='<div class="load neg">'+((d&&d.error)||'unavailable')+'</div>'; return; }
+  const L=d.live;
+  $('tiles').innerHTML=tile('spot','₹'+d.spot)+tile('realized vol',d.rv+'%')
+    +tile('theta cliff','~'+d.cliff_dte+' DTE','amb')
+    +(L?tile('live ATM',L.strike+' @ ₹'+L.premium,'')+tile('vs model',L.verdict,L.verdict==='RICH'?'neg':L.verdict==='CHEAP'?'pos':'amb')+tile('IV vs RV',(L.iv_vs_rv>=0?'+':'')+L.iv_vs_rv,L.iv_vs_rv>2?'neg':'mut'):tile('live ATM','—','mut'));
+  $('stamp').textContent=sym+' · '+(L?('exp '+L.expiry):'model');
+  // 3D SURFACE
+  Plotly.newPlot('surf',[{type:'surface',x:d.dte,y:d.iv,z:d.z,
+    colorscale:[[0,'#0e1116'],[0.4,'#3b82f6'],[0.75,'#ff9933'],[1,'#22c55e']],showscale:false,
+    contours:{z:{show:true,usecolormap:true,project:{z:true}}}}],
+    Object.assign({},DARK,{scene:{xaxis:{title:'DTE',color:'#9aa3b4'},yaxis:{title:'IV %',color:'#9aa3b4'},zaxis:{title:'prem % of spot',color:'#9aa3b4'},
+      bgcolor:'rgba(0,0,0,0)',camera:{eye:{x:1.6,y:-1.5,z:0.9}}}}),
+    {displayModeBar:false,responsive:true});
+  // DECAY + CLIFF dual-axis
+  Plotly.newPlot('curve',[
+    {x:d.dte,y:d.curve,name:'premium % of spot',mode:'lines+markers',line:{color:'#ff9933',width:2.5},marker:{size:5}},
+    {x:d.dte,y:d.cliff,name:'theta %/day',yaxis:'y2',mode:'lines',line:{color:'#ef4444',width:2,dash:'dot'}},
+    L?{x:[L.dte],y:[L.premium_pct],name:'live ATM',mode:'markers',marker:{size:11,color:L.verdict==='RICH'?'#ef4444':L.verdict==='CHEAP'?'#22c55e':'#fbbf24',symbol:'diamond',line:{color:'#fff',width:1}}}:{x:[],y:[]}
+  ],Object.assign({},DARK,{showlegend:true,legend:{orientation:'h',y:1.12,font:{size:9}},
+    xaxis:{title:'days to expiry',color:'#9aa3b4',gridcolor:'rgba(255,255,255,.05)'},
+    yaxis:{title:'premium % of spot',color:'#ff9933',gridcolor:'rgba(255,255,255,.05)'},
+    yaxis2:{title:'theta %/day',color:'#ef4444',overlaying:'y',side:'right',showgrid:false}}),
+    {displayModeBar:false,responsive:true});
+  const g=d.guidance||{};
+  $('guide').innerHTML=
+    `<div class="g">📐 <b>The law.</b> ${g.law||''}</div>`
+    +`<div class="g">⛰ <b>The cliff.</b> ${g.cliff||''}</div>`
+    +`<div class="g">📊 <b>IV / vega.</b> ${g.iv||''}${L?(' Today: live ATM is <b class="'+(L.verdict==='RICH'?'neg':L.verdict==='CHEAP'?'pos':'amb')+'">'+L.verdict+'</b> vs model — IV '+L.iv+'% (RV '+(L.iv_vs_rv>=0?'+':'')+L.iv_vs_rv+').'):''}</div>`
+    +`<div class="g">🎯 <b>Expected move.</b> ${g.expected_move||''}</div>`
+    +`<div class="g mut">${d.note||''}</div>`;
+}
+window.podRefresh=load;
+$('q').addEventListener('keydown',e=>{if(e.key==='Enter')load();});
+load();
+</script>
+<script src="marle_g_nav.js"></script>
+</body>
+</html>

@@ -85,7 +85,8 @@
   <div class="sub">Live position by selectable interval (VWAP · RSI · EMA · momentum · bar-by-bar) + double due-diligence for gated names. FIN-537 realized-variance / HAR / squeeze below.</div>
 
   <div class="inrow">
-    <input id="q" placeholder="ticker… e.g. TEJASNET / RELIANCE / NIFTY" autocomplete="off" value="TEJASNET">
+    <input id="q" list="qlist" placeholder="ticker… e.g. TEJASNET / RELIANCE / NIFTY" value="TEJASNET">
+    <datalist id="qlist"></datalist>
     <button id="go">Track</button>
   </div>
   <div class="chips" id="chips"></div>
@@ -112,7 +113,8 @@
 <script>
 window.MG_SELF_REFRESH=true;   // this page self-polls (position/DD every 15s) — nav.js skips full-reload
 const $=id=>document.getElementById(id);
-const CHIPS=["TEJASNET","QUESS","RELIANCE","NIFTY","BANKNIFTY","INDIGO"];
+const CHIPS=["NIFTYBEES","GOLDBEES","TEJASNET","RELIANCE","NIFTY","BANKNIFTY"];
+const QLIST=["NIFTY","BANKNIFTY","FINNIFTY","MIDCPNIFTY","NIFTYNXT50","SENSEX","BANKEX","RELIANCE","HDFCBANK","ICICIBANK","INFY","TCS","SBIN","AXISBANK","KOTAKBANK","LT","BHARTIARTL","ITC","HINDUNILVR","MARUTI","BAJFINANCE","SUNPHARMA","TATAMOTORS","TATASTEEL","TATAPOWER","HCLTECH","TECHM","WIPRO","NTPC","POWERGRID","ONGC","COALINDIA","BPCL","ADANIENT","ADANIPORTS","BEL","HAL","DIXON","TRENT","TITAN","DLF","VEDL","JSWSTEEL","HINDALCO","GRASIM","CIPLA","DRREDDY","EICHERMOT","M&M","ULTRACEMCO","MANAPPURAM","MUTHOOTFIN","PFC","BHEL","IRCTC","IRFC","SUZLON","ZOMATO","PAYTM","YESBANK","IDEA","QUESS","TEJASNET","INDIGO","NIFTYBEES","BANKBEES","JUNIORBEES","MID150BEES","MIDCAPETF","GOLDBEES","ITBEES","SETFNIF50","PHARMABEES"];
 function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function svg(series,h){
   const W=940,H=h||180,P=22;
@@ -421,7 +423,7 @@ async function loadClosing(){
 }
 async function track(tk){
   tk=(tk||'').trim().toUpperCase(); if(!tk)return; $('q').value=tk;
-  LIVE_TK=tk; renderIv(); loadPos(); loadDD(); loadIvAdvisor(); loadSparks(); loadRsi(); loadMood(); loadSmartStop(); loadDepth(); loadClosing();
+  LIVE_TK=tk; renderIv(); loadPos(); loadDD(); loadIvAdvisor(); loadSparks(); loadRsi(); loadMood(); loadSmartStop(); loadDepth(); loadClosing(); loadOvernight();
   clearInterval(POS_TIMER); POS_TIMER=setInterval(()=>{loadPos();loadDD();loadRsi();loadMood();loadSmartStop();loadDepth();loadClosing();},15000);
   $('out').innerHTML='<div class="card"><span style="color:var(--dim);font-family:var(--mono);font-size:12px">⟳ computing realized variance + HAR for '+esc(tk)+'…</span></div>';
   try{
@@ -496,6 +498,7 @@ async function loadOvernight(){
 $('go').onclick=()=>track($('q').value);
 $('q').addEventListener('keydown',e=>{if(e.key==='Enter')track($('q').value);});
 $('chips').innerHTML=CHIPS.map(c=>`<span class="chip" onclick="track('${c}')">${c}</span>`).join('');
+$('qlist').innerHTML=QLIST.map(s=>`<option value="${s}">`).join('');
 const _qp=new URLSearchParams(location.search);
 track((_qp.get('q')||_qp.get('tk')||'TEJASNET').trim().toUpperCase());
 loadOvernight();

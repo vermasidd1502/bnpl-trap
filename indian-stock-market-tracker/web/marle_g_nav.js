@@ -6,6 +6,7 @@
 (function () {
   var GROUPS = [
     { label: "home", solo: true, items: [["marle_g_pod.html", "home"]] },
+    { label: "gate", solo: true, items: [["marle_g_gate.html", "🚦 gate"]] },
     { label: "war room", solo: true, items: [["marle_g_warroom.html", "⚔ war room"]] },
     { label: "lab", solo: true, items: [["marle_g_lab.html", "🔬 lab"]] },
     { label: "markets", icon: "📈", items: [
@@ -18,14 +19,14 @@
       ["marle_g_robust.html", "robust"], ["marle_g_bearish.html", "🛡 bearish/hedge"], ["marle_g_niftysim.html", "nifty-sim"], ["marle_g_sectoral.html", "sectoral"],
       ["marle_g_vol.html", "vol-lab"], ["marle_g_paper.html", "paper"]] },
     { label: "desk", icon: "🖥", items: [
-      ["marle_g_watch.html", "👀 watch desk"], ["marle_g_position.html", "📊 position desk"], ["marle_g_router.html", "router"], ["marle_g_stock.html", "stock page"]] },
+      ["marle_g_cockpit.html", "🔫 cockpit"], ["marle_g_options.html", "⚙ options"], ["marle_g_option_ideas.html", "🌊 option ideas"], ["marle_g_theta.html", "🧊 theta 3D"], ["marle_g_watch.html", "👀 watch desk"], ["marle_g_position.html", "📊 position desk"], ["marle_g_router.html", "router"], ["marle_g_stock.html", "stock page"]] },
     { label: "scenarios", icon: "🌐", items: [
       ["marle_g_cascade.html", "cascade"], ["marle_g_regime.html", "regime"], ["marle_g_thesis.html", "thesis"],
       ["marle_g_smartmoney.html", "smart-money"], ["marle_g_mindhive.html", "mindhive"]] },
     { label: "portfolio", icon: "💼", items: [
       ["marle_g_portfolio.html", "portfolio"], ["marle_g_winners.html", "winners"], ["marle_g_risk.html", "risk"],
       ["marle_g_profile.html", "profile"], ["marle_g_dashboard.html", "dashboard"], ["marle_g_funds.html", "funds"],
-      ["marle_g_options.html", "options"]] },
+      ["marle_g_nifty.html", "🇮🇳 nifty pod"]] },
     { label: "tools", icon: "🔧", items: [
       ["marle_g_chart.html", "chart"], ["marle_g_canslim.html", "canslim"], ["marle_g_fundamentals.html", "📒 fundamentals"],
       ["marle_g_architecture_3d.html", "3D"], ["marle_g_diag.html", "diag"]] }

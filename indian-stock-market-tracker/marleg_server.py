@@ -65,15 +65,16 @@ ALLOW_LIVE_ORDERS = os.environ.get("MARLEG_ALLOW_LIVE_ORDERS") == "1"
 
 # ----------------------------------------------------------------- cache
 _CACHE, _LOCK = {}, threading.Lock()
-def cached(key, fn, ttl):
+def cached(key, fn, ttl, keep=None):
     now = time.time()
     with _LOCK:
         hit = _CACHE.get(key)
         if hit and now - hit[0] < ttl:
             return hit[1]
     val = fn()
-    with _LOCK:
-        _CACHE[key] = (now, val)
+    if keep is None or keep(val):          # keep=predicate -> don't cache failures (e.g. a transient blip)
+        with _LOCK:
+            _CACHE[key] = (now, val)
     return val
 
 NAMES = {
@@ -91,8 +92,29 @@ def yftk(sym):
 
 # ----------------------------------------------------------------- helpers
 def _hist(sym, period="1y", interval="1d"):
-    df = yf.Ticker(yftk(sym)).history(period=period, interval=interval, auto_adjust=False)
-    return df if df is not None and len(df) else None
+    import marleg_data as md           # Groww-only data layer (no yfinance)
+    days = {"6mo": 190, "1y": 380, "2y": 760, "5y": 1850, "10y": 3700, "max": 3700}.get(period, 380)
+    imin = {"1d": 1440, "1h": 60, "60m": 60, "30m": 30, "15m": 15, "5m": 5, "1m": 1}.get(interval, 1440)
+    df = md.candles(sym, interval_min=imin, days=days)
+    if df is None or not len(df):
+        return None
+    return df.rename(columns={"open": "Open", "high": "High", "low": "Low", "close": "Close", "volume": "Volume"})
+
+def _live_px(syms, exchange="NSE"):
+    """Batched REAL-TIME {SYMBOL:{price,prev,chg}} via Groww — replaces the old yfinance 1m/5m price
+    overlays (Groww LTP is real-time, not ~15-min delayed). Chunked so the exchange_symbols list stays
+    within Groww's URL limits. Returns {} if Groww is unavailable (callers keep their cached price)."""
+    out = {}
+    g = groww()
+    if g is None:
+        return out
+    seen = list(dict.fromkeys(s.upper() for s in syms if s))
+    for i in range(0, len(seen), 50):
+        try:
+            out.update(g.quote_table(seen[i:i + 50], exchange=exchange) or {})
+        except Exception:
+            pass
+    return out
 
 def _rsi(close, n=14):
     d = close.diff(); up = d.clip(lower=0).rolling(n).mean(); dn = (-d.clip(upper=0)).rolling(n).mean()
@@ -288,27 +310,23 @@ def _volume_pod_live():
     with open(os.path.join(HERE, "marleg_volume_cache.json"), encoding="utf-8") as f:
         data = json.load(f)
     try:
-        import yfinance as yf
-        import pandas as _pd
         # cap live refresh to the top-conviction names (a 3000-name universe can't refresh
         # every 5 min) — the rest keep their scan-time price.
         allst = [x for sec in data.get("sectors", []) for x in sec.get("stocks", [])]
         allst.sort(key=lambda x: -(x.get("ud") or 0))
         syms = list(dict.fromkeys(x["s"] for x in allst[:250]))
-        d = yf.download([s + ".NS" for s in syms], period="1d", interval="5m",
-                        group_by="ticker", progress=False, threads=True)
+        px = _live_px(syms)                              # Groww real-time LTP (was yfinance 5m, ~15m delayed)
         n = 0
         for sec in data.get("sectors", []):
             for x in sec.get("stocks", []):
                 try:
-                    c = d[x["s"] + ".NS"]["Close"].dropna()
-                    if not len(c):
+                    live = (px.get(x["s"].upper()) or {}).get("price")
+                    if not live:
                         continue
-                    live = float(c.iloc[-1])
                     prev = x.get("price")
                     if prev:
                         x["chg"] = round((live / prev - 1) * 100, 2)
-                    x["price"] = round(live, 1)
+                    x["price"] = round(float(live), 1)
                     n += 1
                 except Exception:
                     pass
@@ -334,18 +352,15 @@ def _gated_live(fname="marleg_gated_cache.json", record_tenure=True):
     with open(os.path.join(HERE, fname), encoding="utf-8") as f:
         d = json.load(f)
     try:
-        import yfinance as yf
         syms = [x["s"] for x in d.get("picks", [])]
         if syms:
-            dd = yf.download([s + ".NS" for s in syms], period="1d", interval="5m",
-                             group_by="ticker", progress=False, threads=True)
+            px = _live_px(syms)                          # Groww real-time LTP (was yfinance 5m)
             for x in d.get("picks", []):
                 try:
-                    c = dd[x["s"] + ".NS"]["Close"].dropna()
-                    if not len(c):
+                    live = (px.get(x["s"].upper()) or {}).get("price")
+                    if not live:
                         continue
-                    live = float(c.iloc[-1])
-                    x["price"] = round(live, 2)
+                    x["price"] = round(float(live), 2)
                     if x.get("target"):
                         x["tgtpct"] = round((x["target"] / live - 1) * 100, 1)
                 except Exception:
@@ -443,6 +458,24 @@ def api_movers():
 def api_vix():
     """VIX conscience (sector behavior in calm vs volatile) + driver attribution (why VIX is moving)."""
     return jsonify(cached("vix_study", lambda: _read_json("marleg_vix_study.json", "VIX study not built — run marleg_vix_study.py"), 300))
+
+@app.route("/api/vix_tracker")
+def api_vix_tracker():
+    """India VIX as an option-buyer's weather (level / percentile / regime / buyer read) + which sectors are
+    suffering today + the news story for the worst one. Groww-only."""
+    import marleg_vix_tracker as vt
+    def do():
+        r = vt.tracker()
+        try:                                           # attach the 'story' news for the worst stressed name
+            suff = r.get("suffering") or []
+            if suff and suff[0].get("weakest"):
+                nm = suff[0]["weakest"][0]
+                r["story_news_for"] = nm
+                r["story_news"] = _news(nm + " share price", 4)
+        except Exception:
+            pass
+        return r
+    return jsonify(cached("vix_tracker", do, 180, keep=lambda v: bool(v.get("ok"))))
 
 
 @app.route("/api/tiers")
@@ -698,7 +731,7 @@ def api_volume_pod_add():
     # 2) compute volume metrics for the symbol
     m = None
     try:
-        d = yf.download(sym + ".NS", period="2mo", interval="1d", progress=False)
+        d = _hist(sym, "6mo")                            # Groww (was yfinance 2mo); metrics uses ~20d avg
         if d is not None and len(d):
             m = mvs.metrics(d)
     except Exception:
@@ -784,7 +817,8 @@ def api_candles(ticker):
                     "vol": float(r["Volume"]) if r["Volume"] == r["Volume"] else 0.0}
                    for idx, r in df.iterrows()]
         return {"symbol": ticker.upper(), "period": period, "candles": candles}
-    return jsonify(cached("candles:" + ticker.upper() + ":" + period, do, 300))
+    return jsonify(cached("candles:" + ticker.upper() + ":" + period, do, 300,
+                          keep=lambda v: "candles" in v))   # don't cache a transient "no data" blip
 
 @app.route("/api/ichimoku/<ticker>")
 def api_ichimoku(ticker):
@@ -965,6 +999,8 @@ def api_macro():
                    "Nifty Realty": "^CNXREALTY", "Nifty PSU Bank": "^CNXPSUBANK", "Nifty Energy": "^CNXENERGY",
                    "Nifty Infra": "^CNXINFRA", "Nifty Media": "^CNXMEDIA", "Nifty FinServ": "NIFTY_FIN_SERVICE.NS"}
         allt = {**idx, **{k: v for k, v in sectors.items()}}
+        # yfinance HOLDOUT: this macro board needs USDINR + sectoral-index HISTORY (^CNXAUTO/PHARMA/…),
+        # which Groww's candle API doesn't serve. Everything else in the pod is Groww-only.
         d = yf.download(" ".join(allt.values()), period="3mo", interval="1d", progress=False, group_by="ticker", threads=True)
         def ser(t):
             try: return (d[t]["Close"]).dropna()
@@ -1173,6 +1209,210 @@ def api_expiry_matrix(und):
     kind = "P" if request.args.get("kind", "C").upper().startswith("P") else "C"
     key = f"expiry_matrix:{und.upper()}:{strike}:{kind}"
     return jsonify(cached(key, lambda: em.matrix(und.upper(), strike, kind), 45))
+
+@app.route("/api/opt_surface/<und>")
+def api_opt_surface(und):
+    """Whole-asset option surface: strikes x expiries decision grid (stance / BE% / theta / EV / liquidity). Groww-only.
+    Query: ?kind=C|P &n=<strikes each side of ATM> &hold=<sessions>."""
+    import marleg_opt_surface as osf
+    kind = "P" if request.args.get("kind", "C").upper().startswith("P") else "C"
+    n = request.args.get("n", default=4, type=int)
+    hold = request.args.get("hold", default=10, type=int)
+    key = f"opt_surface:{und.upper()}:{kind}:{n}:{hold}"
+    return jsonify(cached(key, lambda: osf.surface(und.upper(), kind, n_strikes=n, hold=hold), 60,
+                          keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/opt_rank/<und>")
+def api_opt_rank(und):
+    """Ranked best contracts to express the expected move, by mode, liquidity-gated + stance-filtered. Groww-only.
+    Query: ?kind=C|P &mode=rr|ride|conv|bleed &hold= ."""
+    import marleg_opt_surface as osf
+    kind = "P" if request.args.get("kind", "C").upper().startswith("P") else "C"
+    mode = request.args.get("mode", "rr")
+    hold = request.args.get("hold", default=10, type=int)
+    key = f"opt_rank:{und.upper()}:{kind}:{mode}:{hold}"
+    return jsonify(cached(key, lambda: osf.rank(und.upper(), kind, mode, hold=hold), 60,
+                          keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/opt_sim/<und>")
+def api_opt_sim(und):
+    """Forward Monte-Carlo of one option over the hold: P(profit), return distribution, P(hit target/stop). Groww-only.
+    Query: ?strike= &expiry=YYYY-MM-DD &kind=C|P &premium= &iv= &hold= &target= &stop= ."""
+    import marleg_opt_sim as osim
+    a = request.args
+    strike = a.get("strike", type=float); expiry = a.get("expiry")
+    if not strike or not expiry:
+        return jsonify({"ok": False, "error": "need ?strike= and ?expiry=YYYY-MM-DD"})
+    kind = "P" if a.get("kind", "C").upper().startswith("P") else "C"
+    key = f"opt_sim:{und.upper()}:{strike}:{expiry}:{kind}:{a.get('hold','10')}:{a.get('target')}:{a.get('stop')}"
+    return jsonify(cached(key, lambda: osim.simulate(
+        und.upper(), strike, expiry, kind, premium=a.get("premium", type=float), iv=a.get("iv", type=float),
+        hold=a.get("hold", default=10, type=int), target=a.get("target", type=float),
+        stop=a.get("stop", type=float)), 60, keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/opt_bt/<und>")
+def api_opt_bt(und):
+    """Synthetic historical backtest of the '{mode} {right}' option-buying style (BS-priced on realized vol). Groww-only.
+    Query: ?kind=C|P &mode=rr|ride|conv|bleed &hold= ."""
+    import marleg_opt_sim as osim
+    kind = "P" if request.args.get("kind", "C").upper().startswith("P") else "C"
+    mode = request.args.get("mode", "rr")
+    hold = request.args.get("hold", default=10, type=int)
+    key = f"opt_bt:{und.upper()}:{kind}:{mode}:{hold}"
+    return jsonify(cached(key, lambda: osim.backtest(und.upper(), kind, mode, hold=hold), 1800,
+                          keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/opt_timing/<und>")
+def api_opt_timing(und):
+    """WHEN to buy: expiry-cycle position + theta-runway + validated seasonal entry tilt (PRIME/GOOD/WAIT). Groww-only."""
+    import marleg_opt_timing as ot
+    hold = request.args.get("hold", default=10, type=int)
+    return jsonify(cached(f"opt_timing:{und.upper()}:{hold}", lambda: ot.timing(und.upper(), hold), 600,
+                          keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/opt_regime/<und>")
+def api_opt_regime(und):
+    """Call-buyer regime gate: resistance-break × low-vol (validated +1.90% / 56% over baseline +0.86%). Read-only."""
+    import marleg_opt_regime as rg
+    return jsonify(cached(f"opt_regime:{und.upper()}", lambda: rg.regime(und.upper()), 120, keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/opt_portfolio")
+def api_opt_portfolio():
+    """Portfolio analysis of the LIVE held option book + per-position ACTION/TARGET/STOP/DROP-BY guidance.
+    Read-only on the Groww account."""
+    import marleg_opt_portfolio as opf
+    return jsonify(cached("opt_portfolio", lambda: opf.portfolio(), 20, keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/nifty_family")
+def api_nifty_family():
+    """The Nifty pod: every index option product (flavours of Nifty) — live price + day change. Read-only."""
+    import marleg_nifty_family as nf
+    return jsonify(cached("nifty_family", lambda: nf.family(), 15, keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/session_gate")
+def api_session_gate():
+    """The pre-trade SESSION GATE: GO/NO-GO state · overnight-regime read (US last night + futures + VIX) ·
+    opening-range volatility · the auto/user discipline checklist. Read-only, decision-support."""
+    import marleg_session_gate as sg
+    return jsonify(cached("session_gate", lambda: sg.gate(), 15, keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/council/<sym>")
+def api_council(sym):
+    """The cockpit ENGINE COUNCIL: every engine votes (edge-weighted), conflicts surfaced, consensus go/no-go.
+    Read-only decision-support — the council decides WHETHER, you place the trade."""
+    import marleg_council as cc
+    side = (request.args.get("side") or "LONG").upper()
+    cap = request.args.get("capital", default=100000.0, type=float)
+    risk = request.args.get("risk", default=1.0, type=float)
+    prof = (request.args.get("profile") or "normal").lower()
+    key = f"council:{sym.upper()}:{side}:{cap}:{risk}:{prof}"
+    return jsonify(cached(key, lambda: cc.council(sym.upper(), side, cap, risk, prof), 20,
+                          keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/ltp/<sym>")
+def api_ltp(sym):
+    """Featherweight live last-price (for the cockpit's per-second tick). Groww quote, cached 2s."""
+    def do():
+        try:
+            import groww_client as gc
+            g = gc.GrowwClient(); g.token()
+            p = (g.quote(sym.upper(), segment="CASH", exchange="NSE").json().get("payload") or {})
+            lp = p.get("last_price"); ch = p.get("day_change_perc")
+            return {"sym": sym.upper(), "ltp": None if lp is None else round(float(lp), 2),
+                    "chg_pct": None if ch is None else round(float(ch), 2)}
+        except Exception as e:
+            return {"sym": sym.upper(), "error": str(e)[:80]}
+    return jsonify(cached(f"ltp:{sym.upper()}", do, 1, keep=lambda v: v.get("ltp") is not None))
+
+@app.route("/api/move/<sym>")
+def api_move(sym):
+    """Move-attribution 'story': how big, on what volume, and — the honest 'who' proxy — delivery % (real
+    accumulation vs intraday churn) + catalyst + ownership + market-wide FII/DII. Cached 180s."""
+    import marleg_move as mvm
+    return jsonify(cached(f"move:{sym.upper()}", lambda: mvm.story(sym.upper()), 180,
+                          keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/corp_events/<sym>")
+def api_corp_events(sym):
+    """Corporate events + ASM/GSM surveillance gate (NSE) — deals/orders + distress flag. Read-only."""
+    import marleg_corp_events as ce
+    return jsonify(cached(f"corp_events:{sym.upper()}", lambda: ce.gate(sym.upper()), 300,
+                          keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/intracandles/<sym>")
+def api_intracandles(sym):
+    """OHLCV (unix-time) for the cockpit chart + volume profile. tf in min for intraday (1/2/5/10/15/30/60)
+    OR 1440=1D / 10080=1W / 43200=1M for swing/position views. Groww serves 1/5/10/15/60 + daily natively;
+    2m/30m/weekly/monthly are RESAMPLED server-side. Daily+ bars are end-of-session-fresh (no intraday lag)."""
+    import marleg_data as _md
+    tf = request.args.get("tf", default=15, type=int)
+    if tf not in (1, 2, 5, 10, 15, 30, 60, 1440, 10080, 43200):
+        tf = 15
+    if tf >= 1440:
+        days = {1440: 320, 10080: 800, 43200: 2000}[tf]      # enough history for D/W/M
+    else:
+        days = max(2, min(request.args.get("days", default=12, type=int), 40))
+        if tf <= 2:
+            days = min(days, 5)             # 1m/2m are voluminous — keep it recent
+        elif tf <= 10:
+            days = min(days, 15)
+
+    def _resample(df, m):
+        agg = {"open": "first", "high": "max", "low": "min", "close": "last", "volume": "sum"}
+        return df.resample(f"{m}min").agg(agg).dropna(subset=["open", "high", "low", "close"])
+
+    def _resample_f(df, freq):
+        agg = {"open": "first", "high": "max", "low": "min", "close": "last", "volume": "sum"}
+        return df.resample(freq).agg(agg).dropna(subset=["open", "high", "low", "close"])
+
+    def do():
+        if tf in (1, 5, 10, 15, 60):
+            df = _md.candles(sym.upper(), tf, days)
+        elif tf == 2:
+            base = _md.candles(sym.upper(), 1, days); df = _resample(base, 2) if base is not None else None
+        elif tf == 30:
+            base = _md.candles(sym.upper(), 15, days); df = _resample(base, 30) if base is not None else None
+        elif tf == 1440:
+            df = _md.candles(sym.upper(), 1440, days)        # daily native (fresh end-of-session)
+        else:                                                # weekly / monthly from daily
+            base = _md.candles(sym.upper(), 1440, days)
+            if base is None:
+                df = None
+            elif tf == 10080:
+                df = _resample_f(base, "W-FRI")              # NSE week ends Friday
+            else:
+                try:
+                    df = _resample_f(base, "ME")             # month-end (pandas ≥2.2)
+                except Exception:
+                    df = _resample_f(base, "M")
+        if df is None or len(df) < 3:
+            return {"error": "no candle data", "sym": sym.upper()}
+        df = df.dropna(subset=["open", "high", "low", "close"])
+        cs = [{"time": int(idx.timestamp()), "open": round(float(r["open"]), 2), "high": round(float(r["high"]), 2),
+               "low": round(float(r["low"]), 2), "close": round(float(r["close"]), 2),
+               "vol": float(r["volume"]) if r["volume"] == r["volume"] else 0.0} for idx, r in df.iterrows()]
+        return {"sym": sym.upper(), "tf": tf, "candles": cs}
+    return jsonify(cached(f"intraday:{sym.upper()}:{tf}:{days}", do, 60, keep=lambda v: "candles" in v))
+
+@app.route("/api/cockpit/<sym>")
+def api_cockpit(sym):
+    """Trade COCKPIT: smart-stop + risk-sized qty + scaled TP ladder + liquidity levels + GTT-ready tickets.
+    Read-only decision-support — the pod hands you the order, YOU place it. Never auto-executes."""
+    import marleg_cockpit as cp
+    side = (request.args.get("side") or "LONG").upper()
+    entry = request.args.get("entry", type=float)
+    cap = request.args.get("capital", default=100000.0, type=float)
+    risk = request.args.get("risk", default=1.0, type=float)
+    prof = (request.args.get("profile") or "normal").lower()
+    key = f"cockpit:{sym.upper()}:{side}:{entry}:{cap}:{risk}:{prof}"
+    return jsonify(cached(key, lambda: cp.cockpit(sym.upper(), side, entry, cap, risk, profile=prof), 12,
+                          keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/index_universe")
+def api_index_universe():
+    """The Nifty pod: grouped live index / sector / commodity board (Groww-native ETFs) + commodity-Nifty pairing."""
+    import marleg_index_universe as iu
+    return jsonify(cached("index_universe", lambda: iu.universe(), 20, keep=lambda v: bool(v.get("ok"))))
 
 @app.route("/api/opt_paper")
 def api_opt_paper():
@@ -1424,6 +1664,99 @@ def api_optsuggest():
     moi = request.args.get("min_oi", default=200, type=int)
     return jsonify(cached(f"optsuggest:{top}:{moi}", lambda: osg.suggest(top=top, min_oi=moi), 600))
 
+@app.route("/api/option_ideas")
+def api_option_ideas():
+    """The DAILY option-ideas list ('ride the wave'): gate-passed, liquid-only option buys ranked by
+    conviction × volume-surge × ride-EV, with on-list tenure. First build of the day is slow (~1min) →
+    persisted to disk + cached 30min. ?top= &min_oi= &refresh=1 ."""
+    import marleg_option_ideas as oi
+    top = request.args.get("top", default=8, type=int)
+    moi = request.args.get("min_oi", default=200, type=int)
+    if request.args.get("refresh"):
+        return jsonify(oi.daily(top=top, min_oi=moi, refresh=True))
+    # disk cache (daily()) is the real dedup + once-a-day build guard; in-memory TTL just smooths bursts,
+    # kept short so a fresh disk rebuild / day-rollover shows through fast.
+    return jsonify(cached(f"optideas:{top}:{moi}", lambda: oi.daily(top=top, min_oi=moi), 120,
+                          keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/express/<sym>")
+def api_express(sym):
+    """MTF-vs-OPTION conscientious meter (−100 MTF … +100 OPTION) + target ETA. The option side is gated on
+    liquidity + the expiry-that-clears-the-hold + theta cliff. ?side= &capital= &risk= &profile=. Cached 120s."""
+    import marleg_express as ex
+    side = (request.args.get("side") or "LONG").upper()
+    cap = request.args.get("capital", default=100000.0, type=float)
+    risk = request.args.get("risk", default=1.0, type=float)
+    prof = (request.args.get("profile") or "normal").lower()
+    hz = (request.args.get("horizon") or "swing").lower()
+    return jsonify(cached(f"express:{sym.upper()}:{side}:{cap}:{risk}:{prof}:{hz}",
+                          lambda: ex.express(sym.upper(), side, cap, risk, prof, hz), 120,
+                          keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/opt_guardian")
+def api_opt_guardian():
+    """Exit monitor for held options: trailing stop off the premium's running peak + level take-profit + GTT
+    exit scripts (you arm them — read-only). ?trail= (%). Cached 30s."""
+    import marleg_opt_guardian as og
+    tp = request.args.get("trail", default=25.0, type=float)
+    return jsonify(cached(f"optguard:{tp}", lambda: og.status(tp), 30, keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/userlists")
+def api_userlists():
+    """User's named watchlists + auto-merged held positions."""
+    import marleg_userlists as ul
+    return jsonify(ul.get_all())
+
+@app.route("/api/userlists/<action>", methods=["POST"])
+def api_userlists_edit(action):
+    """add/remove a symbol; create/delete a named list. Body: {sym, list} or {name}."""
+    import marleg_userlists as ul
+    d = request.get_json(silent=True) or request.values
+    sym = (d.get("sym") or "").strip()
+    name = (d.get("list") or d.get("name") or "Core").strip()
+    if action == "add":
+        return jsonify(ul.add(sym, name))
+    if action == "remove":
+        return jsonify(ul.remove(sym, name))
+    if action == "create":
+        return jsonify(ul.create_list(name))
+    if action == "delete":
+        return jsonify(ul.delete_list(name))
+    return jsonify({"ok": False, "error": "unknown action " + str(action)})
+
+@app.route("/api/notify/feed")
+def api_notify_feed():
+    """Conviction-scored alert feed (hard-exits + movers, watchlist vs missed-the-boat). Cached 45s."""
+    import marleg_notify_engine as ne
+    top = request.args.get("top", default=40, type=int)
+    return jsonify(cached(f"notifyfeed:{top}", lambda: ne.scan(top=top), 45, keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/ticket/<sym>")
+def api_ticket(sym):
+    """Full horizon-tagged ticket: underlying + option + system pick + conviction. ?capital= ?risk=. Cached 45s."""
+    import marleg_ticket as tk
+    cap = request.args.get("capital", default=100000.0, type=float)
+    rp = request.args.get("risk", default=2.0, type=float)
+    return jsonify(cached(f"ticket:{sym.upper()}:{cap}:{rp}", lambda: tk.suggest(sym.upper(), cap, rp), 45,
+                          keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/option_levels/<sym>")
+def api_option_levels(sym):
+    """Sell-at-top / buy-at-support signal for a held option: triggers off the UNDERLYING's resistance/support
+    ladder (R1-R3, swing, 52w, fib) + Black-Scholes-projected option premium at each level. ?premium= (live). 60s."""
+    import marleg_option_levels as ol
+    prem = request.args.get("premium", type=float)
+    return jsonify(cached(f"optlevels:{sym.upper()}:{prem}", lambda: ol.signal(sym.upper(), prem), 60,
+                          keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/theta_surface/<sym>")
+def api_theta_surface(sym):
+    """ATM theta-decay SURFACE: 'usual' ATM premium (% of spot) over a (DTE × IV) grid + the decay/cliff
+    curves + the live ATM point (rich/cheap vs model) — for the 3D 'when to initiate' view. Cached 120s."""
+    import marleg_theta_surface as ts
+    return jsonify(cached(f"theta:{sym.upper()}", lambda: ts.surface(sym.upper()), 120,
+                          keep=lambda v: bool(v.get("ok"))))
+
 @app.route("/api/optiondeck/<und>")
 def api_optiondeck(und):
     """Trade-verdict deck: is a long plausible, timeline + targets, and the theta-aware option buy/sell
@@ -1476,6 +1809,7 @@ def api_news():
 def api_outlook():
     def do():
         tickers = "^NSEI ^BSESN INR=X ^INDIAVIX ^NSEBANK ^CNXIT ^CNXAUTO ^CNXPHARMA ^CNXFMCG ^CNXMETAL ^CNXREALTY ^CNXENERGY"
+        # yfinance HOLDOUT (same as the market board): USDINR + sectoral-index history aren't on Groww.
         d = yf.download(tickers, period="3mo", interval="1d", progress=False, group_by="ticker", threads=True)
         def ser(t):
             try: return d[t]["Close"].dropna()
@@ -1716,22 +2050,20 @@ def _avg_prev(syms):
     yfinance pull can't poison the cache with missing or absurd values."""
     def do():
         out = {}
-        try:
-            d = yf.download([s + ".NS" for s in syms], period="1mo", interval="1d",
-                            progress=False, group_by="ticker", threads=True)
-            for s in syms:
-                try:
-                    dc = (d[s + ".NS"] if len(syms) > 1 else d)
-                    cl = dc["Close"].dropna(); vv = dc["Volume"].dropna()
-                    if len(vv) >= 10 and len(cl) >= 2:                 # need a real history
-                        avg = float(vv.iloc[-21:-1].mean())
-                        if avg > 0:
-                            out[s] = [avg, float(cl.iloc[-2])]
-                            _AVG_LAST[s] = out[s]
-                except Exception:
-                    pass
-        except Exception:
-            pass
+        import marleg_data as md
+        for s in syms:                                                # per-symbol Groww (was one yfinance bulk)
+            try:
+                dc = md.candles(s, 1440, 45)                          # ~30 trading days
+                if dc is None:
+                    continue
+                cl = dc["close"].dropna(); vv = dc["volume"].dropna()
+                if len(vv) >= 10 and len(cl) >= 2:                    # need a real history
+                    avg = float(vv.iloc[-21:-1].mean())
+                    if avg > 0:
+                        out[s] = [avg, float(cl.iloc[-2])]
+                        _AVG_LAST[s] = out[s]
+            except Exception:
+                pass
         for s in syms:                                                # back-fill gaps
             if s not in out and s in _AVG_LAST:
                 out[s] = _AVG_LAST[s]
@@ -1745,15 +2077,13 @@ def _intraday_vol(syms):
     yfinance load (less throttling = fewer partial failures); gaps use last-good."""
     def do():
         out = {}
-        try:
-            d = yf.download([s + ".NS" for s in syms], period="1d", interval="1m",
-                            progress=False, group_by="ticker", threads=True)
-        except Exception:
-            d = None
-        for s in syms:
+        import marleg_data as md
+        for s in syms:                                                # per-symbol Groww 1-min (was one yfinance bulk)
             try:
-                cm = (d[s + ".NS"] if len(syms) > 1 else d)
-                v = cm["Volume"].dropna(); c = cm["Close"].dropna()
+                cm = md.candles(s, 1, 1)                              # today's 1-min bars
+                if cm is None:
+                    continue
+                v = cm["volume"].dropna(); c = cm["close"].dropna()
                 if len(v) >= 1 and float(v.sum()) > 0:
                     out[s] = [float(v.sum()), len(v), float(c.iloc[-1]) if len(c) else None]
                     _VOL_LAST[s] = out[s]
@@ -2237,35 +2567,15 @@ def api_paper():
                 pass
         px, ts = {}, None
         if allsyms:
-            try:                                              # intraday 1-min = freshest while market is open
-                d = yf.download(" ".join(s + ".NS" for s in allsyms), period="1d", interval="1m",
-                                progress=False, group_by="ticker", threads=True)
-                for s in allsyms:
-                    try:
-                        c = (d[s + ".NS"]["Close"] if len(allsyms) > 1 else d["Close"]).dropna()
-                        if len(c):
-                            px[s] = round(float(c.iloc[-1]), 2)
-                            ts = str(c.index[-1].tz_convert("Asia/Kolkata")) if c.index.tz is not None else str(c.index[-1])
-                    except Exception:
-                        pass
-            except Exception:
-                pass
-            miss = [s for s in allsyms if s not in px]          # fallback to daily close (market closed / illiquid)
-            if miss:
-                try:
-                    d2 = yf.download(" ".join(s + ".NS" for s in miss), period="5d", interval="1d",
-                                     progress=False, group_by="ticker", threads=True)
-                    for s in miss:
-                        try:
-                            c = (d2[s + ".NS"]["Close"] if len(miss) > 1 else d2["Close"]).dropna()
-                            if len(c):
-                                px[s] = round(float(c.iloc[-1]), 2)
-                                if ts is None:
-                                    ts = str(c.index[-1])
-                        except Exception:
-                            pass
-                except Exception:
-                    pass
+            q = _live_px(list(allsyms))                       # Groww real-time LTP (was yfinance 1m + daily fallback)
+            for s in allsyms:
+                r = q.get(s.upper()) or {}
+                v = r.get("price") or r.get("prev")           # live price; prev close if the market's shut
+                if v:
+                    px[s] = round(float(v), 2)
+            if px:
+                from datetime import datetime, timezone, timedelta
+                ts = datetime.now(timezone(timedelta(hours=5, minutes=30))).strftime("%Y-%m-%d %H:%M IST")
         out = {}
         for n, b in books.items():
             pos, mv, upnl = [], 0.0, 0.0
@@ -2372,7 +2682,8 @@ if __name__ == "__main__":
     _host = os.environ.get("MARLEG_HOST", "127.0.0.1")
     _port = int(os.environ.get("MARLEG_PORT", "8777"))
     import sys
-    threading.Thread(target=_daily_scan_refresh_loop, daemon=True).start()    # auto-keep lists fresh daily
-    threading.Thread(target=_gated_hourly_refresh_loop, daemon=True).start()  # full gated scan hourly (market hours)
+    if not os.environ.get("MARLEG_NO_BG"):       # MARLEG_NO_BG=1 -> skip the heavy auto-scans (clean test/dev server)
+        threading.Thread(target=_daily_scan_refresh_loop, daemon=True).start()    # auto-keep lists fresh daily
+        threading.Thread(target=_gated_hourly_refresh_loop, daemon=True).start()  # full gated scan hourly (market hours)
     print(f"Marle-G surveillance backend -> http://{_host}:{_port}/")
     app.run(host=_host, port=_port, threaded=True)

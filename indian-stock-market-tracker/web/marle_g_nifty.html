@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nifty Pod · Marle-G</title>
+<style>
+  :root{--bg:#080a0e;--card:#14171e;--bg2:#0e1116;--border:rgba(255,255,255,.08);--ink:#eef1f6;--muted:#9aa3b4;--dim:#646c7a;
+    --mono:'SF Mono',ui-monospace,Consolas,monospace;--saffron:#ff9933;--green:#22c55e;--red:#ef4444;--amber:#fbbf24;--india-green:#138808;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(1100px 520px at 50% -10%,rgba(255,153,51,.05),transparent 60%),var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--border);background:rgba(8,10,14,.8);position:sticky;top:0;z-index:10}
+  .brand{font-family:var(--mono);font-weight:800;letter-spacing:.18em;font-size:13px;display:flex;align-items:center;gap:9px}
+  .brand .mark{width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,var(--saffron),var(--india-green))}
+  .brand .w{background:linear-gradient(90deg,var(--saffron),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tabs{display:flex;gap:14px;font-family:var(--mono);font-size:11px;flex-wrap:wrap}
+  .tabs a{color:var(--dim);text-decoration:none}.tabs a.on{color:var(--saffron)}.tabs a:hover{color:var(--ink)}
+  .wrap{max-width:1040px;margin:0 auto;padding:22px 22px 70px}
+  h1{font-size:22px;margin-bottom:3px} .sub{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:14px;line-height:1.6}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin-bottom:14px}
+  .sh{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-bottom:11px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:9px}
+  .tile{background:var(--bg2);border:1px solid var(--border);border-radius:11px;padding:10px 12px;cursor:pointer;transition:border-color .1s}
+  .tile:hover{border-color:var(--saffron)}
+  .tn{font-size:12.5px;color:var(--ink);font-weight:500;display:flex;justify-content:space-between;align-items:baseline}
+  .tn .opt{font-size:10px;color:var(--saffron)}
+  .tv{font-family:var(--mono);font-size:16px;color:var(--ink);margin-top:5px}
+  .tc{font-family:var(--mono);font-size:12px;margin-top:1px}
+  .skel{background:linear-gradient(90deg,var(--bg2),#171b22,var(--bg2));border-radius:10px;animation:sh 1.3s infinite}
+  @keyframes sh{0%{opacity:.5}50%{opacity:1}100%{opacity:.5}}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="brand"><span class="mark"></span><span>MARLE<span class="w">·G</span></span></div>
+  <div class="tabs">
+    <a href="marle_g_pod.html">home</a><a href="marle_g_equity.html">equity</a><a href="marle_g_options.html">options</a>
+    <a href="#" class="on">nifty&nbsp;pod</a><a href="marle_g_intraday.html">intraday</a><a href="marle_g_volume.html">volume</a>
+    <a href="marle_g_sectoral.html">sectoral</a><a href="marle_g_portfolio.html">portfolio</a>
+  </div>
+</div>
+<main class="wrap">
+  <h1>🇮🇳 Nifty Pod</h1>
+  <div class="sub">every index, sector &amp; commodity you can trade — one live board, Groww-native. <b style="color:var(--ink)">broad ⊕</b> → click to options · <b style="color:var(--ink)">sectors / commodities</b> → click to track intraday. sectors tracked via their ETF (the basket you'd actually buy).</div>
+  <div id="meta" class="sub"></div>
+  <div id="board"><div class="card"><div class="skel" style="height:90px"></div></div></div>
+  <div id="pairs"></div>
+  <div class="sub" id="cav" style="margin-top:6px"></div>
+</main>
+<div id="picker" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:50;align-items:center;justify-content:center" onclick="if(event.target===this)closePick()">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 20px;min-width:270px;max-width:90vw">
+    <div id="pickttl" style="font-family:var(--mono);font-size:13px;color:var(--ink);margin-bottom:13px"></div>
+    <div id="picklinks" style="display:flex;flex-direction:column;gap:8px"></div>
+    <div style="text-align:right;margin-top:13px"><span style="font-family:var(--mono);font-size:11px;color:var(--dim);cursor:pointer;padding:5px 12px" onclick="closePick()">cancel ✕</span></div>
+  </div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>(s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const GROUPS={broad:"📊 broad indices",sectors:"🏭 sectors",commodities:"🥇 commodities",global:"🌐 global · pairing"};
+async function load(){
+  try{
+    const r=await (await fetch('/api/index_universe')).json();
+    if(!r.ok){ $('board').innerHTML='<div class="card"><span style="color:var(--dim);font-family:var(--mono);font-size:12px">'+esc(r.error||'unavailable')+'</span></div>'; return; }
+    $('meta').textContent=r.asof+' · '+r.n+' instruments';
+    $('cav').textContent=r.caveat||'';
+    let h='';
+    for(const g in GROUPS){ const rows=(r.groups[g]||[]).slice().sort((a,b)=>(b.chg_pct==null?-99:b.chg_pct)-(a.chg_pct==null?-99:a.chg_pct)); if(!rows.length) continue;
+      h+='<div class="card"><div class="sh">'+GROUPS[g]+'</div><div class="grid">';
+      rows.forEach(x=>{ const up=(x.chg_pct||0)>=0;
+        h+='<div class="tile" onclick="pick(\''+x.symbol+'\','+(x.has_options?'true':'false')+',\''+esc(x.name)+'\')" title="choose where to open"><div class="tn">'+esc(x.name)+(x.has_options?' <span class="opt">⊕ opt</span>':'')+'</div><div class="tv">'+(x.price>=1000?'₹'+Number(x.price).toLocaleString("en-IN"):'₹'+x.price)+'</div><div class="tc" style="color:'+(up?'var(--green)':'var(--red)')+'">'+(up?'+':'')+x.chg_pct+'%'+(x.volume?' <span style="color:var(--dim)">· '+(x.volume>1e6?(x.volume/1e6).toFixed(1)+'M':(x.volume/1e3).toFixed(0)+'k')+'</span>':'')+'</div></div>';
+      });
+      h+='</div></div>';
+    }
+    $('board').innerHTML=h;
+    if(r.pairs && r.pairs.length){
+      let p='<div class="card"><div class="sh">🔗 commodity ↔ nifty · 70-day return correlation (pair / hedge read)</div><div class="grid">';
+      r.pairs.forEach(x=>{ const c=x.corr_nifty, col=c<=-0.15?'var(--green)':(Math.abs(c)<0.15?'var(--amber)':'var(--muted)');
+        p+='<div class="tile" style="cursor:default"><div class="tn">'+esc(x.commodity)+'</div><div class="tv" style="color:'+col+'">'+(c>=0?'+':'')+c+'</div><div class="tc" style="color:var(--muted);font-size:10.5px">'+esc(x.read)+'</div></div>'; });
+      p+='</div></div>';
+      $('pairs').innerHTML=p;
+    }
+  }catch(e){ $('board').innerHTML='<div class="card"><span style="color:var(--red);font-family:var(--mono);font-size:12px">load failed</span></div>'; }
+}
+function pick(sym,opt,name){
+  $('pickttl').textContent='open '+sym+(name?' · '+name:'')+' in…';
+  const L=[];
+  if(opt) L.push(['marle_g_options.html?u='+sym,'⊕ options monitor','strikes, expiries, surface & ranking']);
+  L.push(['marle_g_intraday.html?q='+sym,'⏱ intraday tracker','live vol · RSI · depth · session phase']);
+  L.push(['marle_g_chart.html?u='+sym,'📈 chart','price action, levels & pivots']);
+  L.push(['marle_g_stock.html?u='+sym,'🔬 full analysis','all-sides command page']);
+  $('picklinks').innerHTML=L.map(x=>'<a href="'+x[0]+'" target="_blank" onclick="closePick()" style="text-decoration:none;display:block;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:9px 12px"><div style="font-size:13px;font-weight:500;color:var(--ink)">'+x[1]+'</div><div style="font-family:var(--mono);font-size:10px;color:var(--dim)">'+x[2]+'</div></a>').join('');
+  $('picker').style.display='flex';
+}
+function closePick(){ $('picker').style.display='none'; }
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closePick();});
+load(); setInterval(load, 30000);
+</script>
+<script src="marle_g_nav.js"></script>
+</body>
+</html>

@@ -18,14 +18,16 @@ import sys
 
 def events(tk, period="1y"):
     import marleg_vol as mv
-    import yfinance as yf
+    import marleg_data as md
     import numpy as np
     import datetime as dt
     tk = tk.upper()
-    T = yf.Ticker(mv._yf_symbol(tk))
-    h = T.history(period=period)[["Open", "High", "Low", "Close", "Volume"]].dropna()
-    if len(h) < 30:
+    days = {"6mo": 190, "1y": 380, "2y": 760}.get(period, 380)
+    df = md.candles(tk, 1440, days)          # Groww-only (no yfinance)
+    if df is None or len(df) < 30:
         return {"ok": False, "tk": tk, "error": "short history"}
+    h = df.rename(columns={"open": "Open", "high": "High", "low": "Low", "close": "Close",
+                           "volume": "Volume"})[["Open", "High", "Low", "Close", "Volume"]].dropna()
     idx = h.index
     O, H, L, C, V = h["Open"].values, h["High"].values, h["Low"].values, h["Close"].values, h["Volume"].values
     first = idx[0].date()
@@ -59,29 +61,8 @@ def events(tk, period="1y"):
         if av[i] and V[i] > 2.5 * av[i] and i - lastVS > 4:
             lastVS = i; mult = V[i] / av[i]
             add(idx[i].strftime("%Y-%m-%d"), "vol", f"Volume {mult:.1f}×", f"Volume {mult:.1f}× the 20-day average", "square", "#3b82f6", "belowBar", "V")
-    # dividends / splits
-    try:
-        for d, val in T.dividends.items():
-            if d.date() >= first:
-                add(d.strftime("%Y-%m-%d"), "div", f"Dividend ₹{round(float(val),2)}", f"Ex-dividend ₹{round(float(val),2)}/sh", "circle", "#fbbf24", "aboveBar", "D")
-    except Exception:
-        pass
-    try:
-        for d, val in T.splits.items():
-            if d.date() >= first and val and val != 1:
-                add(d.strftime("%Y-%m-%d"), "split", f"Split {val:g}:1", f"Stock split {val:g}:1", "circle", "#a855f7", "aboveBar", "S")
-    except Exception:
-        pass
-    # earnings (best-effort)
-    try:
-        ed = T.get_earnings_dates(limit=12)
-        if ed is not None and len(ed):
-            for d in ed.index:
-                dd = d.date()
-                if first <= dd <= dt.date.today() + dt.timedelta(days=2):
-                    add(dd.strftime("%Y-%m-%d"), "earn", "Earnings", "Results / earnings date", "circle", "#ff9933", "aboveBar", "E")
-    except Exception:
-        pass
+    # (dividends / splits / earnings dates dropped — those were yfinance-only; Groww has no corporate-action feed.
+    #  Price-derived bubbles below stay. Earnings still show via the F&O-expiry + news panels.)
     # F&O expiries (if it's an F&O name)
     try:
         import marleg_options_monitor as mom
@@ -97,23 +78,11 @@ def events(tk, period="1y"):
         pass
 
     ev.sort(key=lambda x: x["time"])
-    # recent news (the "Latest updates" panel) — honestly RECENT, not dated bubbles
-    news = []
-    try:
-        for n in (T.news or [])[:8]:
-            c = n.get("content") or n
-            title = c.get("title") or n.get("title")
-            pub = (c.get("provider") or {}).get("displayName") or n.get("publisher")
-            link = (c.get("canonicalUrl") or {}).get("url") or n.get("link")
-            when = c.get("pubDate") or n.get("providerPublishTime")
-            if title:
-                news.append({"title": str(title)[:160], "source": pub, "link": link, "when": when})
-    except Exception:
-        pass
+    news = []      # news now comes from the pod's Google-News endpoint (/api/news), not yfinance
 
     return {"ok": True, "tk": tk, "n": len(ev), "events": ev[-40:], "news": news,
-            "note": "Dated event bubbles (earnings/gaps/dividends/splits/52w/volume/expiry) from price + "
-                    "corporate actions; news is recent headlines (yfinance), not historical bubbles."}
+            "note": "Dated event bubbles (gaps / 52-week / volume-spike / F&O-expiry) derived from Groww price "
+                    "history. Recent news is on the options page's news panel (Google News)."}
 
 
 if __name__ == "__main__":

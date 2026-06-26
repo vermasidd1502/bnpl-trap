@@ -1,0 +1,317 @@
+{
+ "as_of_dates": 329,
+ "from": "2021-06-14",
+ "to": "2026-06-12",
+ "results": {
+  "h10": {
+   "sector": {
+    "Automobile and Auto Components": {
+     "n": 983,
+     "mean": 1.261,
+     "hit": 57.3
+    },
+    "Financial Services": {
+     "n": 2146,
+     "mean": 1.641,
+     "hit": 55.8
+    },
+    "Fast Moving Consumer Goods": {
+     "n": 570,
+     "mean": 0.603,
+     "hit": 50.4
+    },
+    "Capital Goods": {
+     "n": 2507,
+     "mean": 1.684,
+     "hit": 54.5
+    },
+    "Media Entertainment & Publication": {
+     "n": 42,
+     "mean": 0.213,
+     "hit": 33.3
+    },
+    "Healthcare": {
+     "n": 1198,
+     "mean": 0.533,
+     "hit": 49.4
+    },
+    "Chemicals": {
+     "n": 539,
+     "mean": 1.483,
+     "hit": 54.0
+    },
+    "Services": {
+     "n": 375,
+     "mean": 1.615,
+     "hit": 55.7
+    },
+    "Oil Gas & Consumable Fuels": {
+     "n": 232,
+     "mean": 0.27,
+     "hit": 49.1
+    },
+    "Power": {
+     "n": 519,
+     "mean": 1.365,
+     "hit": 51.3
+    },
+    "Consumer Services": {
+     "n": 416,
+     "mean": 0.581,
+     "hit": 50.0
+    },
+    "Telecommunication": {
+     "n": 181,
+     "mean": 1.938,
+     "hit": 47.5
+    },
+    "Metals & Mining": {
+     "n": 394,
+     "mean": 0.276,
+     "hit": 52.3
+    },
+    "Diversified": {
+     "n": 39,
+     "mean": -0.934,
+     "hit": 35.9
+    },
+    "Realty": {
+     "n": 430,
+     "mean": 2.373,
+     "hit": 58.1
+    },
+    "Consumer Durables": {
+     "n": 441,
+     "mean": 0.431,
+     "hit": 51.5
+    },
+    "Construction Materials": {
+     "n": 363,
+     "mean": -0.209,
+     "hit": 45.7
+    },
+    "Construction": {
+     "n": 417,
+     "mean": 2.445,
+     "hit": 51.8
+    },
+    "Information Technology": {
+     "n": 634,
+     "mean": 1.937,
+     "hit": 54.6
+    },
+    "Textiles": {
+     "n": 66,
+     "mean": -2.068,
+     "hit": 43.9
+    },
+    "Utilities": {
+     "n": 21,
+     "mean": -4.418,
+     "hit": 23.8
+    }
+   },
+   "liq": {
+    "liquid": {
+     "n": 5053,
+     "mean": 0.954,
+     "hit": 53.2
+    },
+    "illiquid": {
+     "n": 3106,
+     "mean": 1.457,
+     "hit": 52.0
+    },
+    "mid": {
+     "n": 4399,
+     "mean": 1.5,
+     "hit": 53.9
+    }
+   },
+   "vol": {
+    "mid": {
+     "n": 4285,
+     "mean": 1.133,
+     "hit": 53.9
+    },
+    "lo": {
+     "n": 2921,
+     "mean": 0.931,
+     "hit": 55.4
+    },
+    "hi": {
+     "n": 5352,
+     "mean": 1.564,
+     "hit": 51.4
+    }
+   },
+   "indbucket": {
+    "10-40": {
+     "n": 9266,
+     "mean": 1.261,
+     "hit": 52.9
+    },
+    "top10": {
+     "n": 3292,
+     "mean": 1.293,
+     "hit": 53.9
+    }
+   }
+  },
+  "h21": {
+   "sector": {
+    "Automobile and Auto Components": {
+     "n": 983,
+     "mean": 3.097,
+     "hit": 59.3
+    },
+    "Fast Moving Consumer Goods": {
+     "n": 570,
+     "mean": 1.04,
+     "hit": 51.4
+    },
+    "Financial Services": {
+     "n": 2140,
+     "mean": 3.367,
+     "hit": 58.9
+    },
+    "Capital Goods": {
+     "n": 2504,
+     "mean": 4.362,
+     "hit": 60.3
+    },
+    "Media Entertainment & Publication": {
+     "n": 42,
+     "mean": -0.724,
+     "hit": 42.9
+    },
+    "Healthcare": {
+     "n": 1198,
+     "mean": 1.924,
+     "hit": 54.8
+    },
+    "Chemicals": {
+     "n": 538,
+     "mean": 3.205,
+     "hit": 51.3
+    },
+    "Services": {
+     "n": 375,
+     "mean": 4.299,
+     "hit": 65.6
+    },
+    "Power": {
+     "n": 519,
+     "mean": 2.661,
+     "hit": 53.8
+    },
+    "Oil Gas & Consumable Fuels": {
+     "n": 231,
+     "mean": 0.967,
+     "hit": 51.5
+    },
+    "Consumer Services": {
+     "n": 415,
+     "mean": 1.211,
+     "hit": 54.0
+    },
+    "Telecommunication": {
+     "n": 181,
+     "mean": 4.233,
+     "hit": 50.3
+    },
+    "Metals & Mining": {
+     "n": 394,
+     "mean": 0.783,
+     "hit": 52.0
+    },
+    "Diversified": {
+     "n": 39,
+     "mean": -2.046,
+     "hit": 33.3
+    },
+    "Realty": {
+     "n": 430,
+     "mean": 5.46,
+     "hit": 66.0
+    },
+    "Consumer Durables": {
+     "n": 441,
+     "mean": 0.474,
+     "hit": 51.2
+    },
+    "Construction Materials": {
+     "n": 363,
+     "mean": 0.346,
+     "hit": 47.7
+    },
+    "Construction": {
+     "n": 416,
+     "mean": 5.348,
+     "hit": 60.6
+    },
+    "Information Technology": {
+     "n": 634,
+     "mean": 3.088,
+     "hit": 53.5
+    },
+    "Textiles": {
+     "n": 66,
+     "mean": -6.683,
+     "hit": 25.8
+    },
+    "Utilities": {
+     "n": 21,
+     "mean": -4.829,
+     "hit": 23.8
+    }
+   },
+   "liq": {
+    "liquid": {
+     "n": 5046,
+     "mean": 2.44,
+     "hit": 56.2
+    },
+    "illiquid": {
+     "n": 3104,
+     "mean": 3.42,
+     "hit": 55.3
+    },
+    "mid": {
+     "n": 4395,
+     "mean": 3.171,
+     "hit": 57.8
+    }
+   },
+   "vol": {
+    "mid": {
+     "n": 4278,
+     "mean": 2.778,
+     "hit": 57.7
+    },
+    "lo": {
+     "n": 2919,
+     "mean": 2.253,
+     "hit": 58.2
+    },
+    "hi": {
+     "n": 5348,
+     "mean": 3.441,
+     "hit": 54.7
+    }
+   },
+   "indbucket": {
+    "10-40": {
+     "n": 9254,
+     "mean": 2.858,
+     "hit": 56.6
+    },
+    "top10": {
+     "n": 3291,
+     "mean": 3.165,
+     "hit": 56.4
+    }
+   }
+  }
+ }
+}

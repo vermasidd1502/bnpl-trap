@@ -20,10 +20,12 @@ import pandas as pd
 
 
 def _hist(tk, period="6mo"):
-    import marleg_vol as mv
-    import yfinance as yf
-    h = yf.Ticker(mv._yf_symbol(tk.upper())).history(period=period)
-    return h[["Open", "High", "Low", "Close"]].dropna() if len(h) else None
+    import marleg_data as md           # Groww-only
+    days = {"3mo": 95, "6mo": 190, "1y": 380}.get(period, 190)
+    df = md.candles(tk, 1440, days)
+    if df is None or not len(df):
+        return None
+    return df.rename(columns={"open": "Open", "high": "High", "low": "Low", "close": "Close"})[["Open", "High", "Low", "Close"]]
 
 
 def _rounds(spot):
