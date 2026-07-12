@@ -77,6 +77,15 @@ def cached(key, fn, ttl, keep=None):
             _CACHE[key] = (now, val)
     return val
 
+
+def scan_ttl(fast, slow):
+    """Market-hours-aware cache TTL: refresh scans FAST during the NSE session (breakouts surface sooner),
+    SLOW off-hours (save load — nothing's moving). ~09:00–15:45 IST = fast."""
+    import datetime as _dt
+    ist = _dt.datetime.now(_dt.timezone.utc) + _dt.timedelta(hours=5, minutes=30)
+    hm = ist.hour * 60 + ist.minute
+    return fast if (ist.weekday() < 5 and 540 <= hm <= 945) else slow
+
 NAMES = {
  "RELIANCE":"Reliance Industries","HDFCBANK":"HDFC Bank","TCS":"Tata Consultancy","INFY":"Infosys",
  "ICICIBANK":"ICICI Bank","SBIN":"State Bank of India","TMPV":"Tata Motors PV","TMCV":"Tata Motors CV","ITC":"ITC",
@@ -115,6 +124,28 @@ def _live_px(syms, exchange="NSE"):
         except Exception:
             pass
     return out
+
+def _overlay_live_rows(rows, target_key=None, room_key=None, trig_key=None, gap_key=None):
+    """Overlay Groww REAL-TIME price onto warehouse-priced rows (so pods aren't 'stuck days back'
+    on a live session) and recompute the distance-to-target/trigger fields vs the live price.
+    Falls back silently to the cached warehouse price if Groww is unavailable."""
+    rows = rows or []
+    syms = [(r.get("symbol") or r.get("sym") or r.get("tk") or "") for r in rows]
+    px = _live_px(syms)
+    for r in rows:
+        sym = (r.get("symbol") or r.get("sym") or r.get("tk") or "").upper()
+        q = px.get(sym)
+        live = q.get("price") if isinstance(q, dict) else None
+        if not live:
+            continue
+        r["price"] = round(float(live), 2)
+        r["live"] = True
+        if target_key and room_key and r.get(target_key):
+            r[room_key] = round((r[target_key] / live - 1) * 100, 1)
+        if trig_key and gap_key and r.get(trig_key) and r.get(gap_key) is not None:
+            r[gap_key] = round((r[trig_key] / live - 1) * 100, 1)
+    return rows
+
 
 def _rsi(close, n=14):
     d = close.diff(); up = d.clip(lower=0).rolling(n).mean(); dn = (-d.clip(upper=0)).rolling(n).mean()
@@ -395,6 +426,186 @@ def api_gated():
     except Exception:
         return jsonify({"error": f"no {mode} gated screen yet — run: python marleg_gated_scan.py", "picks": []})
 
+@app.route("/api/breakboard")
+def api_breakboard():
+    """Momentum & Reversal board — clean breaks (long setups) / topping (take-profit, don't chase)
+    / coiling (watch the trigger). Warehouse-only, survivorship-free, daily-fresh."""
+    import marleg_breakboard as bb
+    try:
+        limit = max(6, min(30, int(request.args.get("limit") or 16)))
+    except Exception:
+        limit = 16
+    try:
+        board = cached("breakboard_%d" % limit, lambda: bb.board(limit=limit), 900)
+        _overlay_live_rows(board.get("clean"), target_key="target", room_key="target_room")
+        _overlay_live_rows(board.get("topping"))
+        _overlay_live_rows(board.get("coiling"), trig_key="trigger", gap_key="gap_to_trigger")
+        return jsonify(board)
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e),
+                        "clean": [], "topping": [], "coiling": [], "counts": {}})
+
+@app.route("/api/goldmacro")
+def api_goldmacro():
+    """Gold & Dollar macro tile — metals/dollar/rupee/oil/yields + honest India read."""
+    import marleg_goldmacro as gm
+    try:
+        return jsonify(cached("goldmacro", gm.snapshot, 1800))
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e), "series": [], "india_read": []})
+
+@app.route("/api/order_review")
+def api_order_review():
+    """Real-time trade coach — rates live Groww orders + the open book (READ-ONLY). New orders
+    are flagged so the frontend can fire a desktop/Slack alert. Short cache = near-real-time."""
+    import marleg_order_coach as oc
+    try:
+        # UI only displays — the daemon owns 'new order' consumption + the phone push
+        return jsonify(cached("order_review", lambda: oc.coach(mark_seen=False), 15))
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e), "orders": [], "positions": [], "new_count": 0})
+
+@app.route("/api/recommend")
+def api_recommend():
+    """Recommender — conviction-ranked validated setups (buy strength with room, leaders,
+    near-money), excluding what you already hold. The positive counterpart to the order coach."""
+    import marleg_recommender as rc
+    try:
+        limit = max(4, min(15, int(request.args.get("limit") or 8)))
+    except Exception:
+        limit = 8
+    try:
+        rec = cached("recommend_%d" % limit, lambda: rc.recommend(limit=limit), 600)
+        _overlay_live_rows(rec.get("recs"), target_key="target", room_key="upside")
+        return jsonify(rec)
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e), "recs": [], "avoid": []})
+
+@app.route("/api/live_breakouts")
+def api_live_breakouts():
+    """LIVE intraday breakout scan — catches names breaking out RIGHT NOW (e.g. HDFC today) that
+    the EOD-gated option/gated/recommender pods miss until tomorrow's scan."""
+    import marleg_live_breakouts as lb
+    try:
+        return jsonify(cached("live_breakouts", lb.scan, 45))
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e), "breakouts": []})
+
+@app.route("/api/worldlean")
+def api_worldlean():
+    """Validated world tape (US futures + Asia, glitch-filtered) + Groww India VIX → NIFTY open lean,
+    weighted by the backtested US→India link (India follows direction 68%, captures ~28%)."""
+    import marleg_worldlean as wl
+    try:
+        return jsonify(cached("worldlean", wl.lean, 60))
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e), "components": []})
+
+@app.route("/api/optboard/<index>")
+def api_optboard(index):
+    """Index option board — max-pain (pin) + call wall (resistance) + put wall (support) from the LIVE
+    chain, for NIFTY/BANKNIFTY/FINNIFTY + any expiry. The structure behind the expiry-day pin."""
+    import marleg_maxpain as mp
+    exp = request.args.get("expiry")
+    try:
+        return jsonify(cached("optboard_%s_%s" % (index.upper(), exp or "def"), lambda: mp.board(index, exp), 30))
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e), "index": index})
+
+@app.route("/api/optstory/<index>")
+def api_optstory(index):
+    """Option Story Board — mode/mood + forward (put-call parity) + entry/target/stop tickets + straddle
+    verdict per index, from the live chain. Rolls to the next expiry on settlement day."""
+    import marleg_optstory as osy
+    exp = request.args.get("expiry")
+    try:
+        return jsonify(cached("optstory_%s_%s" % (index.upper(), exp or "def"), lambda: osy.story(index, exp), 30))
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e), "index": index})
+
+@app.route("/api/fadefinder/<index>")
+def api_fadefinder(index):
+    """Fade Finder — the validated fade = call wall (90% reversal) + Asian consensus (73% down on
+    risk-off). Returns signal / direction / conviction + a defined-risk bear-put-spread ticket."""
+    import marleg_fadefinder as ff
+    try:
+        return jsonify(cached("fade_%s" % index.upper(), lambda: ff.find(index), 30))
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e), "index": index})
+
+@app.route("/api/fadefinder")
+def api_fadefinder_all():
+    import marleg_fadefinder as ff
+    def build():
+        rows = ff.all_indices()
+        asia = next((r.get("asia") for r in rows if r.get("asia")), None)
+        return {"ok": True, "asia": asia, "indices": rows}
+    try:
+        return jsonify(cached("fade_all", build, 45))
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)})
+
+@app.route("/api/kalman/<symbol>")
+def api_kalman(symbol):
+    """Kalman-filter state — latent level+trend, mean-reversion vs momentum, prediction band, and a
+    macro strip (oil/Asia/VIX) that tilts the read. Returns candles+overlays for a stream-once chart."""
+    import marleg_kalman as kf, marleg_snapcache as sc
+    pd = request.args.get("days", default=180, type=int)
+    sym = symbol.upper()
+    try:
+        return jsonify(sc.swr("kalman_%s_%d" % (sym, pd), lambda: kf.read(sym, pd), 120))
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e), "symbol": symbol})
+
+@app.route("/api/consensus/<symbol>")
+def api_consensus(symbol):
+    """Action layer — CALL / PUT / CHEAP STRADDLE / STAND-ASIDE from Kalman + option book, plus the
+    option-implied expected weekly range + cone. Includes candles+overlays for the stream-once chart."""
+    import marleg_consensus as mc, marleg_snapcache as sc
+    sym = symbol.upper()
+    try:
+        return jsonify(sc.swr("consensus_%s" % sym, lambda: mc.consensus(sym), 180))
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e), "symbol": symbol})
+
+@app.route("/api/optdesk/<symbol>")
+def api_optdesk(symbol):
+    """Composite Option Desk — one payload for any stock/index: walls + Kalman + consensus + gate +
+    context-aware macro/relevance panel + the GIFT-proxy meter. Degrades gracefully if the chain is down."""
+    import marleg_optdesk as od, marleg_snapcache as sc
+    sym = symbol.upper()
+    try:
+        return jsonify(sc.swr("optdesk_%s" % sym, lambda: od.desk(sym), 240))
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e), "symbol": symbol})
+
+@app.route("/api/asialead")
+def api_asialead():
+    """PRE-OPEN Asian-lead tracker — the markets that trade before NSE and that NIFTY follows most
+    (STI/KOSPI/Taiwan/Nikkei/HangSeng) → weighted consensus + NIFTY-FOLLOWS-DOWN probability for the 9:15
+    open + macro strip + the FII-channel explainer. yfinance-only (index levels; no foreign order-book feed).
+    snapcache SWR 300s — instant after first compute, survives restarts."""
+    import marleg_asialead as al, marleg_snapcache as sc
+    try:
+        return jsonify(sc.swr("asialead", al.read, 300))
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)})
+
+@app.route("/api/indexcompare")
+def api_indexcompare():
+    """Multi-index OVERLAY — Asian leaders + NIFTY rebased to 100 on one timeline, so you can SEE whether NIFTY
+    follows the Asian trend. Reports same-day / next-day follow-correlation + co-direction % for the window.
+    yfinance daily closes; snapcache SWR 900s per window. ?window=1mo|3mo|6mo|1y|2y."""
+    from flask import request
+    import marleg_indexcompare as ic, marleg_snapcache as sc
+    win = (request.args.get("window") or "6mo").lower()
+    if win not in ("1mo", "3mo", "6mo", "1y", "2y"):
+        win = "6mo"
+    try:
+        return jsonify(sc.swr("indexcompare_%s" % win, lambda: ic.compare(win), 900))
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)})
+
 @app.route("/api/industry_rs")
 def api_industry_rs():
     """Granular industry relative-strength / breadth — leading->lagging rotation (heatmap).
@@ -416,7 +627,7 @@ def api_warroom():
     """The WAR ROOM payload — regime + leading sectors + strict news-clean watchlist with per-name
     setup / holding-period / entry-exit plan + risk-per-share. Pure cache assembly (fast)."""
     import marleg_warroom
-    return jsonify(cached("warroom", lambda: marleg_warroom.build(), 60))
+    return jsonify(cached("warroom", lambda: marleg_warroom.build(), scan_ttl(30, 300)))
 
 
 @app.route("/api/warroom/config", methods=["GET", "POST"])
@@ -451,7 +662,7 @@ def api_news_bt():
 def api_movers():
     """High-mover / squeeze radar — move-potential (the 3-8%/day amplitude filter) + abnormal-up + F&O short-covering."""
     import marleg_movers
-    return jsonify(cached("movers", lambda: marleg_movers.build(), 120))
+    return jsonify(cached("movers", lambda: marleg_movers.build(), scan_ttl(45, 300)))
 
 
 @app.route("/api/vix")
@@ -964,6 +1175,34 @@ def api_orders():    return _broker(lambda g: g.orders_data(),    "groww:orders"
 @app.route("/api/margin")
 def api_margin():    return _broker(lambda g: g.margin_data(),    "groww:margin",    15)
 
+def _live_book():
+    """(positions, holdings) lists from the live Groww book, read-only. ([],None) if unavailable."""
+    g = groww()
+    if g is None:
+        return [], None
+    try:
+        pd = g.positions_data() or {}
+        hd = g.holdings_data() or {}
+        pos = pd.get("positions", []) if isinstance(pd, dict) else (pd or [])
+        hol = hd.get("holdings", []) if isinstance(hd, dict) else (hd or [])
+        return pos, hol
+    except Exception:
+        return [], None
+
+@app.route("/api/mistake_audit")
+def api_mistake_audit():
+    """TRADING MISTAKE AUDIT on the real Groww fills: overtrading / buying-calls / win-rate / open-risk + ₹ cost
+    + a 0-100 discipline score + daily history. Read-only. Cached 30s."""
+    import marleg_mistake_audit as ma
+    return jsonify(cached("mistake_audit", lambda: ma.audit(*_live_book()), 30, keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/pa")
+def api_pa():
+    """The PERSONAL ASSISTANT brief: DANGER (mistakes/flows/regime) + PROSPECT (1-2 aligned names) + the honest
+    NET stance & one action. Messenger over the engines, leads with danger. Cached 60s."""
+    import marleg_pa as pa
+    return jsonify(cached("pa_brief", lambda: pa.brief(*_live_book()), 60, keep=lambda v: bool(v.get("ok"))))
+
 @app.route("/api/order", methods=["POST"])
 def api_order():
     g = groww()
@@ -1405,8 +1644,18 @@ def api_cockpit(sym):
     risk = request.args.get("risk", default=1.0, type=float)
     prof = (request.args.get("profile") or "normal").lower()
     key = f"cockpit:{sym.upper()}:{side}:{entry}:{cap}:{risk}:{prof}"
-    return jsonify(cached(key, lambda: cp.cockpit(sym.upper(), side, entry, cap, risk, profile=prof), 12,
-                          keep=lambda v: bool(v.get("ok"))))
+    res = cached(key, lambda: cp.cockpit(sym.upper(), side, entry, cap, risk, profile=prof), 12,
+                 keep=lambda v: bool(v.get("ok")))
+    # 🧼 HYGIENE GATE (dept #1) — flag a corporate-action GHOST at the decision point (per-symbol, cached 1h)
+    if isinstance(res, dict) and res.get("ok"):
+        try:
+            import marleg_hygiene as hy
+            h = cached("hygiene:%s" % sym.upper(), lambda: hy.check(sym.upper()), 3600, keep=lambda v: bool(v.get("ok")))
+            if h and h.get("ok") and h.get("artifact"):
+                res = dict(res); res["hygiene"] = {"artifact": True, "verdict": h.get("verdict"), "flag": h.get("flag")}
+        except Exception:
+            pass
+    return jsonify(res)
 
 @app.route("/api/index_universe")
 def api_index_universe():
@@ -1582,9 +1831,24 @@ def api_target_board():
 
 @app.route("/api/target/<tk>")
 def api_target(tk):
-    """The four numbers + status for one stock."""
+    """The four numbers + status for one stock (now incl. the realistic target ladder + reality verdict)."""
     import marleg_target as tg
     return jsonify(cached("target:" + tk.upper(), lambda: tg.target(tk), 600))
+
+@app.route("/api/target_ladder/<tk>")
+def api_target_ladder(tk):
+    """Realistic target ladder: structural highs (20/50/100/252d) with the stock's OWN historical hit-rate."""
+    import marleg_target as tg
+    px = request.args.get("price", type=float); h = request.args.get("h", default=40, type=int)
+    return jsonify(cached("tgtladder:%s:%s:%s" % (tk.upper(), px, h), lambda: tg.ladder(tk, price=px, horizon=h), 600))
+
+@app.route("/api/target_gate/<tk>")
+def api_target_gate(tk):
+    """Firm reality-gate: REALISTIC/STRETCH/ASTRONOMICAL/FANTASY for a proposed target (?pct= or ?price=)."""
+    import marleg_target as tg
+    return jsonify(tg.gate(tk, target_pct=request.args.get("pct", type=float),
+                           target_price=request.args.get("price", type=float),
+                           horizon=request.args.get("h", default=40, type=int)))
 
 @app.route("/api/watch")
 def api_watch():
@@ -1726,10 +1990,27 @@ def api_userlists_edit(action):
 
 @app.route("/api/notify/feed")
 def api_notify_feed():
-    """Conviction-scored alert feed (hard-exits + movers, watchlist vs missed-the-boat). Cached 45s."""
+    """Conviction-scored alert feed (hard-exits + movers, watchlist vs missed-the-boat). Cached 45s.
+    Each scan also RECORDS new alerts to the timestamped notification log (marleg_notify_log)."""
     import marleg_notify_engine as ne
     top = request.args.get("top", default=40, type=int)
-    return jsonify(cached(f"notifyfeed:{top}", lambda: ne.scan(top=top), 45, keep=lambda v: bool(v.get("ok"))))
+    def _feed():
+        r = ne.scan(top=top)
+        try:
+            import marleg_notify_log as nl
+            nl.record(r.get("alerts", []))
+        except Exception:
+            pass
+        return r
+    return jsonify(cached(f"notifyfeed:{top}", _feed, 45, keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/notify/log")
+def api_notify_log():
+    """The timestamped notification HISTORY (the alerts tab). ?day=YYYY-MM-DD ?tier=HIGH ?kind= ?limit="""
+    import marleg_notify_log as nl
+    a = request.args
+    return jsonify(nl.history(limit=a.get("limit", default=300, type=int), day=a.get("day"),
+                              tier=a.get("tier"), kind=a.get("kind")))
 
 @app.route("/api/ticket/<sym>")
 def api_ticket(sym):
@@ -1740,6 +2021,164 @@ def api_ticket(sym):
     return jsonify(cached(f"ticket:{sym.upper()}:{cap}:{rp}", lambda: tk.suggest(sym.upper(), cap, rp), 45,
                           keep=lambda v: bool(v.get("ok"))))
 
+@app.route("/api/accumulation/<sym>")
+def api_accumulation(sym):
+    """Is the buying REAL holders or hollow churn? delivery% + U/D-vol + OBV + price×vol + FII/DII → 0-100. 30min."""
+    import marleg_accumulation as ac
+    return jsonify(cached("accum:" + sym.upper(), lambda: ac.score(sym.upper()), 1800,
+                          keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/coherence/<sym>")
+def api_coherence(sym):
+    """Is THIS trade sound — vehicle (option vs underlying) + regime-conditional expiry + trend. 10min."""
+    import marleg_coherence as co
+    return jsonify(cached("coher:" + sym.upper(), lambda: co.check(sym.upper()), 600,
+                          keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/position_decision/<sym>")
+def api_position_decision(sym):
+    """Losing trade? STAY / EXIT / ADD via 2 mechanisms (statistical recovery odds + thesis integrity). ?entry=. 10min."""
+    import marleg_position_decision as pdc
+    entry = request.args.get("entry", type=float)
+    return jsonify(cached(f"posdec:{sym.upper()}:{entry}", lambda: pdc.decide(sym.upper(), entry), 600,
+                          keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/reversion")
+def api_reversion():
+    """Intra-cycle recovery / martingale study: does a dip recover to start by expiry? (cached file)."""
+    import marleg_reversion as rv
+    def do():
+        try:
+            return json.load(open(rv.OUT, encoding="utf-8"))
+        except Exception:
+            return rv.run()
+    return jsonify(cached("reversion", do, 86400))
+
+@app.route("/api/behavior/<sym>")
+def api_behavior(sym):
+    """Per-stock DNA: mean-reverter / trender / random-walk (Hurst + autocorr + variance-ratio). 24h."""
+    import marleg_behavior as bh
+    return jsonify(cached("behav:" + sym.upper(), lambda: bh.classify(sym.upper()), 86400,
+                          keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/tags/<sym>")
+def api_tags(sym):
+    """Social-media #hashtags distilling every engine (#grey-swan, #falling-knife, #trender, …). 30min."""
+    import marleg_tags as tg
+    return jsonify(cached("tags:" + sym.upper(), lambda: tg.tags(sym.upper()), 1800,
+                          keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/reversion_horizon")
+def api_reversion_horizon():
+    """Reversion TERM STRUCTURE: return autocorr by horizon (short=revert · ~10d=momentum · 40d+=revert). 6h."""
+    import marleg_reversion as rv
+    def do():
+        try:
+            return json.load(open(os.path.join(HERE, "marleg_reversion_horizon.json"), encoding="utf-8"))
+        except Exception:
+            return rv.horizons()
+    return jsonify(cached("rev_horizon", do, 21600))
+
+@app.route("/api/tradeplan/<sym>")
+def api_tradeplan(sym):
+    """Staged trade plan (DNA-matched tranche ladder + stop + targets + read-only Groww script). ?capital ?risk ?side."""
+    import marleg_tradeplan as tp
+    cap = request.args.get("capital", default=100000.0, type=float)
+    rp = request.args.get("risk", default=2.0, type=float)
+    side = request.args.get("side", default="LONG")
+    return jsonify(cached(f"tplan:{sym.upper()}:{cap}:{rp}:{side}", lambda: tp.plan(sym.upper(), cap, rp, side), 60,
+                          keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/tradeplan/paper")
+def api_tradeplan_paper():
+    """The strategy PAPER book — live-marked + next action per position (read-only)."""
+    import marleg_tradeplan as tp
+    return jsonify(tp.paper_book())
+
+@app.route("/api/tradeplan/paper/open")
+def api_tradeplan_paper_open():
+    """PAPER-open a staged plan for a stock. ?symbol= &capital= &risk= &side=. Read-only on the real account."""
+    import marleg_tradeplan as tp
+    sym = (request.args.get("symbol") or "").upper()
+    cap = request.args.get("capital", default=100000.0, type=float)
+    rp = request.args.get("risk", default=2.0, type=float)
+    side = request.args.get("side", default="LONG")
+    r = tp.paper_open(sym, cap, rp, side)
+    _CACHE.pop("tradeplan:paper", None)
+    return jsonify(r)
+
+@app.route("/api/tradeplan/paper/close")
+def api_tradeplan_paper_close():
+    import marleg_tradeplan as tp
+    return jsonify(tp.paper_close(request.args.get("id")))
+
+@app.route("/api/montecarlo/<sym>")
+def api_montecarlo(sym):
+    """Monte-Carlo scenario fan over the horizon: cone + success path + levels + day-of-week tilt. ?horizon= ?daybias=."""
+    import marleg_montecarlo as mc
+    hz = request.args.get("horizon", default=10, type=int)
+    db = (request.args.get("daybias", default="0") in ("1", "true", "yes"))
+    return jsonify(cached(f"mc:{sym.upper()}:{hz}:{db}", lambda: mc.simulate(sym.upper(), horizon=hz, use_day_bias=db), 120,
+                          keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/macro_overlay")
+def api_macro_overlay():
+    """Macro 'weather' strip: named regimes (oil/Fed/geopolitics/election/…) × significance prior × LIVE direction."""
+    import marleg_macro_overlay as mo
+    return jsonify(cached("macro_overlay", lambda: mo.overlay(), 1200, keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/fragility")
+def api_fragility():
+    """Black-swan CONDITIONS gauge — powder-keg score + regime (CALM/RECOVERING/FRAGILE/STRESS/SHOCK). 15min."""
+    import marleg_fragility as fr
+    return jsonify(cached("fragility", lambda: fr.gauge(), 900, keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/macro_industry")
+def api_macro_industry():
+    """Macro → INDUSTRY catalysts: each macro theme's sector winners/losers + live RS confirmation. 15min."""
+    import marleg_macro_industry as mi
+    return jsonify(cached("macro_industry", lambda: mi.catalysts(), 900, keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/trend/<sym>")
+def api_trend(sym):
+    """Honest predictive trendline: regression line + a narrow P(up) tilt, gated by behavior DNA. 10min."""
+    import marleg_trend as tr
+    hz = request.args.get("horizon", default=10, type=int)
+    return jsonify(cached(f"trend:{sym.upper()}:{hz}", lambda: tr.project(sym.upper(), hz), 600, keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/predictor/<sym>")
+def api_predictor(sym):
+    """Dense predictor: trend tilt × conviction → readable/loud verdict for the universal 🔮 widget. 5min."""
+    import marleg_predictor as pr
+    return jsonify(cached("predictor:" + sym.upper(), lambda: pr.read(sym.upper()), 300, keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/turnaround")
+def api_turnaround():
+    """Fallen-angel screen: names far below their 5y peak — turnaround (recovering) vs value-trap (knife) + outlook."""
+    import marleg_turnaround as ta
+    return jsonify(cached("turnaround", lambda: ta.screen(), 1800, keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/turnaround/<sym>")
+def api_turnaround_sym(sym):
+    """Per-stock turnaround dossier: drawdown · recovery stage · R&D/reinvestment · accumulation · next-year outlook."""
+    import marleg_turnaround as ta
+    return jsonify(cached("turnaround:" + sym.upper(), lambda: ta.analyze(sym.upper()), 1800, keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/coverage")
+def api_coverage():
+    """Consolidated radar: every universe name × sector/industry × on/off-radar + coverage gap. 10min."""
+    import marleg_coverage as cov
+    sector = request.args.get("sector"); radar = request.args.get("radar")
+    lim = request.args.get("limit", type=int)
+    return jsonify(cached(f"coverage:{sector}:{radar}:{lim}", lambda: cov.consolidated(sector, radar, lim or 400), 600))
+
+@app.route("/api/miss/<sym>")
+def api_miss(sym):
+    """Classify a miss: OFF_RADAR / GREY_SWAN / GATE_BLIND / BLACK_SWAN. ?move= optional."""
+    import marleg_coverage as cov
+    mv_ = request.args.get("move", type=float)
+    return jsonify(cov.classify_miss(sym.upper(), mv_))
+
 @app.route("/api/option_levels/<sym>")
 def api_option_levels(sym):
     """Sell-at-top / buy-at-support signal for a held option: triggers off the UNDERLYING's resistance/support
@@ -1748,6 +2187,149 @@ def api_option_levels(sym):
     prem = request.args.get("premium", type=float)
     return jsonify(cached(f"optlevels:{sym.upper()}:{prem}", lambda: ol.signal(sym.upper(), prem), 60,
                           keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/etf/allocate")
+def api_etf_allocate():
+    """ETF portfolio allocation for a defined-horizon buy-and-hold goal: (amount, years, risk) → bucket weights + ETF picks."""
+    import marleg_etf as etf
+    a = request.args
+    return jsonify(etf.allocate(amount=a.get("amount", default=1000000, type=float),
+                                years=a.get("years", default=3.5, type=float),
+                                risk=a.get("risk", default=50, type=float)))
+
+
+@app.route("/api/etf/universe")
+def api_etf_universe():
+    """The curated ETF universe by bucket."""
+    import marleg_etf as etf
+    return jsonify(etf.universe())
+
+
+@app.route("/api/etf/sectoral")
+def api_etf_sectoral():
+    """💠 Sector-ETF tilt ranked by the pod's VALIDATED factors (momentum + low-vol + near-high). Cached 6h."""
+    import marleg_etf as etf
+    return jsonify(cached("etf_sectoral", etf.sectoral, 21600, keep=lambda v: bool(v.get("ok"))))
+
+
+@app.route("/api/etf/scan")
+def api_etf_scan():
+    """Full ETF scanner — rate every liquid ETF (return/vol/Sharpe/beta/liquidity → 0-100 + grade). Cached 1h."""
+    import marleg_etf_scanner as es
+    return jsonify(cached("etf_scan", es.scan, 3600, keep=lambda v: bool(v.get("ok"))))
+
+
+@app.route("/api/etf/portfolio", methods=["POST"])
+def api_etf_portfolio():
+    """Rate a CUSTOM ETF combo: Sharpe/beta/maxDD + correlation → FAVOURABLE/MIXED/UNFAVOURABLE + evidence."""
+    import marleg_etf_scanner as es
+    d = request.get_json(force=True, silent=True) or {}
+    return jsonify(es.portfolio(d.get("holdings", []), rf=float(d.get("rf", 0.065))))
+
+
+@app.route("/api/etf/committee", methods=["POST"])
+def api_etf_committee():
+    """The FIRM's officers review the ETF combo (risk / CIO / devil's-advocate / suitability) → APPROVE/REVISE/REJECT + dissents. Conservative 'parent' profile by default."""
+    import marleg_etf_scanner as es
+    d = request.get_json(force=True, silent=True) or {}
+    return jsonify(es.committee(d.get("holdings", []), profile=d.get("profile", "parent"), has_physical_gold=bool(d.get("has_physical_gold", False))))
+
+
+@app.route("/api/allocate/plan", methods=["POST"])
+def api_allocate_plan():
+    """Utility-based allocation: assess A from revealed holdings (willingness) + horizon/wealth/income (capacity),
+    take the more conservative, then maximise U=E(r)-½Aσ² → FD-vs-invest split + large-core equity sleeve + frontier."""
+    import marleg_allocator as al
+    d = request.get_json(force=True, silent=True) or {}
+    try:
+        return jsonify(al.recommend(float(d.get("capital", 0)), float(d.get("equity_now", 0)), float(d.get("gold", 0)),
+                                    float(d.get("years", 5)), annual_income=float(d.get("annual_income", 0))))
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)})
+
+
+@app.route("/api/allocate/save-profile", methods=["POST"])
+def api_allocate_save():
+    """Persist a named profile (dad's holdings/income/horizon) to disk → a constant, reusable profile."""
+    import marleg_allocator as al
+    d = request.get_json(force=True, silent=True) or {}
+    return jsonify(al.save_profile(d.get("name", "dad"), d.get("data", {})))
+
+
+@app.route("/api/allocate/profile")
+def api_allocate_profile():
+    """Load a saved profile by name (or list all names)."""
+    import marleg_allocator as al
+    return jsonify(al.load_profile(request.args.get("name")))
+
+
+@app.route("/api/etf/choices")
+def api_etf_choices():
+    """For each allocation sleeve, competing fund-house ETFs on the same index ranked by reliability (liquidity + tracking + history). Cached 1h."""
+    import marleg_etf_choices as ec
+    blk = request.args.get("block")
+    if blk:
+        return jsonify(ec.resolve(blk))
+    return jsonify(cached("etf_choices", ec.resolve, 3600, keep=lambda v: bool(v.get("ok"))))
+
+
+@app.route("/api/metals/spot")
+def api_metals_spot():
+    """Live gold/silver → ₹/gram (intl spot × USDINR × India duty factor) so metals can be entered in grams. Cached 15m."""
+    import marleg_metals as mt
+    return jsonify(mt.spot(force=request.args.get("force") == "1"))
+
+
+@app.route("/api/ipo/list")
+def api_ipo_list():
+    """Live NSE IPO desk (current + upcoming) with QIB-vs-retail smart-money read + APPLY/SKIP verdict. Cached 20m."""
+    import marleg_ipo as ipo
+    return jsonify(ipo.desk(force=request.args.get("force") == "1"))
+
+
+@app.route("/api/etf/metrics")
+def api_etf_metrics():
+    """ETF portfolio risk metrics (Sharpe/beta/CAPM/alpha/maxDD) + horizon P&L projection (lognormal p10-p90). Cached 30m."""
+    import marleg_etf as etf
+    a = request.args
+    amount = a.get("amount", default=1000000, type=float); years = a.get("years", default=3.0, type=float); risk = a.get("risk", default=50, type=float)
+    def do():
+        alloc = etf.allocate(amount=amount, years=years, risk=risk)
+        syms = set(r["pick"]["s"] for r in alloc["rows"]); syms.add("NIFTYBEES")
+        closes = {}
+        for s in syms:
+            try:
+                df = _hist(s, "5y")
+                if df is not None and len(df) > 60:
+                    closes[s] = [float(x) for x in df["Close"].dropna().tolist()]
+            except Exception:
+                pass
+        return {"ok": True, "allocation": alloc, "metrics": etf.metrics(closes, alloc["rows"], years=years, amount=amount)}
+    return jsonify(cached(f"etfmetrics:{int(amount)}:{years}:{int(risk)}", do, 1800, keep=lambda v: bool(v.get("ok"))))
+
+
+@app.route("/api/vehicle_pnl/<sym>")
+def api_vehicle_pnl(sym):
+    """Vehicle P&L × probability (option premium / MTF leverage / underlying) from the MC terminal distribution:
+    P(profit), expected P&L, p5–p95 P&L RANGE, breakeven, max loss, R:R, payoff table. ?vehicle= &premium= &leverage= ..."""
+    import marleg_montecarlo as mc
+    a = request.args
+    return jsonify(mc.pnl_outcomes(sym.upper(), side=a.get("side", "LONG"),
+        horizon=a.get("horizon", default=10, type=int), vehicle=a.get("vehicle", "underlying"),
+        entry=a.get("entry", type=float), capital=a.get("capital", default=100000, type=float),
+        opt_type=a.get("opt_type", "CE"), strike=a.get("strike", type=float),
+        premium=a.get("premium", type=float), lot=a.get("lot", default=1, type=int),
+        leverage=a.get("leverage", default=4, type=float)))
+
+
+@app.route("/api/expiry_rank/<sym>")
+def api_expiry_rank(sym):
+    """LOAD-CHAIN: rank the next monthly expiries for a buyer — scope out the worst (near/theta-cliff),
+    suggest the BEST dated expiry with a fair-premium RANGE. Cached 300s."""
+    import marleg_theta_surface as ts
+    return jsonify(cached(f"exprank:{sym.upper()}", lambda: ts.rank_expiries(sym.upper()), 300,
+                          keep=lambda v: bool(v.get("ok"))))
+
 
 @app.route("/api/theta_surface/<sym>")
 def api_theta_surface(sym):
@@ -2304,6 +2886,392 @@ def api_patterns_scan():
         except Exception:
             return {"error": "no pattern scan yet — run: python marleg_pattern_scan.py", "groups": []}
     return jsonify(cached("patterns_scan", do, 600))
+
+@app.route("/api/discipline/<sym>")
+def api_discipline(sym):
+    """Trade Conscience: vehicle (underlying vs call) + Carver/half-Kelly size + ATR stop + leak flags.
+    ?conviction= ?capital= ?side= ?entry= ?target= ?risk= ?iv= ?dte= ?horizon=. Cached 30s."""
+    import marleg_discipline as dsc
+    a = request.args
+    key = f"disc:{sym.upper()}:{a.get('conviction','70')}:{a.get('capital','100000')}:{a.get('side','LONG')}:{a.get('iv','')}:{a.get('dte','')}:{a.get('target','')}"
+    def do():
+        return dsc.evaluate(sym.upper(), conviction=a.get("conviction", default=70, type=float),
+                            capital=a.get("capital", default=100000.0, type=float), side=a.get("side", "LONG"),
+                            entry=a.get("entry", type=float), target=a.get("target", type=float),
+                            risk_pct=a.get("risk", default=2.0, type=float),
+                            horizon_days=a.get("horizon", default=10, type=int),
+                            iv=a.get("iv", type=float), dte=a.get("dte", type=float))
+    return jsonify(cached(key, do, 30, keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/discipline/track")
+def api_discipline_track():
+    import marleg_discipline as dsc
+    return jsonify(dsc.track_record())
+
+@app.route("/api/alpha_book")
+def api_alpha_book():
+    """The combined-score ranked long book (CIO). HONEST: the naive composite ≈ short-mom alone (not yet a
+    validated edge) — surfaced for transparency, not as a trade list. ?top=. Cached 30min."""
+    import marleg_alpha as al
+    return jsonify(cached("alphabook:" + str(request.args.get("top", 25)),
+                          lambda: al.book(top=request.args.get("top", default=25, type=int)), 1800,
+                          keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/fo_chain/<sym>")
+def api_fo_chain(sym):
+    """Historical option chain from the free NSE F&O warehouse (real premiums/OI). ?date= ?expiry=."""
+    import marleg_fo_bhavcopy as fo
+    def do():
+        try:
+            df = fo.chain(sym.upper(), date=request.args.get("date"), expiry=request.args.get("expiry"))
+            return {"ok": True, "sym": sym.upper(), "n": len(df), "rows": df.head(400).to_dict("records")}
+        except Exception as e:
+            return {"ok": False, "error": str(e)[:120]}
+    return jsonify(cached(f"fochain:{sym.upper()}:{request.args.get('date','')}:{request.args.get('expiry','')}", do, 300))
+
+@app.route("/api/analogs/<sym>")
+def api_analogs(sym):
+    """Stage 5: 'when did THIS setup happen before?' — K nearest historical setups + forward distribution
+    + dispersion (the confidence). High stdev = analogs disagree = the 'not seen before' case. Cached 30min."""
+    import marleg_analogs as an
+    return jsonify(cached("analogs:" + sym.upper(), lambda: an.analogs(sym.upper()), 1800,
+                          keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/signalcard/<sym>")
+def api_signalcard(sym):
+    """THE SIGNAL CARD (assembly): 5-stage decision — plausibility · litmus(dir/conf/anomaly) · vehicle ·
+    size/stop(scorer) · analogs. Wires analogs+discipline. ?capital= ?risk= ?horizon=. Cached 10min."""
+    import marleg_signalcard as scd
+    a = request.args
+    key = f"sigcard:{sym.upper()}:{a.get('capital','200000')}:{a.get('horizon','10')}"
+    return jsonify(cached(key, lambda: scd.card(sym.upper(), capital=a.get("capital", default=200000.0, type=float),
+                          risk_pct=a.get("risk", default=2.0, type=float),
+                          horizon_days=a.get("horizon", default=10, type=int)), 600,
+                          keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/journal")
+def api_journal():
+    """The CFO track record — decisions + outcomes + by-verdict grading + discipline scorecard. Cached 30s."""
+    import marleg_journal as jn
+    return jsonify(cached("journal", jn.stats, 30, keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/journal/log")
+def api_journal_log():
+    """Log a decision. ?sym=&verdict=&side=&vehicle=&conviction=&entry=&size=&stop=&target=&leaks=(||-sep)&followed=&note="""
+    import marleg_journal as jn
+    a = request.args
+    leaks = [x for x in a.get("leaks", "").split("||") if x.strip()]
+    r = jn.log({"sym": a.get("sym"), "verdict": a.get("verdict"), "side": a.get("side", "LONG"),
+                "vehicle": a.get("vehicle", ""), "conviction": a.get("conviction"), "entry": a.get("entry"),
+                "size": a.get("size"), "stop": a.get("stop"), "target": a.get("target"), "leaks": leaks,
+                "followed": a.get("followed", "1") not in ("0", "false", "no"), "note": a.get("note", "")})
+    try:
+        _CACHE.pop("journal", None)
+    except Exception:
+        pass
+    return jsonify(r)
+
+@app.route("/api/journal/close")
+def api_journal_close():
+    """Close a logged decision. ?id=&exit=(blank=mark to live)&note="""
+    import marleg_journal as jn
+    a = request.args
+    r = jn.close(a.get("id", type=int), a.get("exit"), a.get("note", ""))
+    try:
+        _CACHE.pop("journal", None)
+    except Exception:
+        pass
+    return jsonify(r)
+
+@app.route("/api/firm/<sym>")
+def api_firm(sym):
+    """THE FIRM (Investment Committee): analysts (separate desks) → CIO (family-aware house view) →
+    Risk Manager (Conscience gates) → CFO (journal record) → decision. ?capital= ?risk= ?horizon=. Cached 60s."""
+    import marleg_firm as fm
+    a = request.args
+    key = f"firm:{sym.upper()}:{a.get('capital','200000')}:{a.get('horizon','10')}"
+    return jsonify(cached(key, lambda: fm.committee(sym.upper(), capital=a.get("capital", default=200000.0, type=float),
+                          risk_pct=a.get("risk", default=2.0, type=float),
+                          horizon_days=a.get("horizon", default=10, type=int)), 60, keep=lambda v: bool(v.get("ok"))))
+
+def _bust_notify():
+    try:
+        with _LOCK:
+            for k in [k for k in _CACHE if k.startswith("notifyfeed")]:
+                _CACHE.pop(k, None)
+    except Exception:
+        pass
+
+@app.route("/api/firm/desk")
+def api_firm_desk():
+    """GET (no sym) → list active desk decisions. With ?sym=&verdict=&conviction=&side=&note= → SEND a committee
+    decision to the desk; it then surfaces as a first-class alert in the 🔔 notify feed (HIGH conviction sounds)."""
+    import marleg_firm as fm
+    a = request.args
+    if a.get("sym"):
+        r = fm.send_to_desk(a.get("sym"), a.get("verdict", "?"), a.get("conviction"), a.get("side", "LONG"), a.get("note", ""))
+        _bust_notify()
+        return jsonify(r)
+    return jsonify({"ok": True, "desk": fm.desk()})
+
+@app.route("/api/firm/desk/clear")
+def api_firm_desk_clear():
+    """Clear a desk decision once acted/stale. ?id="""
+    import marleg_firm as fm
+    r = fm.clear_desk(request.args.get("id", type=int))
+    _bust_notify()
+    return jsonify(r)
+
+@app.route("/api/firm/funnel")
+def api_firm_funnel():
+    """The committee FUNNEL: gated pool → analyst-approved → CIO-confirmed → risk-cleared → committee GO.
+    ?source=gated ?max= ?capital= ?risk= ?horizon=. Cached 10min (the gated pool is daily)."""
+    import marleg_firm as fm
+    a = request.args
+    key = f"firmfunnel:{a.get('source','gated')}:{a.get('max','60')}:{a.get('capital','200000')}:{a.get('horizon','10')}"
+    return jsonify(cached(key, lambda: fm.funnel(source=a.get("source", "gated"), max_pool=a.get("max", default=60, type=int),
+                          capital=a.get("capital", default=200000.0, type=float), risk_pct=a.get("risk", default=2.0, type=float),
+                          horizon_days=a.get("horizon", default=10, type=int)), 600, keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/setup/<sym>")
+def api_setup(sym):
+    """Trade SETUP for one name: the classified case (momentum ↑/↓ · reversal ↓→↑ / ↑→↓) + entry/target/stop
+    LINES + daily swing levels + intraday pivots (entry timing). Built on validated levels only. Cached 60s."""
+    import marleg_setups as ms
+    return jsonify(cached("setup:%s" % sym.upper(), lambda: ms.setup(sym.upper()), 60, keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/setups/watch")
+def api_setups_watch():
+    """The setups WATCHLIST — gated pool scanned (fast, warehouse) → names AT an actionable level, grouped by
+    case, each with entry/target/stop and a validated/weak edge tag. Cached 10min."""
+    import marleg_setups as ms
+    mx = request.args.get("max", default=80, type=int)
+    return jsonify(cached("setupswatch:%d" % mx, lambda: ms.watch(max_pool=mx), 600, keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/macro_news")
+def api_macro_news():
+    """Daily MACRO NEWS auto-procured + the CONSCIENCE validity gate (VALID / UNCONFIRMED / QUIET / NOISE).
+    Cached 30min; rebuilt by the 7am-IST daily refresh. Macro = context, not a trigger."""
+    import marleg_macro_news as mn
+    return jsonify(cached("macro_news", mn.procure, 1800, keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/macro_news/refresh")
+def api_macro_news_refresh():
+    """Force a fresh macro-news procurement + conscience pass."""
+    import marleg_macro_news as mn
+    _CACHE.pop("macro_news", None)
+    return jsonify(mn.procure(force=True))
+
+@app.route("/api/regime_mr")
+def api_regime_mr():
+    """Momentum vs mean-reversion regime gauge (the 'season') — what's paying NOW. Cached 30min."""
+    import marleg_regime_mr as r
+    return jsonify(cached("regime_mr", r.regime, 1800, keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/console")
+def api_console():
+    """CONSOLIDATED DESK board: regime + today's gated-pass suggestions re-ranked to the regime. Cached 5min."""
+    import marleg_console as cs
+    return jsonify(cached("console_board", cs.board, scan_ttl(45, 600), keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/console/<sym>")
+def api_console_sym(sym):
+    """Per-name consolidated decision: gated? · intraday GO/WAIT/NO-GO · MTF-vs-OPTION vehicle · trade plan.
+    ?capital= ?risk=. Cached 45s."""
+    import marleg_console as cs
+    a = request.args
+    return jsonify(cached("console:%s" % sym.upper(),
+                   lambda: cs.decision(sym.upper(), a.get("capital", default=200000.0, type=float),
+                                       a.get("risk", default=1.0, type=float)), 45, keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/fii")
+def api_fii():
+    """FOREIGN FLOWS desk: FII derivatives posture (index-fut long/short + trend) · daily FII/DII cash ·
+    DII counterweight · honest 'origin is a tax-conduit, not tradeable' note. Cached 30min (EOD data)."""
+    import marleg_fii as ff
+    return jsonify(cached("fii_board", ff.board, 1800, keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/heartbeat")
+def api_heartbeat():
+    """HOW FAR BEHIND MARKET — server clock + NSE status + the AGE of each cached scan (the real lag: the live
+    CHART is ~3s, but gated/movers scans are cached minutes, which is why a live breakout shows on the chart
+    before the scan catches up). Dirt-cheap (file mtimes + in-memory cache stamps)."""
+    import time as _t, datetime as _dt
+    ist = _dt.datetime.now(_dt.timezone.utc) + _dt.timedelta(hours=5, minutes=30)
+    hm = ist.hour * 60 + ist.minute
+    mkt = "OPEN" if (ist.weekday() < 5 and 555 <= hm <= 930) else "PRE" if (ist.weekday() < 5 and hm < 555) else "CLOSED"
+    now = _t.time()
+
+    def fage(fn):
+        try:
+            return round((now - os.path.getmtime(os.path.join(HERE, fn))) / 60, 1)
+        except Exception:
+            return None
+    scans = {"gated": fage("marleg_gated_cache.json")}
+    try:
+        with _LOCK:
+            for k, label in (("movers", "movers"), ("notifyfeed", "alerts"), ("console_board", "console")):
+                e = _CACHE.get(k)
+                if e:
+                    scans[label] = round((now - e[0]) / 60, 1)
+    except Exception:
+        pass
+    return jsonify({"ist": ist.strftime("%H:%M:%S"), "market": mkt, "scans": scans, "srv_ms": int(now * 1000)})
+
+@app.route("/api/edge_audit")
+def api_edge_audit():
+    """The HONEST edge audit: regime-ensemble backtest (log/geometric) + Hawkes synthetic stress test.
+    Heavy (5y backtest + 1500 paths) → cached 24h on disk + 1h in memory."""
+    import marleg_edge_audit as ea
+    return jsonify(cached("edge_audit", ea.audit, 86400, keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/strategy_health")
+def api_strategy_health():
+    """RESEARCH HEAD: every registry anomaly VALIDATED (full-sample rank-IC/t) + DECAY-monitored (recent vs
+    historical IC = the crowding footprint) → ALIVE / FADING / DEAD / REFUTED-HERE. Heavy → cached 24h."""
+    import marleg_strategy_health as sh
+    return jsonify(cached("strategy_health", sh.board, 86400, keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/heatmap")
+def api_heatmap():
+    """NSE-style sector heatmap: macro sectors RS-graded → good-sign stocks per sector, cap-tagged (L/M/S).
+    ?cap=L|M|S filters the cap tier. Cached 15min (EOD/RS-based)."""
+    import marleg_heatmap as hm
+    cap = request.args.get("cap")
+    cap = cap.upper() if cap in ("l", "m", "s", "L", "M", "S") else None
+    return jsonify(cached("heatmap:%s" % (cap or "all"), lambda: hm.board(cap), 900, keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/tradeglobe")
+def api_tradeglobe():
+    """🌍 Trade Globe — India's export/import flows + the BACKTESTED sector read-through (which flow moves the stock)."""
+    import marleg_tradeglobe as tg
+    return jsonify(cached("tradeglobe", tg.globe, 86400, keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/worldclock")
+def api_worldclock():
+    """🌍 World Session Clock — which markets are open now, live moves, and the lean into India's open."""
+    import marleg_worldclock as wc
+    return jsonify(cached("worldclock", wc.snapshot, 45, keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/industry/reality")
+def api_industry_reality():
+    """🔍 Industry Reality Check — MOMENTUM × fundamental SUBSTANCE → REAL / HYPE / VALUE-TURN / DEAD per industry ('is the strength earned or a story?'). Cached 2h."""
+    import marleg_industry_reality as ir
+    return jsonify(cached("industry_reality", ir.reality, 7200, keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/hygiene/<sym>")
+def api_hygiene(sym):
+    """🧼 Hygiene desk — is this stock's recent move a corporate action (split/demerger/dividend) or real?"""
+    import marleg_hygiene as hy
+    return jsonify(cached("hygiene:%s" % sym.upper(), lambda: hy.check(sym), 3600, keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/hygiene_scan")
+def api_hygiene_scan():
+    """🧼 Scan the current gated list for corporate-action artifacts (ghosts you shouldn't trade)."""
+    import marleg_hygiene as hy, json as _j, os as _o
+    def do():
+        syms = []
+        try:
+            g = _j.load(open(_o.path.join(_o.path.dirname(_o.path.abspath(__file__)), "marleg_gated_cache.json"), encoding="utf-8"))
+            syms = [p.get("s") for p in g.get("picks", []) if p.get("s")]
+        except Exception:
+            pass
+        return hy.scan(syms, cap=40)
+    return jsonify(cached("hygiene_scan", do, 3600, keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/quality/<sym>")
+def api_quality(sym):
+    """💎 Quality/X-factor scorecard — margins/ROE/debt (moat proxy) + valuation guard. Long-horizon tilt, not a signal."""
+    import marleg_quality as ql
+    return jsonify(cached("quality:%s" % sym.upper(), lambda: ql.scorecard(sym), 21600, keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/quality_board")
+def api_quality_board():
+    """💎 Rank the current gated list by quality/X-factor."""
+    import marleg_quality as ql, json as _j, os as _o
+    def do():
+        syms = []
+        try:
+            g = _j.load(open(_o.path.join(_o.path.dirname(_o.path.abspath(__file__)), "marleg_gated_cache.json"), encoding="utf-8"))
+            syms = [p.get("s") for p in g.get("picks", []) if p.get("s")]
+        except Exception:
+            pass
+        return ql.board(syms, cap=30)
+    return jsonify(cached("quality_board", do, 21600, keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/cases")
+def api_cases():
+    """🧪 Case library — the anti-overfitting regression suite: general desks must reproduce every known case."""
+    import marleg_cases as mc
+    return jsonify(cached("cases", mc.run, 1800, keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/detect")
+def api_detect():
+    """🔬 Detection layer — India-validated canon factors rank the universe; ETF/penny/corporate-action-ghost pre-cleaned."""
+    import marleg_detect as md
+    return jsonify(cached("detect", lambda: md.detect_clean(top=12), 21600, keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/zband/<sym>")
+def api_zband(sym):
+    """Per-stock std-dev band: z=(price−20DMA)/20dσ → STRETCHED / NORMAL / COILED, + percentile vs own history."""
+    import marleg_zband as zb
+    return jsonify(cached("zband:%s" % sym.upper(), lambda: zb.zband(sym.upper()), 300))
+
+@app.route("/api/pit")
+def api_pit():
+    """POINT-IN-TIME fundamentals pipeline status: coverage + a look-ahead-controlled validate of margins/ROE/
+    leverage as winner-separators (preliminary until enough quarters accumulate). Cached 1h."""
+    import marleg_pit_fundamentals as pf
+    return jsonify(cached("pit_board", pf.board, 3600, keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/pickborn/<sym>")
+def api_pickborn(sym):
+    """HOW A PICK IS BORN — run a symbol down the full screen funnel (industry-leadership · accumulation · strength ·
+    not-overextended) + layers (regime · CATALYST=news→screen · intrinsic cause) → BORN / QUALIFIED / NOT-A-PICK.
+    Makes the whole pipeline visible per-stock. Cached 5min."""
+    import marleg_pickborn as pbn
+    return jsonify(cached("pickborn:%s" % sym.upper(), lambda: pbn.born(sym.upper()), 300, keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/intrinsic/<sym>")
+def api_intrinsic(sym):
+    """WHY is it moving — the intrinsic reason (quality / Piotroski / valuation / accumulation + persistent-vs-cyclical
+    industry) behind the price, not just the price signal. EARNINGS-BACKED vs MOMENTUM-FRAGILE vs CYCLICAL-PEAK etc.
+    Snapshot fundamentals (honest: not point-in-time). Cached 30min."""
+    import marleg_intrinsic as it
+    return jsonify(cached("intrinsic:%s" % sym.upper(), lambda: it.why(sym.upper()), 1800, keep=lambda v: bool(v.get("ok"))))
+
+@app.route("/api/engine_graph")
+def api_engine_graph():
+    """The 'brain' — every engine as a node, edges = real import dependencies (the federated Engine Graph)."""
+    def do():
+        import ast as _ast, glob as _glob, re as _re
+        mods = sorted(_glob.glob(os.path.join(HERE, "marleg_*.py")))
+        present = {os.path.splitext(os.path.basename(m))[0] for m in mods}
+        deps, doc = {}, {}
+        for m in mods:
+            name = os.path.splitext(os.path.basename(m))[0]
+            try:
+                src = open(m, encoding="utf-8", errors="ignore").read()
+            except Exception:
+                continue
+            try:
+                d = _ast.get_docstring(_ast.parse(src)) or ""
+            except Exception:
+                d = ""
+            doc[name] = (d.strip().split("\n\n")[0].replace("\n", " ")[:220] if d.strip() else "")
+            imps = set(_re.findall(r"import\s+marleg_(\w+)", src)) | set(_re.findall(r"from\s+marleg_(\w+)\s+import", src))
+            deps[name] = [("marleg_" + i) for i in imps if ("marleg_" + i) in present and ("marleg_" + i) != name]
+        usedby = {n: 0 for n in deps}
+        edges = []
+        for n, ds in deps.items():
+            for dd in ds:
+                if dd in usedby:
+                    usedby[dd] += 1
+                    edges.append({"s": n, "t": dd})
+        nodes = [{"id": n, "label": n.replace("marleg_", ""), "deg": len(deps[n]) + usedby[n],
+                  "usedby": usedby[n], "doc": doc.get(n, "")} for n in deps]
+        return {"ok": True, "n": len(nodes), "e": len(edges), "nodes": nodes, "edges": edges}
+    return jsonify(cached("engine_graph", do, 3600))
 
 @app.route("/api/overextension/<ticker>")
 def api_overextension(ticker):

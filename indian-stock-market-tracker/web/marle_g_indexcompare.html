@@ -1,0 +1,158 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🔭 Index Overlay · Marle-G</title>
+<style>
+  :root{--bg:#080a0e;--card:#14171e;--ink:#eef1f6;--muted:#9aa3b4;--dim:#646c7a;--saffron:#ff9933;--green:#22c55e;--red:#ef4444;--amber:#fbbf24;--blue:#60a5fa;--mono:'SF Mono',ui-monospace,Consolas,monospace}
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;margin:0}
+  .wrap{max-width:1120px;margin:0 auto;padding:14px}
+  .bar{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap}.bar b{font-size:19px}
+  .mut{color:var(--dim);font-family:var(--mono);font-size:11px}
+  .go2{background:#0e1116;border:1px solid rgba(255,255,255,.16);color:var(--ink);border-radius:7px;font-size:12px;padding:6px 10px;font-family:var(--mono);cursor:pointer;text-decoration:none}
+  .sub{color:var(--muted);font-size:12.5px;margin-bottom:12px;line-height:1.55}.sub b{color:var(--ink)}
+  .badge{font-family:var(--mono);font-size:10px;padding:2px 6px;border-radius:5px;border:1px solid}
+  /* controls */
+  .ctl{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+  .tf{font-family:var(--mono);font-size:12px;padding:5px 12px;border-radius:7px;background:#0e1116;border:1px solid rgba(255,255,255,.14);color:var(--muted);cursor:pointer}
+  .tf.on{color:var(--ink);border-color:var(--blue);background:rgba(96,165,250,.12)}
+  /* toggle chips */
+  .chips{display:flex;gap:7px;flex-wrap:wrap;margin:11px 0}
+  .chip{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:12px;padding:5px 11px;border-radius:8px;background:var(--card);border:1px solid rgba(255,255,255,.1);cursor:pointer;user-select:none;transition:opacity .15s}
+  .chip.off{opacity:.38}
+  .dot{width:10px;height:10px;border-radius:3px;flex:none}
+  .chip .pc{font-size:11px}
+  /* chart */
+  .chartcard{background:var(--card);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:8px 8px 4px}
+  #chart{width:100%;height:440px}
+  /* read + table */
+  .read{background:#0e1116;border:1px solid rgba(96,165,250,.24);border-radius:11px;padding:12px 14px;font-size:12.5px;color:var(--muted);line-height:1.55;margin:13px 0}.read b{color:var(--ink)}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:4px}
+  th,td{text-align:right;padding:7px 9px;border-bottom:1px solid rgba(255,255,255,.06)}
+  th{color:var(--dim);font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+  td:first-child,th:first-child{text-align:left}
+  .nm{font-weight:800;display:flex;align-items:center;gap:7px}
+  .mono{font-family:var(--mono)}
+  .note{background:#0e1116;border:1px solid rgba(251,191,36,.2);border-radius:10px;padding:10px 13px;font-size:12px;color:var(--muted);line-height:1.5;margin-top:11px}.note b{color:var(--ink)}
+  .spin{color:var(--dim);font-size:12px;padding:40px;text-align:center}
+</style></head>
+<body>
+<div class="wrap">
+  <div class="bar"><b>🔭 index overlay</b>
+    <span class="badge" id="live" style="color:var(--blue);border-color:#60a5fa55">DOES NIFTY FOLLOW?</span>
+    <button class="go2" onclick="load()">↻</button>
+    <a class="go2" href="marle_g_asialead.html">🌏 pre-open</a>
+    <a class="go2" href="marle_g_dashboard.html">⌂</a>
+    <span class="mut" id="asof" style="margin-left:auto"></span></div>
+  <div class="sub">Every index <b>rebased to 100</b> at the window start, on one timeline. Asia trades <b>before NSE</b> (5:30–7:00 IST) so their bar is known before India opens — watch whether NIFTY's line <b>tracks</b> them or <b>diverges</b>. The table puts a number on it: <b>same-day</b> return-correlation (Asia's morning → NIFTY same day), <b>next-day</b> (does NIFTY follow the previous close), and <b>co-direction %</b>.</div>
+
+  <div class="ctl" id="tfs"></div>
+  <div class="chips" id="chips"></div>
+  <div class="chartcard"><div id="chart"><div class="spin">loading indices…</div></div></div>
+  <div id="read"></div>
+  <div id="tbl"></div>
+  <div class="note" id="lim"></div>
+</div>
+<script src="marle_g_candles.js"></script>
+<script src="marle_g_nav.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>(s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const sgn=v=>v==null?'—':(v>=0?'+':'')+v;
+const pcCol=v=>v==null?'var(--dim)':v>0?'var(--green)':v<0?'var(--red)':'var(--muted)';
+const WINDOWS=['1mo','3mo','6mo','1y','2y'], LBL={'1mo':'1M','3mo':'3M','6mo':'6M','1y':'1Y','2y':'2Y'};
+let WIN='6mo', CH=null, SERIES={}, VIS={}, DATA=null;
+const THEME={
+  layout:{background:{type:'solid',color:'#0e1116'},textColor:'#9aa3b4',fontFamily:"'SF Mono',ui-monospace,monospace",fontSize:11},
+  grid:{vertLines:{color:'rgba(255,255,255,.04)'},horzLines:{color:'rgba(255,255,255,.045)'}},
+  rightPriceScale:{borderColor:'rgba(255,255,255,.1)',scaleMargins:{top:.08,bottom:.08}},
+  timeScale:{borderColor:'rgba(255,255,255,.1)',timeVisible:false,secondsVisible:false},
+  crosshair:{mode:0,vertLine:{color:'rgba(255,255,255,.2)',labelbackground:'#1f242e'},horzLine:{color:'rgba(255,255,255,.2)',labelbackground:'#1f242e'}},
+};
+function tfBar(){
+  $('tfs').innerHTML = WINDOWS.map(w=>`<button class="tf ${w===WIN?'on':''}" onclick="setWin('${w}')">${LBL[w]}</button>`).join('')
+    + `<span class="mut" id="span" style="margin-left:6px"></span>`;
+}
+function setWin(w){ if(w===WIN)return; WIN=w; tfBar(); load(); }
+function chips(){
+  if(!DATA){$('chips').innerHTML='';return;}
+  $('chips').innerHTML = DATA.stats.map(s=>{
+    const on=VIS[s.name]!==false;
+    return `<div class="chip ${on?'':'off'}" onclick="toggle('${s.name}')">
+      <span class="dot" style="background:${s.color}"></span>${esc(s.name)}
+      <span class="pc" style="color:${pcCol(s.window_pct)}">${sgn(s.window_pct)}%</span></div>`;
+  }).join('');
+}
+function toggle(name){
+  VIS[name]=VIS[name]===false; // flip (undefined->false=hide)
+  const on=VIS[name]!==false;
+  const s=SERIES[name];
+  if(s){ try{ s.applyOptions({visible:on}); }catch(e){ try{ s.setData(on?DATA.series[name]:[]);}catch(_){} } }
+  chips();
+}
+function buildChart(){
+  MGCandles.ensureLib(function(ok){
+    const el=$('chart');
+    if(!ok||!window.LightweightCharts){ el.innerHTML='<div class="spin">chart library unavailable</div>'; return; }
+    el.innerHTML=''; el.style.position='relative';
+    if(CH){ try{CH.remove();}catch(e){} CH=null; } SERIES={};
+    const LC=window.LightweightCharts;
+    CH=LC.createChart(el, Object.assign({width:el.clientWidth||960,height:440},THEME));
+    // par baseline at 100
+    const ser0=DATA.series[DATA.stats[0].name]||[];
+    if(ser0.length){ CH.addLineSeries({color:'rgba(255,255,255,.14)',lineWidth:1,lineStyle:2,priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false})
+      .setData([{time:ser0[0].time,value:100},{time:ser0[ser0.length-1].time,value:100}]); }
+    DATA.stats.forEach(s=>{
+      const isN=s.name==='NIFTY', on=VIS[s.name]!==false;
+      const ls=CH.addLineSeries({color:s.color,lineWidth:isN?3:1.6,priceLineVisible:false,
+        lastValueVisible:true,title:s.name,visible:on,crosshairMarkerRadius:3});
+      ls.setData(DATA.series[s.name]||[]); SERIES[s.name]=ls;
+    });
+    CH.timeScale().fitContent();
+    try{ if(el._ro)el._ro.disconnect(); el._ro=new ResizeObserver(()=>{try{CH.applyOptions({width:el.clientWidth});}catch(e){}}); el._ro.observe(el);}catch(e){}
+  });
+}
+function readLine(){
+  const b=DATA.stats.filter(s=>s.name!=='NIFTY'&&s.corr_sameday!=null);
+  if(!b.length){$('read').innerHTML='';return;}
+  const avg=(b.reduce((a,s)=>a+s.corr_sameday,0)/b.length).toFixed(2);
+  const avgco=Math.round(b.reduce((a,s)=>a+(s.codir_pct||0),0)/b.length);
+  const nifty=DATA.stats.find(s=>s.name==='NIFTY');
+  const best=DATA.stats.slice().filter(s=>s.name!=='NIFTY').sort((a,b)=>b.window_pct-a.window_pct)[0];
+  const nextNeg=b.filter(s=>s.corr_nextday!=null&&s.corr_nextday<0).length;
+  const diverge = best && nifty && (best.window_pct - nifty.window_pct) > 12;
+  $('read').innerHTML=`<div class="read">📖 <b>Read (${LBL[WIN]}).</b>
+    Day-to-day, NIFTY <b>co-moves</b> with Asia — avg same-day correlation <b>${avg}</b>, same direction <b>~${avgco}%</b> of days.
+    ${nextNeg>=Math.ceil(b.length/2)?`But <b>next-day correlation is negative</b> for most — the follow is <b>same-day, not overnight</b>: Asia's <i>previous</i> close doesn't lead NIFTY.`:''}
+    ${diverge?` And note the <b>trend can split from the wiggle</b>: over this window <b>${esc(best.name)} ${sgn(best.window_pct)}%</b> vs <b>NIFTY ${sgn(nifty.window_pct)}%</b> — same daily rhythm, different destination.`:''}
+  </div>`;
+}
+function table(){
+  const rows=DATA.stats.map(s=>{
+    const isN=s.name==='NIFTY';
+    return `<tr style="${isN?'background:rgba(255,153,51,.06)':''}">
+      <td><span class="nm"><span class="dot" style="background:${s.color}"></span>${esc(s.name)}${isN?' <span class="mut">(reference)</span>':''}</span></td>
+      <td class="mono" style="color:${pcCol(s.window_pct)}">${sgn(s.window_pct)}%</td>
+      <td class="mono">${isN?'—':(s.corr_sameday??'—')}</td>
+      <td class="mono" style="color:${s.corr_nextday<0?'var(--red)':'var(--muted)'}">${isN?'—':(s.corr_nextday??'—')}</td>
+      <td class="mono">${isN?'—':(s.codir_pct!=null?s.codir_pct+'%':'—')}</td>
+      <td class="mono" style="color:var(--dim)">${s.follow_validated!=null?s.follow_validated+'%':'—'}</td>
+    </tr>`;
+  }).join('');
+  $('tbl').innerHTML=`<table><thead><tr>
+    <th>index</th><th>window %</th><th>same-day ρ</th><th>next-day ρ</th><th>co-dir</th><th>follow (val)</th>
+  </tr></thead><tbody>${rows}</tbody></table>
+  <div class="mut" style="margin-top:6px">same-day ρ = Asia morning → NIFTY same day (the tell) · next-day ρ = follows previous close · co-dir = % same-direction days · follow (val) = long-run down&gt;1% follow-rate</div>`;
+}
+function load(){
+  $('asof').textContent='loading…';
+  fetch('/api/indexcompare?window='+WIN).then(r=>r.json()).then(d=>{
+    if(!d||d.ok===false){ $('chart').innerHTML='<div class="spin">unavailable — '+esc(d&&d.error||'')+'</div>'; return; }
+    DATA=d; DATA.stats.forEach(s=>{ if(VIS[s.name]===undefined) VIS[s.name]=s.default_on; });
+    $('span')&&($('span').textContent=d.start+' → '+d.end+' · '+d.days+'d');
+    chips(); buildChart(); readLine(); table();
+    $('lim').innerHTML='<b>⚠ '+esc(d.limit||'')+'</b> ' + esc(d.note||'');
+    $('asof').textContent='updated '+new Date().toLocaleTimeString();
+  }).catch(e=>{ $('chart').innerHTML='<div class="spin">error — '+esc(e.message||e)+'</div>'; });
+}
+tfBar(); load();
+</script>
+</body></html>

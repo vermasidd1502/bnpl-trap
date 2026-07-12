@@ -1,0 +1,129 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🌏 Asian Lead · Marle-G</title>
+<style>
+  :root{--bg:#080a0e;--card:#14171e;--ink:#eef1f6;--muted:#9aa3b4;--dim:#646c7a;--saffron:#ff9933;--green:#22c55e;--red:#ef4444;--amber:#fbbf24;--blue:#60a5fa;--mono:'SF Mono',ui-monospace,Consolas,monospace}
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;margin:0}
+  .wrap{max-width:1120px;margin:0 auto;padding:14px}
+  .bar{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap}.bar b{font-size:19px}
+  .mut{color:var(--dim);font-family:var(--mono);font-size:11px}
+  .go2{background:#0e1116;border:1px solid rgba(255,255,255,.16);color:var(--ink);border-radius:7px;font-size:12px;padding:6px 10px;font-family:var(--mono);cursor:pointer;text-decoration:none}
+  .sub{color:var(--muted);font-size:12.5px;margin-bottom:14px;line-height:1.55}.sub b{color:var(--ink)}
+  .badge{font-family:var(--mono);font-size:10px;padding:2px 6px;border-radius:5px;border:1px solid}
+  /* hero verdict */
+  .hero{display:grid;grid-template-columns:1.3fr 1fr;gap:13px;margin-bottom:14px}
+  @media(max-width:720px){.hero{grid-template-columns:1fr}}
+  .vcard{background:var(--card);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px 18px;position:relative;overflow:hidden}
+  .vlab{font-family:var(--mono);font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em}
+  .vbig{font-size:34px;font-weight:800;font-family:var(--mono);margin:4px 0 2px;line-height:1}
+  .vtag{font-family:var(--mono);font-weight:800;font-size:14px;padding:4px 12px;border-radius:8px;display:inline-block;margin-top:6px}
+  .prob{font-size:52px;font-weight:800;font-family:var(--mono);line-height:1}
+  .probsub{font-size:12px;color:var(--muted);margin-top:2px}
+  /* leaders */
+  .h2{font-family:var(--mono);font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin:16px 0 8px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:10px}
+  .tile{background:var(--card);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px 13px;position:relative}
+  .tile.strong{border-color:rgba(96,165,250,.4);box-shadow:0 0 0 1px rgba(96,165,250,.15) inset}
+  .tname{font-weight:800;font-size:14px;display:flex;align-items:center;gap:6px}
+  .tchg{font-family:var(--mono);font-weight:800;font-size:23px;margin:5px 0 3px;line-height:1}
+  .trow{display:flex;justify-content:space-between;align-items:center;margin-top:5px}
+  .fr{font-family:var(--mono);font-size:10.5px;padding:2px 7px;border-radius:6px;background:#0e1116;border:1px solid rgba(255,255,255,.1);color:var(--muted)}
+  .lead{font-family:var(--mono);font-size:10px;color:var(--blue)}
+  .lag{font-family:var(--mono);font-size:10px;color:var(--dim)}
+  /* macro chips */
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:2px}
+  .chip{font-family:var(--mono);font-size:12px;padding:5px 11px;border-radius:8px;background:var(--card);border:1px solid rgba(255,255,255,.08)}
+  .chip small{color:var(--dim);font-size:10px}
+  /* notes */
+  .note{background:#0e1116;border:1px solid rgba(255,255,255,.08);border-radius:11px;padding:12px 14px;font-size:12.5px;color:var(--muted);line-height:1.55;margin-top:12px}
+  .note b{color:var(--ink)}
+  .note.fii{border-color:rgba(96,165,250,.24)}
+  .note.lim{border-color:rgba(251,191,36,.22)}
+  .spin{color:var(--dim);font-size:12px;padding:26px;text-align:center}
+  a.inl{color:var(--blue);text-decoration:none;border-bottom:1px dotted currentColor}
+</style></head>
+<body>
+<div class="wrap">
+  <div class="bar"><b>🌏 asian lead</b>
+    <span class="badge" id="live" style="color:var(--green);border-color:#22c55e55">● PRE-OPEN</span>
+    <button class="go2" onclick="load()">↻</button>
+    <a class="go2" href="marle_g_dashboard.html">⌂</a>
+    <a class="go2" href="marle_g_optdesk.html">🦅 opt desk</a>
+    <span class="mut" id="asof" style="margin-left:auto"></span></div>
+  <div class="sub">The markets that trade <b>before NSE opens</b> and that NIFTY <b>follows most</b> — validated same-day follow-rates when they're down &gt;1% (2015–26). <b>KOSPI &amp; Taiwan</b> (5:30–7:00 IST) are the AI/tech barometer (Samsung/TSMC); <b>Singapore STI</b> (6:30) is the cleanest tell at <b>82%</b>. Check <b>~8:30–9:00 IST</b>, before the 9:15 open. Read-only.</div>
+
+  <div id="body" class="spin">reading the Asian tape…</div>
+</div>
+<script src="marle_g_nav.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>(s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const sign=v=>v==null?'—':(v>=0?'+':'')+v;
+const col=v=>v==null?'var(--dim)':v>0.05?'var(--green)':v<-0.05?'var(--red)':'var(--amber)';
+function consCol(v){return v==null?'var(--dim)':v<=-0.5?'var(--red)':v<=-0.15?'var(--amber)':v>=0.4?'var(--green)':'var(--muted)';}
+function tagStyle(label){
+  if(!label) return ['var(--dim)','#646c7a55'];
+  if(label.indexOf('DOWN')>=0) return ['var(--red)','#ef444455'];
+  if(label.indexOf('down')>=0) return ['var(--amber)','#fbbf2455'];
+  if(label.indexOf('up')>=0||label.indexOf('ON')>=0) return ['var(--green)','#22c55e55'];
+  return ['var(--muted)','#9aa3b455'];
+}
+const STRONG=['Singapore','KOSPI','Taiwan'];
+function tile(l){
+  const c=col(l.chg_pct), strong=STRONG.includes(l.name);
+  // NSE opens 9:15 IST — anything opening earlier LEADS
+  const opensMin = (h=>{const [a,b]=String(h).split(':').map(Number);return a*60+b;})(l.opens_ist);
+  const lead = opensMin < 555; // 9:15
+  return `<div class="tile ${strong?'strong':''}">
+    <div class="tname">${esc(l.name)} ${strong?'<span class="badge" style="color:var(--blue);border-color:#60a5fa55;font-size:9px">KEY</span>':''}</div>
+    <div class="tchg" style="color:${c}">${l.chg_pct==null?'—':sign(l.chg_pct)+'%'}</div>
+    <div class="trow"><span class="fr">follows ${l.follow_rate}%</span>
+      <span class="${lead?'lead':'lag'}">${lead?'⟵ leads · ':''}opens ${esc(l.opens_ist)}</span></div>
+  </div>`;
+}
+function macroChips(m){
+  const M=[['crude','CL','crude'],['gold','gold','gold'],['us_fut','S&P fut','us_fut'],['nasdaq_fut','NDX fut','nasdaq_fut'],['vix','VIX','vix']];
+  return M.filter(([,,k])=>m[k]!=null).map(([,lab,k])=>{
+    const v=m[k]; const c = k==='vix' ? (v>0?'var(--red)':'var(--green)') : col(v);
+    return `<span class="chip"><small>${lab}</small> <b style="color:${c}">${sign(v)}%</b></span>`;
+  }).join('');
+}
+function render(d){
+  if(!d||d.ok===false){$('body').className='spin';$('body').innerHTML='unavailable — '+esc(d&&d.error||'no data');return;}
+  const cons=d.consensus_pct, [tc,tb]=tagStyle(d.label);
+  const prob=d.follow_down_prob;
+  const probBox = prob!=null
+    ? `<div class="prob" style="color:var(--red)">${prob}%</div><div class="probsub">chance NIFTY closes <b style="color:var(--red)">DOWN</b> if this tape holds into 9:15</div>`
+    : `<div class="prob" style="color:${consCol(cons)}">—</div><div class="probsub">no down-signal — a KEY tell must be down &gt;1% to fire the follow-probability</div>`;
+  $('body').className='';
+  $('body').innerHTML = `
+    <div class="hero">
+      <div class="vcard">
+        <div class="vlab">weighted Asian consensus</div>
+        <div class="vbig" style="color:${consCol(cons)}">${sign(cons)}%</div>
+        <div class="vtag" style="color:${tc};background:#0e1116;border:1px solid ${tb}">${esc(d.label)}</div>
+        <div class="mut" style="margin-top:9px">China down-weighted (decoupled). Blend = follow-rate × reliability.</div>
+      </div>
+      <div class="vcard" style="text-align:center;display:flex;flex-direction:column;justify-content:center">
+        <div class="vlab">NIFTY-follows-down</div>${probBox}
+      </div>
+    </div>
+
+    <div class="h2">the leaders — sorted by how often NIFTY follows them down</div>
+    <div class="grid">${(d.leaders||[]).map(tile).join('')}</div>
+
+    <div class="h2">macro sense (overnight)</div>
+    <div class="chips">${macroChips(d.macro||{})}</div>
+
+    <div class="note fii"><b>🔗 Who's the major player — FII.</b> ${esc(d.fii_channel)} India's live FII posture sits on the <a class="inl" href="marle_g_pod.html?open=fii">foreign-flows desk</a>. So: <b>Asia = direction, FII = regime, India's own put/call walls = where it lands</b> (<a class="inl" href="marle_g_optdesk.html">opt desk</a>).</div>
+    <div class="note lim"><b>⚠ Honest limit.</b> ${esc(d.limits)} There is no free feed for Singapore/Korea/Taiwan <b>order-book or option OI</b> — same wall as GIFT. This tracker is the price-tape consensus, not their microstructure.</div>
+    <div class="mut" style="margin-top:10px">${esc(d.when)}${d._age_sec!=null?' · cache '+d._age_sec+'s'+(d._stale?' (refreshing)':''):''}</div>
+  `;
+  $('asof').textContent='updated '+new Date().toLocaleTimeString();
+}
+function load(){
+  fetch('/api/asialead').then(r=>r.json()).then(render).catch(e=>{$('body').className='spin';$('body').innerHTML='fetch failed — '+esc(e.message);});
+}
+load(); setInterval(load, 60000);
+</script>
+</body></html>

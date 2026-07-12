@@ -4,34 +4,44 @@
    scenarios · portfolio · tools) and highlights both the active group and the active page.
    The full list lives here once, so every pod gets the identical toolbar for free. */
 (function () {
+  if (/[?&]embed=1/.test(location.search)) {                 // EMBED MODE — clean pod chrome off for hub-dashboard iframe tiles
+    var _e = document.createElement("style");
+    _e.textContent = ".tabs,#mg-macrobar,#mg-chartfab,#mg-sigfab,#mg-predfab,#mg-pafab,#mg-tradebox,#mg-heartbeat,.mg-backfwd,.mg-regime,#mg-macrobanner,#mg-guidebtn{display:none!important}body{padding-top:6px!important}";
+    document.head.appendChild(_e);
+  }
+  /* 9 HUBS — consolidated from 51 pages. Each dropdown = one hub; every page reachable as a tab.
+     (Consolidation map: design-handoff/04_CONSOLIDATION_PLAN.md) */
   var GROUPS = [
-    { label: "home", solo: true, items: [["marle_g_pod.html", "home"]] },
-    { label: "gate", solo: true, items: [["marle_g_gate.html", "🚦 gate"]] },
-    { label: "war room", solo: true, items: [["marle_g_warroom.html", "⚔ war room"]] },
-    { label: "lab", solo: true, items: [["marle_g_lab.html", "🔬 lab"]] },
-    { label: "markets", icon: "📈", items: [
-      ["marle_g_equity.html", "equity"], ["marle_g_buyhold.html", "buy & hold"], ["marle_g_intraday.html", "intraday"],
-      ["marle_g_patterns.html", "patterns"], ["marle_g_volume.html", "volume"], ["marle_g_industry.html", "rotation"],
-      ["marle_g_movers.html", "⚡ movers"], ["marle_g_live.html", "live"], ["marle_g_macro_preview.html", "macro"]] },
-    { label: "strategies", icon: "🎯", items: [
-      ["marle_g_factors.html", "🔬 factor-lab"], ["marle_g_strategies.html", "strategies"], ["marle_g_weekend.html", "weekend"], ["marle_g_builder.html", "builder"],
-      ["marle_g_volbook.html", "day-book"], ["marle_g_autotrader.html", "auto-trader"], ["marle_g_quality.html", "quality"],
-      ["marle_g_robust.html", "robust"], ["marle_g_bearish.html", "🛡 bearish/hedge"], ["marle_g_niftysim.html", "nifty-sim"], ["marle_g_sectoral.html", "sectoral"],
-      ["marle_g_vol.html", "vol-lab"], ["marle_g_paper.html", "paper"]] },
-    { label: "desk", icon: "🖥", items: [
-      ["marle_g_cockpit.html", "🔫 cockpit"], ["marle_g_options.html", "⚙ options"], ["marle_g_option_ideas.html", "🌊 option ideas"], ["marle_g_theta.html", "🧊 theta 3D"], ["marle_g_watch.html", "👀 watch desk"], ["marle_g_position.html", "📊 position desk"], ["marle_g_router.html", "router"], ["marle_g_stock.html", "stock page"]] },
-    { label: "scenarios", icon: "🌐", items: [
-      ["marle_g_cascade.html", "cascade"], ["marle_g_regime.html", "regime"], ["marle_g_thesis.html", "thesis"],
-      ["marle_g_smartmoney.html", "smart-money"], ["marle_g_mindhive.html", "mindhive"]] },
+    { label: "home", solo: true, items: [["marle_g_dashboard.html", "🏠 home"]] },
+    { label: "cockpit", icon: "🔫", items: [
+      ["marle_g_dayboard.html", "☀ day board"], ["marle_g_pa.html", "🤖 assistant"], ["marle_g_console.html", "🧭 console"], ["marle_g_firm.html", "🏛 the firm"], ["marle_g_signal.html", "🪪 signal card"], ["marle_g_cockpit.html", "🔫 cockpit"], ["marle_g_mistakes.html", "🪞 mistakes"], ["marle_g_gate.html", "🚦 session gate"], ["marle_g_intraday.html", "intraday vol"],
+      ["marle_g_router.html", "router"], ["marle_g_warroom.html", "⚔ war room"], ["marle_g_watch.html", "👀 watch desk"]] },
+    { label: "deep-dive", icon: "🔬", items: [
+      ["marle_g_atlas.html", "🛰 atlas — overview"], ["marle_g_stock.html", "stock"], ["marle_g_chart.html", "chart"],
+      ["marle_g_fundamentals.html", "📒 fundamentals"], ["marle_g_intrinsic.html", "🔬 why it's moving"], ["marle_g_canslim.html", "canslim"], ["marle_g_smartmoney.html", "smart-money"],
+      ["marle_g_buyhold.html", "buy & hold"], ["marle_g_equity.html", "equity"], ["marle_g_lab.html", "stock lab"]] },
+    { label: "options", icon: "⚙", items: [
+      ["marle_g_optdesk.html", "🦅 option desk (search)"], ["marle_g_kalman.html", "📡 kalman state"], ["marle_g_fadeboard.html", "🎯 fade board"],
+      ["marle_g_options.html", "⚙ options / F&O"], ["marle_g_optboard.html", "🎯 option board (max-pain)"], ["marle_g_theta.html", "🧊 theta 3D surface"], ["marle_g_option_ideas.html", "🌊 option ideas"],
+      ["marle_g_vol.html", "vol-lab"], ["marle_g_sectoral.html", "sectoral"], ["marle_g_niftysim.html", "nifty-sim"], ["marle_g_position.html", "📊 position desk"]] },
+    { label: "screeners", icon: "📡", items: [
+      ["marle_g_breaks.html", "📈 momentum ↔ reversal"], ["marle_g_recommend.html", "🧭 recommender"], ["marle_g_board.html", "🧭 command board"], ["marle_g_volume.html", "volume / gated"], ["marle_g_detector.html", "🔬 detector"], ["marle_g_reality.html", "🔍 industry reality"], ["marle_g_pickborn.html", "🌱 how a pick is born"], ["marle_g_movers.html", "⚡ movers"], ["marle_g_patterns.html", "patterns"], ["marle_g_setups.html", "🎯 setups"], ["marle_g_heatmap.html", "🗺 sector heatmap"],
+      ["marle_g_industry.html", "rotation"], ["marle_g_winners.html", "winners/losers"], ["marle_g_weekend.html", "weekend"],
+      ["marle_g_live.html", "live"], ["marle_g_volbook.html", "day-book"], ["marle_g_nifty.html", "🇮🇳 nifty pod"]] },
+    { label: "strategy", icon: "🧪", items: [
+      ["marle_g_strategist.html", "🧭 strategy picker"], ["marle_g_strategies.html", "strategies"], ["marle_g_factors.html", "🔬 factor-lab"], ["marle_g_edge_audit.html", "🧾 edge audit"], ["marle_g_research_head.html", "🧠 research head"], ["marle_g_pit.html", "🧪 PIT fundamentals"], ["marle_g_robust.html", "robust"],
+      ["marle_g_builder.html", "builder"], ["marle_g_quality.html", "quality"], ["marle_g_autotrader.html", "auto-trader"],
+      ["marle_g_paper.html", "paper"], ["marle_g_bearish.html", "🛡 bearish/hedge"]] },
+    { label: "macro", icon: "🌐", items: [
+      ["marle_g_cascade.html", "cascade"], ["marle_g_regime.html", "regime"], ["marle_g_asialead.html", "🌏 asian lead (pre-open)"], ["marle_g_indexcompare.html", "🔭 index overlay (does NIFTY follow?)"], ["marle_g_worldclock.html", "🕐 world clock"], ["marle_g_goldmacro.html", "🥇 gold & dollar"], ["marle_g_fii.html", "🌐 foreign flows"], ["marle_g_tradeglobe.html", "🌍 trade globe"], ["marle_g_hygiene.html", "🧼 hygiene"], ["marle_g_moat.html", "💎 quality / x-factor"], ["marle_g_cases.html", "🧪 case library"], ["marle_g_thesis.html", "thesis"],
+      ["marle_g_macro_preview.html", "macro weather"], ["marle_g_mindhive.html", "mindhive"]] },
     { label: "portfolio", icon: "💼", items: [
-      ["marle_g_portfolio.html", "portfolio"], ["marle_g_winners.html", "winners"], ["marle_g_risk.html", "risk"],
-      ["marle_g_profile.html", "profile"], ["marle_g_dashboard.html", "dashboard"], ["marle_g_funds.html", "funds"],
-      ["marle_g_nifty.html", "🇮🇳 nifty pod"]] },
+      ["marle_g_journal.html", "📓 journal"], ["marle_g_ordercoach.html", "🎧 order coach"], ["marle_g_alerts.html", "🔔 alerts log"], ["marle_g_portfolio.html", "portfolio"], ["marle_g_risk.html", "risk / VaR"], ["marle_g_profile.html", "profile"],
+      ["marle_g_funds.html", "💰 funds"], ["marle_g_etf.html", "📦 ETF portfolio"], ["marle_g_etfscan.html", "📊 ETF scanner + rater"], ["marle_g_allocate.html", "👨 dad's portfolio"], ["marle_g_ipo.html", "🧾 IPO desk"]] },
     { label: "tools", icon: "🔧", items: [
-      ["marle_g_chart.html", "chart"], ["marle_g_canslim.html", "canslim"], ["marle_g_fundamentals.html", "📒 fundamentals"],
-      ["marle_g_architecture_3d.html", "3D"], ["marle_g_diag.html", "diag"]] }
+      ["marle_g_hub.html", "🗂 pod hub"], ["marle_g_brain.html", "🧠 engine brain"], ["marle_g_dashboard.html", "command center"], ["marle_g_diag.html", "diag"], ["marle_g_architecture_3d.html", "3D pod map"]] }
   ];
-  var cur = (location.pathname.split("/").pop() || "marle_g_pod.html").toLowerCase();
+  var cur = (location.pathname.split("/").pop() || "marle_g_dashboard.html").toLowerCase();
 
   if (!document.getElementById("mg-nav-css")) {
     var st = document.createElement("style"); st.id = "mg-nav-css";
@@ -71,10 +81,11 @@
         var p = g.items[0];
         return '<a class="mg-home' + (has ? " on" : "") + '" href="' + p[0] + '">' + p[1] + "</a>";
       }
-      var menu = g.items.map(function (p) {
+      var dash = '<a href="marle_g_hub.html?hub=' + encodeURIComponent(g.label) + '" style="color:var(--saffron,#ff9933);font-weight:600;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:3px;padding-bottom:8px">⊞ ' + g.label + ' dashboard</a>';
+      var menu = dash + g.items.map(function (p) {
         return '<a href="' + p[0] + '"' + (p[0].toLowerCase() === cur ? ' class="on"' : "") + ">" + p[1] + "</a>";
       }).join("");
-      return '<div class="mg-grp"><button type="button" class="mg-trig' + (has ? " on" : "") + '">' +
+      return '<div class="mg-grp" data-hub="' + g.label + '"><button type="button" class="mg-trig' + (has ? " on" : "") + '">' +
         (g.icon ? '<span class="mg-gi">' + g.icon + "</span>" : "") +
         "<span>" + g.label + '</span><span class="mg-car">▾</span></button>' +
         '<div class="mg-menu">' + menu + "</div></div>";
@@ -97,16 +108,19 @@
       }
       g.addEventListener("mouseenter", function () { clearTimeout(ct); open(); });
       g.addEventListener("mouseleave", function () { clearTimeout(ct); ct = setTimeout(shut, 220); });   // grace to cross the gap
-      trig.addEventListener("click", function (e) {
+      trig.addEventListener("click", function (e) {                    // HARD-CLICK the hub label → its dashboard (hover still opens the dropdown)
         e.stopPropagation();
-        if (g.classList.contains("open")) shut(); else open();
+        location.href = "marle_g_hub.html?hub=" + encodeURIComponent(g.getAttribute("data-hub") || "");
       });
     });
   }
 
-  Array.prototype.forEach.call(document.querySelectorAll(".tabs"), function (t) { t.innerHTML = build(); wire(t); });
-  document.addEventListener("click", function () { closeAll(null); });
-  document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeAll(null); });
+  window.MG_NAV = GROUPS;                                   // expose the hub config so marle_g_hub.html can build hub-dashboards
+  if (!/[?&]embed=1/.test(location.search)) {
+    Array.prototype.forEach.call(document.querySelectorAll(".tabs"), function (t) { t.innerHTML = build(); wire(t); });
+    document.addEventListener("click", function () { closeAll(null); });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeAll(null); });
+  }
 })();
 
 /* ---- universal ticker autocomplete: attaches to every pod search bar ---- */
@@ -159,6 +173,7 @@
   function pick(rec) {
     if (!curInput || !rec) return;
     curInput.value = rec.s; hide();
+    try { localStorage.setItem("mg_last_sym", String(rec.s).toUpperCase()); } catch (e) {}   // keep the symbol fluid across pages
     curInput.dispatchEvent(new Event("input", { bubbles: true }));
     ["keydown", "keyup"].forEach(function (tp) {
       curInput.dispatchEvent(new KeyboardEvent(tp, { key: "Enter", code: "Enter", keyCode: 13, which: 13, bubbles: true }));
@@ -235,6 +250,94 @@
   var s = document.createElement("script"); s.src = "marle_g_guide.js"; document.head.appendChild(s);
 })();
 
+/* ---- load the universal 🔮 predictor widget (floating button on every page) ---- */
+(function () {
+  if (document.querySelector('script[src*="marle_g_predictor.js"]')) return;
+  var s = document.createElement("script"); s.src = "marle_g_predictor.js"; document.head.appendChild(s);
+})();
+
+/* ---- load the universal 📈 candlestick widget (floating chart on every page) ---- */
+(function () {
+  if (document.querySelector('script[src*="marle_g_candles.js"]')) return;
+  var s = document.createElement("script"); s.src = "marle_g_candles.js"; document.head.appendChild(s);
+})();
+
+/* ---- load the global 🔔 signal-feed notification system (poll + desktop alerts + toast) ---- */
+(function () {
+  if (document.querySelector('script[src*="marle_g_signals.js"]')) return;
+  var s = document.createElement("script"); s.src = "marle_g_signals.js"; document.head.appendChild(s);
+})();
+
+/* ---- load the reusable trade box (cockpit control bar, droppable; redirects to cockpit) ---- */
+(function () {
+  if (document.querySelector('script[src*="marle_g_tradebox.js"]')) return;
+  var s = document.createElement("script"); s.src = "marle_g_tradebox.js"; document.head.appendChild(s);
+})();
+
+/* ---- load the OMNIPRESENT 🤖 Assistant (PA danger+prospect brief on every page) ---- */
+(function () {
+  if (document.querySelector('script[src*="marle_g_assistant.js"]')) return;
+  var s = document.createElement("script"); s.src = "marle_g_assistant.js"; document.head.appendChild(s);
+})();
+
+/* ---- ⏱ MARKET-LAG timer (top-right pill): how far behind market are we? Chart price ~live (3s); scans cached mins ---- */
+(function () {
+  if (/[?&]embed=1/.test(location.search)) return;
+  if (document.getElementById("mg-heartbeat")) return;
+  var b = document.createElement("div"); b.id = "mg-heartbeat";
+  b.style.cssText = "position:fixed;top:7px;right:12px;z-index:99990;font:700 10px ui-monospace,Consolas,monospace;" +
+    "background:rgba(14,17,22,.94);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:4px 8px;color:#646c7a;" +
+    "cursor:help;backdrop-filter:blur(6px)";
+  b.title = "How far behind market. The CHART price is ~live (polls every 3s + Groww's own lag). The SCANS (gated / movers / " +
+    "console) are cached and refresh every few minutes — that's why a LIVE breakout shows on the chart first and the scan " +
+    "catches up on its next cycle. Green = scans fresh (<3m) · amber = a few min behind · red = stale / feed error.";
+  b.textContent = "⏱ …";
+  document.body.appendChild(b);
+  function poll() {
+    if (document.visibilityState !== "visible") return;
+    var t0 = (window.performance || Date).now();
+    fetch("/api/heartbeat").then(function (r) { return r.json(); }).then(function (d) {
+      var rtt = Math.round((window.performance || Date).now() - t0);
+      var sc = d.scans || {}, ages = Object.keys(sc).map(function (k) { return sc[k]; }).filter(function (x) { return x != null; });
+      var worst = ages.length ? Math.max.apply(null, ages) : 0;
+      var open = d.market === "OPEN";
+      var col = !open ? "#646c7a" : worst <= 3 ? "#22c55e" : worst <= 15 ? "#fbbf24" : "#ef4444";
+      b.style.color = col; b.style.borderColor = col + "55";
+      b.innerHTML = open
+        ? "⏱ scan " + (worst < 60 ? worst + "m" : "stale") + " · net " + rtt + "ms"
+        : "⏱ " + d.market + " · " + (d.ist || "");
+    }).catch(function () { b.style.color = "#ef4444"; b.style.borderColor = "#ef444455"; b.textContent = "⏱ no feed"; });
+  }
+  poll(); setInterval(poll, 5000);
+})();
+
+/* ---- deep-link: ?sym=XYZ → prefill this page's search (#q) + load it, so the global search can route here ---- */
+(function () {
+  var p; try { p = new URLSearchParams(location.search).get("sym"); } catch (e) {}
+  if (!p) { try { p = localStorage.getItem("mg_last_sym"); } catch (e) {} }   // FLUID default: your last-looked-at symbol, NOT a page's hardcoded one
+  if (!p) return; p = p.toUpperCase();
+  function go() {
+    var q = document.getElementById("q");
+    if (q) { q.value = p; q.dispatchEvent(new Event("input", { bubbles: true })); }
+    if (typeof window.loadTicket === "function") { try { window.loadTicket(p); return; } catch (e) {} }
+    if (typeof window.run === "function") { try { window.run(); return; } catch (e) {} }
+    if (q) ["keydown", "keyup"].forEach(function (t) { q.dispatchEvent(new KeyboardEvent(t, { key: "Enter", keyCode: 13, which: 13, bubbles: true })); });
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { setTimeout(go, 450); });
+  else setTimeout(go, 450);
+})();
+
+/* ---- keep the last symbol FLUID across pages: persist #q on Enter so the next page opens on it ---- */
+(function () {
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Enter") return;
+    var t = e.target;
+    if (t && t.tagName === "INPUT" && (t.id === "q" || t.id === "und" || t.id === "trigtk")) {
+      var v = (t.value || "").trim().toUpperCase(); if (v) { try { localStorage.setItem("mg_last_sym", v); } catch (_e) {} }
+    }
+  }, true);
+})();
+
 /* ---- back/forward nav buttons + market-regime badge (every pod; vital in the chromeless app window) ---- */
 (function () {
   function navBtn(txt, title, fn) {
@@ -305,4 +408,40 @@
   }
   fillRegime();
   setInterval(fillRegime, 180000);
+})();
+
+/* ---- macro OVERLAY: the "weather" strip pinned at the BOTTOM of every pod page ---- */
+(function () {
+  if (document.getElementById("mg-macrobar")) return;
+  var bar = document.createElement("div"); bar.id = "mg-macrobar";
+  bar.style.cssText = "position:fixed;left:0;right:0;bottom:0;z-index:90;background:rgba(14,17,22,.96);backdrop-filter:blur(8px);" +
+    "border-top:1px solid rgba(255,255,255,.1);font-family:var(--mono,ui-monospace,Consolas,monospace);font-size:11px;color:#9aa3b4;" +
+    "display:flex;align-items:center;gap:8px;padding:5px 12px;overflow-x:auto;white-space:nowrap";
+  document.body.appendChild(bar);
+  document.body.style.paddingBottom = "34px";
+  var DOT = { on: "#22c55e", off: "#ef4444", neutral: "#646c7a" };
+  var WC = { "RISK-ON": "#22c55e", "RISK-OFF": "#ef4444", "MIXED": "#fbbf24" };
+  function render(d) {
+    if (!d || !d.ok) { bar.innerHTML = '<span style="color:#646c7a">macro overlay —</span>'; return; }
+    var wc = WC[d.weather] || "#9aa3b4";
+    var h = '<span style="font-weight:800;letter-spacing:.05em;color:#646c7a">MACRO</span>' +
+      '<span style="font-weight:800;color:' + wc + ';border:1px solid ' + wc + '55;border-radius:6px;padding:2px 8px">' + d.weather + "</span>";
+    if (d.fragility) {
+      var f = d.fragility;
+      var fc = (f.regime === "STRESS" || f.regime === "SHOCK") ? "#ef4444" : f.regime === "FRAGILE" ? "#fbbf24" : f.regime === "RECOVERING" ? "#22c55e" : "#646c7a";
+      h += '<span title="' + String(f.advice || "").replace(/"/g, "'") + '" style="font-weight:800;color:' + fc +
+           ';border:1px solid ' + fc + '55;border-radius:6px;padding:2px 8px;cursor:help">🔥 ' + f.regime + " " + f.score + "</span>";
+    }
+    h += (d.themes || []).map(function (t) {
+      var c = DOT[t.direction] || "#646c7a";
+      var tip = "[" + t.significance + "] " + t.why + " — " + String(t.read || "").replace(/"/g, "'") + " (" + (t.source || "") + ")";
+      return '<span title="' + tip + '" style="display:inline-flex;align-items:center;gap:4px;cursor:help;padding:1px 3px">' +
+        '<span style="width:7px;height:7px;border-radius:50%;background:' + c + ';display:inline-block"></span>' +
+        t.icon + " " + t.name + (t.significance === "HIGH" ? "" : ' <span style="color:#52514e">·' + t.significance.toLowerCase() + "</span>") + "</span>";
+    }).join('<span style="color:#2c2c2a">|</span>');
+    h += '<span style="margin-left:auto;color:#52514e;flex:0 0 auto">' + (d.asof || "") + " · significance=prior · direction=live · hover for why</span>";
+    bar.innerHTML = h;
+  }
+  function load() { fetch("/api/macro_overlay").then(function (r) { return r.json(); }).then(render).catch(function () {}); }
+  load(); setInterval(load, 1200000);
 })();
